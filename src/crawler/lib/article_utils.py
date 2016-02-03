@@ -1,7 +1,7 @@
 import logging
 import requests
 import dateutil.parser
-from datetime import datetime
+from datetime import datetime, timezone
 
 import conf
 from web.lib.utils import to_hash
@@ -36,12 +36,13 @@ def construct_article(entry, feed):
     if hasattr(feed, 'dump'):  # this way can be a sqlalchemy obj or a dict
         feed = feed.dump()
     "Safe method to transorm a feedparser entry into an article"
-    now = datetime.now()
+    now = datetime.utcnow()
     date = None
-    for date_key in ('published', 'updated'):
+    for date_key in ('date', 'created', 'published', 'updated'):
         if entry.get(date_key):
             try:
-                date = dateutil.parser.parse(entry[date_key])
+                date = dateutil.parser.parse(entry[date_key])\
+                        .astimezone(timezone.utc)
             except Exception:
                 pass
             else:
@@ -65,9 +66,8 @@ def construct_article(entry, feed):
             'link': entry.get('link', feed['site_link']),
             'title': entry.get('title', 'No title'),
             'readed': False, 'like': False,
-            'content': content,
-            'retrieved_date': now.isoformat(),
-            'date': (date or now).isoformat()}
+            'content': content, 'retrieved_date': now, 'date': date or now}
+
 
 def get_article_content(entry):
     content = ''

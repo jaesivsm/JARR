@@ -9,6 +9,7 @@ current
      * Implementing categories
     Improvements:
      * Code re-arangement: move all code to /src/
+     * Now clean content from feed through the bleach module to avoid XSS vulnerabilities
 
 6.7 (2015-07-21)
 ----------------

@@ -38,7 +38,7 @@ from bootstrap import db
 from web.models import User
 from web.controllers import FeedController, ArticleController
 from web.lib.feed_utils import construct_feed_from, is_parsing_ok
-from web.lib.article_utils import construct_article, extract_id, \
+from crawler.lib.article_utils import construct_article, extract_id, \
                                     get_article_content
 
 logger = logging.getLogger(__name__)
@@ -80,7 +80,7 @@ async def parse_feed(user, feed):
             up_feed['last_error'] = str(e)
             up_feed['error_count'] = feed.error_count + 1
         finally:
-            up_feed['last_retrieved'] = datetime.now(dateutil.tz.tzlocal())
+            up_feed['last_retrieved'] = datetime.utcnow()
             if parsed_feed is None:
                 FeedController().update({'id': feed.id}, up_feed)
                 return

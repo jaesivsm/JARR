@@ -23,7 +23,7 @@ from concurrent.futures import ThreadPoolExecutor
 from requests_futures.sessions import FuturesSession
 from web.lib.utils import default_handler, to_hash
 from web.lib.feed_utils import construct_feed_from
-from web.lib.article_utils import extract_id, construct_article
+from crawler.lib.article_utils import extract_id, construct_article
 
 logger = logging.getLogger(__name__)
 logging.captureWarnings(True)
@@ -117,8 +117,7 @@ class PyAggUpdater(AbstractCrawler):
         up_feed['user_id'] = self.feed['user_id']
         # re-getting that feed earlier since new entries appeared
         if article_created:
-            up_feed['last_retrieved'] \
-                    = (datetime.now() - timedelta(minutes=45)).isoformat()
+            up_feed['last_retrieved'] = datetime.utcnow()
 
         diff_keys = {key for key in up_feed
                      if up_feed[key] != self.feed.get(key)}
