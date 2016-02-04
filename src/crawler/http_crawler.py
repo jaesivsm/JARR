@@ -12,12 +12,13 @@ PyAggUpdater.callback
     to create the missing entries
 """
 
+import html
 import time
 import conf
 import json
 import logging
 import feedparser
-from datetime import datetime, timedelta
+from datetime import datetime
 from time import strftime, gmtime
 from concurrent.futures import ThreadPoolExecutor
 from requests_futures.sessions import FuturesSession
@@ -109,11 +110,15 @@ class PyAggUpdater(AbstractCrawler):
                                     strftime('%a, %d %b %Y %X %Z', gmtime()))}
         fresh_feed = construct_feed_from(url=self.feed['link'],
                                          fp_parsed=self.parsed_feed)
+        if fresh_feed.get('description'):
+            fresh_feed['description'] \
+                    = html.unescape(fresh_feed['description'])
+
         for key in ('description', 'site_link', 'icon_url'):
             if fresh_feed.get(key) and fresh_feed[key] != self.feed.get(key):
                 up_feed[key] = fresh_feed[key]
         if not self.feed.get('title'):
-            up_feed['title'] = fresh_feed.get('title', '')
+            up_feed['title'] = html.unescape(fresh_feed.get('title', ''))
         up_feed['user_id'] = self.feed['user_id']
         # re-getting that feed earlier since new entries appeared
         if article_created:

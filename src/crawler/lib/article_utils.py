@@ -1,3 +1,4 @@
+import html
 import logging
 import requests
 import dateutil.parser
@@ -64,7 +65,7 @@ def construct_article(entry, feed):
             'user_id': feed['user_id'],
             'entry_id': extract_id(entry).get('entry_id', None),
             'link': entry.get('link', feed['site_link']),
-            'title': entry.get('title', 'No title'),
+            'title': html.unescape(entry.get('title', 'No title')),
             'readed': False, 'like': False,
             'content': content, 'retrieved_date': now, 'date': date or now}
 
