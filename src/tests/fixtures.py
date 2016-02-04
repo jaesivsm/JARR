@@ -1,31 +1,34 @@
-from web.models import db_create, db_empty, User, Article, Feed
+from manager import db_create, db_empty
+from web.controllers import UserController, CategoryController, \
+                            FeedController, ArticleController
 
 
-def populate_db(db):
-    role_admin, role_user = db_create(db)
-    user1, user2 = [User(nickname=name, email="%s@test.te" % name,
-                         pwdhash=name, roles=[role_user], activation_key="")
+def populate_db():
+    db_create()
+    ucontr = UserController()
+    ccontr = CategoryController()
+    fcontr = FeedController()
+    acontr = ArticleController()
+    ccontr = CategoryController()
+    user1, user2 = [ucontr.create(login=name, email="%s@test.te" % name,
+                                  password=name)
                     for name in ["user1", "user2"]]
-    db.session.add(user1)
-    db.session.add(user2)
-    db.session.commit()
 
     for user in (user1, user2):
-        for feed_name in ['feed1', 'feed2', 'feed3']:
-            feed = Feed(link=feed_name, user_id=user.id,
-                        title="%r %r" % (user.nickname, feed_name))
-            db.session.add(feed)
-            db.session.commit()
-            for article in ['article1', 'article2', 'article3']:
-                entry = "%s %s %s" % (user.nickname, feed.title, article)
-                article = Article(entry_id=entry, link=article,
-                                  feed_id=feed.id, user_id=user.id,
-                                  title=entry, content=article)
-                db.session.add(article)
-            db.session.commit()
+        for i in range(3):
+            cat_id = None
+            if i:
+                cat_id = ccontr.create(user_id=user.id,
+                                       name="category%d" % i).id
+            feed = fcontr.create(link="feed%d" % i, user_id=user.id,
+                                    category_id=cat_id,
+                                    title="%s feed%d" % (user.login, i))
+            for j in range(3):
+                entry = "%s %s article%d" % (user.login, feed.title, j)
+                acontr.create(entry_id=entry,
+                        link='http://test.te/%d' % j,
+                        feed_id=feed.id, user_id=user.id,
+                        title=entry, content="content %d" % j)
 
-    db.session.commit()
-
-
-def reset_db(db):
-    db_empty(db)
+def reset_db():
+    db_empty()

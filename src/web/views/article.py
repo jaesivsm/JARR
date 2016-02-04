@@ -1,5 +1,3 @@
-#! /usr/bin/env python
-# -*- coding: utf-8 -
 from datetime import datetime, timedelta
 from flask import (Blueprint, g, render_template, redirect,
                    flash, url_for, request)

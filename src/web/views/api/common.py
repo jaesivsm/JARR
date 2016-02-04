@@ -1,6 +1,3 @@
-#! /usr/bin/env python
-# -*- coding: utf-8 -
-
 """For a given resources, classes in the module intend to create the following
 routes :
     GET resource/<id>
@@ -31,7 +28,7 @@ from flask import request, g, session, Response
 from flask.ext.restful import Resource, reqparse
 
 from web.lib.utils import default_handler
-from web.models import User
+from web.controllers import UserController
 
 logger = logging.getLogger(__name__)
 
@@ -52,9 +49,9 @@ def authenticate(func):
             # authentication via HTTP only
             auth = request.authorization
             if auth is not None:
-                user = User.query.filter(
-                        User.nickname == auth.username).first()
-                if user and user.check_password(auth.password) \
+                ucontr = UserController()
+                user = ucontr.get(login=auth.login)
+                if user and ucontr.check_password(user, auth.password) \
                         and user.activation_key == "":
                     g.user = user
                     logged_in = True
@@ -144,7 +141,7 @@ class PyAggResourceExisting(PyAggAbstractResource):
         args = self.reqparse_args(default=False)
         new_values = {key: args[key] for key in
                       set(args).intersection(self.attrs)}
-        if 'user_id' in new_values and g.user.is_admin():
+        if 'user_id' in new_values and g.user.is_admin:
             controller = self.wider_controller
         else:
             controller = self.controller

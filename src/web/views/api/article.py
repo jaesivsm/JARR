@@ -1,14 +1,9 @@
-#! /usr/bin/env python
-# -*- coding: utf-8 -
-
 from flask import g
 import dateutil.parser
 
 from web.controllers import ArticleController
-from web.views.api.common import PyAggAbstractResource,\
-                                          PyAggResourceNew, \
-                                          PyAggResourceExisting, \
-                                          PyAggResourceMulti
+from web.views.api.common import (PyAggAbstractResource,
+        PyAggResourceNew, PyAggResourceExisting, PyAggResourceMulti)
 
 
 ARTICLE_ATTRS = {'user_id': {'type': int},

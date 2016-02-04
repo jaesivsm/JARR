@@ -6,7 +6,6 @@ from flask.ext.login import login_required
 from flask.ext.principal import Permission, RoleNeed
 
 from web.lib.utils import redirect_url
-from web.models import Role
 from web.controllers import UserController, ArticleController
 
 from web.forms import InformationMessageForm, UserForm
@@ -48,7 +47,7 @@ def user_form(user_id=None):
     if user_id is not None:
         user = UserController().get(id=user_id)
         form = UserForm(obj=user)
-        message = gettext('Edit the user <i>%(nick)s</i>', nick=user.nickname)
+        message = gettext('Edit the user <i>%(login)s</i>', login=user.login)
     else:
         form = UserForm()
         message = gettext('Add a new user')
@@ -71,27 +70,25 @@ def process_user_form(user_id=None):
         return render_template('/admin/create_user.html', form=form,
                                message=gettext('Some errors were found'))
 
-    role_user = Role.query.filter(Role.name == "user").first()
     if user_id is not None:
         # Edit a user
         user_contr.update({'id': user_id},
-                          {'nickname': form.nickname.data,
+                          {'login': form.login.data,
                            'email': form.email.data,
                            'password': form.password.data,
                            'refresh_rate': form.refresh_rate.data})
         user = user_contr.get(id=user_id)
-        flash(gettext('User %(nick)s successfully updated',
-                      nick=user.nickname), 'success')
+        flash(gettext('User %(login)s successfully updated',
+                      login=user.login), 'success')
     else:
         # Create a new user
-        user = user_contr.create(nickname=form.nickname.data,
+        user = user_contr.create(login=form.login.data,
                                  email=form.email.data,
                                  password=form.password.data,
-                                 roles=[role_user],
                                  refresh_rate=form.refresh_rate.data,
                                  activation_key="")
-        flash(gettext('User %(nick)s successfully created',
-                      nick=user.nickname), 'success')
+        flash(gettext('User %(login)s successfully created',
+                      login=user.login), 'success')
     return redirect(url_for('admin.user_form', user_id=user.id))
 
 
@@ -123,8 +120,8 @@ def delete_user(user_id=None):
     """
     try:
         user = UserController().delete(user_id)
-        flash(gettext('User %(nick)s successfully deleted',
-                      nick=user.nickname), 'success')
+        flash(gettext('User %(login)s successfully deleted',
+                      login=user.login), 'success')
     except Exception as error:
         flash(gettext('An error occured while trying to delete a user: '
                       '%(error)', error=error), 'danger')
@@ -151,8 +148,8 @@ def toggle_user(user_id=None):
         try:
             notifications.new_account_activation(user)
             user_contr.unset_activation_key(user.id)
-            message = gettext('Account of the user %(nick)s successfully '
-                              'activated.', nick=user.nickname)
+            message = gettext('Account of the user %(login)s successfully '
+                              'activated.', login=user.login)
         except Exception as error:
             flash(gettext('Problem while sending activation email %(error)s:',
                           error=error), 'danger')
@@ -160,7 +157,7 @@ def toggle_user(user_id=None):
 
     else:
         user_contr.set_activation_key(user.id)
-        message = gettext('Account of the user %(nick)s successfully disabled',
-                          nick=user.nickname)
+        message = gettext('Account of the user %(login)s successfully '
+                          'disabled', login=user.login)
     flash(message, 'success')
     return redirect(url_for('admin.dashboard'))

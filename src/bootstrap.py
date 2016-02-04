@@ -8,6 +8,7 @@ import conf
 import logging
 from urllib.parse import urlsplit
 
+
 def set_logging(log_path, log_level=logging.INFO,
                 log_format='%(asctime)s %(levelname)s %(message)s'):
     formater = logging.Formatter(log_format)
@@ -23,13 +24,13 @@ from flask.ext.sqlalchemy import SQLAlchemy
 
 # Create Flask application
 application = Flask('web')
-if os.environ.get('PYAGG_TESTING', False) == 'true':
+if os.environ.get('JARR_TESTING', False) == 'true':
     application.debug = logging.DEBUG
     application.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
     application.config['TESTING'] = True
+    application.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
 else:
     application.debug = conf.LOG_LEVEL <= logging.DEBUG
-    application.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
     application.config['SQLALCHEMY_DATABASE_URI'] \
             = conf.SQLALCHEMY_DATABASE_URI
 
@@ -49,6 +50,7 @@ application.config['RECAPTCHA_PUBLIC_KEY'] = conf.RECAPTCHA_PUBLIC_KEY
 application.config['RECAPTCHA_PRIVATE_KEY'] = conf.RECAPTCHA_PRIVATE_KEY
 
 db = SQLAlchemy(application)
+
 
 def populate_g():
     from flask import g

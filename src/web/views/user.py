@@ -75,14 +75,13 @@ def profile():
     if request.method == 'POST':
         if form.validate():
             user_contr.update({'id': g.user.id},
-                              {'nickname': form.nickname.data,
+                              {'login': form.login.data,
                                'email': form.email.data,
                                'password': form.password.data,
-                               'readability_key': form.readability_key.data,
                                'refresh_rate': form.refresh_rate.data})
 
-            flash(gettext('User %(nick)s successfully updated',
-                          nick=user.nickname), 'success')
+            flash(gettext('User %(login)s successfully updated',
+                          login=user.login), 'success')
             return redirect(url_for('user.profile'))
         else:
             return render_template('profile.html', user=user, form=form)

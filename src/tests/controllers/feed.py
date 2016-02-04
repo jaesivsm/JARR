@@ -1,9 +1,8 @@
-from tests.base import BasePyaggTest
-from web.controllers import FeedController
-from web.controllers import ArticleController
+from tests.base import BaseJarrTest
+from web.controllers import FeedController, ArticleController
 
 
-class FeedControllerTest(BasePyaggTest):
+class FeedControllerTest(BaseJarrTest):
     _contr_cls = FeedController
 
     def test_feed_rights(self):
@@ -11,13 +10,12 @@ class FeedControllerTest(BasePyaggTest):
         self.assertTrue(3,
                 ArticleController().read(feed_id=feed['id']).count())
         self._test_controller_rights(feed, feed['user_id'])
-        # checking articles are deleted after the feed has been deleted
 
     def test_feed_article_deletion(self):
         feed_ctr = FeedController(2)
         feed = feed_ctr.read()[0].dump()
         feed_ctr.delete(feed['id'])
-        self.assertFalse(0,
+        self.assertEquals(0,
                 ArticleController().read(feed_id=feed['id']).count())
 
     def test_feed_list_fetchable(self):

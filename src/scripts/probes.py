@@ -55,7 +55,7 @@ class FeedProbe(AbstractMuninPlugin):
 class ArticleProbe(AbstractMuninPlugin):
 
     def config(self):
-        print("graph_title Pyagg - Articles adding rate")
+        print("graph_title JARR - Articles adding rate")
         print("graph_vlabel Articles per sec")
         print("articles.label Overall rate")
         print("articles.type DERIVE")

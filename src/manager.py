@@ -4,6 +4,7 @@
 from bootstrap import application, db, populate_g, conf
 from flask.ext.script import Manager
 from flask.ext.migrate import Migrate, MigrateCommand
+from web.controllers.user import UserController
 
 import web.models
 
@@ -22,11 +23,19 @@ def db_empty():
 
 
 @manager.command
-def db_create():
+def db_create(admin=None):
     "Will create the database from conf parameters."
+    if not admin:
+        admin = {}
+    if 'login' not in admin:
+        admin['login'] = 'admin'
+    if 'password' not in admin:
+        admin['password'] = 'admin'
+    admin.update({'is_admin': True})
     with application.app_context():
         populate_g()
-        web.models.db_create(db)
+        db.create_all()
+        UserController().create(**admin)
 
 
 @manager.command
@@ -46,16 +55,16 @@ def fetch_asyncio(user_id, feed_id):
     with application.app_context():
         populate_g()
         from flask import g
-        from web.models import User
         from crawler import classic_crawler
+        ucontr = UserController()
         users = []
         try:
-            users = User.query.filter(User.id == int(user_id)).all()
+            users = [ucontr.get(user_id)]
         except:
-            users = User.query.all()
+            users = ucontr.read()
         finally:
             if users == []:
-                users = User.query.all()
+                users = ucontr.read()
 
         try:
             feed_id = int(feed_id)
@@ -65,7 +74,7 @@ def fetch_asyncio(user_id, feed_id):
         loop = asyncio.get_event_loop()
         for user in users:
             if user.activation_key == "":
-                print("Fetching articles for " + user.nickname)
+                print("Fetching articles for " + user.login)
                 g.user = user
                 classic_crawler.retrieve_feed(loop, g.user, feed_id)
         loop.close()

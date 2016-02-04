@@ -9,7 +9,7 @@
     <thead>
         <tr>
             <th>#</th>
-            <th>{{ _('Nickname') }}</th>
+            <th>{{ _('Login') }}</th>
             <th>{{ _('Email') }}</th>
             <th>{{ _('Last seen') }}</th>
             <th>{{ _('Actions') }}</th>
@@ -20,9 +20,9 @@
         <tr {% if user.activation_key != ""  %}class="warning"{% endif %}>
             <td>{{ loop.index }}</td>
             {% if user.id == current_user.id %}
-                <td><a href="{{ url_for("user.management") }}">{{ user.nickname }}</a> (It's you!)</td>
+                <td><a href="{{ url_for("user.management") }}">{{ user.login }}</a> (It's you!)</td>
             {% else %}
-                <td><a href="{{ url_for("admin.user", user_id=user.id) }}">{{ user.nickname }}</a></td>
+                <td><a href="{{ url_for("admin.user", user_id=user.id) }}">{{ user.login }}</a></td>
             {% endif %}
             <td><a href="mailto:{{ user.email }}">{{ user.email  }}</a></td>
             <td class="date">{{ user.last_seen }}</td>

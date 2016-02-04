@@ -27,10 +27,8 @@ __copyright__ = "Copyright (c) Cedric Bonhomme"
 __license__ = "GPLv3"
 
 import re
-import random
-import hashlib
 from datetime import datetime
-from werkzeug import check_password_hash
+from sqlalchemy.orm import validates
 from flask.ext.login import UserMixin
 
 from bootstrap import db
@@ -41,12 +39,17 @@ class User(db.Model, UserMixin):
     Represent a user.
     """
     id = db.Column(db.Integer, primary_key=True)
-    nickname = db.Column(db.String(), unique=True)
-    email = db.Column(db.String(254), index=True, unique=True)
-    pwdhash = db.Column(db.String())
-    roles = db.relationship('Role', backref='user', lazy='dynamic')
-    activation_key = db.Column(db.String(128), default=hashlib.sha512(
-            str(random.getrandbits(256)).encode("utf-8")).hexdigest()[:86])
+    login = db.Column(db.String(), unique=True)
+    password = db.Column(db.String())
+    email = db.Column(db.String(254))
+
+    is_admin = db.Column(db.Boolean(), default=False)
+    is_api = db.Column(db.Boolean(), default=False)
+
+    oauth_twitter = db.Column(db.String())
+    oauth_facebook = db.Column(db.String())
+    oauth_google = db.Column(db.String())
+
     date_created = db.Column(db.DateTime(), default=datetime.now)
     last_seen = db.Column(db.DateTime(), default=datetime.now)
     feeds = db.relationship('Feed', backref='subscriber', lazy='dynamic',
@@ -54,30 +57,15 @@ class User(db.Model, UserMixin):
     refresh_rate = db.Column(db.Integer, default=60)  # in minutes
     readability_key = db.Column(db.String(), default='')
 
-    @staticmethod
-    def make_valid_nickname(nickname):
-        return re.sub('[^a-zA-Z0-9_\.]', '', nickname)
-
-    def get_id(self):
-        """
-        Return the id of the user.
-        """
-        return self.id
-
-    def check_password(self, password):
-        """
-        Check the password of the user.
-        """
-        return check_password_hash(self.pwdhash, password)
-
-    def is_admin(self):
-        """
-        Return True if the user has administrator rights.
-        """
-        return "admin" in [role.name for role in self.roles]
+    @validates('login')
+    def validates_login(self, key, value):
+        return re.sub('[^a-zA-Z0-9_\.]', '', value)
 
     def __eq__(self, other):
         return self.id == other.id
 
     def __repr__(self):
-        return '<User %r>' % (self.nickname)
+        return '<User %r>' % (self.login)
+
+    def dump(self):
+        return {'id': self.id}

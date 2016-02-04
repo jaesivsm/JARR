@@ -31,6 +31,7 @@ DEFAULTS = {"platform_url": "https://JARR.herokuapp.com/",
             "nb_worker": "100",
             "api_login": "",
             "api_passwd": "",
+            "google_client_id": "",
             "default_max_error": "3",
             "log_path": "jarr.log",
             "log_level": "info",
@@ -110,6 +111,9 @@ WEBSERVER_PORT = config.getint('webserver', 'port')
 WEBSERVER_SECRET = config.get('webserver', 'secret')
 
 CDN_ADDRESS = config.get('cdn', 'cdn_address')
+
+GOOGLE_CLIENT_ID = config.get('misc', 'google_client_id')
+
 
 NOTIFICATION_EMAIL = config.get('notification', 'notification_email')
 NOTIFICATION_HOST = config.get('notification', 'host')

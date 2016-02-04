@@ -1,43 +1,10 @@
-#! /usr/bin/env python
-# -*- coding: utf-8 -*-
-
-# jarr - A Web based news aggregator.
-# Copyright (C) 2010-2016  Cédric Bonhomme - https://www.JARR-aggregator.org
-#
-# For more information : https://github.com/JARR-aggregator/JARR/
-#
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU Affero General Public License as
-# published by the Free Software Foundation, either version 3 of the
-# License, or (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Affero General Public License for more details.
-#
-# You should have received a copy of the GNU Affero General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
-__author__ = "Cedric Bonhomme"
-__version__ = "$Revision: 0.4 $"
-__date__ = "$Date: 2013/11/05 $"
-__revision__ = "$Date: 2014/04/12 $"
-__copyright__ = "Copyright (c) Cedric Bonhomme"
-__license__ = "GPLv3"
-
 from .feed import Feed
-from .role import Role
 from .user import User
 from .article import Article
 from .icon import Icon
 from .category import Category
 
-__all__ = ['Feed', 'Role', 'User', 'Article', 'Icon', 'Category']
-
-import os
-
-from werkzeug import generate_password_hash
+__all__ = ['Feed', 'User', 'Article', 'Icon', 'Category']
 
 from sqlalchemy.engine import reflection
 from sqlalchemy.schema import (
@@ -46,6 +13,7 @@ from sqlalchemy.schema import (
         DropTable,
         ForeignKeyConstraint,
         DropConstraint)
+
 
 def db_empty(db):
     "Will drop every datas stocked in db."
@@ -83,22 +51,3 @@ def db_empty(db):
         conn.execute(DropTable(table))
 
     trans.commit()
-
-def db_create(db):
-    "Will create the database from conf parameters."
-    db.create_all()
-
-    role_admin = Role(name="admin")
-    role_user = Role(name="user")
-
-    user1 = User(nickname="admin",
-                email=os.environ.get("ADMIN_EMAIL",
-                                    "root@jarr.localhost"),
-                pwdhash=generate_password_hash(
-                        os.environ.get("ADMIN_PASSWORD", "password")),
-                activation_key="")
-    user1.roles.extend([role_admin, role_user])
-
-    db.session.add(user1)
-    db.session.commit()
-    return role_admin, role_user

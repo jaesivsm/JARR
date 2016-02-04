@@ -1,32 +1,6 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
 
-# jarr - A Web based news aggregator.
-# Copyright (C) 2010-2013  Cédric Bonhomme - https://www.JARR-aggregator.org
-#
-# For more information : http://github.com/JARR-aggregator/JARR/
-#
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>
-
-__author__ = "Cedric Bonhomme"
-__version__ = "$Revision: 0.3 $"
-__date__ = "$Date: 2013/11/05 $"
-__revision__ = "$Date: 2015/05/06 $"
-__copyright__ = "Copyright (c) Cedric Bonhomme"
-__license__ = "GPLv3"
-
-
 from flask import flash, url_for, redirect
 from flask.ext.wtf import Form
 from flask.ext.babel import lazy_gettext
@@ -43,8 +17,8 @@ class SignupForm(Form):
     """
     Sign up form (registration to jarr).
     """
-    nickname = TextField(lazy_gettext("Nickname"),
-            [validators.Required(lazy_gettext("Please enter your nickname."))])
+    login = TextField(lazy_gettext("Login"),
+            [validators.Required(lazy_gettext("Please enter your login"))])
     email = EmailField(lazy_gettext("Email"),
             [validators.Length(min=6, max=35),
              validators.Required(
@@ -54,15 +28,6 @@ class SignupForm(Form):
              validators.Length(min=6, max=100)])
     recaptcha = RecaptchaField()
     submit = SubmitField(lazy_gettext("Sign up"))
-
-    def validate(self):
-        validated = super(SignupForm, self).validate()
-        if self.nickname.data != User.make_valid_nickname(self.nickname.data):
-            self.nickname.errors.append(lazy_gettext(
-                    'This nickname has invalid characters. '
-                    'Please use letters, numbers, dots and underscores only.'))
-            validated = False
-        return validated
 
 
 class RedirectForm(Form):
@@ -114,8 +79,8 @@ class UserForm(Form):
     """
     Create or edit a user (for the administrator).
     """
-    nickname = TextField(lazy_gettext("Nickname"),
-            [validators.Required(lazy_gettext("Please enter your nickname."))])
+    login = TextField(lazy_gettext("Login"),
+            [validators.Required(lazy_gettext("Please enter your login"))])
     email = EmailField(lazy_gettext("Email"),
                [validators.Length(min=6, max=35),
                 validators.Required(lazy_gettext("Please enter your email."))])
@@ -125,22 +90,13 @@ class UserForm(Form):
                                 default=60)
     submit = SubmitField(lazy_gettext("Save"))
 
-    def validate(self):
-        validated = super(UserForm, self).validate()
-        if self.nickname.data != User.make_valid_nickname(self.nickname.data):
-            self.nickname.errors.append(lazy_gettext(
-                    'This nickname has invalid characters. '
-                    'Please use letters, numbers, dots and underscores only.'))
-            validated = False
-        return validated
-
 
 class ProfileForm(Form):
     """
     Edit user information.
     """
-    nickname = TextField(lazy_gettext("Nickname"),
-            [validators.Required(lazy_gettext("Please enter your nickname."))])
+    login = TextField(lazy_gettext("Login"),
+            [validators.Required(lazy_gettext("Please enter your login"))])
     email = EmailField(lazy_gettext("Email"),
                [validators.Length(min=6, max=35),
                 validators.Required(lazy_gettext("Please enter your email."))])
@@ -159,11 +115,6 @@ class ProfileForm(Form):
             message = lazy_gettext("Passwords aren't the same.")
             self.password.errors.append(message)
             self.password_conf.errors.append(message)
-            validated = False
-        if self.nickname.data != User.make_valid_nickname(self.nickname.data):
-            self.nickname.errors.append(lazy_gettext('This nickname has '
-                    'invalid characters. Please use letters, numbers, dots and'
-                    ' underscores only.'))
             validated = False
         return validated
 

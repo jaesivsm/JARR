@@ -21,12 +21,12 @@ msgstr ""
 
 #: src/web/forms.py:45 src/web/forms.py:113 src/web/forms.py:136
 #: src/web/templates/admin/dashboard.html:12
-msgid "Nickname"
-msgstr "Pseudonyme"
+msgid "Login"
+msgstr "Login"
 
 #: src/web/forms.py:46 src/web/forms.py:114 src/web/forms.py:137
-msgid "Please enter your nickname."
-msgstr "S'il vous plaît, entrez votre pseudonyme."
+msgid "Please enter your login"
+msgstr "S'il vous plaît, entrez votre login"
 
 #: src/web/forms.py:47 src/web/forms.py:115 src/web/forms.py:138
 #: src/web/forms.py:186 src/web/templates/admin/dashboard.html:13
@@ -49,14 +49,6 @@ msgstr "S'il vous plaît entrer un mot de passe."
 #: src/web/forms.py:55 src/web/templates/login.html:26
 msgid "Sign up"
 msgstr "S'inscrire"
-
-#: src/web/forms.py:60 src/web/forms.py:127 src/web/forms.py:156
-msgid ""
-"This nickname has invalid characters. Please use letters, numbers, dots and "
-"underscores only."
-msgstr ""
-"Ce pseudonyme a des caractères non valides. Utilisez seulement des lettres, "
-"des chiffres, des points et '_'."
 
 #: src/web/forms.py:90 src/web/templates/login.html:5
 msgid "Log In"

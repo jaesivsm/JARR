@@ -1,14 +1,13 @@
 import os
-os.environ['PYAGG_TESTING'] = 'true'
+os.environ['JARR_TESTING'] = 'true'
 
 import unittest
-from bootstrap import db
 import runserver
 from tests.fixtures import populate_db, reset_db
 from werkzeug.exceptions import NotFound
 
 
-class BasePyaggTest(unittest.TestCase):
+class BaseJarrTest(unittest.TestCase):
     _contr_cls = None
 
     def _get_from_contr(self, obj_id, user_id=None):
@@ -31,10 +30,10 @@ class BasePyaggTest(unittest.TestCase):
         self.assertRaises(NotFound, self._contr_cls(user_id).delete, obj_id)
 
     def setUp(self):
-        populate_db(db)
+        populate_db()
 
     def tearDown(self):
-        reset_db(db)
+        reset_db()
 
 
 if __name__ == '__main__':
