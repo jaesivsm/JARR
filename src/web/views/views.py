@@ -29,8 +29,11 @@ __license__ = "AGPLv3"
 import os
 import logging
 import datetime
+from flask import jsonify
+from calendar import timegm
 
 from bootstrap import application as app, db
+
 from flask import render_template, request, flash, session, \
                   url_for, redirect, g, current_app, make_response
 from flask.ext.login import LoginManager, login_user, logout_user, \
@@ -51,6 +54,8 @@ from web.forms import SignupForm, SigninForm
 
 from web.controllers import UserController, FeedController, \
                             ArticleController, CategoryController
+
+from plugins import readability
 
 
 Principal(app)
@@ -229,10 +234,6 @@ def signup():
     return render_template('signup.html', form=form)
 
 
-from calendar import timegm
-from flask import jsonify
-
-
 @app.route('/')
 @login_required
 @etag_match
@@ -321,8 +322,9 @@ def get_middle_panel():
 
 
 @app.route('/getart/<int:article_id>')
+@app.route('/getart/<int:article_id>/<parse>')
 @login_required
-def get_article(article_id):
+def get_article(article_id, parse=False):
     contr = ArticleController(g.user.id)
     article = contr.get(id=article_id).dump()
     if not article['readed']:
@@ -331,6 +333,15 @@ def get_article(article_id):
     feed = FeedController(g.user.id).get(id=article['feed_id'])
     article['icon_url'] = url_for('icon.icon', url=feed.icon_url) \
             if feed.icon_url else None
+    readability_available = bool(g.user.readability_key)
+    article['readability_available'] = readability_available
+    if parse or (not article['readability_parsed']
+            and feed.readability_auto_parse and readability_available):
+        article['readability_parsed'] = True
+        article['content'] = readability.parse(
+                article['link'], g.user.readability_key)
+        contr.update({'id': article['id']}, {'readability_parsed': True,
+                                             'content': article['content']})
     return jsonify(**article)
 
 

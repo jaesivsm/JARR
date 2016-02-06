@@ -165,3 +165,6 @@
 .filter-row>input.form-control {
   width: auto;
 }
+#readability-reload {
+  padding: 2px 5px;
+}

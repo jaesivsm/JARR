@@ -149,10 +149,12 @@ class ProfileForm(Form):
     refresh_rate = IntegerField(lazy_gettext("Feeds refresh frequency "
                                              "(in minutes)"),
                                 default=60)
+
+    readability_key = TextField(lazy_gettext("Readability API key"))
     submit = SubmitField(lazy_gettext("Save"))
 
     def validate(self):
-        validated = super(ProfileForm, self).validate()
+        validated = super().validate()
         if self.password.data != self.password_conf.data:
             message = lazy_gettext("Passwords aren't the same.")
             self.password.errors.append(message)

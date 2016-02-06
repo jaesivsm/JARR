@@ -41,8 +41,9 @@ class Feed(db.Model):
     link = db.Column(db.String())
     site_link = db.Column(db.String(), default="")
     enabled = db.Column(db.Boolean(), default=True)
-    created_date = db.Column(db.DateTime(), default=datetime.now)
+    created_date = db.Column(db.DateTime(), default=datetime.utcnow)
     filters = db.Column(db.PickleType, default=[])
+    readability_auto_parse = db.Column(db.Boolean(), default=False)
 
     # cache handling
     etag = db.Column(db.String(), default="")
@@ -74,6 +75,7 @@ class Feed(db.Model):
                 "site_link": self.site_link,
                 "etag": self.etag,
                 "enabled": self.enabled,
+                "readability_auto_parse": self.readability_auto_parse,
                 "filters": self.filters,
                 "icon_url": self.icon_url,
                 "error_count": self.error_count,

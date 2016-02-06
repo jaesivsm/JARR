@@ -40,8 +40,9 @@ class Article(db.Model):
     content = db.Column(db.String())
     readed = db.Column(db.Boolean(), default=False)
     like = db.Column(db.Boolean(), default=False)
-    date = db.Column(db.DateTime(), default=datetime.now)
-    retrieved_date = db.Column(db.DateTime(), default=datetime.now)
+    date = db.Column(db.DateTime(), default=datetime.utcnow)
+    retrieved_date = db.Column(db.DateTime(), default=datetime.utcnow)
+    readability_parsed = db.Column(db.Boolean(), default=False)
 
     user_id = db.Column(db.Integer(), db.ForeignKey('user.id'))
     feed_id = db.Column(db.Integer(), db.ForeignKey('feed.id'))
@@ -78,6 +79,7 @@ class Article(db.Model):
                 "readed": self.readed,
                 "like": self.like,
                 "date": self.date,
+                "readability_parsed": self.readability_parsed,
                 "retrieved_date": self.retrieved_date,
                 "feed_id": self.feed_id,
                 "category_id": self.category_id}

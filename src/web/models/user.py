@@ -52,6 +52,7 @@ class User(db.Model, UserMixin):
     feeds = db.relationship('Feed', backref='subscriber', lazy='dynamic',
                             cascade='all,delete-orphan')
     refresh_rate = db.Column(db.Integer, default=60)  # in minutes
+    readability_key = db.Column(db.String(), default='')
 
     @staticmethod
     def make_valid_nickname(nickname):

@@ -35,6 +35,7 @@ var PanelMixin = {
                               </Button>);
             }
             btn_grp = (<ButtonGroup bsSize="small">
+                           {this.getExtraButton()}
                            {edit_button}
                            {rem_button}
                        </ButtonGroup>);
@@ -169,12 +170,27 @@ var Article = React.createClass({
     ],
     obj_type: 'article',
     getTitle: function() {return this.props.obj.title;},
+    getExtraButton: function() {
+        if(!this.props.obj.readability_available) {
+            return null;
+        }
+        return (<Button id="readability-reload" onClick={this.reloadParsed}
+                        active={this.props.obj.readability_parsed}>
+                    <img src="/static/img/readability.png" />
+                </Button>);
+    },
     getBody: function() {
         return (<div className="panel-body">
                     {this.getCore()}
                     <div dangerouslySetInnerHTML={
                         {__html: this.props.obj.content}} />
                 </div>);
+    },
+    reloadParsed: function() {
+        if(this.props.obj.readability_available
+                && !this.props.obj.readability_parsed) {
+            RightPanelActions.loadArticle(this.props.obj.id, true, true);
+        }
     },
 });
 
@@ -188,10 +204,13 @@ var Feed = React.createClass({
              {'title': 'Feed link', 'type': 'link', 'key': 'link'},
              {'title': 'Site link', 'type': 'link', 'key': 'site_link'},
              {'title': 'Enabled', 'type': 'bool', 'key': 'enabled'},
+             {'title': 'Auto Readability',
+              'type': 'bool', 'key': 'readability_auto_parse'},
              {'title': 'Filters', 'type': 'ignore', 'key': 'filters'},
              {'title': 'Category', 'type': 'ignore', 'key': 'category_id'},
     ],
     getTitle: function() {return this.props.obj.title;},
+    getExtraButton: function() {return null;},
     getFilterRow: function(i, filter) {
         return (<dd key={'d' + i + '-' + this.props.obj.id}
                         className="input-group filter-row">
@@ -351,6 +370,7 @@ var Category = React.createClass({
         if(this.props.obj.id != 0) {return true;}
         else {return false;}
     },
+    getExtraButton: function () {return null;},
     isRemovable: function() {return this.isEditable();},
     obj_type: 'category',
     fields: [{'title': 'Category name', 'type': 'string', 'key': 'name'}],

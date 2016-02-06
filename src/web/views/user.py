@@ -78,6 +78,7 @@ def profile():
                               {'nickname': form.nickname.data,
                                'email': form.email.data,
                                'password': form.password.data,
+                               'readability_key': form.readability_key.data,
                                'refresh_rate': form.refresh_rate.data})
 
             flash(gettext('User %(nick)s successfully updated',
