@@ -182,7 +182,7 @@ var Article = React.createClass({
     getBody: function() {
         return (<div className="panel-body">
                     {this.getCore()}
-                    <div dangerouslySetInnerHTML={
+                    <div id="article-content" dangerouslySetInnerHTML={
                         {__html: this.props.obj.content}} />
                 </div>);
     },

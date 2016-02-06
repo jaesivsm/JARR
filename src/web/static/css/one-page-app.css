@@ -136,9 +136,6 @@
   display: inline;
   line-height: 30px;
 }
-#right-panel .panel-body img {
-  max-width: 100%;
-}
 #right-panel-heading * {
   display: inline;
 }
@@ -167,4 +164,7 @@
 }
 #readability-reload {
   padding: 2px 5px;
+}
+#article-content * {
+  max-width: 100%;
 }
