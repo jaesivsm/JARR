@@ -70,7 +70,7 @@ JarrNavBar = React.createClass({
         this.setState({showModal: true, modalType: 'addCategory'});
     },
     render: function() {
-        return (<Navbar fixedTop inverse id="jarrnav">
+        return (<Navbar fixedTop inverse id="jarrnav" fluid staticTop={true}>
                     {this.getModal()}
                     <Navbar.Header>
                         <Navbar.Brand>
@@ -78,6 +78,7 @@ JarrNavBar = React.createClass({
                         </Navbar.Brand>
                         <Navbar.Toggle />
                     </Navbar.Header>
+                    <Navbar.Collapse>
                     <Nav pullRight>
                         {this.buttonFetch()}
                         <NavItem className="jarrnavitem"
@@ -116,6 +117,7 @@ JarrNavBar = React.createClass({
                             </MenuItem>
                         </NavDropdown>
                     </Nav>
+                    </Navbar.Collapse>
                 </Navbar>
         );
     },
