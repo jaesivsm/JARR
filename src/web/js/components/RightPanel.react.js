@@ -441,9 +441,9 @@ var RightPanel = React.createClass({
                     key={this.state.category.id} />);
         }
 
-        return (<Col id="right-panel" xsOffset={4} smOffset={4}
-                                      mdOffset={7} lgOffset={6}
-                                      xs={8} sm={8} md={5} lg={6}>
+        return (<Col id="right-panel" xsHidden
+                        smOffset={4} mdOffset={7} lgOffset={6}
+                        sm={8} md={5} lg={6}>
                     {breadcrum}
                     {cntnt}
                 </Col>
