@@ -243,6 +243,7 @@ def home():
 
 @app.route('/menu')
 @login_required
+@etag_match
 def get_menu():
     categories_order = [0]
     categories = {0: {'name': 'No category', 'id': 0}}
@@ -310,6 +311,7 @@ def _articles_to_json(articles, fd_hash=None):
 
 @app.route('/middle_panel')
 @login_required
+@etag_match
 def get_middle_panel():
     filters = _get_filters(request.args)
     art_contr = ArticleController(g.user.id)
@@ -324,6 +326,7 @@ def get_middle_panel():
 @app.route('/getart/<int:article_id>')
 @app.route('/getart/<int:article_id>/<parse>')
 @login_required
+@etag_match
 def get_article(article_id, parse=False):
     contr = ArticleController(g.user.id)
     article = contr.get(id=article_id).dump()
