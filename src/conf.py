@@ -34,6 +34,7 @@ DEFAULTS = {"platform_url": "https://JARR.herokuapp.com/",
             "default_max_error": "3",
             "log_path": "jarr.log",
             "log_level": "info",
+            "readability_key": "",
             "user_agent": "JARR (https://github.com/JARR-aggregator)",
             "resolve_article_url": "false",
             "http_proxy": "",
@@ -124,3 +125,5 @@ WEBZINE_ROOT = config.get('webserver', 'webzine_root')
 CSRF_ENABLED = True
 # slow database query threshold (in seconds)
 DATABASE_QUERY_TIMEOUT = 0.5
+
+READABILITY_KEY = config.get('misc', 'readability_key')

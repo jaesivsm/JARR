@@ -333,13 +333,14 @@ def get_article(article_id, parse=False):
     feed = FeedController(g.user.id).get(id=article['feed_id'])
     article['icon_url'] = url_for('icon.icon', url=feed.icon_url) \
             if feed.icon_url else None
-    readability_available = bool(g.user.readability_key)
+    readability_available = bool(g.user.readability_key
+                                 or conf.READABILITY_KEY)
     article['readability_available'] = readability_available
     if parse or (not article['readability_parsed']
             and feed.readability_auto_parse and readability_available):
         article['readability_parsed'] = True
-        article['content'] = readability.parse(
-                article['link'], g.user.readability_key)
+        article['content'] = readability.parse(article['link'],
+                g.user.readability_key or conf.READABILITY_KEY)
         contr.update({'id': article['id']}, {'readability_parsed': True,
                                              'content': article['content']})
     return jsonify(**article)
