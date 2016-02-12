@@ -25,7 +25,7 @@ from flask.ext.sqlalchemy import SQLAlchemy
 # Create Flask application
 application = Flask('web')
 if os.environ.get('JARR_TESTING', False) == 'true':
-    application.debug = logging.DEBUG
+    application.debug = True
     application.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
     application.config['TESTING'] = True
     application.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True

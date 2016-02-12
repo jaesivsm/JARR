@@ -26,20 +26,24 @@ FEED_ATTRS = {'title': {'type': str},
               'last_error': {'type': str},
               'error_count': {'type': int, 'default': 0}}
 
+
 class FeedNewAPI(PyAggResourceNew):
     controller_cls = FeedController
     attrs = FEED_ATTRS
     to_date = ['date', 'last_retrieved']
+
 
 class FeedAPI(PyAggResourceExisting):
     controller_cls = FeedController
     attrs = FEED_ATTRS
     to_date = ['date', 'last_retrieved']
 
+
 class FeedsAPI(PyAggResourceMulti):
     controller_cls = FeedController
     attrs = FEED_ATTRS
     to_date = ['date', 'last_retrieved']
+
 
 class FetchableFeedAPI(PyAggAbstractResource):
     controller_cls = FeedController

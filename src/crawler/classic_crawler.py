@@ -1,6 +1,5 @@
-#! /usr/bin/env python
-# -*- coding: utf-8 -
-
+import ssl
+import conf
 import asyncio
 import logging
 import feedparser
@@ -8,7 +7,6 @@ import dateutil.parser
 from datetime import datetime
 from sqlalchemy import or_
 
-import conf
 from bootstrap import db
 from web.models import User
 from web.controllers import FeedController, ArticleController
@@ -20,7 +18,6 @@ logger = logging.getLogger(__name__)
 
 sem = asyncio.Semaphore(5)
 
-import ssl
 try:
     _create_unverified_https_context = ssl._create_unverified_context
 except AttributeError:
@@ -32,7 +29,7 @@ else:
 
 
 async def get(*args, **kwargs):
-    #kwargs["connector"] = aiohttp.TCPConnector(verify_ssl=False)
+    # kwargs["connector"] = aiohttp.TCPConnector(verify_ssl=False)
     try:
         data = feedparser.parse(args[0])
         return data
@@ -110,7 +107,8 @@ async def insert_database(user, feed):
                 existing_article.readed = False
                 is_updated = True
             if is_updated:
-                art_contr.update({'entry_id': existing_article.entry_id}, existing_article.dump())
+                art_contr.update({'entry_id': existing_article.entry_id},
+                                 existing_article.dump())
             continue
         article = construct_article(article, feed)
         try:

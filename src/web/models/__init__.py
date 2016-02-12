@@ -4,8 +4,6 @@ from .article import Article
 from .icon import Icon
 from .category import Category
 
-__all__ = ['Feed', 'User', 'Article', 'Icon', 'Category']
-
 from sqlalchemy.engine import reflection
 from sqlalchemy.schema import (
         MetaData,
@@ -13,6 +11,8 @@ from sqlalchemy.schema import (
         DropTable,
         ForeignKeyConstraint,
         DropConstraint)
+
+__all__ = ['Feed', 'User', 'Article', 'Icon', 'Category']
 
 
 def db_empty(db):

@@ -2,6 +2,15 @@
 JARR
 ====
 
+Travis:
+-------
+
+.. image:: https://travis-ci.org/jaesivsm/JARR.svg
+    :target: https://travis-ci.org/jaesivsm/JARR
+
+.. image:: https://coveralls.io/repos/github/jaesivsm/JARR/badge.svg
+    :target: https://coveralls.io/repos/github/jaesivsm/JARR/badge.svg
+
 Presentation
 ------------
 

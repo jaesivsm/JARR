@@ -20,6 +20,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import conf
+from flask import url_for
 from web import emails
 
 
@@ -34,34 +35,51 @@ def information_message(subject, plaintext):
     # Postmark has a limit of twenty recipients per message in total.
     for i in xrange(0, len(user_emails), 19):
         emails.send(to=conf.NOTIFICATION_EMAIL,
-                    bcc=", ".join(user_emails[i:i+19]),
+                    bcc=", ".join(user_emails[i:i + 19]),
                     subject=subject, plaintext=plaintext)
+
 
 def new_account_notification(user):
     """
     Account creation notification.
     """
-    plaintext = """Hello,\n\nYour account has been created. Click on the following link to confirm it:\n%s\n\nSee you,""" % \
-                        (conf.PLATFORM_URL + 'user/confirm_account/' + user.activation_key)
+    plaintext = """Hello,
+
+Your account has been created. Click on the following link to confirm it:
+%s
+
+See you,""" % url_for('user.confirm_account',
+                      activation_key=user.activation_key, _external=True)
     emails.send(to=user.email, bcc=conf.NOTIFICATION_EMAIL,
                 subject="[jarr] Account creation", plaintext=plaintext)
+
 
 def new_account_activation(user):
     """
     Account activation notification.
     """
-    plaintext = """Hello,\n\nYour account has been activated. You can now connect to the platform:\n%s\n\nSee you,""" % \
-                        (conf.PLATFORM_URL)
+    plaintext = """Hello,
+
+Your account has been activated. You can now connect to the platform:
+%s
+
+See you,""" % url_for('home', _external=True)
     emails.send(to=user.email, bcc=conf.NOTIFICATION_EMAIL,
                 subject="[jarr] Account activated", plaintext=plaintext)
+
 
 def new_password_notification(user, password):
     """
     New password notification.
     """
-    plaintext = """Hello,\n\nA new password has been generated at your request:\n\n%s""" % \
-                        (password, )
-    plaintext += "\n\nIt is advised to replace it as soon as connected to jarr.\n\nSee you,"
+    plaintext = """Hello,
+
+A new password has been generated at your request:
+%s
+
+It is advised to replace it as soon as connected to jarr.
+
+See you,""" % password
     emails.send(to=user.email,
                 bcc=conf.NOTIFICATION_EMAIL,
                 subject="[jarr]  New password", plaintext=plaintext)

@@ -5,10 +5,9 @@
 # for Python 3.
 #
 
-PYTHON_VERSION="3.5"
+PYTHON_VERSION="3.4"
 
-sudo apt-get install -y python$PYTHON_VERSION libpq-dev python$PYTHON_VERSION-dev build-essential git
-sudo apt-get install -y libxml2-dev libxslt1-dev # for lxml
+sudo apt-get install -y libpq-dev build-essential libxml2-dev libxslt1-dev
 
 sed -i '/psycopg2/d' requirements.txt
 sudo pip$PYTHON_VERSION install --upgrade -r requirements.txt

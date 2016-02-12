@@ -43,6 +43,7 @@ def send_async_email(mfrom, mto, msg):
         s.sendmail(mfrom, mto, msg.as_string())
         s.quit()
 
+
 def send(*args, **kwargs):
     """
     This functions enables to send email through Postmark
@@ -60,11 +61,12 @@ def send(*args, **kwargs):
                    plaintext=kwargs.get("plaintext"),
                    html=kwargs.get("html"))
 
+
 def send_smtp(to="", bcc="", subject="", plaintext="", html=""):
     """
     Send an email.
     """
-    # Create message container - the correct MIME type is multipart/alternative.
+    # Create message container - the correct MIME type is multipart/alternative
     msg = MIMEMultipart('alternative')
     msg['Subject'] = subject
     msg['From'] = conf.NOTIFICATION_EMAIL
@@ -87,8 +89,10 @@ def send_smtp(to="", bcc="", subject="", plaintext="", html=""):
     except Exception:
         logger.exception("send_smtp raised:")
     else:
-        s.sendmail(conf.NOTIFICATION_EMAIL, msg['To'] + ", " + msg['BCC'], msg.as_string())
+        s.sendmail(conf.NOTIFICATION_EMAIL, msg['To'] + ", " + msg['BCC'],
+                   msg.as_string())
         s.quit()
+
 
 def send_postmark(to="", bcc="", subject="", plaintext=""):
     """
@@ -96,10 +100,10 @@ def send_postmark(to="", bcc="", subject="", plaintext=""):
     Heroku.
     """
     try:
-        message = PMMail(api_key = conf.POSTMARK_API_KEY,
-                        subject = subject,
-                        sender = conf.NOTIFICATION_EMAIL,
-                        text_body = plaintext)
+        message = PMMail(api_key=conf.POSTMARK_API_KEY,
+                        subject=subject,
+                        sender=conf.NOTIFICATION_EMAIL,
+                        text_body=plaintext)
         message.to = to
         if bcc != "":
             message.bcc = bcc
