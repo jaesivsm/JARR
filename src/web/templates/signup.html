@@ -1,26 +1,32 @@
-{% extends "layout.html" %}
+{% extends "anon_layout.html" %}
 {% block content %}
-<div class="container">
-    <div class="form well">
-        <form action="" method="post" name="save">
-            {{ form.hidden_tag() }}
-            <div class="form-group">
-                {{ form.login.label }}
-                {{ form.login(class_="form-control") }} {% for error in form.login.errors %} <span style="color: red;">{{ error }}<br /></span>{% endfor %}
-                <p class="help-block">{{ _('Letters, numbers, dots and underscores only.') }}</p>
-            </div>
-            {{ form.email.label }}
-            {{ form.email(class_="form-control") }} {% for error in form.email.errors %} <span style="color: red;">{{ error }}<br /></span>{% endfor %}
-            <div class="form-group">
-                {{ form.password.label }}
-                {{ form.password(class_="form-control") }} {% for error in form.password.errors %} <span style="color: red;">{{ error }}<br /></span>{% endfor %}
-                <p class="help-block">{{ _('Minimum 6 characters.') }}</p>
-            </div>
-            {{ form.recaptcha.label }}
-            {{ form.recaptcha }} {% for error in form.recaptcha.errors %} <span style="color: red;">{{ error }}<br /></span> {% endfor %}
-            <br />
-            {{ form.submit(class_="btn btn-default") }}
-        </form>
-    </div>
-</div><!-- /.container -->
+<form class="form-signin" action={{url_for("signup")}} method="post">
+  {{form.hidden_tag()}}
+  <h2 class="form-signin-heading">Sign up to JARR</h2>
+  <label for="inputLogin" class="sr-only">{{_("Login")}}</label>
+  {{form.login(class_="form-control", type="text", id="inputLogin", placeholder="Login", required=True, autofocus=True)}}
+  {% for error in form.login.errors %}
+    <span style="color: red;">{{ error }}<br /></span>
+  {% endfor %}
+
+  <label for="inputEmail" class="sr-only">{{_("Email")}}</label>
+  {{form.email(class_="form-control", type="text", id="inputEmail", placeholder="Email", required=True, autofocus=True)}}
+  {% for error in form.email.errors %}
+    <span style="color: red;">{{ error }}<br /></span>
+  {% endfor %}
+
+  <label for="inputPassword" class="sr-only">{{_("Password")}}</label>
+  {{ form.password(class_="form-control", type="password", id="inputPassword", placeholder="Password", required=True)}}
+  {% for error in form.password.errors %}
+    <span style="color: red;">{{ error }}<br /></span>
+  {% endfor %}
+
+  <label for="inputPasswordConf" class="sr-only">{{_("Password confirmation")}}</label>
+  {{form.password_conf(class_="form-control", type="password", id="inputPasswordConf", placeholder="Password confirmation", required=True)}}
+  {% for error in form.password_conf.errors %}
+    <span style="color: red;">{{ error }}<br /></span>
+  {% endfor %}
+
+  {{form.submit(class_="btn btn-lg btn-primary btn-block", text=_("Sign up"))}}
+</form>
 {% endblock %}

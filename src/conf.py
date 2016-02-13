@@ -24,9 +24,12 @@ TIME_ZONE = {
 
 ON_HEROKU = int(os.environ.get('HEROKU', 0)) == 1
 DEFAULTS = {"platform_url": "",
+            "self_registration": "false",
             "cdn_address": "",
             "admin_email": "",
             "postmark_api_key": "",
+            "recaptcha_public_key": "",
+            "recaptcha_private_key": "",
             "nb_worker": "100",
             "api_login": "",
             "api_passwd": "",
@@ -72,6 +75,7 @@ else:
     config = Config()
 
 
+SELF_REGISTRATION = config.getboolean('misc', 'self_registration')
 PLATFORM_URL = config.get('misc', 'platform_url')
 ADMIN_EMAIL = config.get('misc', 'admin_email')
 RECAPTCHA_PUBLIC_KEY = config.get('misc', 'recaptcha_public_key')

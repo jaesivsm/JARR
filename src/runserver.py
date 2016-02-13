@@ -43,7 +43,6 @@ with application.app_context():
 
 
 if __name__ == '__main__':  # pragma: no cover
-    print(application.url_map)
     application.run(host=conf.WEBSERVER_HOST,
                     port=conf.WEBSERVER_PORT,
                     debug=True)

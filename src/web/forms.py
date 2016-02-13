@@ -8,6 +8,7 @@ from flask.ext.wtf.html5 import EmailField
 
 from web import utils
 from web.controllers import UserController
+# from flask_wtf import RecaptchaField
 
 
 class SignupForm(Form):
@@ -26,7 +27,20 @@ class SignupForm(Form):
             [validators.Length(min=6, max=35),
              validators.Required(
                  lazy_gettext("Please enter your email address."))])
+    # recaptcha = RecaptchaField()
+
     submit = SubmitField(lazy_gettext("Sign up"))
+
+    def validate(self):
+        ucontr = UserController()
+        validated = super().validate()
+        if ucontr.read(login=self.login.data).count():
+            self.login.errors.append('Login already taken')
+            validated = False
+        if self.password.data != self.password_conf.data:
+            self.password_conf.errors.append("Passwords don't match")
+            validated = False
+        return validated
 
 
 class RedirectForm(Form):
@@ -59,19 +73,18 @@ class SigninForm(RedirectForm):
         self.user = None
 
     def validate(self):
-        if not super().validate():
-            return False
+        validated = super().validate()
         ucontr = UserController()
         try:
             user = ucontr.get(login=self.login.data)
         except NotFound:
             self.login.errors.append('Wrong login')
-            return False
+            validated = False
         if not ucontr.check_password(user, self.password.data):
             self.password.errors.append('Wrong password')
-            return False
+            validated = False
         self.user = user
-        return True
+        return validated
 
 
 class UserForm(Form):
