@@ -16,7 +16,9 @@
 
   {{form.submit(class_="btn btn-lg btn-primary btn-block", text=_("Sign in"))}}
 </form>
+{% if conf.SELF_REGISTRATION %}
 <form class="form-signin" action={{url_for("signup")}} method="get">
   <input class="btn btn-lg btn-primary btn-block" value="Sign up" type="submit" />
 </form>
+{% endif %}
 {% endblock %}
