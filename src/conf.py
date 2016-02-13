@@ -9,6 +9,7 @@ import logging
 
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 PATH = os.path.abspath(".")
+API_ROOT = '/api/v2.0'
 
 # available languages
 LANGUAGES = {
@@ -22,12 +23,10 @@ TIME_ZONE = {
 }
 
 ON_HEROKU = int(os.environ.get('HEROKU', 0)) == 1
-DEFAULTS = {"platform_url": "https://JARR.herokuapp.com/",
+DEFAULTS = {"platform_url": "",
             "cdn_address": "",
-            "admin_email": "root@jarr.localhost",
+            "admin_email": "",
             "postmark_api_key": "",
-            "recaptcha_public_key": "",
-            "recaptcha_private_key": "",
             "nb_worker": "100",
             "api_login": "",
             "api_passwd": "",
@@ -36,17 +35,14 @@ DEFAULTS = {"platform_url": "https://JARR.herokuapp.com/",
             "log_path": "jarr.log",
             "log_level": "info",
             "readability_key": "",
-            "user_agent": "JARR (https://github.com/JARR-aggregator)",
+            "user_agent": "",
             "resolve_article_url": "false",
-            "http_proxy": "",
             "secret": "",
             "enabled": "false",
-            "notification_email": "jarr@no-reply.com",
-            "tls": "false",
-            "ssl": "true",
+            "notification_email": "",
             "host": "0.0.0.0",
             "port": "5000",
-            "crawling_method": "classic",
+            "crawling_method": "http",
             "webzine_root": "/tmp",
             }
 
@@ -86,11 +82,8 @@ NB_WORKER = config.getint('misc', 'nb_worker')
 API_LOGIN = config.get('crawler', 'api_login')
 API_PASSWD = config.get('crawler', 'api_passwd')
 
-WHOOSH_ENABLED = True
-
 SQLALCHEMY_DATABASE_URI = config.get('database', 'database_url')
 
-HTTP_PROXY = config.get('crawler', 'http_proxy')
 USER_AGENT = config.get('crawler', 'user_agent')
 RESOLVE_ARTICLE_URL = config.getboolean('crawler',
                                         'resolve_article_url')
@@ -111,23 +104,14 @@ WEBSERVER_PORT = config.getint('webserver', 'port')
 WEBSERVER_SECRET = config.get('webserver', 'secret')
 
 CDN_ADDRESS = config.get('cdn', 'cdn_address')
-
 GOOGLE_CLIENT_ID = config.get('misc', 'google_client_id')
-
+READABILITY_KEY = config.get('misc', 'readability_key')
 
 NOTIFICATION_EMAIL = config.get('notification', 'notification_email')
 NOTIFICATION_HOST = config.get('notification', 'host')
 NOTIFICATION_PORT = config.getint('notification', 'port')
-NOTIFICATION_TLS = config.getboolean('notification', 'tls')
-NOTIFICATION_SSL = config.getboolean('notification', 'ssl')
 NOTIFICATION_USERNAME = config.get('notification', 'username')
 NOTIFICATION_PASSWORD = config.get('notification', 'password')
 POSTMARK_API_KEY = config.get('notification', 'postmark_api_key')
 
 WEBZINE_ROOT = config.get('webserver', 'webzine_root')
-
-CSRF_ENABLED = True
-# slow database query threshold (in seconds)
-DATABASE_QUERY_TIMEOUT = 0.5
-
-READABILITY_KEY = config.get('misc', 'readability_key')

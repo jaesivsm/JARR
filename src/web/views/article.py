@@ -1,8 +1,8 @@
 from datetime import datetime, timedelta
-from flask import (Blueprint, g, render_template, redirect,
+from flask import (Blueprint, render_template, redirect,
                    flash, url_for, request)
 from flask.ext.babel import gettext
-from flask.ext.login import login_required
+from flask.ext.login import login_required, current_user
 
 from web.lib.utils import clear_string, redirect_url
 from web.controllers import ArticleController
@@ -15,7 +15,7 @@ article_bp = Blueprint('article', __name__, url_prefix='/article')
 @article_bp.route('/redirect/<int:article_id>', methods=['GET'])
 @login_required
 def redirect_to_article(article_id):
-    contr = ArticleController(g.user.id)
+    contr = ArticleController(current_user.id)
     article = contr.get(id=article_id)
     if not article.readed:
         contr.update({'id': article.id}, {'readed': True})
@@ -29,7 +29,7 @@ def article(article_id=None):
     """
     Presents the content of an article.
     """
-    article = ArticleController(g.user.id).get(id=article_id)
+    article = ArticleController(current_user.id).get(id=article_id)
     previous_article = article.previous_article()
     if previous_article is None:
         previous_article = article.source.articles[0]
@@ -50,7 +50,7 @@ def like(article_id=None):
     """
     Mark or unmark an article as favorites.
     """
-    art_contr = ArticleController(g.user.id)
+    art_contr = ArticleController(current_user.id)
     article = art_contr.get(id=article_id)
     art_contr = art_contr.update({'id': article_id},
                                  {'like': not article.like})
@@ -63,7 +63,7 @@ def delete(article_id=None):
     """
     Delete an article from the database.
     """
-    article = ArticleController(g.user.id).delete(article_id)
+    article = ArticleController(current_user.id).delete(article_id)
     flash(gettext('Article %(article_title)s deleted',
                   article_title=article.title), 'success')
     return redirect(url_for('home'))
@@ -74,9 +74,9 @@ def delete(article_id=None):
 @articles_bp.route('/history/<int:year>/<int:month>', methods=['GET'])
 @login_required
 def history(year=None, month=None):
-    counter, articles = ArticleController(g.user.id).get_history(year, month)
-    return render_template('history.html', articles_counter=counter,
-                           articles=articles, year=year, month=month)
+    cntr, artcles = ArticleController(current_user.id).get_history(year, month)
+    return render_template('history.html', articles_counter=cntr,
+                           articles=artcles, year=year, month=month)
 
 
 @article_bp.route('/mark_as/<string:new_value>', methods=['GET'])
@@ -88,7 +88,7 @@ def mark_as(new_value='read', feed_id=None, article_id=None):
     Mark all unreaded articles as read.
     """
     readed = new_value == 'read'
-    art_contr = ArticleController(g.user.id)
+    art_contr = ArticleController(current_user.id)
     filters = {'readed': not readed}
     if feed_id is not None:
         filters['feed_id'] = feed_id
@@ -114,7 +114,7 @@ def expire():
     """
     current_time = datetime.utcnow()
     weeks_ago = current_time - timedelta(int(request.args.get('weeks', 10)))
-    art_contr = ArticleController(g.user.id)
+    art_contr = ArticleController(current_user.id)
 
     query = art_contr.read(__or__={'date__lt': weeks_ago,
                                    'retrieved_date__lt': weeks_ago})

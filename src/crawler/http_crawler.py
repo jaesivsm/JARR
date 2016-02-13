@@ -28,7 +28,6 @@ from crawler.lib.article_utils import extract_id, construct_article
 
 logger = logging.getLogger(__name__)
 logging.captureWarnings(True)
-API_ROOT = "api/v2.0/"
 
 
 class AbstractCrawler:
@@ -48,13 +47,13 @@ class AbstractCrawler:
         if data is None:
             data = {}
         method = getattr(self.session, method)
-        return method("%s%s%s" % (self.url, API_ROOT, urn),
+        return method("%s%s/%s" % (self.url, conf.API_ROOT.strip('/'), urn),
                       auth=self.auth, data=json.dumps(data,
                                                       default=default_handler),
                       headers={'Content-Type': 'application/json',
                                'User-Agent': conf.USER_AGENT})
 
-    def wait(self, max_wait=300, checks=5, wait_for=2):
+    def wait(self, max_wait=300, checks=2, wait_for=2):
         checked, second_waited = 0, 0
         while True:
             time.sleep(wait_for)

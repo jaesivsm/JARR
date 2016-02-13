@@ -7,6 +7,8 @@ import os
 import conf
 import logging
 from urllib.parse import urlsplit
+from flask import Flask
+from flask.ext.sqlalchemy import SQLAlchemy
 
 
 def set_logging(log_path, log_level=logging.INFO,
@@ -19,16 +21,13 @@ def set_logging(log_path, log_level=logging.INFO,
         logger.addHandler(handler)
         logger.setLevel(log_level)
 
-from flask import Flask
-from flask.ext.sqlalchemy import SQLAlchemy
-
 # Create Flask application
 application = Flask('web')
+API_ROOT = '/api/v2.0'
 if os.environ.get('JARR_TESTING', False) == 'true':
     application.debug = True
     application.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
     application.config['TESTING'] = True
-    application.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
 else:
     application.debug = conf.LOG_LEVEL <= logging.DEBUG
     application.config['SQLALCHEMY_DATABASE_URI'] \
@@ -37,6 +36,7 @@ else:
 scheme, domain, _, _, _ = urlsplit(conf.PLATFORM_URL)
 application.config['SERVER_NAME'] = domain
 application.config['PREFERRED_URL_SCHEME'] = scheme
+application.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
 
 set_logging(conf.LOG_PATH, log_level=conf.LOG_LEVEL)
 
@@ -50,9 +50,3 @@ application.config['RECAPTCHA_PUBLIC_KEY'] = conf.RECAPTCHA_PUBLIC_KEY
 application.config['RECAPTCHA_PRIVATE_KEY'] = conf.RECAPTCHA_PRIVATE_KEY
 
 db = SQLAlchemy(application)
-
-
-def populate_g():
-    from flask import g
-    g.db = db
-    g.app = application

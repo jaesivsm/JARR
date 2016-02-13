@@ -4,8 +4,8 @@ from calendar import timegm
 
 from bootstrap import application as app
 
-from flask import render_template, request, flash, url_for, redirect, g
-from flask.ext.login import login_required
+from flask import render_template, request, flash, url_for, redirect
+from flask.ext.login import login_required, current_user
 from flask.ext.babel import gettext
 
 import conf
@@ -35,14 +35,15 @@ def home():
 def get_menu():
     categories_order = [0]
     categories = {0: {'name': 'No category', 'id': 0}}
-    for cat in CategoryController(g.user.id).read().order_by('name'):
+    for cat in CategoryController(current_user.id).read().order_by('name'):
         categories_order.append(cat.id)
         categories[cat.id] = cat.dump()
-    unread = ArticleController(g.user.id).count_by_feed(readed=False)
+    unread = ArticleController(current_user.id).count_by_feed(readed=False)
     for cat_id in categories:
         categories[cat_id]['unread'] = 0
         categories[cat_id]['feeds'] = []
-    feeds = {feed.id: feed.dump() for feed in FeedController(g.user.id).read()}
+    feeds = {feed.id: feed.dump()
+             for feed in FeedController(current_user.id).read()}
     for feed_id, feed in feeds.items():
         feed['created_stamp'] = timegm(feed['created_date'].timetuple()) * 1000
         feed['last_stamp'] = timegm(feed['last_retrieved'].timetuple()) * 1000
@@ -59,7 +60,7 @@ def get_menu():
                       'crawling_method': conf.CRAWLING_METHOD,
                       'max_error': conf.DEFAULT_MAX_ERROR,
                       'error_threshold': conf.ERROR_THRESHOLD,
-                      'is_admin': g.user.is_admin(),
+                      'is_admin': current_user.is_admin,
                       'all_unread_count': sum(unread.values())})
 
 
@@ -102,11 +103,11 @@ def _articles_to_json(articles, fd_hash=None):
 @etag_match
 def get_middle_panel():
     filters = _get_filters(request.args)
-    art_contr = ArticleController(g.user.id)
+    art_contr = ArticleController(current_user.id)
     fd_hash = {feed.id: {'title': feed.title,
                          'icon_url': url_for('icon.icon', url=feed.icon_url)
                                      if feed.icon_url else None}
-               for feed in FeedController(g.user.id).read()}
+               for feed in FeedController(current_user.id).read()}
     articles = art_contr.read(**filters).order_by(Article.date.desc())
     return _articles_to_json(articles, fd_hash)
 
@@ -116,22 +117,22 @@ def get_middle_panel():
 @login_required
 @etag_match
 def get_article(article_id, parse=False):
-    contr = ArticleController(g.user.id)
+    contr = ArticleController(current_user.id)
     article = contr.get(id=article_id).dump()
     if not article['readed']:
         contr.update({'id': article_id}, {'readed': True})
     article['category_id'] = article['category_id'] or 0
-    feed = FeedController(g.user.id).get(id=article['feed_id'])
+    feed = FeedController(current_user.id).get(id=article['feed_id'])
     article['icon_url'] = url_for('icon.icon', url=feed.icon_url) \
             if feed.icon_url else None
-    readability_available = bool(g.user.readability_key
+    readability_available = bool(current_user.readability_key
                                  or conf.READABILITY_KEY)
     article['readability_available'] = readability_available
     if parse or (not article['readability_parsed']
             and feed.readability_auto_parse and readability_available):
         article['readability_parsed'] = True
         article['content'] = readability.parse(article['link'],
-                g.user.readability_key or conf.READABILITY_KEY)
+                current_user.readability_key or conf.READABILITY_KEY)
         contr.update({'id': article['id']}, {'readability_parsed': True,
                                              'content': article['content']})
     return jsonify(**article)
@@ -140,7 +141,8 @@ def get_article(article_id, parse=False):
 @app.route('/mark_all_as_read', methods=['PUT'])
 @login_required
 def mark_all_as_read():
-    filters, acontr = _get_filters(request.json), ArticleController(g.user.id)
+    filters = _get_filters(request.json),
+    acontr = ArticleController(current_user.id)
     articles = _articles_to_json(acontr.read(**filters))
     acontr.update(filters, {'readed': True})
     return articles
@@ -155,8 +157,8 @@ def fetch(feed_id=None):
     News are downloaded in a separated process, mandatory for Heroku.
     """
     if conf.CRAWLING_METHOD == "classic" \
-            and (not conf.ON_HEROKU or g.user.is_admin()):
-        utils.fetch(g.user.id, feed_id)
+            and (not conf.ON_HEROKU or current_user.is_admin):
+        utils.fetch(current_user.id, feed_id)
         flash(gettext("Downloading articles..."), "info")
     else:
         flash(gettext("The manual retrieving of news is only available " +

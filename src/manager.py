@@ -1,15 +1,16 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
-
-from bootstrap import application, db, populate_g, conf
+import logging
 from flask.ext.script import Manager
 from flask.ext.migrate import Migrate, MigrateCommand
-from web.controllers.user import UserController
 
+from bootstrap import application, db, conf
 import web.models
+from web.controllers.user import UserController
+from scripts.probes import ArticleProbe, FeedProbe
 
+logger = logging.getLogger(__name__)
 Migrate(application, db)
-
 manager = Manager(application)
 manager.add_command('db', MigrateCommand)
 
@@ -18,7 +19,6 @@ manager.add_command('db', MigrateCommand)
 def db_empty():
     "Will drop every datas stocked in db."
     with application.app_context():
-        populate_g()
         web.models.db_empty(db)
 
 
@@ -33,9 +33,8 @@ def db_create(admin=None):
         admin['password'] = 'admin'
     admin.update({'is_admin': True})
     with application.app_context():
-        populate_g()
         db.create_all()
-        UserController().create(**admin)
+        UserController(ignore_context=True).create(**admin)
 
 
 @manager.command
@@ -53,8 +52,7 @@ def fetch_asyncio(user_id, feed_id):
     import asyncio
 
     with application.app_context():
-        populate_g()
-        from flask import g
+        from flask.ext.login import current_user
         from crawler import classic_crawler
         ucontr = UserController()
         users = []
@@ -73,15 +71,14 @@ def fetch_asyncio(user_id, feed_id):
 
         loop = asyncio.get_event_loop()
         for user in users:
-            if user.activation_key == "":
-                print("Fetching articles for " + user.login)
-                g.user = user
-                classic_crawler.retrieve_feed(loop, g.user, feed_id)
+            if user.is_active:
+                logger.warn("Fetching articles for " + user.login)
+                classic_crawler.retrieve_feed(loop, current_user, feed_id)
         loop.close()
 
-from scripts.probes import ArticleProbe, FeedProbe
+
 manager.add_command('probe_articles', ArticleProbe())
 manager.add_command('probe_feeds', FeedProbe())
 
-if __name__ == '__main__':
+if __name__ == '__main__':  # pragma: no cover
     manager.run()

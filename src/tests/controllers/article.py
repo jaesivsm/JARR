@@ -1,5 +1,5 @@
 from tests.base import BaseJarrTest
-from web.controllers import ArticleController, FeedController
+from web.controllers import UserController, ArticleController, FeedController
 
 
 class ArticleControllerTest(BaseJarrTest):
@@ -7,7 +7,8 @@ class ArticleControllerTest(BaseJarrTest):
 
     def test_article_rights(self):
         article = ArticleController(2).read()[0].dump()
-        self._test_controller_rights(article, article['user_id'])
+        self._test_controller_rights(article,
+                UserController().get(id=article['user_id']))
 
     def test_article_challenge_method(self):
         self.assertEquals(0, len(list(ArticleController().challenge(

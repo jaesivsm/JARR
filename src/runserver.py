@@ -1,33 +1,34 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
 import calendar
-from bootstrap import conf, application, populate_g
-from flask.ext.babel import Babel
-from flask.ext.babel import format_datetime
+from flask import request
+from flask.ext.babel import Babel, format_datetime
+from bootstrap import conf, application
 
 if conf.ON_HEROKU:
     from flask_sslify import SSLify
     SSLify(application)
 
 babel = Babel(application)
+@babel.localeselector
+def get_locale():
+    return request.accept_languages.best_match(conf.LANGUAGES.keys())
 
+
+@babel.timezoneselector
+def get_timezone():
+    try:
+        return conf.TIME_ZONE[get_locale()]
+    except:
+        return conf.TIME_ZONE["en"]
 
 # Jinja filters
-def month_name(month_number):
-    return calendar.month_name[month_number]
-application.jinja_env.filters['month_name'] = month_name
+application.jinja_env.filters['month_name'] = lambda n: calendar.month_name[n]
 application.jinja_env.filters['datetime'] = format_datetime
 application.jinja_env.globals['conf'] = conf
 
 # Views
-from flask.ext.restful import Api
-from flask import g
-
 with application.app_context():
-    populate_g()
-    g.api = Api(application, prefix='/api/v2.0')
-    g.babel = babel
-
     from web import views
     application.register_blueprint(views.articles_bp)
     application.register_blueprint(views.article_bp)
@@ -41,7 +42,8 @@ with application.app_context():
     application.register_blueprint(views.user_bp)
 
 
-if __name__ == '__main__':
+if __name__ == '__main__':  # pragma: no cover
+    print(application.url_map)
     application.run(host=conf.WEBSERVER_HOST,
                     port=conf.WEBSERVER_PORT,
                     debug=True)

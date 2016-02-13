@@ -1,7 +1,7 @@
-from flask import (Blueprint, g, render_template, redirect,
+from flask import (Blueprint, render_template, redirect,
                    flash, url_for, request)
 from flask.ext.babel import gettext
-from flask.ext.login import login_required
+from flask.ext.login import login_required, current_user
 
 from flask.ext.principal import Permission, RoleNeed
 
@@ -36,7 +36,7 @@ def dashboard():
 
     users = UserController().read()
     return render_template('admin/dashboard.html',
-                           users=users, current_user=g.user, form=form)
+                           users=users, current_user=current_user, form=form)
 
 
 @admin_bp.route('/user/create', methods=['GET'])
@@ -85,8 +85,7 @@ def process_user_form(user_id=None):
         user = user_contr.create(login=form.login.data,
                                  email=form.email.data,
                                  password=form.password.data,
-                                 refresh_rate=form.refresh_rate.data,
-                                 activation_key="")
+                                 refresh_rate=form.refresh_rate.data)
         flash(gettext('User %(login)s successfully created',
                       login=user.login), 'success')
     return redirect(url_for('admin.user_form', user_id=user.id))
@@ -142,12 +141,10 @@ def toggle_user(user_id=None):
         flash(gettext('This user does not exist.'), 'danger')
         return redirect(url_for('admin.dashboard'))
 
-    if user.activation_key != "":
-
+    if user.is_active:
         # Send the confirmation email
         try:
-            notifications.new_account_activation(user)
-            user_contr.unset_activation_key(user.id)
+            notifications.new_account_created(user)
             message = gettext('Account of the user %(login)s successfully '
                               'activated.', login=user.login)
         except Exception as error:
@@ -156,7 +153,6 @@ def toggle_user(user_id=None):
             return redirect(url_for('admin.dashboard'))
 
     else:
-        user_contr.set_activation_key(user.id)
         message = gettext('Account of the user %(login)s successfully '
                           'disabled', login=user.login)
     flash(message, 'success')

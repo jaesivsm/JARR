@@ -24,8 +24,9 @@ import logging
 import dateutil.parser
 from functools import wraps
 from werkzeug.exceptions import Unauthorized, BadRequest
-from flask import request, g, session, Response
+from flask import request, session, Response
 from flask.ext.restful import Resource, reqparse
+from flask.ext.login import login_user, current_user
 
 from web.lib.utils import default_handler
 from web.controllers import UserController
@@ -34,26 +35,23 @@ logger = logging.getLogger(__name__)
 
 
 def authenticate(func):
-    """
-    Decorator for the authentication to the web services.
-    """
     @wraps(func)
     def wrapper(*args, **kwargs):
         logged_in = False
         if not getattr(func, 'authenticated', True):
             logged_in = True
         # authentication based on the session (already logged on the site)
-        elif 'email' in session or g.user.is_authenticated:
+        elif 'email' in session or current_user.is_authenticated:
             logged_in = True
         else:
             # authentication via HTTP only
             auth = request.authorization
             if auth is not None:
                 ucontr = UserController()
-                user = ucontr.get(login=auth.login)
+                user = ucontr.get(login=auth.username)
                 if user and ucontr.check_password(user, auth.password) \
-                        and user.activation_key == "":
-                    g.user = user
+                        and user.is_active:
+                    login_user(user)
                     logged_in = True
         if logged_in:
             return func(*args, **kwargs)
@@ -86,13 +84,13 @@ class PyAggAbstractResource(Resource):
 
     @property
     def controller(self):
-        return self.controller_cls(getattr(g.user, 'id', None))
+        return self.controller_cls(getattr(current_user, 'id', None))
 
     @property
     def wider_controller(self):
-        if g.user.is_admin():
+        if current_user.is_admin:
             return self.controller_cls()
-        return self.controller_cls(getattr(g.user, 'id', None))
+        return self.controller_cls(getattr(current_user, 'id', None))
 
     def reqparse_args(self, req=None, strict=False, default=True, args=None):
         """
@@ -141,7 +139,7 @@ class PyAggResourceExisting(PyAggAbstractResource):
         args = self.reqparse_args(default=False)
         new_values = {key: args[key] for key in
                       set(args).intersection(self.attrs)}
-        if 'user_id' in new_values and g.user.is_admin:
+        if 'user_id' in new_values and current_user.is_admin:
             controller = self.wider_controller
         else:
             controller = self.controller

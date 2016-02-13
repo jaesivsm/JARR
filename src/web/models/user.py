@@ -15,6 +15,8 @@ class User(db.Model, UserMixin):
     password = db.Column(db.String())
     email = db.Column(db.String(254))
 
+    # user rights
+    is_active = db.Column(db.Boolean(), default=True)
     is_admin = db.Column(db.Boolean(), default=False)
     is_api = db.Column(db.Boolean(), default=False)
 
@@ -23,7 +25,7 @@ class User(db.Model, UserMixin):
     oauth_google = db.Column(db.String())
 
     date_created = db.Column(db.DateTime(), default=datetime.now)
-    last_seen = db.Column(db.DateTime(), default=datetime.now)
+    last_connection = db.Column(db.DateTime(), default=datetime.now)
     feeds = db.relationship('Feed', backref='subscriber', lazy='dynamic',
                             cascade='all,delete-orphan')
     refresh_rate = db.Column(db.Integer, default=60)  # in minutes

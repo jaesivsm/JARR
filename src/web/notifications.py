@@ -22,16 +22,14 @@
 import conf
 from flask import url_for
 from web import emails
+from web.controllers import UserController
 
 
 def information_message(subject, plaintext):
     """
     Send an information message to the users of the platform.
     """
-    from web.models import User
-    users = User.query.all()
-    # Only send email for activated accounts.
-    user_emails = [user.email for user in users if user.activation_key == ""]
+    user_emails = [user.email for user in UserController().read(email__ne='')]
     # Postmark has a limit of twenty recipients per message in total.
     for i in xrange(0, len(user_emails), 19):
         emails.send(to=conf.NOTIFICATION_EMAIL,
@@ -45,11 +43,9 @@ def new_account_notification(user):
     """
     plaintext = """Hello,
 
-Your account has been created. Click on the following link to confirm it:
-%s
+Your account has been created.
 
-See you,""" % url_for('user.confirm_account',
-                      activation_key=user.activation_key, _external=True)
+See you,"""
     emails.send(to=user.email, bcc=conf.NOTIFICATION_EMAIL,
                 subject="[jarr] Account creation", plaintext=plaintext)
 

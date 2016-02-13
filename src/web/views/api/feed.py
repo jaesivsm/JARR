@@ -1,4 +1,7 @@
-from flask import g
+from conf import API_ROOT
+from flask import current_app
+from flask.ext.restful import Api
+from flask.ext.login import current_user
 
 from web.controllers.feed import (FeedController,
                                   DEFAULT_MAX_ERROR,
@@ -55,8 +58,8 @@ class FetchableFeedAPI(PyAggAbstractResource):
 
     def get(self):
         args = self.reqparse_args()
-        if g.user.refresh_rate:
-            args['refresh_rate'] = g.user.refresh_rate
+        if current_user.refresh_rate:
+            args['refresh_rate'] = current_user.refresh_rate
 
         if args.pop('retreive_all', False):
             contr = self.wider_controller
@@ -66,8 +69,10 @@ class FetchableFeedAPI(PyAggAbstractResource):
         return result or None, 200 if result else 204
 
 
-g.api.add_resource(FeedNewAPI, '/feed', endpoint='feed_new.json')
-g.api.add_resource(FeedAPI, '/feed/<int:obj_id>', endpoint='feed.json')
-g.api.add_resource(FeedsAPI, '/feeds', endpoint='feeds.json')
-g.api.add_resource(FetchableFeedAPI, '/feeds/fetchable',
-                   endpoint='fetchable_feed.json')
+api = Api(current_app, prefix=API_ROOT)
+
+api.add_resource(FeedNewAPI, '/feed', endpoint='feed_new.json')
+api.add_resource(FeedAPI, '/feed/<int:obj_id>', endpoint='feed.json')
+api.add_resource(FeedsAPI, '/feeds', endpoint='feeds.json')
+api.add_resource(FetchableFeedAPI, '/feeds/fetchable',
+                       endpoint='fetchable_feed.json')

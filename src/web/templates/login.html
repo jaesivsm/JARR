@@ -65,40 +65,23 @@ body {
 }
 </style>
   </head>
-
   <body>
     <div class="container">
       <form class="form-signin" action={{url_for("login")}} method="post">
         {{form.hidden_tag()}}
         <h2 class="form-signin-heading">Please sign in</h2>
-        <label for="inputEmail" class="sr-only">{{_("Email address")}}</label>
-        {{form.email(class_="form-control", type="email", id="inputEmail", class="form-control", placeholder="Email address", required=True, autofocus=True)}}
+        <label for="inputLogin" class="sr-only">{{_("Login")}}</label>
+        {{form.login(class_="form-control", type="text", id="inputLogin", class="form-control", placeholder="Login", required=True, autofocus=True)}}
+        {% for error in form.login.errors %}
+          <span style="color: red;">{{ error }}<br /></span>
+        {% endfor %}
         <label for="inputPassword" class="sr-only">{{_("Password")}}</label>
         {{ form.password(class_="form-control", type="password", id="inputPassword", placeholder="Password", required=True)}}
+        {% for error in form.password.errors %}
+          <span style="color: red;">{{ error }}<br /></span>
+        {% endfor %}
         {{form.submit(class_="btn btn-lg btn-primary btn-block", text=_("Sign in"))}}
-        <button class="g-signin2 btn btn-lg btn-primary btn-block" data-onsuccess="onSignIn" data-theme="dark" />
       </form>
     </div>
-<<<<<<< HEAD
-    <a href="/signup" class="btn btn-default">{{ _('Sign up') }}</a>
-    &nbsp;
-    <a href="{{ url_for('user.recover') }}" class="btn btn-default">{{ _('Forgot password') }}</a>
-</div><!-- /.container -->
-{% endblock %}
-=======
-{%if conf.GOOGLE_CLIENT_ID%}
-<script>
-function onSignIn(googleUser) {
-    var profile = googleUser.getBasicProfile();
-    console.log("ID: " + profile.getId()); // Don't send this directly to your server!
-    console.log("Name: " + profile.getName());
-    console.log("Image URL: " + profile.getImageUrl());
-    console.log("Email: " + profile.getEmail());
-    var id_token = googleUser.getAuthResponse().id_token;
-    console.log("ID Token: " + id_token);
-};
-</script>
-{%endif%}
   </body>
 </html>
->>>>>>> 58293ee... wip

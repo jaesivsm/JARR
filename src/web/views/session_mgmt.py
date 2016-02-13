@@ -1,17 +1,19 @@
 import os
 import logging
-import datetime
+from datetime import datetime
 
 from bootstrap import application as app, db
 
 from flask import (render_template, flash, session,
-                   url_for, redirect, g, current_app)
+                   url_for, redirect, current_app)
 from flask.ext.login import LoginManager, login_user, logout_user, \
-                            login_required, current_user, AnonymousUserMixin
+                            login_required, current_user
 from flask.ext.principal import (Principal, Identity, AnonymousIdentity,
                                  identity_changed, identity_loaded,
                                  RoleNeed, UserNeed)
 from flask.ext.babel import gettext
+
+from rauth import OAuth1Service, OAuth2Service
 from sqlalchemy.exc import IntegrityError
 
 from web import notifications
@@ -19,14 +21,11 @@ from web.forms import SignupForm, SigninForm
 
 from web.controllers import UserController
 
-
 Principal(app)
 # Create a permission with a single Need, in this case a RoleNeed.
 
 login_manager = LoginManager()
 login_manager.init_app(app)
-login_manager.login_message = gettext('Authentication required.')
-login_manager.login_message_category = "info"
 login_manager.login_view = 'login'
 
 logger = logging.getLogger(__name__)
@@ -43,40 +42,28 @@ def on_identity_loaded(sender, identity):
     # Add the UserNeed to the identity
     if hasattr(current_user, 'id'):
         identity.provides.add(UserNeed(current_user.id))
-
-    if hasattr(current_user, 'roles'):
-        for role in current_user.roles:
-            identity.provides.add(RoleNeed(role.name))
-
-
-@app.before_request
-def before_request():
-    g.user = current_user
-    if g.user.is_authenticated:
-        g.user.last_seen = datetime.datetime.utcnow()
-        db.session.add(g.user)
-        db.session.commit()
+        if current_user.is_admin:
+            identity.provides.add(RoleNeed('admin'))
+        if current_user.is_api:
+            identity.provides.add(RoleNeed('api'))
 
 
 @login_manager.user_loader
-def load_user(id):
-    return UserController().get(id=id)
+def load_user(user_id):
+    return UserController(user_id, ignore_context=True).get(id=user_id)
 
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    """
-    Log in view.
-    """
-    if g.user is not None and g.user.is_authenticated:
+    if current_user.is_authenticated:
         return redirect(url_for('home'))
-    g.user = AnonymousUserMixin()
     form = SigninForm()
     if form.validate_on_submit():
-        user = UserController().get(login=form.login.data)
-        login_user(user)
+        login_user(form.user)
+        UserController(form.user.id).update(
+                {'id': form.user.id}, {'last_connection': datetime.utcnow()})
         identity_changed.send(current_app._get_current_object(),
-                              identity=Identity(user.id))
+                              identity=Identity(form.user.id))
         return form.redirect('home')
     return render_template('login.html', form=form)
 
@@ -95,7 +82,6 @@ def logout():
     identity_changed.send(current_app._get_current_object(),
                           identity=AnonymousIdentity())
 
-    flash(gettext("Logged out successfully."), 'success')
     return redirect(url_for('login'))
 
 
@@ -104,7 +90,7 @@ def signup():
     if int(os.environ.get("SELF_REGISTRATION", 0)) != 1:
         flash(gettext("Self-registration is disabled."), 'warning')
         return redirect(url_for('home'))
-    if g.user is not None and g.user.is_authenticated:
+    if current_user.is_authenticated:
         return redirect(url_for('home'))
 
     form = SignupForm()

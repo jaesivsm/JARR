@@ -1,5 +1,7 @@
-from flask import g
+from conf import API_ROOT
 import dateutil.parser
+from flask import current_app
+from flask.ext.restful import Api
 
 from web.controllers import ArticleController
 from web.views.api.common import (PyAggAbstractResource,
@@ -52,10 +54,10 @@ class ArticlesChallenge(PyAggAbstractResource):
         result = list(self.wider_controller.challenge(parsed_args['ids']))
         return result or None, 200 if result else 204
 
+api = Api(current_app, prefix=API_ROOT)
 
-g.api.add_resource(ArticleNewAPI, '/article', endpoint='article_new.json')
-g.api.add_resource(ArticleAPI, '/article/<int:obj_id>',
-                   endpoint='article.json')
-g.api.add_resource(ArticlesAPI, '/articles', endpoint='articles.json')
-g.api.add_resource(ArticlesChallenge, '/articles/challenge',
-                   endpoint='articles_challenge.json')
+api.add_resource(ArticleNewAPI, '/article', endpoint='article_new.json')
+api.add_resource(ArticleAPI, '/articles/<int:obj_id>', endpoint='article.json')
+api.add_resource(ArticlesAPI, '/articles', endpoint='articles.json')
+api.add_resource(ArticlesChallenge, '/articles/challenge',
+                 endpoint='articles_challenge.json')

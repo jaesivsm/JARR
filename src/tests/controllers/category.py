@@ -1,6 +1,6 @@
 from tests.base import BaseJarrTest
-from web.controllers import (CategoryController, FeedController,
-                             ArticleController)
+from web.controllers import (UserController, CategoryController,
+                             FeedController, ArticleController)
 
 
 class CategoryControllerTest(BaseJarrTest):
@@ -12,7 +12,8 @@ class CategoryControllerTest(BaseJarrTest):
                 ArticleController().read(category_id=cat['id']).count())
         self.assertTrue(3,
                 FeedController().read(category_id=cat['id']).count())
-        self._test_controller_rights(cat, cat['user_id'])
+        self._test_controller_rights(cat,
+                UserController().get(id=cat['user_id']))
 
     def test_feed_and_article_deletion(self):
         ccontr = CategoryController(2)

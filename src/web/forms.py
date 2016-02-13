@@ -1,16 +1,13 @@
-#! /usr/bin/env python
-# -*- coding: utf-8 -*-
-
-from flask import flash, url_for, redirect
 from flask.ext.wtf import Form
+from flask import url_for, redirect
 from flask.ext.babel import lazy_gettext
+from werkzeug.exceptions import NotFound
 from wtforms import TextField, TextAreaField, PasswordField, BooleanField, \
         SubmitField, IntegerField, SelectField, validators, HiddenField
 from flask.ext.wtf.html5 import EmailField
-from flask_wtf import RecaptchaField
 
 from web import utils
-from web.models import User
+from web.controllers import UserController
 
 
 class SignupForm(Form):
@@ -19,14 +16,16 @@ class SignupForm(Form):
     """
     login = TextField(lazy_gettext("Login"),
             [validators.Required(lazy_gettext("Please enter your login"))])
+    password = PasswordField(lazy_gettext("Password"),
+            [validators.Required(lazy_gettext("Please enter a password.")),
+             validators.Length(min=6, max=100)])
+    password_conf = PasswordField(lazy_gettext("Password"),
+            [validators.Required(lazy_gettext("Please enter a password."))])
+
     email = EmailField(lazy_gettext("Email"),
             [validators.Length(min=6, max=35),
              validators.Required(
                  lazy_gettext("Please enter your email address."))])
-    password = PasswordField(lazy_gettext("Password"),
-            [validators.Required(lazy_gettext("Please enter a password.")),
-             validators.Length(min=6, max=100)])
-    recaptcha = RecaptchaField()
     submit = SubmitField(lazy_gettext("Sign up"))
 
 
@@ -49,30 +48,30 @@ class RedirectForm(Form):
 
 
 class SigninForm(RedirectForm):
-    """
-    Sign in form (connection to jarr).
-    """
-    email = EmailField("Email", [validators.Length(min=6, max=35),
-        validators.Required(lazy_gettext("Please enter your email address."))])
+    login = TextField("Login",
+            [validators.Required(lazy_gettext("Please enter your login"))])
     password = PasswordField(lazy_gettext('Password'),
-            [validators.Required(lazy_gettext("Please enter a password.")),
-             validators.Length(min=6, max=100)])
+            [validators.Required(lazy_gettext("Please enter a password"))])
     submit = SubmitField(lazy_gettext("Log In"))
 
-    def validate(self):
-        if not super(SigninForm, self).validate():
-            return False
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.user = None
 
-        user = User.query.filter(User.email == self.email.data).first()
-        if user and user.check_password(self.password.data) \
-                and user.activation_key == "":
-            return True
-        elif user and user.activation_key != "":
-            flash(lazy_gettext('Account not confirmed'), 'danger')
+    def validate(self):
+        if not super().validate():
             return False
-        else:
-            flash(lazy_gettext('Invalid email or password'), 'danger')
+        ucontr = UserController()
+        try:
+            user = ucontr.get(login=self.login.data)
+        except NotFound:
+            self.login.errors.append('Wrong login')
             return False
+        if not ucontr.check_password(user, self.password.data):
+            self.password.errors.append('Wrong password')
+            return False
+        self.user = user
+        return True
 
 
 class UserForm(Form):
@@ -149,22 +148,6 @@ class InformationMessageForm(Form):
 
 
 class RecoverPasswordForm(Form):
-    email = EmailField(lazy_gettext("Email"),
-            [validators.Length(min=6, max=35),
-             validators.Required(
-                 lazy_gettext("Please enter your email address."))])
+    login = TextField(lazy_gettext("Email"),
+            [validators.Required(lazy_gettext("Please enter your login"))])
     submit = SubmitField(lazy_gettext("Recover"))
-
-    def validate(self):
-        if not super(RecoverPasswordForm, self).validate():
-            return False
-
-        user = User.query.filter(User.email == self.email.data).first()
-        if user and user.activation_key == "":
-            return True
-        elif user and user.activation_key != "":
-            flash(lazy_gettext('Account not confirmed.'), 'danger')
-            return False
-        else:
-            flash(lazy_gettext('Invalid email.'), 'danger')
-            return False

@@ -1,5 +1,5 @@
 import logging
-from flask import g
+from flask.ext.login import current_user
 from bootstrap import db
 from sqlalchemy import or_, func
 from werkzeug.exceptions import Forbidden, NotFound
@@ -11,20 +11,27 @@ class AbstractController(object):
     _db_cls = None  # reference to the database class
     _user_id_key = 'user_id'
 
-    def __init__(self, user_id=None):
+    def __init__(self, user_id=None, ignore_context=False):
         """User id is a right management mechanism that should be used to
         filter objects in database on their denormalized "user_id" field
         (or "id" field for users).
         Should no user_id be provided, the Controller won't apply any filter
         allowing for a kind of "super user" mode.
         """
-        self.user_id = user_id
         try:
-            if self.user_id is not None \
-                    and self.user_id != g.user.id and not g.user.is_admin():
-                self.user_id = g.user.id
-        except RuntimeError:  # passing on out of context errors
-            pass
+            self.user_id = int(user_id)
+        except TypeError:
+            self.user_id = user_id
+        # if we have context and it's a common user
+        # requesting on a wrong id, we update that id
+        have_context = False
+        if not ignore_context:
+            have_context = bool(current_user)
+        wide_controller = self.user_id is None
+        if have_context and not wide_controller \
+                and self.user_id != current_user.id \
+                and not current_user.is_admin:
+            self.user_id = current_user.id
 
     def _to_filters(self, **filters):
         """
