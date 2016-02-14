@@ -2,7 +2,7 @@
 {% block content %}
 <form class="form-signin" action={{url_for("signup")}} method="post">
   {{form.hidden_tag()}}
-  <h2 class="form-signin-heading">Sign up to JARR</h2>
+  <h2 class="form-signin-heading">Create an account</h2>
   <label for="inputLogin" class="sr-only">{{_("Login")}}</label>
   {{form.login(class_="form-control", type="text", id="inputLogin", placeholder="Login", required=True, autofocus=True)}}
   {% for error in form.login.errors %}

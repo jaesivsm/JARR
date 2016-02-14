@@ -1,6 +1,8 @@
+import json
 import logging
 from datetime import datetime
 
+from werkzeug.exceptions import NotFound
 from flask import (render_template, flash, session, request,
                    url_for, redirect, current_app)
 from flask.ext.login import LoginManager, login_user, logout_user, \
@@ -33,12 +35,13 @@ def login_user_bundle(user):
                           identity=Identity(user.id))
 
 
-class OAuthSignIn(object):
+# FROM http://blog.miguelgrinberg.com/post/oauth-authentication-with-flask
+class OAuthSignIn:
     providers = None
 
     def __init__(self, provider_name):
         self.provider_name = provider_name
-        credentials = current_app.config['OAUTH_CREDENTIALS'][provider_name]
+        credentials = conf.OAUTH[provider_name]
         self.consumer_id = credentials['id']
         self.consumer_secret = credentials['secret']
 
@@ -62,46 +65,39 @@ class OAuthSignIn(object):
         return self.providers[provider_name]
 
 
-class FacebookSignIn(OAuthSignIn):
+class GoogleSignIn(OAuthSignIn):
     def __init__(self):
-        super(FacebookSignIn, self).__init__('facebook')
+        super().__init__('google')
         self.service = OAuth2Service(
-            name='facebook',
-            client_id=self.consumer_id,
-            client_secret=self.consumer_secret,
-            authorize_url='https://graph.facebook.com/oauth/authorize',
-            access_token_url='https://graph.facebook.com/oauth/access_token',
-            base_url='https://graph.facebook.com/'
+                name='google',
+                client_id=self.consumer_id,
+                client_secret=self.consumer_secret,
+                base_url='https://www.googleapis.com/oauth2/v1/',
+                access_token_url='https://accounts.google.com/o/oauth2/token',
+                authorize_url='https://accounts.google.com/o/oauth2/auth'
         )
 
     def authorize(self):
-        return redirect(self.service.get_authorize_url(
-            scope='email',
-            response_type='code',
-            redirect_uri=self.get_callback_url())
-        )
+        return redirect(self.service.get_authorize_url(scope='email',
+                response_type='code', redirect_uri=self.get_callback_url()))
 
     def callback(self):
         if 'code' not in request.args:
             return None, None, None
         oauth_session = self.service.get_auth_session(
-            data={'code': request.args['code'],
-                  'grant_type': 'authorization_code',
-                  'redirect_uri': self.get_callback_url()}
+                data={'code': request.args['code'],
+                      'grant_type': 'authorization_code',
+                      'redirect_uri': self.get_callback_url()},
+                decoder=lambda x: json.loads(x.decode('utf8')),
+
         )
-        me = oauth_session.get('me?fields=id,email').json()
-        return (
-            'facebook$' + me['id'],
-            me.get('email').split('@')[0],  # Facebook does not provide
-                                            # username, so the email's user
-                                            # is used instead
-            me.get('email')
-        )
+        info = oauth_session.get('userinfo').json()
+        return info['id'], info.get('name'), info.get('email')
 
 
 class TwitterSignIn(OAuthSignIn):
     def __init__(self):
-        super(TwitterSignIn, self).__init__('twitter')
+        super().__init__('twitter')
         self.service = OAuth1Service(
             name='twitter',
             consumer_key=self.consumer_id,
@@ -128,10 +124,43 @@ class TwitterSignIn(OAuthSignIn):
             request_token[1],
             data={'oauth_verifier': request.args['oauth_verifier']}
         )
-        me = oauth_session.get('account/verify_credentials.json').json()
-        social_id = 'twitter$' + str(me.get('id'))
-        username = me.get('screen_name')
-        return social_id, username, None
+        info = oauth_session.get('account/verify_credentials.json').json()
+        social_id = 'twitter$' + str(info.get('id'))
+        login = info.get('screen_name')
+        return social_id, login, None
+
+
+class FacebookSignIn(OAuthSignIn):
+    def __init__(self):
+        super().__init__('facebook')
+        self.service = OAuth2Service(
+            name='facebook',
+            client_id=self.consumer_id,
+            client_secret=self.consumer_secret,
+            authorize_url='https://graph.facebook.com/oauth/authorize',
+            access_token_url='https://graph.facebook.com/oauth/access_token',
+            base_url='https://graph.facebook.com/'
+        )
+
+    def authorize(self):
+        return redirect(self.service.get_authorize_url(
+            scope='email',
+            response_type='code',
+            redirect_uri=self.get_callback_url())
+        )
+
+    def callback(self):
+        if 'code' not in request.args:
+            return None, None, None
+        oauth_session = self.service.get_auth_session(
+            data={'code': request.args['code'],
+                  'grant_type': 'authorization_code',
+                  'redirect_uri': self.get_callback_url()}
+        )
+        info = oauth_session.get('me?fields=id,email').json()
+        # Facebook doesn't provide login, so the email is used
+        return ('facebook$' + info['id'],
+                info.get('email').split('@')[0], info.get('email'))
 
 
 @identity_loaded.connect_via(current_app)
@@ -197,3 +226,29 @@ def signup():
         return redirect(url_for('home'))
 
     return render_template('signup.html', form=form)
+
+
+@current_app.route('/oauth/authorize/<provider>')
+def oauth_authorize(provider):
+    return OAuthSignIn.get_provider(provider).authorize()
+
+
+@current_app.route('/oauth/callback/<provider>')
+def oauth_callback(provider):
+    if not current_user.is_anonymous:
+        return redirect(url_for('home'))
+    oauth = OAuthSignIn.get_provider(provider)
+    social_id, username, email = oauth.callback()
+    if social_id is None:
+        flash('Authentication failed.')
+        return redirect(url_for('home'))
+    ucontr = UserController()
+    try:
+        user = ucontr.get(**{'%s_identity' % provider: social_id})
+    except NotFound:
+        user = None
+    if not user:
+        user = ucontr.create(**{'%s_identity' % provider: social_id,
+                                'login': username, 'email': email})
+    login_user_bundle(user)
+    return redirect(url_for('home'))

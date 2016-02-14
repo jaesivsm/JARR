@@ -1,6 +1,6 @@
 {% extends "anon_layout.html" %}
 {% block content %}
-<form class="form-signin" action={{url_for("login")}} method="post">
+<form id="form-login" class="form-signin" action={{url_for("login")}} method="post">
   {{form.hidden_tag()}}
   <label for="inputLogin" class="sr-only">{{_("Login")}}</label>
   {{form.login(class_="form-control", type="text", id="inputLogin", placeholder="Login", required=True, autofocus=True)}}
@@ -17,8 +17,27 @@
   {{form.submit(class_="btn btn-lg btn-primary btn-block", text=_("Sign in"))}}
 </form>
 {% if conf.SELF_REGISTRATION %}
-<form class="form-signin" action={{url_for("signup")}} method="get">
+<form id="form-signup" class="form-signin" action={{url_for("signup")}} method="get">
   <input class="btn btn-lg btn-primary btn-block" value="Sign up" type="submit" />
 </form>
 {% endif %}
+
+{% if 'google' in conf.OAUTH %}
+<form class="form-oauth form-signin" action={{url_for("oauth_authorize", provider="google")}} method="get">
+  <input id="google-sign" class="btn btn-lg btn-primary btn-block" value="Log in with Google" type="submit" />
+</form>
+{% endif %}
+
+{% if 'twitter' in conf.OAUTH %}
+<form class="form-oauth form-signin" action={{url_for("oauth_authorize", provider="twitter")}} method="get">
+  <input id="twitter-sign" class="btn btn-lg btn-primary btn-block" value="Log in with Twitter" type="submit" />
+</form>
+{% endif %}
+
+{% if 'facebook' in conf.OAUTH %}
+<form class="form-oauth form-signin" action={{url_for("oauth_authorize", provider="facebook")}} method="get">
+  <input id="facebook-sign" class="btn btn-lg btn-primary btn-block" value="Log in Facebook" type="submit" />
+</form>
+{% endif %}
+
 {% endblock %}

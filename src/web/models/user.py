@@ -20,9 +20,9 @@ class User(db.Model, UserMixin):
     is_admin = db.Column(db.Boolean(), default=False)
     is_api = db.Column(db.Boolean(), default=False)
 
-    oauth_twitter = db.Column(db.String())
-    oauth_facebook = db.Column(db.String())
-    oauth_google = db.Column(db.String())
+    google_identity = db.Column(db.String())
+    twitter_identity = db.Column(db.String())
+    facebook_identity = db.Column(db.String())
 
     date_created = db.Column(db.DateTime(), default=datetime.now)
     last_connection = db.Column(db.DateTime(), default=datetime.now)

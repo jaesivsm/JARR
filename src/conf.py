@@ -33,7 +33,12 @@ DEFAULTS = {"platform_url": "",
             "nb_worker": "100",
             "api_login": "",
             "api_passwd": "",
-            "google_client_id": "",
+            "google_id": "",
+            "google_secret": "",
+            "twitter_id": "",
+            "twitter_secret": "",
+            "facebook_id": "",
+            "facebook_secret": "",
             "default_max_error": "3",
             "log_path": "jarr.log",
             "log_level": "info",
@@ -108,8 +113,14 @@ WEBSERVER_PORT = config.getint('webserver', 'port')
 WEBSERVER_SECRET = config.get('webserver', 'secret')
 
 CDN_ADDRESS = config.get('cdn', 'cdn_address')
-GOOGLE_CLIENT_ID = config.get('misc', 'google_client_id')
 READABILITY_KEY = config.get('misc', 'readability_key')
+OAUTH = {'twitter': {'id': config.get('misc', 'twitter_id'),
+                     'secret': config.get('misc', 'twitter_secret')},
+         'facebook': {'id': config.get('misc', 'facebook_id'),
+                      'secret': config.get('misc', 'facebook_secret')},
+         'google': {'id': config.get('misc', 'google_id'),
+                    'secret': config.get('misc', 'google_secret')},
+         }
 
 NOTIFICATION_EMAIL = config.get('notification', 'notification_email')
 NOTIFICATION_HOST = config.get('notification', 'host')
