@@ -11,14 +11,23 @@ from flask import Flask
 from flask.ext.sqlalchemy import SQLAlchemy
 
 
-def set_logging(log_path, log_level=logging.INFO,
+def set_logging(log_path=None, log_level=logging.INFO, modules=(),
                 log_format='%(asctime)s %(levelname)s %(message)s'):
+
+    if not modules:
+        modules = ('root', 'bootstrap', 'runserver',
+                   'web', 'crawler', 'manager', 'plugins')
+    if log_path is not None:
+        handler = logging.FileHandler(log_path)
+    else:
+        handler = logging.StreamHandler()
     formater = logging.Formatter(log_format)
-    handler = logging.FileHandler(log_path)
     handler.setFormatter(formater)
-    for logger_name in ('bootstrap', 'web', 'manager', 'runserver'):
+    for logger_name in modules:
         logger = logging.getLogger(logger_name)
         logger.addHandler(handler)
+        for handler in logger.handlers:
+            handler.setLevel(log_level)
         logger.setLevel(log_level)
 
 # Create Flask application

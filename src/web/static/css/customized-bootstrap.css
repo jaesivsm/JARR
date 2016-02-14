@@ -23,7 +23,9 @@
 a {
     color: #3572B0;
 }
-
+.not-at-home {
+  margin-top: 51px;
+}
 .input-group-inline {
     min-width: 0;
     width: 200px;

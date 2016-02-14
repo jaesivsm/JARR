@@ -8,11 +8,12 @@ from flask import (render_template, flash, session, request,
 from flask.ext.login import LoginManager, login_user, logout_user, \
                             login_required, current_user
 from flask.ext.principal import (Principal, Identity, AnonymousIdentity,
-                                 identity_changed, identity_loaded,
-                                 RoleNeed, UserNeed)
+                                 identity_changed, identity_loaded, UserNeed,
+                                 session_identity_loader)
 from flask.ext.babel import gettext
 
 import conf
+from web.views.common import admin_role, api_role
 from web.controllers import UserController
 from web.forms import SignupForm, SigninForm
 from rauth import OAuth1Service, OAuth2Service
@@ -29,10 +30,30 @@ logger = logging.getLogger(__name__)
 
 def login_user_bundle(user):
     login_user(user)
+    identity_changed.send(current_app, identity=Identity(user.id))
+    session_identity_loader()
     UserController(user.id).update(
                 {'id': user.id}, {'last_connection': datetime.utcnow()})
-    identity_changed.send(current_app._get_current_object(),
-                          identity=Identity(user.id))
+
+
+@identity_loaded.connect_via(current_app._get_current_object())
+def on_identity_loaded(sender, identity):
+    # Set the identity user object
+    identity.user = current_user
+
+    # Add the UserNeed to the identity
+    if current_user.is_authenticated:
+        identity.provides.add(UserNeed(current_user.id))
+        if current_user.is_admin:
+            identity.provides.add(admin_role)
+        if current_user.is_api:
+            identity.provides.add(api_role)
+
+
+@login_manager.user_loader
+def load_user(user_id):
+    return UserController(user_id, ignore_context=True).get(
+            id=user_id, is_active=True)
 
 
 # FROM http://blog.miguelgrinberg.com/post/oauth-authentication-with-flask
@@ -163,25 +184,6 @@ class FacebookSignIn(OAuthSignIn):
                 info.get('email').split('@')[0], info.get('email'))
 
 
-@identity_loaded.connect_via(current_app)
-def on_identity_loaded(sender, identity):
-    # Set the identity user object
-    identity.user = current_user
-
-    # Add the UserNeed to the identity
-    if hasattr(current_user, 'id'):
-        identity.provides.add(UserNeed(current_user.id))
-        if current_user.is_admin:
-            identity.provides.add(RoleNeed('admin'))
-        if current_user.is_api:
-            identity.provides.add(RoleNeed('api'))
-
-
-@login_manager.user_loader
-def load_user(user_id):
-    return UserController(user_id, ignore_context=True).get(id=user_id)
-
-
 @current_app.route('/login', methods=['GET', 'POST'])
 def login():
     if current_user.is_authenticated:
@@ -204,8 +206,8 @@ def logout():
         session.pop(key, None)
 
     # Tell Flask-Principal the user is anonymous
-    identity_changed.send(current_app._get_current_object(),
-                          identity=AnonymousIdentity())
+    identity_changed.send(current_app, identity=AnonymousIdentity())
+    session_identity_loader()
 
     return redirect(url_for('login'))
 

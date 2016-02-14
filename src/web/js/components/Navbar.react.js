@@ -105,9 +105,6 @@ JarrNavBar = React.createClass({
                             <MenuItem href="/user/profile">
                                 <Glyphicon glyph="user" />Profile
                             </MenuItem>
-                            <MenuItem href="/user/management">
-                                <Glyphicon glyph="cog" />Your data
-                            </MenuItem>
                             <MenuItem href="/about">
                                 <Glyphicon glyph="question-sign" />About
                             </MenuItem>

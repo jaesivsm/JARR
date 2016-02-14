@@ -8,10 +8,7 @@
 import re
 import sys
 import glob
-import opml
-import json
 import logging
-import datetime
 import operator
 import urllib
 import itertools
@@ -27,14 +24,11 @@ from contextlib import contextmanager
 from flask import request
 
 import conf
-from bootstrap import db
 from web import controllers
-from web.models import User, Feed, Article
+from web.models import Article
 from web.lib.utils import clear_string
 
 logger = logging.getLogger(__name__)
-
-ALLOWED_EXTENSIONS = set(['xml', 'opml', 'json'])
 
 
 def is_safe_url(target):
@@ -56,14 +50,6 @@ def get_redirect_target():
             continue
         if is_safe_url(target):
             return target
-
-
-def allowed_file(filename):
-    """
-    Check if the uploaded file is allowed.
-    """
-    return '.' in filename and \
-            filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
 
 
 @contextmanager
@@ -107,103 +93,6 @@ def history(user_id, year=None, month=None):
         else:
             articles_counter[article.date.year] += 1
     return articles_counter, articles
-
-
-def import_opml(email, opml_content):
-    """
-    Import new feeds from an OPML file.
-    """
-    user = User.query.filter(User.email == email).first()
-    try:
-        subscriptions = opml.from_string(opml_content)
-    except:
-        logger.exception("Parsing OPML file failed:")
-        raise
-
-    def read(subsubscription, nb=0):
-        """
-        Parse recursively through the categories and sub-categories.
-        """
-        for subscription in subsubscription:
-            if len(subscription) != 0:
-                nb = read(subscription, nb)
-            else:
-                try:
-                    title = subscription.text
-                except:
-                    title = ""
-                try:
-                    description = subscription.description
-                except:
-                    description = ""
-                try:
-                    link = subscription.xmlUrl
-                except:
-                    continue
-                if Feed.query.filter(Feed.user_id == user.id,
-                                     Feed.link == link).first() is not None:
-                    continue
-                try:
-                    site_link = subscription.htmlUrl
-                except:
-                    site_link = ""
-                new_feed = Feed(title=title, description=description,
-                                link=link, site_link=site_link,
-                                enabled=True)
-                user.feeds.append(new_feed)
-                nb += 1
-        return nb
-    nb = read(subscriptions)
-    db.session.commit()
-    return nb
-
-
-def import_json(email, json_content):
-    """
-    Import an account from a JSON file.
-    """
-    user = User.query.filter(User.email == email).first()
-    json_account = json.loads(json_content)
-    nb_feeds, nb_articles = 0, 0
-    # Create feeds:
-    for feed in json_account["result"]:
-        if Feed.query.filter(Feed.user_id == user.id,
-                             Feed.link == feed["link"]).first() is not None:
-            continue
-        new_feed = Feed(title=feed["title"],
-                        description="",
-                        link=feed["link"],
-                        site_link=feed["site_link"],
-                        created_date=datetime.datetime.
-                            fromtimestamp(int(feed["created_date"])),
-                        enabled=feed["enabled"])
-        user.feeds.append(new_feed)
-        nb_feeds += 1
-    db.session.commit()
-    # Create articles:
-    for feed in json_account["result"]:
-        user_feed = Feed.query.filter(Feed.user_id == user.id,
-                                        Feed.link == feed["link"]).first()
-        if user_feed is not None:
-            for article in feed["articles"]:
-                if Article.query.filter(Article.user_id == user.id,
-                        Article.feed_id == user_feed.id,
-                        Article.link == article["link"]).first() is not None:
-                    new_article = Article(link=article["link"],
-                                title=article["title"],
-                                content=article["content"],
-                                readed=article["readed"],
-                                like=article["like"],
-                                retrieved_date=datetime.datetime.
-                                fromtimestamp(int(article["retrieved_date"])),
-                                date=datetime.datetime.
-                                    fromtimestamp(int(article["date"])),
-                                user_id=user.id,
-                                feed_id=user_feed.id)
-                    user_feed.articles.append(new_article)
-                    nb_articles += 1
-    db.session.commit()
-    return nb_feeds, nb_articles
 
 
 def clean_url(url):

@@ -1,6 +1,6 @@
 from bootstrap import db
 from datetime import datetime
-from sqlalchemy import asc, desc
+from sqlalchemy import asc, desc, Index
 
 
 class Article(db.Model):
@@ -19,6 +19,10 @@ class Article(db.Model):
     user_id = db.Column(db.Integer(), db.ForeignKey('user.id'))
     feed_id = db.Column(db.Integer(), db.ForeignKey('feed.id'))
     category_id = db.Column(db.Integer(), db.ForeignKey('category.id'))
+
+    idx_article_uid = Index('user_id')
+    idx_article_uid_cid = Index('user_id', 'category_id')
+    idx_article_uid_fid = Index('user_id', 'feed_id')
 
     def previous_article(self):
         """

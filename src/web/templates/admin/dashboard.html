@@ -9,50 +9,45 @@
     <thead>
         <tr>
             <th>#</th>
-            <th>{{ _('Login') }}</th>
-            <th>{{ _('Email') }}</th>
-            <th>{{ _('Last seen') }}</th>
-            <th>{{ _('Actions') }}</th>
+            <th>{{_("Login")}}</th>
+            <th>{{_("Email")}}</th>
+            <th>{{_("Last connection")}}</th>
+            <th>{{_("Admin")}}</th>
+            <th>{{_("View")}}</th>
+            <th>{{_("Edit")}}</th>
         </tr>
     </thead>
     <tbody>
-    {% for user in users|sort(attribute="last_connection")|reverse %}
+    {% for user in users %}
         <tr>
-            <td>{{ loop.index }}</td>
-            {% if user.id == current_user.id %}
-                <td><a href="{{ url_for("user.management") }}">{{ user.login }}</a> (It's you!)</td>
-            {% else %}
-                <td><a href="{{ url_for("admin.user", user_id=user.id) }}">{{ user.login }}</a></td>
-            {% endif %}
+            <td>{{ user.id }}</td>
+            <td><a href="{{ url_for("admin.user", user_id=user.id) }}">{{ user.login }}</a></td>
             <td><a href="mailto:{{ user.email }}">{{ user.email  }}</a></td>
-            <td class="date">{{ user.last_connection}}</td>
+            <td class="date">{{_("%(timedelta)s ago", timedelta=last_cons[user.id])}}</td>
+            <td>
+                {% if user.is_admin %}
+                    <span class="glyphicon glyphicon-ok" title="{{ _("This user is an administrator !") }}" />
+                {% endif %}
+            </td>
             <td>
                 <a href="{{ url_for("admin.user", user_id=user.id) }}"><i class="glyphicon glyphicon-user" title="{{ _('View this user') }}"></i></a>
-                <a href="{{ url_for("admin.user_form", user_id=user.id) }}"><i class="glyphicon glyphicon-edit" title="{{ _('Edit this user') }}"></i></a>
-                {% if user.id != current_user.id %}
+            </td>
+            <td>
+                <a href="{{ url_for("user.profile", user_id=user.id) }}"><i class="glyphicon glyphicon-edit" title="{{ _('Edit this user') }}"></i></a>
+                {% if not user.is_admin %}
                     <a href="{{ url_for("admin.toggle_user", user_id=user.id) }}">
-                    <i class="glyphicon glyphicon-ok-circle" title="{{ _("Enable this account") }}"></i>
+                    {% if user.is_active %}
+                        <i class="glyphicon glyphicon-ok-sign" title="{{ _("Desactivate this user") }}"></i>
+                    {%else%}
+                        <i class="glyphicon glyphicon-ok-circle" title="{{ _("Activate this user") }}"></i>
+                    {%endif%}
                     </a>
-                    <a href="{{ url_for("admin.delete_user", user_id=user.id) }}"><i class="glyphicon glyphicon-remove" title="{{ _('Delete this user') }}" onclick="return confirm('{{ _('You are going to delete this account.') }}');"></i></a>
+                    <a href="{{ url_for("user.delete", user_id=user.id) }}"><i class="glyphicon glyphicon-remove" title="{{ _('Delete this user') }}" onclick="return confirm('{{ _('You are going to delete this account.') }}');"></i></a>
                 {% endif %}
             </td>
         </tr>
     {% endfor %}
     </tbody>
 </table>
-<a href="{{ url_for("admin.user_form") }}" class="btn btn-default">{{ _('Add a new user') }}</a>
-<h1>{{ _('Send notification messages') }}</h1>
-<form action="" method="post">
-    {{ form.hidden_tag() }}
-
-    {{ form.subject.label }}
-    {{ form.subject(class_="form-control") }} {% for error in form.subject.errors %} <span style="color: red;">{{ error }}<br /></span>{% endfor %}
-
-    {{ form.message.label }}
-    {{ form.message(class_="form-control", rows=8) }} {% for error in form.message.errors %} <span style="color: red;">{{ error }}<br /></span>{% endfor %}
-
-    <br />
-    {{ form.submit(class_="btn btn-default") }}
-</form>
 </div>
 {% endblock %}

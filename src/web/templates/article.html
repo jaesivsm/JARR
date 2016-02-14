@@ -15,7 +15,7 @@
         {% else %}
             <a href="#"><i class="glyphicon glyphicon-check readed" title="{{ _('Mark this article as read') }}"></i></a>
         {% endif %}
-        <h6>{{ article.date | datetime }}</h6>
+        <h6>{{ article.date | datetimeformat }}</h6>
     </div>
     <div class="well">
         {{ article.content | safe }}

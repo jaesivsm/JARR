@@ -1,6 +1,6 @@
 from bootstrap import db
 from datetime import datetime
-from sqlalchemy import desc
+from sqlalchemy import desc, Index
 
 
 class Feed(db.Model):
@@ -33,6 +33,9 @@ class Feed(db.Model):
     articles = db.relationship('Article', backref='source', lazy='dynamic',
                                cascade='all,delete-orphan',
                                order_by=desc("date"))
+
+    idx_feed_uid_cid = Index('user_id', 'category_id')
+    idx_feed_uid = Index('user_id')
 
     def __repr__(self):
         return '<Feed %r>' % (self.title)

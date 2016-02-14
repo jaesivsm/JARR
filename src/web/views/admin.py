@@ -1,94 +1,25 @@
-from flask import (Blueprint, render_template, redirect,
-                   flash, url_for, request)
-from flask.ext.babel import gettext
+from datetime import datetime
+from flask import (Blueprint, render_template, redirect, flash, url_for)
+from flask.ext.babel import gettext, format_timedelta
 from flask.ext.login import login_required, current_user
 
-from flask.ext.principal import Permission, RoleNeed
-
+from web.views.common import admin_permission
 from web.lib.utils import redirect_url
 from web.controllers import UserController, ArticleController
 
-from web.forms import InformationMessageForm, UserForm
-from web import notifications
-
 admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
-admin_permission = Permission(RoleNeed('admin'))
 
 
 @admin_bp.route('/dashboard', methods=['GET', 'POST'])
 @login_required
 @admin_permission.require(http_exception=403)
 def dashboard():
-    """
-    Adminstrator's dashboard.
-    """
-    form = InformationMessageForm()
-
-    if request.method == 'POST':
-        if form.validate():
-            try:
-                notifications.information_message(form.subject.data,
-                                                  form.message.data)
-            except Exception as error:
-                flash(gettext(
-                        'Problem while sending email: %(error)s', error=error),
-                        'danger')
-
-    users = UserController().read()
-    return render_template('admin/dashboard.html',
-                           users=users, current_user=current_user, form=form)
-
-
-@admin_bp.route('/user/create', methods=['GET'])
-@admin_bp.route('/user/edit/<int:user_id>', methods=['GET'])
-@login_required
-@admin_permission.require(http_exception=403)
-def user_form(user_id=None):
-    if user_id is not None:
-        user = UserController().get(id=user_id)
-        form = UserForm(obj=user)
-        message = gettext('Edit the user <i>%(login)s</i>', login=user.login)
-    else:
-        form = UserForm()
-        message = gettext('Add a new user')
-    return render_template('/admin/create_user.html',
-                           form=form, message=message)
-
-
-@admin_bp.route('/user/create', methods=['POST'])
-@admin_bp.route('/user/edit/<int:user_id>', methods=['POST'])
-@login_required
-@admin_permission.require(http_exception=403)
-def process_user_form(user_id=None):
-    """
-    Create or edit a user.
-    """
-    form = UserForm()
-    user_contr = UserController()
-
-    if not form.validate():
-        return render_template('/admin/create_user.html', form=form,
-                               message=gettext('Some errors were found'))
-
-    if user_id is not None:
-        # Edit a user
-        user_contr.update({'id': user_id},
-                          {'login': form.login.data,
-                           'email': form.email.data,
-                           'password': form.password.data,
-                           'refresh_rate': form.refresh_rate.data})
-        user = user_contr.get(id=user_id)
-        flash(gettext('User %(login)s successfully updated',
-                      login=user.login), 'success')
-    else:
-        # Create a new user
-        user = user_contr.create(login=form.login.data,
-                                 email=form.email.data,
-                                 password=form.password.data,
-                                 refresh_rate=form.refresh_rate.data)
-        flash(gettext('User %(login)s successfully created',
-                      login=user.login), 'success')
-    return redirect(url_for('admin.user_form', user_id=user.id))
+    last_cons, now = {}, datetime.utcnow()
+    users = list(UserController().read().order_by('id'))
+    for user in users:
+        last_cons[user.id] = format_timedelta(now - user.last_connection)
+    return render_template('admin/dashboard.html', now=datetime.utcnow(),
+            last_cons=last_cons, users=users, current_user=current_user)
 
 
 @admin_bp.route('/user/<int:user_id>', methods=['GET'])
@@ -110,23 +41,6 @@ def user(user_id=None):
         return redirect(redirect_url())
 
 
-@admin_bp.route('/delete_user/<int:user_id>', methods=['GET'])
-@login_required
-@admin_permission.require(http_exception=403)
-def delete_user(user_id=None):
-    """
-    Delete a user (with all its data).
-    """
-    try:
-        user = UserController().delete(user_id)
-        flash(gettext('User %(login)s successfully deleted',
-                      login=user.login), 'success')
-    except Exception as error:
-        flash(gettext('An error occured while trying to delete a user: '
-                      '%(error)', error=error), 'danger')
-    return redirect(redirect_url())
-
-
 @admin_bp.route('/toggle_user/<int:user_id>', methods=['GET'])
 @login_required
 @admin_permission.require()
@@ -134,26 +48,18 @@ def toggle_user(user_id=None):
     """
     Enable or disable the account of a user.
     """
-    user_contr = UserController()
-    user = user_contr.get(id=user_id)
+    ucontr = UserController()
+    user = ucontr.get(id=user_id)
+    user_changed = ucontr.update({'id': user_id},
+            {'is_active': not user.is_active})
 
-    if user is None:
+    if not user_changed:
         flash(gettext('This user does not exist.'), 'danger')
         return redirect(url_for('admin.dashboard'))
 
-    if user.is_active:
-        # Send the confirmation email
-        try:
-            notifications.new_account_created(user)
-            message = gettext('Account of the user %(login)s successfully '
-                              'activated.', login=user.login)
-        except Exception as error:
-            flash(gettext('Problem while sending activation email %(error)s:',
-                          error=error), 'danger')
-            return redirect(url_for('admin.dashboard'))
-
     else:
-        message = gettext('Account of the user %(login)s successfully '
-                          'disabled', login=user.login)
+        act_txt = 'activated' if user.is_active else 'desactivated'
+        message = gettext('User %(login)s successfully %(is_active)s',
+                          login=user.login, is_active=act_txt)
     flash(message, 'success')
     return redirect(url_for('admin.dashboard'))

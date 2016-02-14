@@ -1,45 +1,108 @@
 {% extends "layout.html" %}
 {% block content %}
 <div class="container">
+  <div class="row">
+  <div class="col-md-6">
     <div class="well">
-        <h1>{{ _('Your Profile') }}</h1>
-        <div class="row">
-            <div class="col-md-6">
-                <p>{{ _('Member since') }} {{ user.date_created  | datetime }}.</p>
-                <p>{{ _('Last seen:') }} {{ user.last_connection | datetime }}.</p>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-md-12">
-                <a href="/delete_account" class="btn btn-default" onclick="return confirm('{{ _('You are going to delete your account.') }}');">{{ _('Delete your account') }}</a>
-            </div>
-       </div>
+        {{ _('Member since') }} {{ user.date_created  | datetimeformat }}.<br />
+        {{ _('Last seen:') }} {{ user.last_connection | datetimeformat }}.
     </div>
-    <div class="well">
-        <h2>Edit your profile</h2>
-        <form action="" method="post" name="save">
+    <div class="panel panel-default">
+        <div class="panel-heading">{{_("Edit informations")}}</div>
+        <div class="panel-body">
+        <dl class="dl-horizontal">
+        <form action="{{url_for("user.profile_update", user_id=user.id)}}" method="post" name="save">
             {{ form.hidden_tag() }}
 
-            {{ form.login.label }}
-            {{ form.login(class_="form-control") }} {% for error in form.login.errors %} <span style="color: red;">{{ error }}<br /></span>{% endfor %}
+            <dt>{{ form.login.label }}</dt>
+            <dd>{{ form.login(class_="form-control") }}</dd>
+            {% for error in form.login.errors %}
+                <dd style="color: red;">{{ error }}</dd>
+            {% endfor %}
 
-            {{ form.email.label }}
-            {{ form.email(class_="form-control") }} {% for error in form.email.errors %} <span style="color: red;">{{ error }}<br /></span>{% endfor %}
+            <dt>{{ form.email.label }}</dt>
+            <dd>{{ form.email(class_="form-control") }}</dd>
+            {% for error in form.email.errors %}
+                <dd style="color: red;">{{ error }}</dd>
+            {% endfor %}
 
-            {{ form.password.label }}
-            {{ form.password(class_="form-control") }} {% for error in form.password.errors %} <span style="color: red;">{{ error }}<br /></span>{% endfor %}
+            <dt>{{ form.refresh_rate.label }}</dt>
+            <dd>{{ form.refresh_rate(class_="form-control") }}</dd>
+            {% for error in form.refresh_rate.errors %}
+                <dd style="color: red;">{{ error }}</dd>
+            {% endfor %}
 
-            {{ form.password_conf.label }}
-            {{ form.password_conf(class_="form-control") }} {% for error in form.password_conf.errors %} <span style="color: red;">{{ error }}<br /></span>{% endfor %}
+            <dt>{{ form.readability_key.label }}</dt>
+            <dd>{{ form.readability_key(class_="form-control") }}
+            {% for error in form.readability_key.errors %}
+                <dd style="color: red;">{{ error }}</dd>
+            {% endfor %}
 
-            {{ form.refresh_rate.label }}
-            {{ form.refresh_rate(class_="form-control") }} {% for error in form.refresh_rate.errors %} <span style="color: red;">{{ error }}<br /></span>{% endfor %}
+            {% if admin_permission.can() %}
+                <dt>{{ form.is_active.label }}</dt>
+                <dd>{{ form.is_active(class_="form-control") }}</dd>
+                {% for error in form.is_active.errors %}
+                    <dd style="color: red;">{{ error }}</dd>
+                {% endfor %}
 
-            {{ form.readability_key.label }}
-            {{ form.readability_key(class_="form-control") }} {% for error in form.readability_key.errors %} <span style="color: red;">{{ error }}<br /></span>{% endfor %}
-            <br />
-            {{ form.submit(class_="btn") }}
+                <dt>{{ form.is_admin.label }}</dt>
+                <dd>{{ form.is_admin(class_="form-control") }}</dd>
+                {% for error in form.is_admin.errors %}
+                    <dd style="color: red;">{{ error }}</dd>
+                {% endfor %}
+
+                <dt>{{ form.is_api.label }}</dt>
+                <dd>{{ form.is_api(class_="form-control") }}</dd>
+                {% for error in form.is_api.errors %}
+                    <dd style="color: red;">{{ error }}</dd>
+                {% endfor %}
+            {% endif %}
+
+            {{ form.submit(class_="btn btn-default") }}
         </form>
+        </dl>
+        </div>
     </div>
+  </div><!-- /.column-->
+  <div class="col-md-6">
+    <div class="well">
+        <a href="{{url_for("user.delete", user_id=user.id)}}" class="btn btn-default" onclick="return confirm('{{ _('You are going to delete your account.') }}');">{{ _("Delete user") }}</a>
+    </div>
+    <div class="panel panel-default">
+        <div class="panel-heading">{{_("OPML")}}</div>
+        <div class="panel-body">
+            <a href="{{url_for("user.opml_export")}}" class="btn btn-default">{{ _("Export feeds to OPML") }}</a>
+            <form action="{{url_for("user.opml_import")}}" method="post" enctype="multipart/form-data">
+                <span class="btn btn-default btn-file">{{ _("Import feeds from an OPML file") }}
+                    <input type="file" name="opmlfile" />
+                </span>
+                <button class="btn btn-default" type="submit">OK</button>
+            </form>
+
+        </div>
+    </div>
+    <div class="panel panel-default">
+        <div class="panel-heading">{{_("Change password")}}</div>
+        <div class="panel-body">
+        <dl class="dl-horizontal">
+        <form action="{{url_for("user.password_update", user_id=user.id)}}" method="post" name="save">
+            {{ pass_form.hidden_tag() }}
+            <dt>{{ pass_form.password.label }}</dt>
+            <dd>{{ pass_form.password(class_="form-control") }}</dd>
+            {% for error in pass_form.password.errors %}
+                <dd style="color: red;">{{ error }}</dd>
+            {% endfor %}
+
+            <dt>{{ pass_form.password_conf.label }}</dt>
+            <dd>{{ pass_form.password_conf(class_="form-control") }}</dd>
+            {% for error in pass_form.password_conf.errors %}
+                <dd style="color: red;">{{ error }}</dd>
+            {% endfor %}
+            {{ pass_form.submit(class_="btn btn-default") }}
+        </form>
+        </div>
+    </div>
+    </div><!-- /.column-->
+    </div><!-- /.row -->
 </div><!-- /.container -->
 {% endblock %}

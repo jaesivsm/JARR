@@ -21,7 +21,7 @@ class SignupForm(Form):
             [validators.Required(lazy_gettext("Please enter a password.")),
              validators.Length(min=6, max=100)])
     password_conf = PasswordField(lazy_gettext("Password"),
-            [validators.Required(lazy_gettext("Please enter a password."))])
+            [validators.Required(lazy_gettext("Confirm the password."))])
 
     email = EmailField(lazy_gettext("Email"),
             [validators.Length(min=6, max=35),
@@ -80,53 +80,48 @@ class SigninForm(RedirectForm):
         except NotFound:
             self.login.errors.append('Wrong login')
             validated = False
-        if not ucontr.check_password(user, self.password.data):
-            self.password.errors.append('Wrong password')
-            validated = False
-        self.user = user
+        else:
+            if not user.is_active:
+                self.login.errors.append('User is desactivated')
+                validated = False
+            if not ucontr.check_password(user, self.password.data):
+                self.password.errors.append('Wrong password')
+                validated = False
+            self.user = user
         return validated
 
 
-class UserForm(Form):
-    """
-    Create or edit a user (for the administrator).
-    """
-    login = TextField(lazy_gettext("Login"),
-            [validators.Required(lazy_gettext("Please enter your login"))])
-    email = EmailField(lazy_gettext("Email"),
-               [validators.Length(min=6, max=35),
-                validators.Required(lazy_gettext("Please enter your email."))])
-    password = PasswordField(lazy_gettext("Password"))
-    refresh_rate = IntegerField(lazy_gettext("Feeds refresh frequency "
-                                             "(in minutes)"),
-                                default=60)
-    submit = SubmitField(lazy_gettext("Save"))
-
-
 class ProfileForm(Form):
-    """
-    Edit user information.
-    """
     login = TextField(lazy_gettext("Login"),
             [validators.Required(lazy_gettext("Please enter your login"))])
     email = EmailField(lazy_gettext("Email"),
                [validators.Length(min=6, max=35),
                 validators.Required(lazy_gettext("Please enter your email."))])
-    password = PasswordField(lazy_gettext("Password"))
-    password_conf = PasswordField(lazy_gettext("Password Confirmation"))
     refresh_rate = IntegerField(lazy_gettext("Feeds refresh frequency "
                                              "(in minutes)"),
                                 default=60)
 
     readability_key = TextField(lazy_gettext("Readability API key"))
+    is_active = BooleanField(lazy_gettext("Activated"), default=True)
+    is_admin = BooleanField(lazy_gettext("Is admin"), default=True)
+    is_api = BooleanField(lazy_gettext("Has API rights"), default=True)
+
+    submit = SubmitField(lazy_gettext("Save"))
+
+
+class PasswordModForm(Form):
+    password = PasswordField(lazy_gettext("Password"),
+            [validators.Required(lazy_gettext("Please enter a password.")),
+             validators.Length(min=6, max=100)])
+    password_conf = PasswordField(lazy_gettext("Password confirmation"),
+            [validators.Required(lazy_gettext("Confirm the password."))])
+
     submit = SubmitField(lazy_gettext("Save"))
 
     def validate(self):
         validated = super().validate()
         if self.password.data != self.password_conf.data:
-            message = lazy_gettext("Passwords aren't the same.")
-            self.password.errors.append(message)
-            self.password_conf.errors.append(message)
+            self.password_conf.errors.append("Passwords don't match")
             validated = False
         return validated
 

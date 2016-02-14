@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 import calendar
 from flask import request
-from flask.ext.babel import Babel, format_datetime
+from flask.ext.babel import Babel
 from bootstrap import conf, application
 
 if conf.ON_HEROKU:
@@ -10,6 +10,8 @@ if conf.ON_HEROKU:
     SSLify(application)
 
 babel = Babel(application)
+
+
 @babel.localeselector
 def get_locale():
     return request.accept_languages.best_match(conf.LANGUAGES.keys())
@@ -24,7 +26,6 @@ def get_timezone():
 
 # Jinja filters
 application.jinja_env.filters['month_name'] = lambda n: calendar.month_name[n]
-application.jinja_env.filters['datetime'] = format_datetime
 application.jinja_env.globals['conf'] = conf
 
 # Views

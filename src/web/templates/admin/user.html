@@ -4,16 +4,17 @@
 {% endblock %}
 {% block content %}
 <div class="container">
-    <div class="well">
-        <a href="/admin/edit_user/{{ user.id }}" class="btn btn-default">{{ _('Edit this user') }}</a>
-        <h2>{{ _('Membership') }}</h2>
-        <div class="row">
-            <div class="col-md-6">
-                <p>{{ _('Member since') }} {{ user.date_created | datetime }}.</p>
-                <p>{{ _('Last seen:') }} {{ user.last_connection | datetime }}.</p>
-            </div>
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <strong>{{user.login}}</strong>
+            {{_("Member since: ")}} {{ user.date_created | datetimeformat }}.
+            {{_("Last connection:")}} {{ user.last_connection | datetimeformat }}.
+            <a href="{{url_for("user.delete", user_id=user.id)}}" class="btn btn-default pull-right" onclick="return confirm('{{ _('You are going to delete your account.') }}');">{{ _("Delete") }}</a>
+            <a href="{{url_for("user.profile", user_id=user.id)}}" class="btn btn-default pull-right">{{ _("Edit") }}</a>
+        </div>
+        <div class="panel-body">
+            {% include "feed_list.html" %}
         </div>
     </div>
-    {% include "feed_list.html" %}
 </div>
 {% endblock %}

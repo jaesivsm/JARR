@@ -21,7 +21,7 @@
         <br />
 
         {% if feed.last_retrieved %}
-            {{ _("Last download:") }} {{ feed.last_retrieved | datetime }}<br />
+            {{ _("Last download:") }} {{ feed.last_retrieved | datetimeformat }}<br />
         {% endif %}
 
         {% if feed.error_count >= conf.DEFAULT_MAX_ERROR %}
@@ -37,7 +37,7 @@
 
         {% if feed.articles.all()|count != 0 %}
             {{ _('The last article was posted') }} {{ elapsed.days }} {{ _('day(s) ago.') }}<br />
-            {{ _('Daily average') }}: {{ average }}, {{ _('between the') }} {{ first_post_date | datetime }} {{ _('and the') }} {{ end_post_date | datetime }}.
+            {{ _('Daily average') }}: {{ average }}, {{ _('between the') }} {{ first_post_date | datetimeformat }} {{ _('and the') }} {{ end_post_date | datetimeformat }}.
         {% endif %}
         </p>
     </div>
