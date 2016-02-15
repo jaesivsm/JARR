@@ -10,8 +10,7 @@ from web.lib.utils import to_hash
 logger = logging.getLogger(__name__)
 
 
-def extract_id(entry, keys=[('link', 'link'), ('published', 'date'),
-                            ('updated', 'date')], force_id=False):
+def extract_id(entry, keys=[('link', 'link')], force_id=False):
     """For a given entry will return a dict that allows to identify it. The
     dict will be constructed on the uid of the entry. if that identifier is
     absent, the dict will be constructed upon the values of "keys".
@@ -39,7 +38,7 @@ def construct_article(entry, feed):
     "Safe method to transorm a feedparser entry into an article"
     now = datetime.utcnow()
     date = None
-    for date_key in ('date', 'created', 'published', 'updated'):
+    for date_key in ('date', 'created', 'published'):
         if entry.get(date_key):
             try:
                 date = dateutil.parser.parse(entry[date_key])\
