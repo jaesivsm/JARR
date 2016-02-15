@@ -2,7 +2,7 @@ from flask.ext.wtf import Form
 from flask import url_for, redirect
 from flask.ext.babel import lazy_gettext
 from werkzeug.exceptions import NotFound
-from wtforms import TextField, TextAreaField, PasswordField, BooleanField, \
+from wtforms import TextField, PasswordField, BooleanField, \
         SubmitField, IntegerField, SelectField, validators, HiddenField
 from flask.ext.wtf.html5 import EmailField
 
@@ -147,15 +147,15 @@ class CategoryForm(Form):
     submit = SubmitField(lazy_gettext("Submit"))
 
 
-class InformationMessageForm(Form):
-    subject = TextField(lazy_gettext("Subject"),
-            [validators.Required(lazy_gettext("Please enter a subject."))])
-    message = TextAreaField(lazy_gettext("Message"),
-            [validators.Required(lazy_gettext("Please enter a content."))])
-    submit = SubmitField(lazy_gettext("Send"))
-
-
 class RecoverPasswordForm(Form):
-    login = TextField(lazy_gettext("Email"),
-            [validators.Required(lazy_gettext("Please enter your login"))])
-    submit = SubmitField(lazy_gettext("Recover"))
+    email = TextField(lazy_gettext("Email"),
+            [validators.Required(lazy_gettext("Please enter your email"))])
+    submit = SubmitField(lazy_gettext("Submit"))
+
+    def validate(self):
+        ucontr = UserController()
+        validated = super().validate()
+        if not ucontr.read(email=self.email.data).count():
+            self.email.errors.append('No user with that email')
+            validated = False
+        return validated

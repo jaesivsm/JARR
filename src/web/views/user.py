@@ -1,7 +1,5 @@
 import opml
-import string
 import random
-from os import path
 from datetime import datetime
 from werkzeug.exceptions import Forbidden
 from flask import (Blueprint, render_template, redirect,
@@ -10,8 +8,9 @@ from flask.ext.principal import Permission, UserNeed
 from flask.ext.babel import gettext
 from flask.ext.login import current_user, login_required
 
-from web.views.common import admin_permission
-from web import notifications
+import conf
+from lib import emails
+from web.views.common import admin_permission, login_user_bundle
 from web.controllers import (UserController, CategoryController,
                              FeedController)
 
@@ -182,34 +181,53 @@ def delete(user_id):
     return redirect(url_for('logout'))
 
 
-@user_bp.route('/recover', methods=['GET', 'POST'])
-def recover():
-    """
-    Enables the user to recover its account when he has forgotten
-    its password.
-    """
+@user_bp.route('/gen_pass_token', methods=['GET', 'POST'])
+def gen_recover_token():
     form = RecoverPasswordForm()
-    user_contr = UserController()
-
-    if request.method == 'POST':
-        if form.validate():
-            user = user_contr.get(email=form.email.data)
-            characters = string.ascii_letters + string.digits
-            password = "".join(random.choice(characters)
-                               for x in range(random.randint(8, 16)))
-            user.set_password(password)
-            user_contr.update({'id': user.id}, {'password': password})
-
-            # Send the confirmation email
-            try:
-                notifications.new_password_notification(user, password)
-                flash(gettext('New password sent to your address.'), 'success')
-            except Exception as error:
-                flash(gettext('Problem while sending your new password: '
-                              '%(error)s', error=error), 'danger')
-
-            return redirect(url_for('login'))
-        return render_template('recover.html', form=form)
-
+    ucontr = UserController()
     if request.method == 'GET':
         return render_template('recover.html', form=form)
+
+    if form.validate():
+        token = str(random.getrandbits(128))
+        changed = ucontr.update({'email': form.email.data},
+                                {'renew_password_token': token})
+        if not changed:
+            flash(gettext("No user with %(email)r was found",
+                          form.email.data), "danger")
+        else:
+            body = gettext("""Hello,
+
+A password change request has been made for your account on %(plateform)s.
+If you have made that request please follow the link below to renew your
+account, otherwise, disregard this email.
+
+%(renew_password_link)s
+
+Regards,
+
+The JARR administrator""", plateform=conf.PLATFORM_URL,
+                    renew_password_link=url_for('user.recover',
+                        token=token, _external=True))
+            emails.send(to=form.email.data, bcc=conf.NOTIFICATION_EMAIL,
+                        subject="[jarr] Password renew", plaintext=body)
+            flash(gettext("A mail has been sent with a token to renew your "
+                          "password"), "info")
+    return render_template('recover.html', form=form)
+
+
+@user_bp.route('/recover/<token>', methods=['GET', 'POST'])
+def recover(token):
+    form = PasswordModForm()
+    ucontr = UserController()
+
+    if request.method == 'GET':
+        return render_template('recover.html', form=form, token=token)
+
+    if form.validate():
+        user = ucontr.get(renew_password_token=token)
+        ucontr.update({'id': user.id},
+                {'renew_password_token': '', 'password': form.password.data})
+        login_user_bundle(user)
+        return redirect(url_for('home'))
+    return render_template('recover.html', form=form, token=token)

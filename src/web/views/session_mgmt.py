@@ -1,19 +1,18 @@
 import json
 import logging
-from datetime import datetime
 
 from werkzeug.exceptions import NotFound
 from flask import (render_template, flash, session, request,
                    url_for, redirect, current_app)
-from flask.ext.login import LoginManager, login_user, logout_user, \
-                            login_required, current_user
-from flask.ext.principal import (Principal, Identity, AnonymousIdentity,
-                                 identity_changed, identity_loaded, UserNeed,
-                                 session_identity_loader)
 from flask.ext.babel import gettext
+from flask.ext.login import LoginManager, logout_user, \
+                            login_required, current_user
+from flask.ext.principal import (Principal, AnonymousIdentity, UserNeed,
+                                 identity_changed, identity_loaded,
+                                 session_identity_loader)
 
 import conf
-from web.views.common import admin_role, api_role
+from web.views.common import admin_role, api_role, login_user_bundle
 from web.controllers import UserController
 from web.forms import SignupForm, SigninForm
 from rauth import OAuth1Service, OAuth2Service
@@ -26,14 +25,6 @@ login_manager.init_app(current_app)
 login_manager.login_view = 'login'
 
 logger = logging.getLogger(__name__)
-
-
-def login_user_bundle(user):
-    login_user(user)
-    identity_changed.send(current_app, identity=Identity(user.id))
-    session_identity_loader()
-    UserController(user.id).update(
-                {'id': user.id}, {'last_connection': datetime.utcnow()})
 
 
 @identity_loaded.connect_via(current_app._get_current_object())

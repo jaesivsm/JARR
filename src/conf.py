@@ -48,6 +48,7 @@ DEFAULTS = {"platform_url": "",
             "secret": "",
             "enabled": "false",
             "notification_email": "",
+            "starttls": "true",
             "host": "0.0.0.0",
             "port": "5000",
             "crawling_method": "http",
@@ -124,6 +125,7 @@ OAUTH = {'twitter': {'id': config.get('misc', 'twitter_id'),
 
 NOTIFICATION_EMAIL = config.get('notification', 'notification_email')
 NOTIFICATION_HOST = config.get('notification', 'host')
+NOTIFICATION_STARTTLS = config.getboolean('notification', 'starttls')
 NOTIFICATION_PORT = config.getint('notification', 'port')
 NOTIFICATION_USERNAME = config.get('notification', 'username')
 NOTIFICATION_PASSWORD = config.get('notification', 'password')

@@ -30,6 +30,7 @@ class User(db.Model, UserMixin):
                             cascade='all,delete-orphan')
     refresh_rate = db.Column(db.Integer, default=60)  # in minutes
     readability_key = db.Column(db.String(), default='')
+    renew_password_token = db.Column(db.String(), default='')
 
     @validates('login')
     def validates_login(self, key, value):

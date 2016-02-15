@@ -49,17 +49,20 @@ def upgrade():
             sa.Column('last_connection', sa.DateTime(), nullable=True))
     op.add_column('user', sa.Column('login', sa.String(), nullable=True))
     op.add_column('user', sa.Column('password', sa.String(), nullable=True))
+    op.add_column('user',
+            sa.Column('renew_password_token', sa.String(), nullable=True))
 
     user, role = get_tables()
     op.execute(user.update().values(
         {'login': user.c['email'], 'password': user.c['pwdhash'],
          'is_active': op.inline_literal(True),
          'last_connection': user.c['last_seen']}))
-    op.get_bind().execute("UPDATE user SET is_admin=1 "
-            "WHERE user.id = (SELECT role.id FROM role "
-            "WHERE role.name == 'admin')")
-
-    op.drop_index('ix_user_email', table_name='user')
+    is_admin_val = 1 if 'sqlite' in conf.SQLALCHEMY_DATABASE_URI \
+                     else op.inline_literal('t')
+    op.get_bind().execute('UPDATE "user" SET is_admin=%s '
+            'WHERE "user".id = (SELECT role.id FROM role '
+            'WHERE role.name = %s)' % (is_admin_val,
+                                       op.inline_literal('admin')))
 
     op.create_index('idc_category_uid', 'category', ['user_id'])
     op.create_index('idc_feed_uid', 'feed', ['user_id'])
@@ -101,6 +104,7 @@ def downgrade():
         op.drop_column('user', 'google_identity')
         op.drop_column('user', 'facebook_identity')
         op.drop_column('user', 'twitter_identity')
+        op.drop_column('user', 'renew_password_token')
     op.create_table('role',
             sa.Column('id', sa.INTEGER(), nullable=False),
             sa.Column('name', sa.VARCHAR(), nullable=True),

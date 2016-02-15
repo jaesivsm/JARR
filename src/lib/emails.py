@@ -50,19 +50,12 @@ def send(*args, **kwargs):
     or a SMTP server.
     """
     if conf.ON_HEROKU:
-        send_postmark(to=kwargs.get("to"),
-                      bcc=kwargs.get("bcc"),
-                      subject=kwargs.get("subject"),
-                      plaintext=kwargs.get("plaintext"))
+        send_postmark(**kwargs)
     else:
-        send_smtp(to=kwargs.get("to"),
-                   bcc=kwargs.get("bcc"),
-                   subject=kwargs.get("subject"),
-                   plaintext=kwargs.get("plaintext"),
-                   html=kwargs.get("html"))
+        send_smtp(**kwargs)
 
 
-def send_smtp(to="", bcc="", subject="", plaintext="", html=""):
+def send_smtp(to="", bcc="", subject="", plaintext=""):
     """
     Send an email.
     """
@@ -71,27 +64,16 @@ def send_smtp(to="", bcc="", subject="", plaintext="", html=""):
     msg['Subject'] = subject
     msg['From'] = conf.NOTIFICATION_EMAIL
     msg['To'] = to
-    msg['BCC'] = bcc
+    msg.attach(MIMEText(plaintext, 'plain', 'utf-8'))
 
-    # Record the MIME types of both parts - text/plain and text/html.
-    part1 = MIMEText(plaintext, 'plain', 'utf-8')
-    part2 = MIMEText(html, 'html', 'utf-8')
-
-    # Attach parts into message container.
-    # According to RFC 2046, the last part of a multipart message, in this case
-    # the HTML message, is best and preferred.
-    msg.attach(part1)
-    msg.attach(part2)
-
-    try:
-        s = smtplib.SMTP(conf.NOTIFICATION_HOST)
-        s.login(conf.NOTIFICATION_USERNAME, conf.NOTIFICATION_PASSWORD)
-    except Exception:
-        logger.exception("send_smtp raised:")
-    else:
-        s.sendmail(conf.NOTIFICATION_EMAIL, msg['To'] + ", " + msg['BCC'],
-                   msg.as_string())
-        s.quit()
+    with smtplib.SMTP(host=conf.NOTIFICATION_HOST,
+                      port=conf.NOTIFICATION_PORT) as smtp:
+        smtp.ehlo()
+        if conf.NOTIFICATION_STARTTLS:
+            smtp.starttls()
+        smtp.ehlo()
+        smtp.login(conf.NOTIFICATION_USERNAME, conf.NOTIFICATION_PASSWORD)
+        smtp.sendmail(conf.NOTIFICATION_EMAIL, [msg['To']], msg.as_string())
 
 
 def send_postmark(to="", bcc="", subject="", plaintext=""):

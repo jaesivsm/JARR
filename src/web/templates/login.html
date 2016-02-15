@@ -16,6 +16,13 @@
 
   {{form.submit(class_="btn btn-lg btn-primary btn-block", text=_("Sign in"))}}
 </form>
+
+{% if form.errors%}
+<form id="form-signup" class="form-signin" action={{url_for("user.gen_recover_token")}} method="get">
+  <input class="btn btn-lg btn-primary btn-block" value="Recover your account" type="submit" />
+</form>
+{% endif %}
+
 {% if conf.SELF_REGISTRATION %}
 <form id="form-signup" class="form-signin" action={{url_for("signup")}} method="get">
   <input class="btn btn-lg btn-primary btn-block" value="Sign up" type="submit" />
