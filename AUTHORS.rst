@@ -1,8 +1,4 @@
-Original author
----------------
-JARR is a free software written and maintained
-by Cédric Bonhomme https://www.cedricbonhomme.org
-
 Contributors
 ------------
-- François Schmidts http://1pxsolidblack.pl/
+ - François Schmidts http://1pxsolidblack.pl/
+ - Cédric Bonhomme https://www.cedricbonhomme.org

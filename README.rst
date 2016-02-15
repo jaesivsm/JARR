@@ -2,9 +2,6 @@
 JARR
 ====
 
-Travis:
--------
-
 .. image:: https://travis-ci.org/jaesivsm/JARR.svg
     :target: https://travis-ci.org/jaesivsm/JARR
 
@@ -14,52 +11,19 @@ Travis:
 Presentation
 ------------
 
-`JARR (Just Another RSS Reader) <https://github.com/JARR-aggregator/JARR>`_
-is a web-based news aggregator and reader.
+JARR (which stands for Just Another RSS Reader) is a web-based news aggregator and reader.
 
-Main features
--------------
-
-* can be easily deployed on Heroku or on a traditional server;
-* multiple users can use a JARR instance;
-* a RESTful API to manage your articles (or connect your own crawler);
-* data liberation: export and import all your account with a JSON file;
-* export and import feeds with OPML files;
-* export articles to HTML;
-* favorite articles;
-* detection of inactive feeds;
-* share articles with Google +, Pinboard and reddit.
-
-The core technologies are `Flask <http://flask.pocoo.org>`_,
-`asyncio <https://www.python.org/dev/peps/pep-3156/>`_ ,
-`SQLAlchemy <http://www.sqlalchemy.org>`_
-and `React <https://facebook.github.io/react/>`_.
-
-Python 3.5 is recommended.
+JARR is coninuingly ongoing developments and functionnalities are regularly added.
+To check on those see the `CHANGELOG <CHANGELOG.rst>`_.
+However JARR is stable and can function as easily on a light installation with the python SimpleHTTP server and a SQLite database or on a more heavy setup with nginx or apache running against a PostGreSQL database.
 
 Documentation
 -------------
 
-A documentation is available `here <https://jarr.readthedocs.org>`_ and provides
-different ways to install JARR.
-
-Internationalization
---------------------
-
-JARR is translated into English and French.
-
-Donation
---------
-
-If you wish and if you like *JARR*, you can donate via bitcoin `1GVmhR9fbBeEh7rP1qNq76jWArDdDQ3otZ <https://blockexplorer.com/address/1GVmhR9fbBeEh7rP1qNq76jWArDdDQ3otZ>`_.
-Thank you!
+A documentation is available `here <https://jarr.readthedocs.org>`_.
+It will provide you several ways of installing the software as well as using the REST API.
 
 License
 -------
 
-`JARR <https://github.com/JARR-aggregator/JARR>`_ is under the `GNU Affero General Public License version 3 <https://www.gnu.org/licenses/agpl-3.0.html>`_.
-
-Contact
--------
-
-`My home page <https://www.cedricbonhomme.org>`_.
+JARR is under the `GNU Affero General Public License version 3 <https://www.gnu.org/licenses/agpl-3.0.html>`_.

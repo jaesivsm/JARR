@@ -6,10 +6,11 @@ current
 -------
     New:
      * Redoing entierly the home page with react, JARR is going on toward a one page app.
-     * Implementing categories
+     * Implementing long overdue feature : categories
+     * Introducing registration against external OAuth providers (google, twitter, facebook)
     Improvements:
+     * Redoing user management and pages, using primitives from ``flask`` and ``flask-principal`` over home made boiler plate code
      * Code re-arangement: move all code to /src/
-     * Now clean content from feed through the bleach module to avoid XSS vulnerabilities
 
 6.7 (2015-07-21)
 ----------------
