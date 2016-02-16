@@ -141,7 +141,7 @@ def get_article(article_id, parse=False):
 @app.route('/mark_all_as_read', methods=['PUT'])
 @login_required
 def mark_all_as_read():
-    filters = _get_filters(request.json),
+    filters = _get_filters(request.json)
     acontr = ArticleController(current_user.id)
     articles = _articles_to_json(acontr.read(**filters))
     acontr.update(filters, {'readed': True})
