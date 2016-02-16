@@ -45,11 +45,11 @@ class FeedProbe(AbstractMuninPlugin):
 
     def execute(self):
         delta = datetime.now() - timedelta(minutes=LATE_AFTER + FETCH_RATE + 1)
-        total = FeedController().read().count()
+        fcontr = FeedController(ignore_context=True)
+        total = fcontr.read().count()
 
-        print("feeds.value %d"
-                % len(FeedController().list_late(delta, limit=total)))
-        print("feeds_total.value %d" % FeedController().read().count())
+        print("feeds.value %d" % len(fcontr.list_late(delta, limit=total)))
+        print("feeds_total.value %d" % fcontr.read().count())
 
 
 class ArticleProbe(AbstractMuninPlugin):
@@ -60,7 +60,8 @@ class ArticleProbe(AbstractMuninPlugin):
         print("articles.label Overall rate")
         print("articles.type DERIVE")
         print("articles.min 0")
-        for id_ in sorted(user.id for user in UserController().read()):
+        ucontr = UserController(ignore_context=True)
+        for id_ in sorted(user.id for user in ucontr.read()):
             print("articles_user_%s.label Rate for user %s" % (id_, id_))
             print("articles_user_%s.type DERIVE" % id_)
             print("articles_user_%s.min 0" % id_)
@@ -68,7 +69,7 @@ class ArticleProbe(AbstractMuninPlugin):
         print("graph_scale yes")
 
     def execute(self):
-        counts = ArticleController().count_by_user_id()
+        counts = ArticleController(ignore_context=True).count_by_user_id()
         print("articles.value %s" % sum(counts.values()))
         for user, count in counts.items():
             print("articles_user_%s.value %s" % (user, count))
