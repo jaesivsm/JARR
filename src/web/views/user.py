@@ -1,7 +1,7 @@
 import opml
 import random
 from datetime import datetime
-from werkzeug.exceptions import Forbidden
+from werkzeug.exceptions import NotFound, Forbidden
 from flask import (Blueprint, render_template, redirect,
                    flash, url_for, request, make_response)
 from flask.ext.principal import Permission, UserNeed
@@ -220,12 +220,14 @@ The JARR administrator""", plateform=conf.PLATFORM_URL,
 def recover(token):
     form = PasswordModForm()
     ucontr = UserController()
-
+    try:
+        user = ucontr.get(renew_password_token=token)
+    except NotFound:
+        return gettext("Token is not valid, please regenerate one")
     if request.method == 'GET':
         return render_template('recover.html', form=form, token=token)
 
     if form.validate():
-        user = ucontr.get(renew_password_token=token)
         ucontr.update({'id': user.id},
                 {'renew_password_token': '', 'password': form.password.data})
         login_user_bundle(user)
