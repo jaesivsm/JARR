@@ -7,8 +7,8 @@ CrawlerScheduler.callback
     which will retreive each feed and treat result with
 FeedCrawler.callback
     which will interprete the result (status_code, etag) collect ids
-    and match them agaisnt pyagg which will cause
-PyAggUpdater.callback
+    and match them agaisnt jarr which will cause
+JarrUpdater.callback
     to create the missing entries
 """
 
@@ -39,10 +39,10 @@ class AbstractCrawler:
         self.session.verify = False
         self.url = conf.PLATFORM_URL
 
-    def query_pyagg(self, method, urn, data=None):
+    def query_jarr(self, method, urn, data=None):
         """A wrapper for internal call, method should be ones you can find
         on requests (header, post, get, options, ...), urn the distant
-        resources you want to access on pyagg, and data, the data you wanna
+        resources you want to access on jarr, and data, the data you wanna
         transmit."""
         if data is None:
             data = {}
@@ -69,7 +69,7 @@ class AbstractCrawler:
                 break
 
 
-class PyAggUpdater(AbstractCrawler):
+class JarrUpdater(AbstractCrawler):
 
     def __init__(self, feed, entries, headers, parsed_feed,
                  auth, pool=None, session=None):
@@ -96,7 +96,7 @@ class PyAggUpdater(AbstractCrawler):
                 logger.info('%r %r - creating %r for %r - %r', self.feed['id'],
                             self.feed['title'], entry['title'],
                             entry['user_id'], id_to_create)
-                self.query_pyagg('post', 'article', entry)
+                self.query_jarr('post', 'article', entry)
 
         logger.debug('%r %r - updating feed etag %r last_mod %r',
                      self.feed['id'], self.feed['title'],
@@ -134,7 +134,7 @@ class PyAggUpdater(AbstractCrawler):
                 {key: "%s -> %s" % (up_feed[key], self.feed.get(key))
                  for key in up_feed if up_feed[key] != self.feed.get(key)})
 
-        self.query_pyagg('put', 'feed/%d' % self.feed['id'], up_feed)
+        self.query_jarr('put', 'feed/%d' % self.feed['id'], up_feed)
 
 
 class FeedCrawler(AbstractCrawler):
@@ -146,12 +146,12 @@ class FeedCrawler(AbstractCrawler):
     def clean_feed(self):
         """Will reset the errors counters on a feed that have known errors"""
         if self.feed.get('error_count') or self.feed.get('last_error'):
-            self.query_pyagg('put', 'feed/%d' % self.feed['id'],
-                             {'error_count': 0, 'last_error': ''})
+            self.query_jarr('put', 'feed/%d' % self.feed['id'],
+                            {'error_count': 0, 'last_error': ''})
 
     def callback(self, response):
         """will fetch the feed and interprete results (304, etag) or will
-        challenge pyagg to compare gotten entries with existing ones"""
+        challenge jarr to compare gotten entries with existing ones"""
         try:
             response = response.result()
             response.raise_for_status()
@@ -160,7 +160,7 @@ class FeedCrawler(AbstractCrawler):
             logger.exception('%r %r - an error occured while fetching '
                     'feed; bumping  error count to %r',
                     self.feed['id'], self.feed['title'], error_count)
-            future = self.query_pyagg('put', 'feed/%d' % self.feed['id'],
+            future = self.query_jarr('put', 'feed/%d' % self.feed['id'],
                                       {'error_count': error_count,
                                        'last_error': str(error),
                                        'user_id': self.feed['user_id']})
@@ -174,10 +174,10 @@ class FeedCrawler(AbstractCrawler):
         if 'etag' not in response.headers:
             logger.debug('%r %r - manually generating etag',
                          self.feed['id'], self.feed['title'])
-            response.headers['etag'] = 'pyagg/"%s"' % to_hash(response.text)
+            response.headers['etag'] = 'jarr/"%s"' % to_hash(response.text)
         if response.headers['etag'] and self.feed['etag'] \
                 and response.headers['etag'] == self.feed['etag']:
-            if 'pyagg' in self.feed['etag']:
+            if 'jarr' in self.feed['etag']:
                 logger.info("%r %r - calculated hash matches (%d)",
                             self.feed['id'], self.feed['title'],
                             response.status_code)
@@ -204,8 +204,8 @@ class FeedCrawler(AbstractCrawler):
             ids.append(entry_ids)
         logger.debug('%r %r - found %d entries %r',
                      self.feed['id'], self.feed['title'], len(ids), ids)
-        future = self.query_pyagg('get', 'articles/challenge', {'ids': ids})
-        updater = PyAggUpdater(self.feed, entries, response.headers,
+        future = self.query_jarr('get', 'articles/challenge', {'ids': ids})
+        updater = JarrUpdater(self.feed, entries, response.headers,
                                parsed_response,
                                self.auth, self.pool, self.session)
         future.add_done_callback(updater.callback)
@@ -222,7 +222,7 @@ class CrawlerScheduler(AbstractCrawler):
         headers = {'User-Agent': conf.USER_AGENT}
         if feed.get('last_modified'):
             headers['If-Modified-Since'] = feed['last_modified']
-        if feed.get('etag') and 'pyagg' not in feed['etag']:
+        if feed.get('etag') and 'jarr' not in feed['etag']:
             headers['If-None-Match'] = feed['etag']
         logger.debug('%r %r - calculated headers %r',
                      feed['id'], feed['title'], headers)
@@ -250,5 +250,5 @@ class CrawlerScheduler(AbstractCrawler):
         """entry point, will retreive feeds to be fetch
         and launch the whole thing"""
         logger.debug('retreving fetchable feed')
-        future = self.query_pyagg('get', 'feeds/fetchable', kwargs)
+        future = self.query_jarr('get', 'feeds/fetchable', kwargs)
         future.add_done_callback(self.callback)

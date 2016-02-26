@@ -1,9 +1,11 @@
 from bootstrap import db
 from datetime import datetime
 from sqlalchemy import desc, Index
+from sqlalchemy.orm import validates
+from web.models.right_mixin import RightMixin
 
 
-class Feed(db.Model):
+class Feed(db.Model, RightMixin):
     """
     Represent a feed.
     """
@@ -37,24 +39,28 @@ class Feed(db.Model):
     idx_feed_uid_cid = Index('user_id', 'category_id')
     idx_feed_uid = Index('user_id')
 
+    # api whitelists
+    @staticmethod
+    def _fields_base_write():
+        return {'title', 'description', 'link', 'site_link', 'enabled',
+                'filters', 'readability_auto_parse', 'last_error',
+                'error_count'}
+
+    @staticmethod
+    def _fields_base_read():
+        return {'id', 'category_id', 'user_id', 'icon_url', 'last_retrieved'}
+
+    @staticmethod
+    def _fields_api_write():
+        return {'etag', 'last_modified'}
+
     def __repr__(self):
         return '<Feed %r>' % (self.title)
 
-    def dump(self):
-        return {"id": self.id,
-                "user_id": self.user_id,
-                "category_id": self.category_id,
-                "title": self.title,
-                "description": self.description,
-                "link": self.link,
-                "site_link": self.site_link,
-                "etag": self.etag,
-                "enabled": self.enabled,
-                "readability_auto_parse": self.readability_auto_parse,
-                "filters": self.filters,
-                "icon_url": self.icon_url,
-                "error_count": self.error_count,
-                "last_error": self.last_error,
-                "created_date": self.created_date,
-                "last_modified": self.last_modified,
-                "last_retrieved": self.last_retrieved}
+    @validates('title')
+    def validates_title(self, key, value):
+        return str(value).strip()
+
+    @validates('description')
+    def validates_description(self, key, value):
+        return str(value).strip()

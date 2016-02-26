@@ -8,23 +8,17 @@ from web.views.api.common import (PyAggResourceNew,
                                   PyAggResourceMulti)
 
 
-CAT_ATTRS = {'name': {'type': str},
-             'user_id': {'type': int}}
-
-
 class CategoryNewAPI(PyAggResourceNew):
     controller_cls = CategoryController
-    attrs = CAT_ATTRS
 
 
 class CategoryAPI(PyAggResourceExisting):
     controller_cls = CategoryController
-    attrs = CAT_ATTRS
 
 
 class CategoriesAPI(PyAggResourceMulti):
     controller_cls = CategoryController
-    attrs = CAT_ATTRS
+
 
 api = Api(current_app, prefix=API_ROOT)
 api.add_resource(CategoryNewAPI, '/category', endpoint='category_new.json')

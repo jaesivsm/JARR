@@ -4,9 +4,10 @@ from sqlalchemy.orm import validates
 from flask.ext.login import UserMixin
 
 from bootstrap import db
+from web.models.right_mixin import RightMixin
 
 
-class User(db.Model, UserMixin):
+class User(db.Model, UserMixin, RightMixin):
     """
     Represent a user.
     """
@@ -28,19 +29,18 @@ class User(db.Model, UserMixin):
     last_connection = db.Column(db.DateTime(), default=datetime.now)
     feeds = db.relationship('Feed', backref='subscriber', lazy='dynamic',
                             cascade='all,delete-orphan')
-    refresh_rate = db.Column(db.Integer, default=60)  # in minutes
     readability_key = db.Column(db.String(), default='')
     renew_password_token = db.Column(db.String(), default='')
 
+    @staticmethod
+    def _fields_base_write():
+        return {'login', 'password', 'email', 'readability_key',
+                'google_identity', 'twitter_identity', 'facebook_identity'}
+
+    @staticmethod
+    def _fields_base_read():
+        return {'date_created', 'last_connection'}
+
     @validates('login')
     def validates_login(self, key, value):
-        return re.sub('[^a-zA-Z0-9_\.]', '', value)
-
-    def __eq__(self, other):
-        return self.id == other.id
-
-    def __repr__(self):
-        return '<User %r>' % (self.login)
-
-    def dump(self):
-        return {'id': self.id}
+        return re.sub('[^a-zA-Z0-9_\.]', '', value.strip())

@@ -3,7 +3,7 @@ from flask import url_for, redirect
 from flask.ext.babel import lazy_gettext
 from werkzeug.exceptions import NotFound
 from wtforms import TextField, PasswordField, BooleanField, \
-        SubmitField, IntegerField, SelectField, validators, HiddenField
+                    SubmitField, SelectField, validators, HiddenField
 from flask.ext.wtf.html5 import EmailField
 
 from web import utils
@@ -97,9 +97,6 @@ class ProfileForm(Form):
     email = EmailField(lazy_gettext("Email"),
                [validators.Length(min=6, max=35),
                 validators.Required(lazy_gettext("Please enter your email."))])
-    refresh_rate = IntegerField(lazy_gettext("Feeds refresh frequency "
-                                             "(in minutes)"),
-                                default=60)
 
     readability_key = TextField(lazy_gettext("Readability API key"))
     is_active = BooleanField(lazy_gettext("Activated"), default=True)

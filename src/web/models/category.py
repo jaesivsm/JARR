@@ -1,8 +1,9 @@
 from bootstrap import db
 from sqlalchemy import Index
+from web.models.right_mixin import RightMixin
 
 
-class Category(db.Model):
+class Category(db.Model, RightMixin):
     id = db.Column(db.Integer(), primary_key=True)
     name = db.Column(db.String())
 
@@ -10,5 +11,11 @@ class Category(db.Model):
 
     idx_category_uid = Index('user_id')
 
-    def dump(self):
-        return {key: getattr(self, key) for key in ('id', 'name', 'user_id')}
+    # api whitelists
+    @staticmethod
+    def _fields_base_read():
+        return {'id', 'user_id'}
+
+    @staticmethod
+    def _fields_base_write():
+        return {'name'}

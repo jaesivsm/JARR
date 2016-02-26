@@ -24,7 +24,7 @@ user_bp = Blueprint('user', __name__, url_prefix='/user')
 @login_required
 def opml_export():
     user = UserController(current_user.id).get(id=current_user.id)
-    categories = {cat.id: cat.dump()
+    categories = {cat.id: cat
             for cat in CategoryController(current_user.id).read()}
     response = make_response(render_template('opml.xml', user=user,
            categories=categories, feeds=FeedController(current_user.id).read(),
@@ -146,8 +146,7 @@ def profile_update(user_id):
     profile_form, pass_form = ProfileForm(obj=user), PasswordModForm()
     if profile_form.validate():
         values = {'login': profile_form.login.data,
-                  'email': profile_form.email.data,
-                  'refresh_rate': profile_form.refresh_rate.data}
+                  'email': profile_form.email.data}
         if admin_permission.can():
             values['is_active'] = profile_form.is_active.data
             values['is_admin'] = profile_form.is_admin.data

@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 import conf
 from .abstract import AbstractController
 from .icon import IconController
-from web.models import Feed
+from web.models import User, Feed
 from web.lib.utils import clear_string
 
 logger = logging.getLogger(__name__)
@@ -22,11 +22,12 @@ class FeedController(AbstractController):
         return [feed for feed in self.read(
                             error_count__lt=max_error, enabled=True,
                             last_retrieved__lt=max_last)
+                                .join(User).filter(User.is_active == True)
                                 .order_by('last_retrieved')
                                 .limit(limit)]
 
-    def list_fetchable(self, max_error=DEFAULT_MAX_ERROR, limit=DEFAULT_LIMIT,
-                       refresh_rate=DEFAULT_REFRESH_RATE):
+    def list_fetchable(self, max_error=DEFAULT_MAX_ERROR,
+            limit=DEFAULT_LIMIT, refresh_rate=DEFAULT_REFRESH_RATE):
         now = datetime.now()
         max_last = now - timedelta(minutes=refresh_rate)
         feeds = self.list_late(max_last, max_error, limit)

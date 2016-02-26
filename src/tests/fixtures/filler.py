@@ -14,6 +14,7 @@ def populate_db():
                                   password=name)
                     for name in ["user1", "user2"]]
 
+    article_total = 0
     for user in (user1, user2):
         for i in range(3):
             cat_id = None
@@ -25,10 +26,11 @@ def populate_db():
                                     title="%s feed%d" % (user.login, i))
             for j in range(3):
                 entry = "%s %s article%d" % (user.login, feed.title, j)
+                article_total += 1
                 acontr.create(entry_id=entry,
-                        link='http://test.te/%d' % j,
-                        feed_id=feed.id, user_id=user.id,
-                        title=entry, content="content %d" % j)
+                        link='http://test.te/%d' % article_total,
+                        feed_id=feed.id, user_id=user.id, category_id=cat_id,
+                        title=entry, content="content %d" % article_total)
 
 def reset_db():
     db_empty()

@@ -33,8 +33,6 @@ def extract_id(entry, keys=[('link', 'link')], force_id=False):
 
 
 def construct_article(entry, feed):
-    if hasattr(feed, 'dump'):  # this way can be a sqlalchemy obj or a dict
-        feed = feed.dump()
     "Safe method to transorm a feedparser entry into an article"
     now = datetime.utcnow()
     date = None

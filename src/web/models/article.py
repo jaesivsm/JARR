@@ -1,9 +1,10 @@
 from bootstrap import db
 from datetime import datetime
 from sqlalchemy import asc, desc, Index
+from web.models.right_mixin import RightMixin
 
 
-class Article(db.Model):
+class Article(db.Model, RightMixin):
     "Represent an article from a feed."
     id = db.Column(db.Integer(), primary_key=True)
     entry_id = db.Column(db.String())
@@ -23,6 +24,17 @@ class Article(db.Model):
     idx_article_uid = Index('user_id')
     idx_article_uid_cid = Index('user_id', 'category_id')
     idx_article_uid_fid = Index('user_id', 'feed_id')
+
+    # api whitelists
+    @staticmethod
+    def _fields_base_write():
+        return {'readed', 'like', 'readability_parsed',
+                'feed_id', 'category_id'}
+
+    @staticmethod
+    def _fields_base_read():
+        return {'id', 'entry_id', 'link', 'title', 'content', 'date',
+                'retrieved_date', 'user_id'}
 
     def previous_article(self):
         """
@@ -44,18 +56,3 @@ class Article(db.Model):
         return "<Article(id=%d, entry_id=%s, title=%r, " \
                "date=%r, retrieved_date=%r)>" % (self.id, self.entry_id,
                        self.title, self.date, self.retrieved_date)
-
-    def dump(self):
-        return {"id": self.id,
-                "user_id": self.user_id,
-                "entry_id": self.entry_id,
-                "title": self.title,
-                "link": self.link,
-                "content": self.content,
-                "readed": self.readed,
-                "like": self.like,
-                "date": self.date,
-                "readability_parsed": self.readability_parsed,
-                "retrieved_date": self.retrieved_date,
-                "feed_id": self.feed_id,
-                "category_id": self.category_id}

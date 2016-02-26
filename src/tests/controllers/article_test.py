@@ -10,15 +10,6 @@ class ArticleControllerTest(BaseJarrTest):
         self._test_controller_rights(article,
                 UserController().get(id=article['user_id']))
 
-    def test_article_challenge_method(self):
-        self.assertEquals(0, len(list(ArticleController().challenge(
-                [{'id': art.id} for art in ArticleController(3).read()]))))
-        self.assertEquals(9, len(list(ArticleController(2).challenge(
-                [{'id': art.id} for art in ArticleController(3).read()]))))
-        self.assertEquals(9, len(list(ArticleController(2).challenge(
-                [{'entry_id': art.id} for art in ArticleController(3).read()]
-        ))))
-
     def test_article_get_unread(self):
         self.assertEquals({1: 3, 2: 3, 3: 3},
                 ArticleController(2).count_by_feed(readed=False))

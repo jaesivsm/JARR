@@ -1,5 +1,4 @@
 import logging
-from flask import jsonify
 from calendar import timegm
 
 from bootstrap import application as app
@@ -13,6 +12,7 @@ from web.lib.utils import redirect_url
 from web import utils
 from web.lib.view_utils import etag_match
 from web.models import Article
+from web.views.common import jsonify
 
 from web.controllers import FeedController, \
                             ArticleController, CategoryController
@@ -32,36 +32,36 @@ def home():
 @app.route('/menu')
 @login_required
 @etag_match
+@jsonify
 def get_menu():
     categories_order = [0]
     categories = {0: {'name': 'No category', 'id': 0}}
     for cat in CategoryController(current_user.id).read().order_by('name'):
         categories_order.append(cat.id)
-        categories[cat.id] = cat.dump()
+        categories[cat.id] = cat
     unread = ArticleController(current_user.id).count_by_feed(readed=False)
     for cat_id in categories:
         categories[cat_id]['unread'] = 0
         categories[cat_id]['feeds'] = []
-    feeds = {feed.id: feed.dump()
-             for feed in FeedController(current_user.id).read()}
+    feeds = {feed.id: feed for feed in FeedController(current_user.id).read()}
     for feed_id, feed in feeds.items():
-        feed['created_stamp'] = timegm(feed['created_date'].timetuple()) * 1000
-        feed['last_stamp'] = timegm(feed['last_retrieved'].timetuple()) * 1000
-        feed['category_id'] = feed['category_id'] or 0
-        feed['unread'] = unread.get(feed['id'], 0)
-        if not feed['filters']:
+        feed['created_stamp'] = timegm(feed.created_date.timetuple()) * 1000
+        feed['last_stamp'] = timegm(feed.last_retrieved.timetuple()) * 1000
+        feed['category_id'] = feed.category_id or 0
+        feed['unread'] = unread.get(feed.id, 0)
+        if not feed.filters:
             feed['filters'] = []
-        if feed.get('icon_url'):
-            feed['icon_url'] = url_for('icon.icon', url=feed['icon_url'])
+        if feed.icon_url:
+            feed['icon_url'] = url_for('icon.icon', url=feed.icon_url)
         categories[feed['category_id']]['unread'] += feed['unread']
         categories[feed['category_id']]['feeds'].append(feed_id)
-    return jsonify(**{'feeds': feeds, 'categories': categories,
-                      'categories_order': categories_order,
-                      'crawling_method': conf.CRAWLING_METHOD,
-                      'max_error': conf.DEFAULT_MAX_ERROR,
-                      'error_threshold': conf.ERROR_THRESHOLD,
-                      'is_admin': current_user.is_admin,
-                      'all_unread_count': sum(unread.values())})
+    return {'feeds': feeds, 'categories': categories,
+            'categories_order': categories_order,
+            'crawling_method': conf.CRAWLING_METHOD,
+            'max_error': conf.DEFAULT_MAX_ERROR,
+            'error_threshold': conf.ERROR_THRESHOLD,
+            'is_admin': current_user.is_admin,
+            'all_unread_count': sum(unread.values())}
 
 
 def _get_filters(in_dict):
@@ -88,14 +88,15 @@ def _get_filters(in_dict):
     return filters
 
 
+@jsonify
 def _articles_to_json(articles, fd_hash=None):
-    return jsonify(**{'articles': [{'title': art.title, 'liked': art.like,
+    return {'articles': [{'title': art.title, 'liked': art.like,
             'read': art.readed, 'article_id': art.id, 'selected': False,
             'feed_id': art.feed_id, 'category_id': art.category_id or 0,
             'feed_title': fd_hash[art.feed_id]['title'] if fd_hash else None,
             'icon_url': fd_hash[art.feed_id]['icon_url'] if fd_hash else None,
             'date': art.date, 'timestamp': timegm(art.date.timetuple()) * 1000}
-            for art in articles.limit(1000)]})
+            for art in articles.limit(1000)]}
 
 
 @app.route('/middle_panel')
@@ -116,26 +117,28 @@ def get_middle_panel():
 @app.route('/getart/<int:article_id>/<parse>')
 @login_required
 @etag_match
+@jsonify
 def get_article(article_id, parse=False):
     contr = ArticleController(current_user.id)
-    article = contr.get(id=article_id).dump()
-    if not article['readed']:
+    article = contr.get(id=article_id)
+    if not article.readed:
+        article['readed'] = True
         contr.update({'id': article_id}, {'readed': True})
-    article['category_id'] = article['category_id'] or 0
-    feed = FeedController(current_user.id).get(id=article['feed_id'])
+    article['category_id'] = article.category_id or 0
+    feed = FeedController(current_user.id).get(id=article.feed_id)
     article['icon_url'] = url_for('icon.icon', url=feed.icon_url) \
             if feed.icon_url else None
     readability_available = bool(current_user.readability_key
                                  or conf.READABILITY_KEY)
     article['readability_available'] = readability_available
-    if parse or (not article['readability_parsed']
+    if parse or (not article.readability_parsed
             and feed.readability_auto_parse and readability_available):
         article['readability_parsed'] = True
-        article['content'] = readability.parse(article['link'],
+        article['content'] = readability.parse(article.link,
                 current_user.readability_key or conf.READABILITY_KEY)
         contr.update({'id': article['id']}, {'readability_parsed': True,
-                                             'content': article['content']})
-    return jsonify(**article)
+                                             'content': article.content})
+    return article
 
 
 @app.route('/mark_all_as_read', methods=['PUT'])
@@ -143,9 +146,8 @@ def get_article(article_id, parse=False):
 def mark_all_as_read():
     filters = _get_filters(request.json)
     acontr = ArticleController(current_user.id)
-    articles = _articles_to_json(acontr.read(**filters))
     acontr.update(filters, {'readed': True})
-    return articles
+    return _articles_to_json(acontr.read(**filters))
 
 
 @app.route('/fetch', methods=['GET'])

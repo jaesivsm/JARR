@@ -26,12 +26,6 @@
                 <dd style="color: red;">{{ error }}</dd>
             {% endfor %}
 
-            <dt>{{ form.refresh_rate.label }}</dt>
-            <dd>{{ form.refresh_rate(class_="form-control") }}</dd>
-            {% for error in form.refresh_rate.errors %}
-                <dd style="color: red;">{{ error }}</dd>
-            {% endfor %}
-
             <dt>{{ form.readability_key.label }}</dt>
             <dd>{{ form.readability_key(class_="form-control") }}
             {% for error in form.readability_key.errors %}

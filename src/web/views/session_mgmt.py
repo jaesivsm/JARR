@@ -48,7 +48,7 @@ def load_user(user_id):
 
 
 # FROM http://blog.miguelgrinberg.com/post/oauth-authentication-with-flask
-class OAuthSignIn:
+class OAuthSignIn:  # pragma: no cover
     providers = None
 
     def __init__(self, provider_name):
@@ -77,7 +77,7 @@ class OAuthSignIn:
         return self.providers[provider_name]
 
 
-class GoogleSignIn(OAuthSignIn):
+class GoogleSignIn(OAuthSignIn):  # pragma: no cover
     def __init__(self):
         super().__init__('google')
         self.service = OAuth2Service(
@@ -107,7 +107,7 @@ class GoogleSignIn(OAuthSignIn):
         return info['id'], info.get('name'), info.get('email')
 
 
-class TwitterSignIn(OAuthSignIn):
+class TwitterSignIn(OAuthSignIn):  # pragma: no cover
     def __init__(self):
         super().__init__('twitter')
         self.service = OAuth1Service(
@@ -142,7 +142,7 @@ class TwitterSignIn(OAuthSignIn):
         return social_id, login, None
 
 
-class FacebookSignIn(OAuthSignIn):
+class FacebookSignIn(OAuthSignIn):  # pragma: no cover
     def __init__(self):
         super().__init__('facebook')
         self.service = OAuth2Service(
@@ -222,12 +222,12 @@ def signup():
 
 
 @current_app.route('/oauth/authorize/<provider>')
-def oauth_authorize(provider):
+def oauth_authorize(provider):  # pragma: no cover
     return OAuthSignIn.get_provider(provider).authorize()
 
 
 @current_app.route('/oauth/callback/<provider>')
-def oauth_callback(provider):
+def oauth_callback(provider):  # pragma: no cover
     if not current_user.is_anonymous:
         return redirect(url_for('home'))
     oauth = OAuthSignIn.get_provider(provider)
