@@ -1,9 +1,8 @@
 import logging
 from calendar import timegm
 
-from bootstrap import application as app
-
-from flask import render_template, request, flash, url_for, redirect
+from flask import current_app, render_template, \
+        request, flash, url_for, redirect
 from flask.ext.login import login_required, current_user
 from flask.ext.babel import gettext
 
@@ -22,14 +21,14 @@ from plugins import readability
 logger = logging.getLogger(__name__)
 
 
-@app.route('/')
+@current_app.route('/')
 @login_required
 @etag_match
 def home():
     return render_template('home.html', cdn=conf.CDN_ADDRESS)
 
 
-@app.route('/menu')
+@current_app.route('/menu')
 @login_required
 @etag_match
 @jsonify
@@ -99,7 +98,7 @@ def _articles_to_json(articles, fd_hash=None):
             for art in articles.limit(1000)]}
 
 
-@app.route('/middle_panel')
+@current_app.route('/middle_panel')
 @login_required
 @etag_match
 def get_middle_panel():
@@ -113,8 +112,8 @@ def get_middle_panel():
     return _articles_to_json(articles, fd_hash)
 
 
-@app.route('/getart/<int:article_id>')
-@app.route('/getart/<int:article_id>/<parse>')
+@current_app.route('/getart/<int:article_id>')
+@current_app.route('/getart/<int:article_id>/<parse>')
 @login_required
 @etag_match
 @jsonify
@@ -141,7 +140,7 @@ def get_article(article_id, parse=False):
     return article
 
 
-@app.route('/mark_all_as_read', methods=['PUT'])
+@current_app.route('/mark_all_as_read', methods=['PUT'])
 @login_required
 def mark_all_as_read():
     filters = _get_filters(request.json)
@@ -150,8 +149,8 @@ def mark_all_as_read():
     return _articles_to_json(acontr.read(**filters))
 
 
-@app.route('/fetch', methods=['GET'])
-@app.route('/fetch/<int:feed_id>', methods=['GET'])
+@current_app.route('/fetch', methods=['GET'])
+@current_app.route('/fetch/<int:feed_id>', methods=['GET'])
 @login_required
 def fetch(feed_id=None):
     """
