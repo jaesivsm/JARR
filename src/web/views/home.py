@@ -10,7 +10,6 @@ import conf
 from web.lib.utils import redirect_url
 from web import utils
 from web.lib.view_utils import etag_match
-from web.models import Article
 from web.views.common import jsonify
 
 from web.controllers import FeedController, \
@@ -108,7 +107,7 @@ def get_middle_panel():
                          'icon_url': url_for('icon.icon', url=feed.icon_url)
                                      if feed.icon_url else None}
                for feed in FeedController(current_user.id).read()}
-    articles = art_contr.read(**filters).order_by(Article.date.desc())
+    articles = art_contr.read_light(**filters)
     return _articles_to_json(articles, fd_hash)
 
 
@@ -146,7 +145,7 @@ def mark_all_as_read():
     filters = _get_filters(request.json)
     acontr = ArticleController(current_user.id)
     acontr.update(filters, {'readed': True})
-    return _articles_to_json(acontr.read(**filters))
+    return _articles_to_json(acontr.read_light(**filters))
 
 
 @current_app.route('/fetch', methods=['GET'])

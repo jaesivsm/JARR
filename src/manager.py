@@ -23,10 +23,10 @@ def db_empty():
 
 
 @manager.command
-def db_create(admin_login='admin', admin_password='admin'):
+def db_create():
     "Will create the database from conf parameters."
-    admin = {'is_admin': True,
-             'login': admin_login, 'password': admin_password}
+    admin = {'is_admin': True, 'is_api': True,
+             'login': 'admin', 'password': 'admin'}
     with application.app_context():
         db.create_all()
         UserController(ignore_context=True).create(**admin)

@@ -36,7 +36,7 @@ def construct_article(entry, feed):
     "Safe method to transorm a feedparser entry into an article"
     now = datetime.utcnow()
     date = None
-    for date_key in ('date', 'created', 'published'):
+    for date_key in ('published', 'created', 'date'):
         if entry.get(date_key):
             try:
                 date = dateutil.parser.parse(entry[date_key])\
