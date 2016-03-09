@@ -51,9 +51,17 @@ def authenticate(func):
         raise Unauthorized()
     return wrapper
 
+def assert_on_request(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        assert request.content_type == 'application/json', \
+                "Content-Type must be 'application/json'"
+        return func(*args, **kwargs)
+    return wrapper
+
 
 class PyAggAbstractResource(Resource):
-    method_decorators = [authenticate, jsonify]
+    method_decorators = [authenticate, assert_on_request, jsonify]
     controller_cls = None
     attrs = None
 
@@ -152,7 +160,6 @@ class PyAggResourceMulti(PyAggAbstractResource):
         >>> payload
         [{attr1: val1, attr2: val2}, {attr1: val1, attr2: val2}]
         """
-        assert 'application/json' in request.headers.get('Content-Type')
         status, fail_count, results = 200, 0, []
 
         class Proxy:
@@ -178,7 +185,6 @@ class PyAggResourceMulti(PyAggAbstractResource):
         [[obj_id1, {attr1: val1, attr2: val2}]
          [obj_id2, {attr1: val1, attr2: val2}]]
         """
-        assert 'application/json' in request.headers.get('Content-Type')
         status, results = 200, []
 
         class Proxy:
@@ -203,7 +209,6 @@ class PyAggResourceMulti(PyAggAbstractResource):
     def delete(self):
         """will delete several objects,
         a list of their ids should be in the payload"""
-        assert 'application/json' in request.headers.get('Content-Type')
         status, results = 204, []
         for obj_id in request.json:
             try:

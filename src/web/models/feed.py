@@ -44,11 +44,11 @@ class Feed(db.Model, RightMixin):
     def _fields_base_write():
         return {'title', 'description', 'link', 'site_link', 'enabled',
                 'filters', 'readability_auto_parse', 'last_error',
-                'error_count'}
+                'error_count', 'category_id'}
 
     @staticmethod
     def _fields_base_read():
-        return {'id', 'category_id', 'user_id', 'icon_url', 'last_retrieved'}
+        return {'id', 'user_id', 'icon_url', 'last_retrieved'}
 
     @staticmethod
     def _fields_api_write():
