@@ -103,5 +103,5 @@ class FeedApiTest(JarrFlaskCommon, ApiCommon):
         self.assertEquals(200, resp.status_code)
         category = resp.json()[0]
         resp = self._api('put', self.urn, obj['id'],
-                         data={'category_id': category['id']})
+                         data={'category_id': category['id']}, user='user1')
         self.assertEquals(400, resp.status_code)
