@@ -87,12 +87,16 @@ def _get_filters(in_dict):
 
 
 @jsonify
-def _articles_to_json(articles, fd_hash=None):
+def _articles_to_json(articles):
+    fd_hash = {feed.id: {'title': feed.title,
+                         'icon_url': url_for('icon.icon', url=feed.icon_url)
+                                     if feed.icon_url else None}
+               for feed in FeedController(current_user.id).read()}
     return {'articles': [{'title': art.title, 'liked': art.like,
             'read': art.readed, 'article_id': art.id, 'selected': False,
             'feed_id': art.feed_id, 'category_id': art.category_id or 0,
-            'feed_title': fd_hash[art.feed_id]['title'] if fd_hash else None,
-            'icon_url': fd_hash[art.feed_id]['icon_url'] if fd_hash else None,
+            'feed_title': fd_hash[art.feed_id]['title'],
+            'icon_url': fd_hash[art.feed_id]['icon_url'],
             'date': art.date, 'timestamp': timegm(art.date.timetuple()) * 1000}
             for art in articles.limit(1000)]}
 
@@ -103,12 +107,8 @@ def _articles_to_json(articles, fd_hash=None):
 def get_middle_panel():
     filters = _get_filters(request.args)
     art_contr = ArticleController(current_user.id)
-    fd_hash = {feed.id: {'title': feed.title,
-                         'icon_url': url_for('icon.icon', url=feed.icon_url)
-                                     if feed.icon_url else None}
-               for feed in FeedController(current_user.id).read()}
     articles = art_contr.read_light(**filters)
-    return _articles_to_json(articles, fd_hash)
+    return _articles_to_json(articles)
 
 
 @current_app.route('/getart/<int:article_id>')
@@ -144,8 +144,9 @@ def get_article(article_id, parse=False):
 def mark_all_as_read():
     filters = _get_filters(request.json)
     acontr = ArticleController(current_user.id)
+    processed_articles = _articles_to_json(acontr.read_light(**filters))
     acontr.update(filters, {'readed': True})
-    return _articles_to_json(acontr.read_light(**filters))
+    return processed_articles
 
 
 @current_app.route('/fetch', methods=['GET'])
