@@ -81,9 +81,7 @@ class ArticleController(AbstractController):
         return super().update(filters, attrs)
 
     def get_history(self, year=None, month=None):
-        """
-        Sort articles by year and month.
-        """
+        "Sort articles by year and month."
         articles_counter = Counter()
         articles = self.read()
         if year is not None:
@@ -92,6 +90,7 @@ class ArticleController(AbstractController):
             if month is not None:
                 articles = articles.filter(
                         sqlalchemy.extract('month', Article.date) == month)
+        articles = articles.order_by('date')
         for article in articles.all():
             if year is not None:
                 articles_counter[article.date.month] += 1

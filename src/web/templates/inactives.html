@@ -11,15 +11,15 @@
             <ul class="list-group">
             {% for feed, delta in inactives %}
                 <li class="list-group-item">
-                    <a href="{{ url_for('feed.feed', feed_id=feed.id) }}">
-                        {% if feed.icon %}<img src="{{ url_for('feed.icon', feed_id=feed.id) }}" width="16px" />{% endif %}
+                    <a href="{{ url_for("home", at="f", ai=feed.id) }}">
+                        {% if feed.icon %}<img src="{{ url_for("feed.icon", feed_id=feed.id) }}" width="16px" />{% endif %}
                         {{ feed.title }}
-                    </a> - {{ delta.days }} {{ _('days') }}
+                    </a> - {{ delta.days }} {{ _("days") }}
                 </li>
             {% endfor %}
             </ul>
         {% else %}
-            <p>{{ _('No inactive feeds.') }}<p>
+            <p>{{ _("No inactive feeds.") }}<p>
         {% endif %}
     </div>
 </div><!-- /.container -->

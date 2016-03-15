@@ -140,7 +140,6 @@ var MiddlePanelActions = {
                 data: JSON.stringify(filters),
                 url: "/mark_all_as_read",
                 success: function (payload) {
-                    console.log(payload);
                     JarrDispatcher.dispatch({
                         type: ActionTypes.MARK_ALL_AS_READ,
                         articles: payload.articles,

@@ -114,7 +114,6 @@ def get_middle_panel():
 @current_app.route('/getart/<int:article_id>')
 @current_app.route('/getart/<int:article_id>/<parse>')
 @login_required
-@etag_match
 @jsonify
 def get_article(article_id, parse=False):
     contr = ArticleController(current_user.id)
