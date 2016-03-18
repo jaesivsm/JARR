@@ -54,7 +54,7 @@ def authenticate(func):
 def assert_on_request(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
-        assert request.content_type == 'application/json', \
+        assert 'application/json' in request.content_type, \
                 "Content-Type must be 'application/json'"
         return func(*args, **kwargs)
     return wrapper
