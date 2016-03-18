@@ -23,7 +23,7 @@ def escape_keys(*keys):
         def metawrapper(*args, **kwargs):
             result = func(*args, **kwargs)
             for key in keys:
-                if key in result:
+                if result.get(key):
                     result[key] = html.unescape(result[key])
             return result
         return metawrapper
