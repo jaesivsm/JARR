@@ -131,10 +131,15 @@ def get_article(article_id, parse=False):
     if parse or (not article.readability_parsed
             and feed.readability_auto_parse and readability_available):
         article['readability_parsed'] = True
-        article['content'] = readability.parse(article.link,
-                current_user.readability_key or conf.READABILITY_KEY)
-        contr.update({'id': article['id']}, {'readability_parsed': True,
-                                             'content': article.content})
+        try:
+            new_content = readability.parse(article.link,
+                    current_user.readability_key or conf.READABILITY_KEY)
+        except Exception as error:
+            flash(gettext("Readability failed with %r" % error, "error"))
+        else:
+            article['content'] = new_content
+            new_attr = {'readability_parsed': True, 'content': new_content}
+            contr.update({'id': article['id']}, new_attr)
     return article
 
 
