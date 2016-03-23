@@ -25,8 +25,8 @@ class User(db.Model, UserMixin, RightMixin):
     twitter_identity = db.Column(db.String())
     facebook_identity = db.Column(db.String())
 
-    date_created = db.Column(db.DateTime(), default=datetime.now)
-    last_connection = db.Column(db.DateTime(), default=datetime.now)
+    date_created = db.Column(db.DateTime(), default=datetime.utcnow)
+    last_connection = db.Column(db.DateTime(), default=datetime.utcnow)
     feeds = db.relationship('Feed', backref='subscriber', lazy='dynamic',
                             cascade='all,delete-orphan')
     readability_key = db.Column(db.String(), default='')

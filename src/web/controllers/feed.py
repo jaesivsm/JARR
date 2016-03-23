@@ -28,7 +28,7 @@ class FeedController(AbstractController):
 
     def list_fetchable(self, max_error=DEFAULT_MAX_ERROR,
             limit=DEFAULT_LIMIT, refresh_rate=DEFAULT_REFRESH_RATE):
-        now = datetime.now()
+        now = datetime.utcnow()
         max_last = now - timedelta(minutes=refresh_rate)
         feeds = self.list_late(max_last, max_error, limit)
         if feeds:
@@ -54,7 +54,7 @@ class FeedController(AbstractController):
         return feed, duplicates
 
     def get_inactives(self, nb_days):
-        today = datetime.now()
+        today = datetime.utcnow()
         inactives = []
         for feed in self.read():
             try:

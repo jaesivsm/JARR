@@ -44,7 +44,8 @@ class FeedProbe(AbstractMuninPlugin):
         print("graph_scale yes")
 
     def execute(self):
-        delta = datetime.now() - timedelta(minutes=LATE_AFTER + FETCH_RATE + 1)
+        minutes = LATE_AFTER + FETCH_RATE + 1
+        delta = datetime.utcnow() - timedelta(minutes=minutes)
         fcontr = FeedController(ignore_context=True)
         total = fcontr.read().count()
 
