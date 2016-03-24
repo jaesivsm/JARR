@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 import sys
-from datetime import datetime, timedelta
+from datetime import timedelta
 from flask.ext.script import Command, Option
 
 from web.controllers \
@@ -34,22 +34,21 @@ class AbstractMuninPlugin(Command):
 class FeedProbe(AbstractMuninPlugin):
 
     def config(self):
-        print("graph_title PyAgg - Feeds counts")
+        total = FeedController(ignore_context=True).read().count()
+        print("graph_title JARR - Feeds counts")
         print("graph_vlabel feeds")
         print("feeds.label Late feeds")
         print("feeds_total.label Total feeds")
-        print("feeds.warning 15")
-        print("feeds.critical 30")
+        print("feeds.warning %d" % int(total / 20))
+        print("feeds.critical %d" % int(total / 10))
         print("graph_category web")
         print("graph_scale yes")
 
     def execute(self):
-        minutes = LATE_AFTER + FETCH_RATE + 1
-        delta = datetime.utcnow() - timedelta(minutes=minutes)
+        delta = timedelta(minutes=LATE_AFTER + FETCH_RATE + 1)
         fcontr = FeedController(ignore_context=True)
-        total = fcontr.read().count()
 
-        print("feeds.value %d" % len(fcontr.list_late(delta, limit=total)))
+        print("feeds.value %d" % len(list(fcontr.list_late(delta, limit=0))))
         print("feeds_total.value %d" % fcontr.read().count())
 
 

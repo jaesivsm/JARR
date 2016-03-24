@@ -17,20 +17,45 @@ DEFAULT_MAX_ERROR = conf.DEFAULT_MAX_ERROR
 class FeedController(AbstractController):
     _db_cls = Feed
 
-    def list_late(self, max_last, max_error=DEFAULT_MAX_ERROR,
+    def __get_art_contr(self):
+        from .article import ArticleController
+        return ArticleController(self.user_id)
+
+    def list_late(self, delta, max_error=DEFAULT_MAX_ERROR,
                   limit=DEFAULT_LIMIT):
-        return [feed for feed in self.read(
-                            error_count__lt=max_error, enabled=True,
-                            last_retrieved__lt=max_last)
-                                .join(User).filter(User.is_active == True)
-                                .order_by('last_retrieved')
-                                .limit(limit)]
+        """Will list either late feed (which have been retrieved for the last
+        time sooner than now minus the delta (default to 1h)) or the feed with
+        articles recentrly created (later than now minus a quarter the delta
+        (default to 15 logically)).
+
+        The idea is to keep very active feed up to date and to avoid missing
+        articles du to high activity (when, for example, the feed only displays
+        its 30 last entries and produces more than one per minutes).
+        """
+        tenth = delta / 10
+        feed_last_retrieved = datetime.utcnow() - delta
+        art_last_retr = datetime.utcnow() - (2 * tenth)
+        min_wait = datetime.utcnow() - tenth
+        ac = self.__get_art_contr()
+        new_art_feed = (ac.read(retrieved_date__gt=art_last_retr,
+                                retrieved_date__lt=min_wait)
+                          .with_entities(ac._db_cls.feed_id)
+                          .distinct())
+
+        query = (self.read(error_count__lt=max_error, enabled=True,
+                           __or__=[{'last_retrieved__lt': feed_last_retrieved},
+                                   {'last_retrieved__lt': min_wait,
+                                    'id__in': new_art_feed}])
+                     .join(User).filter(User.is_active == True)
+                     .order_by(Feed.last_retrieved))
+        if limit:
+            query = query.limit(limit)
+        yield from query
 
     def list_fetchable(self, max_error=DEFAULT_MAX_ERROR,
             limit=DEFAULT_LIMIT, refresh_rate=DEFAULT_REFRESH_RATE):
-        now = datetime.utcnow()
-        max_last = now - timedelta(minutes=refresh_rate)
-        feeds = self.list_late(max_last, max_error, limit)
+        now, delta = datetime.utcnow(), timedelta(minutes=refresh_rate)
+        feeds = list(self.list_late(delta, max_error, limit))
         if feeds:
             self.update({'id__in': [feed.id for feed in feeds]},
                         {'last_retrieved': now})
@@ -82,11 +107,9 @@ class FeedController(AbstractController):
         return super().create(**attrs)
 
     def update(self, filters, attrs):
-        from .article import ArticleController
         self._ensure_icon(attrs)
         if 'category_id' in attrs:
-            art_contr = ArticleController(self.user_id)
             for feed in self.read(**filters):
-                art_contr.update({'feed_id': feed.id},
-                                 {'category_id': attrs['category_id']})
+                self.__get_art_contr().update({'feed_id': feed.id},
+                        {'category_id': attrs['category_id']})
         return super().update(filters, attrs)

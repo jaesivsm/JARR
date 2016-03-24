@@ -3,7 +3,7 @@ import dateutil.parser
 from bootstrap import db
 from datetime import datetime
 from collections import defaultdict
-from sqlalchemy import or_, func
+from sqlalchemy import and_, or_, func
 from werkzeug.exceptions import Forbidden, NotFound
 
 logger = logging.getLogger(__name__)
@@ -37,7 +37,8 @@ class AbstractController:
         db_filters = set()
         for key, value in filters.items():
             if key == '__or__':
-                db_filters.add(or_(*self._to_filters(**value)))
+                db_filters.add(or_(*[and_(*self._to_filters(**sub_filter))
+                                     for sub_filter in value]))
             elif key.endswith('__gt'):
                 db_filters.add(getattr(self._db_cls, key[:-4]) > value)
             elif key.endswith('__lt'):

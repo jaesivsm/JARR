@@ -40,7 +40,8 @@ def bookmarklet():
         flash(gettext("Couldn't add feed: url missing."), "error")
         raise BadRequest("url is missing")
 
-    feed_exists = list(feed_contr.read(__or__={'link': url, 'site_link': url}))
+    feed_exists = list(feed_contr.read(__or__=[{'link': url},
+                                               {'site_link': url}]))
     if feed_exists:
         flash(gettext("Couldn't add feed: feed already exists."),
                 "warning")

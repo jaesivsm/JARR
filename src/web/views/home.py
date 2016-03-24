@@ -63,19 +63,23 @@ def get_menu():
 
 
 def _get_filters(in_dict):
-    filters = {}
     query = in_dict.get('query')
     if query:
         search_title = in_dict.get('search_title') == 'true'
         search_content = in_dict.get('search_content') == 'true'
+        filters = []
         if search_title:
-            filters['title__ilike'] = "%%%s%%" % query
+            filters.append({'title__ilike': "%%%s%%" % query})
         if search_content:
-            filters['content__ilike'] = "%%%s%%" % query
+            filters.append({'content__ilike': "%%%s%%" % query})
         if len(filters) == 0:
-            filters['title__ilike'] = "%%%s%%" % query
-        if len(filters) > 1:
+            filters.append({'title__ilike': "%%%s%%" % query})
+        if len(filters) == 1:
+            filters = filters[0]
+        else:
             filters = {"__or__": filters}
+    else:
+        filters = {}
     if in_dict.get('filter') == 'unread':
         filters['readed'] = False
     elif in_dict.get('filter') == 'liked':
