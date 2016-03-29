@@ -18,7 +18,8 @@ var PanelMixin = {
     getHeader: function() {
         var icon = null;
         if(this.props.obj.icon_url){
-            icon = (<img width="16px" src={this.props.obj.icon_url} />);
+            icon = (<img width="16px" src={this.props.obj.icon_url}
+                         className="right-panel-icon" />);
         }
         var btn_grp = null;
         if(this.isEditable() || this.isRemovable()) {
@@ -52,7 +53,10 @@ var PanelMixin = {
                         </Modal.Footer>
                     </Modal>
 
-                    <h4>{icon}{this.getTitle()}</h4>
+                    <h4>
+                        {icon}
+                        <span className="right-panel-title">{this.getTitle()}</span>
+                    </h4>
                     {btn_grp}
                 </div>);
     },

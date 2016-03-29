@@ -168,3 +168,12 @@
 #article-content * {
   max-width: 100%;
 }
+.right-panel-icon {
+  padding-top: 3px;
+  position: absolute;
+}
+.right-panel-title {
+  display: inline-block;
+  padding-left: 20px;
+  width: 80%;
+}
