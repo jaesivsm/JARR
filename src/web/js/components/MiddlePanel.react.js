@@ -50,7 +50,7 @@ var TableLine = React.createClass({
         }
         // FIXME https://github.com/yahoo/react-intl/issues/189
         // use FormattedRelative when fixed, will have to upgrade to ReactIntlv2
-        return (<div className={clsses} onClick={this.loadArticle}>
+        return (<div className={clsses} onClick={this.loadArticle} title={this.props.title}>
                     <h5><strong>{title}</strong></h5>
                     <JarrTime text={this.props.date}
                               stamp={this.props.timestamp} />
