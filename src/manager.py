@@ -1,12 +1,13 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
 import logging
+from datetime import datetime, timedelta
 from flask.ext.script import Manager
 from flask.ext.migrate import Migrate, MigrateCommand
 
 from bootstrap import application, db, conf
 import web.models
-from web.controllers.user import UserController
+from web.controllers import FeedController, UserController
 from scripts.probes import ArticleProbe, FeedProbe
 
 logger = logging.getLogger(__name__)
@@ -39,6 +40,18 @@ def fetch(limit=100, retreive_all=False):
     scheduler = CrawlerScheduler(conf.API_LOGIN, conf.API_PASSWD)
     scheduler.run(limit=limit, retreive_all=retreive_all)
     scheduler.wait()
+
+
+@manager.command
+def reset_feeds():
+    contr = FeedController()
+    step = timedelta(seconds=3600 / contr.read().count())
+    now = datetime.utcnow()
+    for i, feed in enumerate(contr.read()
+            .order_by(contr._db_cls.last_retrieved)):
+        contr.update({'id': feed.id},
+                {'etag': '', 'last_modified': '',
+                 'last_retrieved': now - i * step})
 
 
 @manager.command
