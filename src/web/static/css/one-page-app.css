@@ -167,4 +167,5 @@
 }
 #article-content * {
   max-width: 100%;
+  height: unset;
 }
