@@ -24,38 +24,12 @@ import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
-from postmark import PMMail
-
 import conf
-from web.decorators import async
 
 logger = logging.getLogger(__name__)
 
 
-@async
-def send_async_email(mfrom, mto, msg):
-    try:
-        s = smtplib.SMTP(conf.NOTIFICATION_HOST)
-        s.login(conf.NOTIFICATION_USERNAME, conf.NOTIFICATION_PASSWORD)
-    except Exception:
-        logger.exception('send_async_email raised:')
-    else:
-        s.sendmail(mfrom, mto, msg.as_string())
-        s.quit()
-
-
-def send(*args, **kwargs):
-    """
-    This functions enables to send email through Postmark
-    or a SMTP server.
-    """
-    if conf.ON_HEROKU:
-        send_postmark(**kwargs)
-    else:
-        send_smtp(**kwargs)
-
-
-def send_smtp(to="", bcc="", subject="", plaintext=""):
+def send(to="", bcc="", subject="", plaintext=""):
     """
     Send an email.
     """
@@ -74,22 +48,3 @@ def send_smtp(to="", bcc="", subject="", plaintext=""):
         smtp.ehlo()
         smtp.login(conf.NOTIFICATION_USERNAME, conf.NOTIFICATION_PASSWORD)
         smtp.sendmail(conf.NOTIFICATION_EMAIL, [msg['To']], msg.as_string())
-
-
-def send_postmark(to="", bcc="", subject="", plaintext=""):
-    """
-    Send an email via Postmark. Used when the application is deployed on
-    Heroku.
-    """
-    try:
-        message = PMMail(api_key=conf.POSTMARK_API_KEY,
-                        subject=subject,
-                        sender=conf.NOTIFICATION_EMAIL,
-                        text_body=plaintext)
-        message.to = to
-        if bcc != "":
-            message.bcc = bcc
-        message.send()
-    except Exception as e:
-        logger.exception("send_postmark raised:")
-        raise e

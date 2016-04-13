@@ -53,9 +53,9 @@ class OAuthSignIn:  # pragma: no cover
 
     def __init__(self, provider_name):
         self.provider_name = provider_name
-        credentials = conf.OAUTH[provider_name]
-        self.consumer_id = credentials['id']
-        self.consumer_secret = credentials['secret']
+        self.consumer_id = getattr(conf, ('OAUTH_%s_ID' % provider_name).upper)
+        self.consumer_secret \
+                = getattr(conf, ('OAUTH_%s_SECRET' % provider_name).upper)
 
     def authorize(self):
         pass
@@ -205,7 +205,7 @@ def logout():
 
 @current_app.route('/signup', methods=['GET', 'POST'])
 def signup():
-    if not conf.SELF_REGISTRATION:
+    if not conf.AUTH_ALLOW_SIGNUP:
         flash(gettext("Self-registration is disabled."), 'warning')
         return redirect(url_for('home'))
     if current_user.is_authenticated:
@@ -240,7 +240,10 @@ def oauth_callback(provider):  # pragma: no cover
         user = ucontr.get(**{'%s_identity' % provider: social_id})
     except NotFound:
         user = None
-    if not user:
+    if not user and not conf.OAUTH_ALLOW_SIGNUP:
+        flash('Account creation is not allowed through OAuth.')
+        return redirect(url_for('home'))
+    elif not user:
         user = ucontr.create(**{'%s_identity' % provider: social_id,
                                 'login': username, 'email': email})
     login_user_bundle(user)

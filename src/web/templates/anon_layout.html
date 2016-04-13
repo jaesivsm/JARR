@@ -16,11 +16,6 @@
     <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
     <meta name="description" content="JARR Sign in form">
     <title>JARR - sign in</title>
-    {%if conf.GOOGLE_CLIENT_ID%}
-    <meta name="google-signin-scope" content="profile email">
-    <meta name="google-signin-client_id" content="{{conf.GOOGLE_CLIENT_ID}}.apps.googleusercontent.com">
-    <script src="https://apis.google.com/js/platform.js" async defer></script>
-    {%endif%}
     <!-- Custom styles for this template -->
 <style>
 body {

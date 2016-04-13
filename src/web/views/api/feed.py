@@ -1,12 +1,9 @@
-from conf import API_ROOT
+import conf
 from flask import current_app
 from flask.ext.restful import Api
 
 from web.views.common import api_permission
-from web.controllers.feed import (FeedController,
-                                  DEFAULT_MAX_ERROR,
-                                  DEFAULT_LIMIT,
-                                  DEFAULT_REFRESH_RATE)
+from web.controllers.feed import FeedController, DEFAULT_LIMIT
 
 from web.views.api.common import PyAggAbstractResource, \
                                  PyAggResourceNew, \
@@ -28,9 +25,9 @@ class FeedsAPI(PyAggResourceMulti):
 
 class FetchableFeedAPI(PyAggAbstractResource):
     controller_cls = FeedController
-    attrs = {'max_error': {'type': int, 'default': DEFAULT_MAX_ERROR},
+    attrs = {'max_error': {'type': int, 'default': conf.FEED_ERROR_MAX},
              'limit': {'type': int, 'default': DEFAULT_LIMIT},
-             'refresh_rate': {'type': int, 'default': DEFAULT_REFRESH_RATE}}
+             'refresh_rate': {'type': int, 'default': conf.FEED_REFRESH_RATE}}
 
     @api_permission.require(http_exception=403)
     def get(self):
@@ -40,7 +37,7 @@ class FetchableFeedAPI(PyAggAbstractResource):
         return result or None, 200 if result else 204
 
 
-api = Api(current_app, prefix=API_ROOT)
+api = Api(current_app, prefix=conf.API_ROOT)
 
 api.add_resource(FeedNewAPI, '/feed', endpoint='feed_new.json')
 api.add_resource(FeedAPI, '/feed/<int:obj_id>', endpoint='feed.json')

@@ -53,7 +53,7 @@
                         </li>
                     </ul>
                 </li>
-                {% if conf.CRAWLING_METHOD == "classic" and (not conf.ON_HEROKU or current_user.is_admin) %}
+                {% if config.CRAWLER_TYPE == "classic" and (not config.ON_HEROKU or current_user.is_admin) %}
                 <li><a href="/fetch"><span class="glyphicon glyphicon-import"></span> {{ _('Fetch') }}</a></li>
                 {% endif %}
                 <li class="dropdown">

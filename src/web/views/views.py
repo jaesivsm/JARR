@@ -3,7 +3,7 @@ from flask import (request, render_template, flash,
                    url_for, redirect, current_app)
 from flask.ext.babel import gettext
 
-from conf import API_ROOT
+import conf
 from web.lib.view_utils import etag_match
 
 logger = logging.getLogger(__name__)
@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 @current_app.errorhandler(401)
 def authentication_required(error):
-    if API_ROOT in request.url:
+    if conf.API_ROOT in request.url:
         return error
     flash(gettext('Authentication required.'), 'info')
     return redirect(url_for('login'))
@@ -19,7 +19,7 @@ def authentication_required(error):
 
 @current_app.errorhandler(403)
 def authentication_failed(error):
-    if API_ROOT in request.url:
+    if conf.API_ROOT in request.url:
         return error
     flash(gettext('Forbidden.'), 'danger')
     return redirect(url_for('login'))

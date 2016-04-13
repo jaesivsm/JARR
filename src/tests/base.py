@@ -11,7 +11,7 @@ from tests.fixtures.filler import populate_db, reset_db
 from flask.ext.login import login_user, logout_user
 from werkzeug.exceptions import NotFound
 
-from conf import API_ROOT
+import conf
 
 logger = logging.getLogger('web')
 
@@ -74,7 +74,7 @@ class JarrFlaskCommon(BaseJarrTest):
             kwargs['headers']['Authorization'] = 'Basic %s' % hash_
             del kwargs['user']
 
-        urn = path.join(API_ROOT, *map(str, urn_parts))
+        urn = path.join(conf.API_ROOT, *map(str, urn_parts))
         resp = method(urn, **kwargs)
         if resp.data and resp.content_type == 'application/json':
             resp.json = lambda *a, **kw: json.loads(resp.data.decode('utf8'))

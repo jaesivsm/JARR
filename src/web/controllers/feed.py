@@ -10,8 +10,6 @@ from web.lib.utils import clear_string
 
 logger = logging.getLogger(__name__)
 DEFAULT_LIMIT = 5
-DEFAULT_REFRESH_RATE = 60
-DEFAULT_MAX_ERROR = conf.DEFAULT_MAX_ERROR
 
 
 class FeedController(AbstractController):
@@ -21,7 +19,7 @@ class FeedController(AbstractController):
         from .article import ArticleController
         return ArticleController(self.user_id)
 
-    def list_late(self, delta, max_error=DEFAULT_MAX_ERROR,
+    def list_late(self, delta, max_error=conf.FEED_ERROR_MAX,
                   limit=DEFAULT_LIMIT):
         """Will list either late feed (which have been retrieved for the last
         time sooner than now minus the delta (default to 1h)) or the feed with
@@ -52,8 +50,8 @@ class FeedController(AbstractController):
             query = query.limit(limit)
         yield from query
 
-    def list_fetchable(self, max_error=DEFAULT_MAX_ERROR,
-            limit=DEFAULT_LIMIT, refresh_rate=DEFAULT_REFRESH_RATE):
+    def list_fetchable(self, max_error=conf.FEED_ERROR_MAX,
+            limit=DEFAULT_LIMIT, refresh_rate=conf.FEED_REFRESH_RATE):
         now, delta = datetime.utcnow(), timedelta(minutes=refresh_rate)
         feeds = list(self.list_late(delta, max_error, limit))
         if feeds:

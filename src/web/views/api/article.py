@@ -1,4 +1,4 @@
-from conf import API_ROOT
+import conf
 import dateutil.parser
 from datetime import datetime
 from flask import current_app
@@ -44,7 +44,7 @@ class ArticlesChallenge(PyAggAbstractResource):
         result = list(self.controller.challenge(parsed_args['ids']))
         return result or None, 200 if result else 204
 
-api = Api(current_app, prefix=API_ROOT)
+api = Api(current_app, prefix=conf.API_ROOT)
 
 api.add_resource(ArticleNewAPI, '/article', endpoint='article_new.json')
 api.add_resource(ArticleAPI, '/article/<int:obj_id>', endpoint='article.json')

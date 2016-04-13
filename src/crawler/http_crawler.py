@@ -31,11 +31,11 @@ logging.captureWarnings(True)
 
 
 class AbstractCrawler:
+    pool = ThreadPoolExecutor(max_workers=conf.CRAWLER_NBWORKER)
+    session = FuturesSession(executor=pool)
 
-    def __init__(self, auth, pool=None, session=None):
+    def __init__(self, auth):
         self.auth = auth
-        self.pool = pool or ThreadPoolExecutor(max_workers=conf.NB_WORKER)
-        self.session = session or FuturesSession(executor=self.pool)
         self.session.verify = False
         self.url = conf.PLATFORM_URL
 
@@ -51,7 +51,7 @@ class AbstractCrawler:
                       auth=self.auth, data=json.dumps(data,
                                                       default=default_handler),
                       headers={'Content-Type': 'application/json',
-                               'User-Agent': conf.USER_AGENT})
+                               'User-Agent': conf.CRAWLER_USER_AGENT})
 
     def wait(self, max_wait=300, checks=2, wait_for=2):
         checked, second_waited = 0, 0
@@ -71,13 +71,12 @@ class AbstractCrawler:
 
 class JarrUpdater(AbstractCrawler):
 
-    def __init__(self, feed, entries, headers, parsed_feed,
-                 auth, pool=None, session=None):
+    def __init__(self, feed, entries, headers, parsed_feed, auth):
         self.feed = feed
         self.entries = entries
         self.headers = headers
         self.parsed_feed = parsed_feed
-        super().__init__(auth, pool, session)
+        super().__init__(auth)
 
     def callback(self, response):
         """Will process the result from the challenge, creating missing article
@@ -139,9 +138,9 @@ class JarrUpdater(AbstractCrawler):
 
 class FeedCrawler(AbstractCrawler):
 
-    def __init__(self, feed, auth, pool=None, session=None):
+    def __init__(self, feed, auth):
         self.feed = feed
-        super().__init__(auth, pool, session)
+        super().__init__(auth)
 
     def clean_feed(self):
         """Will reset the errors counters on a feed that have known errors"""
@@ -206,20 +205,19 @@ class FeedCrawler(AbstractCrawler):
                      self.feed['id'], self.feed['title'], len(ids), ids)
         future = self.query_jarr('get', 'articles/challenge', {'ids': ids})
         updater = JarrUpdater(self.feed, entries, response.headers,
-                               parsed_response,
-                               self.auth, self.pool, self.session)
+                               parsed_response, self.auth)
         future.add_done_callback(updater.callback)
 
 
 class CrawlerScheduler(AbstractCrawler):
 
-    def __init__(self, username, password, pool=None, session=None):
+    def __init__(self, username, password):
         self.auth = (username, password)
-        super(CrawlerScheduler, self).__init__(self.auth, pool, session)
+        super(CrawlerScheduler, self).__init__(self.auth)
 
     def prepare_headers(self, feed):
         """For a known feed, will construct some header dictionnary"""
-        headers = {'User-Agent': conf.USER_AGENT}
+        headers = {'User-Agent': conf.CRAWLER_USER_AGENT}
         if feed.get('last_modified'):
             headers['If-Modified-Since'] = feed['last_modified']
         if feed.get('etag') and 'jarr' not in feed['etag']:
@@ -243,7 +241,7 @@ class CrawlerScheduler(AbstractCrawler):
             future = self.session.get(feed['link'],
                                       headers=self.prepare_headers(feed))
 
-            feed_crwlr = FeedCrawler(feed, self.auth, self.pool, self.session)
+            feed_crwlr = FeedCrawler(feed, self.auth)
             future.add_done_callback(feed_crwlr.callback)
 
     def run(self, **kwargs):

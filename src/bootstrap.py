@@ -11,13 +11,24 @@ from flask import Flask
 from flask.ext.sqlalchemy import SQLAlchemy
 
 
+def to_log_level(level):
+    return {'debug': logging.DEBUG,
+            'info': logging.INFO,
+            'warn': logging.WARN,
+            'error': logging.ERROR,
+            'fatal': logging.FATAL}.get(str(level).lower(), logging.WARN)
+
+
+conf.LOG_LEVEL = to_log_level(conf.LOG_LEVEL)
+
+
 def set_logging(log_path=None, log_level=logging.INFO, modules=(),
                 log_format='%(asctime)s %(levelname)s %(message)s'):
 
     if not modules:
         modules = ('root', 'bootstrap', 'runserver',
                    'web', 'crawler', 'manager', 'plugins')
-    if log_path is not None:
+    if log_path:
         handler = logging.FileHandler(log_path)
     else:
         handler = logging.StreamHandler()
@@ -32,30 +43,19 @@ def set_logging(log_path=None, log_level=logging.INFO, modules=(),
 
 # Create Flask application
 application = Flask('web')
-API_ROOT = '/api/v2.0'
+application.config.from_object(conf)
 if os.environ.get('JARR_TESTING', False) == 'true':
     application.debug = True
     application.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
     application.config['TESTING'] = True
+    conf.CRAWLER_NBWORKER = 1
 else:
     application.debug = conf.LOG_LEVEL <= logging.DEBUG
-    application.config['SQLALCHEMY_DATABASE_URI'] \
-            = conf.SQLALCHEMY_DATABASE_URI
 
 scheme, domain, _, _, _ = urlsplit(conf.PLATFORM_URL)
 application.config['SERVER_NAME'] = domain
 application.config['PREFERRED_URL_SCHEME'] = scheme
-application.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
 
 set_logging(conf.LOG_PATH, log_level=conf.LOG_LEVEL)
-
-# Create dummy secrey key so we can use sessions
-application.config['SECRET_KEY'] = getattr(conf, 'WEBSERVER_SECRET', None)
-if not application.config['SECRET_KEY']:
-    application.config['SECRET_KEY'] = os.urandom(12)
-
-application.config['RECAPTCHA_USE_SSL'] = True
-application.config['RECAPTCHA_PUBLIC_KEY'] = conf.RECAPTCHA_PUBLIC_KEY
-application.config['RECAPTCHA_PRIVATE_KEY'] = conf.RECAPTCHA_PRIVATE_KEY
 
 db = SQLAlchemy(application)

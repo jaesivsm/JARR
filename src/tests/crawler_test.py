@@ -3,7 +3,7 @@ import logging
 from mock import Mock, patch
 from datetime import datetime
 
-from conf import API_ROOT
+import conf
 from crawler.http_crawler import CrawlerScheduler
 from web.controllers import UserController, FeedController
 logger = logging.getLogger('web')
@@ -43,7 +43,7 @@ class CrawlerTest(JarrFlaskCommon):
                     text = content
                 return Proxy()
 
-            url = url.split(API_ROOT)[1].strip('/')
+            url = url.split(conf.API_ROOT)[1].strip('/')
             kwargs.pop('allow_redirects', None)
             kwargs.pop('json', None)
             if 'auth' in kwargs:

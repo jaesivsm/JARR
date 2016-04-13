@@ -1,4 +1,4 @@
-from conf import API_ROOT
+import conf
 from flask import current_app
 from flask.ext.restful import Api
 
@@ -20,7 +20,7 @@ class CategoriesAPI(PyAggResourceMulti):
     controller_cls = CategoryController
 
 
-api = Api(current_app, prefix=API_ROOT)
+api = Api(current_app, prefix=conf.API_ROOT)
 api.add_resource(CategoryNewAPI, '/category', endpoint='category_new.json')
 api.add_resource(CategoryAPI, '/category/<int:obj_id>',
                  endpoint='category.json')

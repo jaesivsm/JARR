@@ -137,7 +137,7 @@ def retrieve_feed(loop, user, feed_id=None):
     # Get the list of feeds to fetch
     user = User.query.filter(User.email == user.email).first()
     feeds = [feed for feed in user.feeds if
-             feed.error_count <= conf.DEFAULT_MAX_ERROR and feed.enabled]
+             feed.error_count <= conf.FEED_ERROR_MAX and feed.enabled]
     if feed_id is not None:
         feeds = [feed for feed in feeds if feed.id == feed_id]
 

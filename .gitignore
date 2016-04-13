@@ -22,7 +22,7 @@ eproject.cfg
 venv
 build
 
-src/conf/conf.cfg
+src/conf.py
 .coverage
 
 # node files

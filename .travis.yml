@@ -12,9 +12,7 @@ before_install:
   - sudo apt-get -qq update
   - sudo apt-get -qq install -y git build-essential libxml2-dev libxslt1-dev libpq-dev
 install:
-  - cp src/conf/conf.cfg-sample src/conf/conf.cfg
-  - pip install -r requirements.txt
-  - pip install pep8 coverage coveralls
+  - python3 ./install.py --test
   - npm install
   - npm run build
 

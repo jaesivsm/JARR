@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
 @login_required
 @etag_match
 def home():
-    return render_template('home.html', cdn=conf.CDN_ADDRESS)
+    return render_template('home.html')
 
 
 @current_app.route('/menu')
@@ -55,9 +55,9 @@ def get_menu():
         categories[feed['category_id']]['feeds'].append(feed_id)
     return {'feeds': feeds, 'categories': categories,
             'categories_order': categories_order,
-            'crawling_method': conf.CRAWLING_METHOD,
-            'max_error': conf.DEFAULT_MAX_ERROR,
-            'error_threshold': conf.ERROR_THRESHOLD,
+            'crawling_method': conf.CRAWLER_TYPE,
+            'max_error': conf.FEED_ERROR_MAX,
+            'error_threshold': conf.FEED_ERROR_THRESHOLD,
             'is_admin': current_user.is_admin,
             'all_unread_count': sum(unread.values())}
 
@@ -130,13 +130,14 @@ def get_article(article_id, parse=False):
     article['icon_url'] = url_for('icon.icon', url=feed.icon_url) \
             if feed.icon_url else None
     readability_available = bool(current_user.readability_key
-                                 or conf.READABILITY_KEY)
+                                 or conf.PLUGINS_READABILITY_KEY)
     article['readability_available'] = readability_available
     if parse or (not article.readability_parsed
             and feed.readability_auto_parse and readability_available):
         try:
             new_content = readability.parse(article.link,
-                    current_user.readability_key or conf.READABILITY_KEY)
+                    current_user.readability_key
+                    or conf.PLUGINS_READABILITY_KEY)
         except Exception as error:
             flash("Readability failed with %r" % error, "error")
             article['readability_parsed'] = False
