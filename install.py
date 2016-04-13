@@ -70,7 +70,7 @@ def title(text):
 
 
 def can_npm():
-    return bool(str(Popen(['which', 'npm'], stdout=PIPE).communicate()[0]))
+    return bool(Popen(['which', 'npm'], stdout=PIPE).communicate()[0])
 
 
 def ask(text, choices=[], default=None, cast=None):
@@ -89,7 +89,7 @@ def ask(text, choices=[], default=None, cast=None):
             print('(default: %r)' % default, end=' ')
         print(':', end=' ')
 
-        result = input().lower()
+        result = input()
         if not result and default is None:
             print('you must provide an answer')
         elif result and choices and result not in choices:

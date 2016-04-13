@@ -53,9 +53,9 @@ class OAuthSignIn:  # pragma: no cover
 
     def __init__(self, provider_name):
         self.provider_name = provider_name
-        self.consumer_id = getattr(conf, ('OAUTH_%s_ID' % provider_name).upper)
+        self.consumer_id = getattr(conf, 'OAUTH_%s_ID' % provider_name.upper())
         self.consumer_secret \
-                = getattr(conf, ('OAUTH_%s_SECRET' % provider_name).upper)
+                = getattr(conf, 'OAUTH_%s_SECRET' % provider_name.upper())
 
     def authorize(self):
         pass
