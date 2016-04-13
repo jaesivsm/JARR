@@ -45,6 +45,12 @@ You'll then have to specify as database URI ``postgres://<your user>:<your passw
 
 Once it's done, execute the script ``install.py``, it will prompt you various configuration values that you'll be able to edit later on in ``src/conf.py`` or by running that script again. If you do so, you may want to run it with the option ``--no-db`` to avoid erasing your already created database (more option are available with ``--help``).
 
+You must then set the crawler to be run once every few minutes with a limited number of feed or once every few hour with all the feeds. I use crontab for that :
+
+.. code:: crontab
+
+    */2 * * * * cd {root};source venv/bin/activate;./manager.py fetch --limit 20 -r
+
 
 License
 -------
