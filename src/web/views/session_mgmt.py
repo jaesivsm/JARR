@@ -43,8 +43,11 @@ def on_identity_loaded(sender, identity):
 
 @login_manager.user_loader
 def load_user(user_id):
-    return UserController(user_id, ignore_context=True).get(
-            id=user_id, is_active=True)
+    try:
+        return UserController(user_id, ignore_context=True).get(
+                id=user_id, is_active=True)
+    except Exception:
+        return None
 
 
 # FROM http://blog.miguelgrinberg.com/post/oauth-authentication-with-flask

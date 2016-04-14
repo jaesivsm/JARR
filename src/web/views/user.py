@@ -6,7 +6,7 @@ from flask import (Blueprint, render_template, redirect,
                    flash, url_for, request, make_response)
 from flask.ext.principal import Permission, UserNeed
 from flask.ext.babel import gettext
-from flask.ext.login import current_user, login_required
+from flask.ext.login import current_user, login_required, logout_user
 
 import conf
 from lib import emails
@@ -170,6 +170,7 @@ def delete(user_id):
         ucontr = UserController()
     elif Permission(UserNeed(user_id)).can():
         ucontr = UserController(user_id)
+        logout_user()
     else:
         flash(gettext('You do not have rights on this user'), 'danger')
         raise Forbidden(gettext('You do not have rights on this user'))
@@ -177,7 +178,7 @@ def delete(user_id):
     flash(gettext('Deletion successful'), 'success')
     if admin_permission.can():
         return redirect(url_for('admin.dashboard'))
-    return redirect(url_for('logout'))
+    return redirect(url_for('login'))
 
 
 @user_bp.route('/gen_pass_token', methods=['GET', 'POST'])

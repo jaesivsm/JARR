@@ -1,6 +1,6 @@
 import re
 from datetime import datetime
-from sqlalchemy.orm import validates
+from sqlalchemy.orm import validates, relationship
 from flask.ext.login import UserMixin
 
 from bootstrap import db
@@ -31,6 +31,10 @@ class User(db.Model, UserMixin, RightMixin):
                             cascade='all,delete-orphan')
     readability_key = db.Column(db.String(), default='')
     renew_password_token = db.Column(db.String(), default='')
+
+    categories = relationship('Category', cascade='all, delete-orphan')
+    feeds = relationship('Feed', cascade='all, delete-orphan')
+    articles = relationship('Article', cascade='all, delete-orphan')
 
     @staticmethod
     def _fields_base_write():
