@@ -13,44 +13,58 @@ Presentation
 
 JARR (which stands for Just Another RSS Reader) is a web-based news aggregator and reader.
 
-JARR is coninuingly ongoing developments and functionnalities are regularly added.
-To check on those see the `CHANGELOG <CHANGELOG.rst>`_.
+JARR is under ongoing developments and functionnalities are regularly added.
+For past and futur updates see the milestones_.
 However JARR is stable and can function as easily on a light installation with the python SimpleHTTP server and a SQLite database or on a more heavy setup with nginx or apache running against a PostGreSQL database.
+
+.. _milestones: https://github.com/jaesivsm/JARR/milestones
 
 Installing
 ----------
 
-It's recommended to install JARR inside a virtualenv.
+It's recommended to install JARR inside a virtualenv. Python3.4 is required.
 
 .. code:: bash
 
     virtualenv venv
     source venv/bin/activate
 
-If you want to connect JARR to your PostgreSQL you'll have to create your database:
+If you want to connect JARR to your PostgreSQL you'll have to have PostgreSQL install:
 
 .. code:: bash
 
-    sudo -u postgres createuser pgsqluser --no-superuser --createdb --no-createrole
-    sudo -u postgres createdb jarr --no-password
+    # for debian stable
+    sudo apt install postgresql-server-dev-9.4
 
+And to create your database:
+
+.. code:: bash
+
+    sudo -u postgres createuser <your user> --no-superuser --createdb --no-createrole
+    sudo -u postgres createdb jarr --no-password
 
 .. code:: sql
 
-    ALTER USER '<youruser>' WITH ENCRYPTED PASSWORD '<your password>';
-    GRANT ALL PRIVILEGES ON DATABASE aggregator TO '<youruser>';
+    ALTER USER <your user> WITH ENCRYPTED PASSWORD '<your password>';
+    GRANT ALL PRIVILEGES ON DATABASE jarr TO '<your user>';
 
-
-You'll then have to specify as database URI ``postgres://<your user>:<your password>@127.0.0.1:5433/jarr``. Otherwise you can use the default ``sqlite`` db plug.
+You'll then have to specify as database URI ``postgres://<your user>:<your password>@127.0.0.1:5432/jarr``. Otherwise you can use the default ``sqlite`` db plug.
 
 Once it's done, execute the script ``install.py``, it will prompt you various configuration values that you'll be able to edit later on in ``src/conf.py`` or by running that script again. If you do so, you may want to run it with the option ``--no-db`` to avoid erasing your already created database (more option are available with ``--help``).
 
+**NOTE**: If you don't have ``npm`` installed, the install script won't be able to build the JS file and will propose you to use the one I host on my server. ``npm`` not being available in standard debian installation, I advise you to STFW if you want the JS to be available locally.
+
+**NOTE**: Various OAuth providers are available as authentication provider for JARR. If you want to use those, you can register your JARR application as an app in `google console`_, `facebook applications`_ or `twitter applications`_. Once it's done, you'll have the possibility to set it for JARR through the install process or by editing the ``conf.py`` file.
+
+.. _`google console`: https://console.developers.google.com/apis/library
+.. _`facebook applications`: https://www.facebook.com/settings?tab=applications
+.. _`twitter applications`: https://apps.twitter.com/app/
+
 You must then set the crawler to be run once every few minutes with a limited number of feed or once every few hour with all the feeds. I use crontab for that :
 
-.. code:: crontab
+.. code:: bash
 
     */2 * * * * cd {root};source venv/bin/activate;./manager.py fetch --limit 20 -r
-
 
 License
 -------
