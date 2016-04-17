@@ -24,6 +24,7 @@ class User(db.Model, UserMixin, RightMixin):
     google_identity = db.Column(db.String())
     twitter_identity = db.Column(db.String())
     facebook_identity = db.Column(db.String())
+    linuxfr_identity = db.Column(db.String())
 
     date_created = db.Column(db.DateTime(), default=datetime.utcnow)
     last_connection = db.Column(db.DateTime(), default=datetime.utcnow)

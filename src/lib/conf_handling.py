@@ -78,6 +78,10 @@ SECTIONS = (
                  'ask': 'Enter your google id if you have one'},
                 {'key': 'GOOGLE_SECRET', 'default': '',
                  'ask': 'Enter your google secret if you have one'},
+                {'key': 'LINUXFR_ID', 'default': '',
+                 'ask': 'Enter your linuxfr id if you have one'},
+                {'key': 'LINUXFR_SECRET', 'default': '',
+                 'ask': 'Enter your linuxfr secret if you have one'},
                 ]},
         {'prefix': 'NOTIFICATION', 'edit': False, 'options': [
             {'key': 'EMAIL', 'default': ''},
