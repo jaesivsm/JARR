@@ -1,10 +1,12 @@
+import pytz
 import logging
-from calendar import timegm
+from datetime import datetime
 
 from flask import current_app, render_template, \
         request, flash, url_for, redirect
 from flask.ext.login import login_required, current_user
 from flask.ext.babel import gettext
+from babel.dates import format_datetime, format_timedelta
 
 import conf
 from web.lib.utils import redirect_url
@@ -17,6 +19,7 @@ from web.controllers import FeedController, \
 
 from plugins import readability
 
+localize = pytz.utc.localize
 logger = logging.getLogger(__name__)
 
 
@@ -32,6 +35,7 @@ def home():
 @etag_match
 @jsonify
 def get_menu():
+    now = datetime.utcnow()
     categories_order = [0]
     categories = {0: {'name': 'No category', 'id': 0}}
     for cat in CategoryController(current_user.id).read().order_by('name'):
@@ -43,8 +47,10 @@ def get_menu():
         categories[cat_id]['feeds'] = []
     feeds = {feed.id: feed for feed in FeedController(current_user.id).read()}
     for feed_id, feed in feeds.items():
-        feed['created_stamp'] = timegm(feed.created_date.timetuple()) * 1000
-        feed['last_stamp'] = timegm(feed.last_retrieved.timetuple()) * 1000
+        feed['created_rel'] = format_timedelta(now - feed.created_date)
+        feed['last_rel'] = format_timedelta(now - feed.last_retrieved)
+        feed['created_date'] = format_datetime(localize(feed.created_date))
+        feed['last_retrieved'] = format_datetime(localize(feed.last_retrieved))
         feed['category_id'] = feed.category_id or 0
         feed['unread'] = unread.get(feed.id, 0)
         if not feed.filters:
@@ -92,6 +98,7 @@ def _get_filters(in_dict):
 
 @jsonify
 def _articles_to_json(articles):
+    now = datetime.utcnow()
     fd_hash = {feed.id: {'title': feed.title,
                          'icon_url': url_for('icon.icon', url=feed.icon_url)
                                      if feed.icon_url else None}
@@ -101,7 +108,8 @@ def _articles_to_json(articles):
             'feed_id': art.feed_id, 'category_id': art.category_id or 0,
             'feed_title': fd_hash[art.feed_id]['title'],
             'icon_url': fd_hash[art.feed_id]['icon_url'],
-            'date': art.date, 'timestamp': timegm(art.date.timetuple()) * 1000}
+            'date': format_datetime(localize(art.date)),
+            'rel_date': format_timedelta(now - art.date)}
             for art in articles.limit(1000)]}
 
 
@@ -131,6 +139,7 @@ def get_article(article_id, parse=False):
             if feed.icon_url else None
     readability_available = bool(current_user.readability_key
                                  or conf.PLUGINS_READABILITY_KEY)
+    article['date'] = format_datetime(localize(article.date))
     article['readability_available'] = readability_available
     if parse or (not article.readability_parsed
             and feed.readability_auto_parse and readability_available):
