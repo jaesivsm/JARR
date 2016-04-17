@@ -26,6 +26,7 @@ def get_timezone():
 
 # Jinja filters
 application.jinja_env.filters['month_name'] = lambda n: calendar.month_name[n]
+application.jinja_env.autoescape = False
 
 # Views
 with application.app_context():

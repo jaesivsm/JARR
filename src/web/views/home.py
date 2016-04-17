@@ -47,8 +47,10 @@ def get_menu():
         categories[cat_id]['feeds'] = []
     feeds = {feed.id: feed for feed in FeedController(current_user.id).read()}
     for feed_id, feed in feeds.items():
-        feed['created_rel'] = format_timedelta(now - feed.created_date)
-        feed['last_rel'] = format_timedelta(now - feed.last_retrieved)
+        feed['created_rel'] = gettext("%(timedelta)s ago",
+                timedelta=format_timedelta(now - feed.created_date))
+        feed['last_rel'] = gettext("%(timedelta)s ago",
+                timedelta=format_timedelta(now - feed.last_retrieved))
         feed['created_date'] = format_datetime(localize(feed.created_date))
         feed['last_retrieved'] = format_datetime(localize(feed.last_retrieved))
         feed['category_id'] = feed.category_id or 0
@@ -109,7 +111,8 @@ def _articles_to_json(articles):
             'feed_title': fd_hash[art.feed_id]['title'],
             'icon_url': fd_hash[art.feed_id]['icon_url'],
             'date': format_datetime(localize(art.date)),
-            'rel_date': format_timedelta(now - art.date)}
+            'rel_date': gettext("%(timedelta)s ago",
+                timedelta=format_timedelta(now - art.date))}
             for art in articles.limit(1000)]}
 
 

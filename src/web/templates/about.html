@@ -4,25 +4,15 @@
     <div class="well">
         <h1>{{ _('About') }}</h1>
         <p>
-        {{ _('JARR is a news aggregator platform.') }}
-        {{ _('You can easily <a href="https://jarr.readthedocs.org/en/latest/deployment.html">install JARR on your server</a>.') }}
-        {{ _('Alternatively, you can deploy your own copy using this button:') }}</p>
-        <a class="reference external image-reference" href="https://heroku.com/deploy?template=https://github.com/JARR-aggregator/JARR.git"><img alt="https://www.herokucdn.com/deploy/button.png" src="https://www.herokucdn.com/deploy/button.png" /></a></p>
-        <p>{{ _('This software is under AGPLv3 license. You are welcome to copy, modify or
-        redistribute the <a href="https://github.com/JARR-aggregator/JARR">source code</a>
-        according to the <a href="https://www.gnu.org/licenses/agpl-3.0.html">Affero GPL</a> license.') }}</p>
-        <p>{{ _('Found a bug? Report it <a href="https://github.com/JARR-aggregator/JARR/issues">here</a>.') }}</p>
+        {{ _("JARR is a news aggregator platform.") }}
+        <p>{{ _("This software is under AGPLv3 license. You are welcome to copy, modify or redistribute the %(start_link)ssource code%(end_link)s according to the %(start_link2)sAffero GPL%(end_link2)s licence.", start_link="<a href='https://github.com/jaesivsm/JARR'>", end_link="</a>", start_link2="<a href='https://www.gnu.org/licenses/agpl-3.0.html'>", end_link2="</a>")}}</p>
+        <p>{{ _("Found a bug? Please report it %(start_link)sto the bug tracker%(end_link)s.", start_link="<a href='https://github.com/jaesivsm/JARR/issues'>", end_link="</a>")}}</p>
     </div>
     <div class="well">
-        <h1>{{ _('Help') }}</h1>
-        <p>{{ _('If you have any problem, <a href="https://wiki.cedricbonhomme.org/contact">contact</a> the administrator.') }}</p>
-        <p>{{ _('The documentation of the RESTful API is <a href="https://jarr.readthedocs.org/en/latest/web-services.html">here</a>.') }}</p>
-        <p>{{ _('You can subscribe to new feeds with a bookmarklet. Drag the following button to your browser bookmarks.') }}</p>
-        {{ _('<a class="btn btn-default" href="%(bookmarklet)s" rel="bookmark">Subscribe to this feed using JARR</a>', bookmarklet='javascript:window.location="%s?url="+encodeURIComponent(document.location)' % url_for('feed.bookmarklet', _external=True)) }}
-    </div>
-    <div class="well">
-        <h1>{{ _('Donation') }}</h1>
-        <p>{{ _('If you wish and if you like JARR, you can donate via bitcoin <a href="https://blockexplorer.com/address/1GVmhR9fbBeEh7rP1qNq76jWArDdDQ3otZ">1GVmhR9fbBeEh7rP1qNq76jWArDdDQ3otZ</a>. Thank you!') }}</p>
+        <h1>{{ _("Help") }}</h1>
+        <p>{{ _("If you have any problem, %(start_link)scontact the administrator%(end_link)s.", start_link="<a href='https://1pxsolidblack.pl/'>", end_link="</a>") }}</p>
+        <p>{{ _("You can subscribe to new feeds with a bookmarklet. Drag the following button to your browser bookmarks.") }}</p>
+        <a class="btn btn-default" href="javascript:window.location="{{ url_for('feed.bookmarklet', _external=True, url="+encodeURIComponent(document.location)") }}">{{_("Subscribe to this feed using JARR")}}</a>
     </div>
 </div><!-- /.container -->
 {% endblock %}

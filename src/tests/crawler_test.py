@@ -71,29 +71,29 @@ class CrawlerTest(JarrFlaskCommon):
         FeedController().update({}, kwargs)
 
     def test_http_crawler_add_articles(self):
+        scheduler = CrawlerScheduler('admin', 'admin')
         resp = self._api('get', 'articles', data={'limit': 1000}, user='admin')
         self.assertEquals(18, len(resp.json()))
-        scheduler = CrawlerScheduler('admin', 'admin')
+
         scheduler.run()
         scheduler.wait()
-
         resp = self._api('get', 'articles', data={'limit': 1000}, user='admin')
         self.assertEquals(143, len(resp.json()))
+
         self.resp_status_code = 304
         scheduler.run()
         scheduler.wait()
-
         resp = self._api('get', 'articles', data={'limit': 1000}, user='admin')
         self.assertEquals(143, len(resp.json()))
 
     def test_no_add_on_304(self):
+        scheduler = CrawlerScheduler('admin', 'admin')
         self.resp_status_code = 304
         resp = self._api('get', 'articles', data={'limit': 1000}, user='admin')
         self.assertEquals(18, len(resp.json()))
-        scheduler = CrawlerScheduler('admin', 'admin')
+
         scheduler.run()
         scheduler.wait()
-
         resp = self._api('get', 'articles', data={'limit': 1000}, user='admin')
         self.assertEquals(18, len(resp.json()))
 
@@ -103,9 +103,9 @@ class CrawlerTest(JarrFlaskCommon):
         resp = self._api('get', 'articles', data={'limit': 1000}, user='admin')
         self.assertEquals(18, len(resp.json()))
         scheduler = CrawlerScheduler('admin', 'admin')
+
         scheduler.run()
         scheduler.wait()
-
         resp = self._api('get', 'articles', data={'limit': 1000}, user='admin')
         self.assertEquals(18, len(resp.json()))
 
@@ -114,7 +114,6 @@ class CrawlerTest(JarrFlaskCommon):
 
         scheduler.run()
         scheduler.wait()
-
         resp = self._api('get', 'articles', data={'limit': 1000}, user='admin')
         self.assertEquals(18, len(resp.json()))
 
@@ -123,6 +122,5 @@ class CrawlerTest(JarrFlaskCommon):
 
         scheduler.run()
         scheduler.wait()
-
         resp = self._api('get', 'articles', data={'limit': 1000}, user='admin')
         self.assertEquals(143, len(resp.json()))
