@@ -154,6 +154,13 @@
 .panel-body dd>input {
   width: 100%;
 }
+.panel-body dd>a{
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+  white-space: nowrap;
+}
 .filter-row>select.form-control:first-child {
   width: 10%;
 }
