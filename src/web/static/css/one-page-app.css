@@ -136,16 +136,20 @@
   display: inline;
   line-height: 30px;
 }
-#right-panel-heading * {
-  display: inline;
+#right-panel-heading>* {
+  display: inline-block;
+}
+#right-panel-heading h4 {
+  max-width: 88%;
+  margin: 0;
 }
 #right-panel-heading h4 img {
   margin-right: 5px;
 }
 #right-panel-heading div.btn-group {
   float: right;
-  margin-top: -5px;
-  margin-right: -8px;
+  margin-top: -4px;
+  margin-right: -7px;
 }
 .panel-body dd>input {
   width: 100%;
