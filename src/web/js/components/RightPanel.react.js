@@ -24,13 +24,15 @@ var PanelMixin = {
         if(this.isEditable() || this.isRemovable()) {
             var edit_button = null;
             if(this.isEditable()) {
-                edit_button = (<Button onClick={this.onClickEdit}>
-                                <Glyphicon glyph="pencil" />
+                edit_button = (<Button onClick={this.onClickEdit}
+                                       title="Click to edit this">
+                                 <Glyphicon glyph="pencil" />
                                </Button>);
             }
             var rem_button = null;
             if(this.isRemovable()) {
-                rem_button = (<Button onClick={this.onClickRemove}>
+                rem_button = (<Button onClick={this.onClickRemove}
+                                      title="Delete this item">
                                 <Glyphicon glyph="remove-sign" />
                               </Button>);
             }
@@ -174,8 +176,14 @@ var Article = React.createClass({
         if(!this.props.obj.readability_available) {
             return null;
         }
+        var title;
+        if(this.props.obj.readability_parsed) {
+            title = "Click this to download a more readable version of this article through redability";
+        } else {
+            title = "This article has been downloaded through redability";
+        }
         return (<Button id="readability-reload" onClick={this.reloadParsed}
-                        active={this.props.obj.readability_parsed}>
+                        title={title} active={this.props.obj.readability_parsed}>
                     <img src="/static/img/readability.png" />
                 </Button>);
     },

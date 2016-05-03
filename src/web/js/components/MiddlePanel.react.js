@@ -49,7 +49,7 @@ var TableLine = React.createClass({
             clsses += " active";
         }
         return (<div className={clsses} onClick={this.loadArticle} title={this.props.title}>
-                    <h5><strong>{title}</strong></h5>
+                    <span>{title}</span>
                     <JarrTime text={this.props.date}
                               stamp={this.props.rel_date} />
                     <div>{read} {liked} {this.props.title}</div>
