@@ -1,6 +1,8 @@
 import logging
+from sqlalchemy import desc
 from datetime import datetime
-from flask import (Blueprint, render_template, redirect, flash, url_for)
+from flask import (Blueprint, render_template, redirect,
+                   flash, url_for, request)
 from flask.ext.babel import gettext, format_timedelta
 from flask.ext.login import login_required, current_user
 
@@ -11,16 +13,23 @@ from web.controllers import UserController, FeedController, ArticleController
 logger = logging.getLogger(__name__)
 admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
 
-
 @admin_bp.route('/dashboard', methods=['GET', 'POST'])
 @login_required
 @admin_permission.require(http_exception=403)
 def dashboard():
+    order = request.args.get('o', 'id')
+    reverse = order.startswith('-')
+    if reverse:
+        order = order[1:]
+    if order not in {'login', 'email', 'last_connection', 'is_admin'}:
+        order = 'id'
     last_cons, now = {}, datetime.utcnow()
-    users = list(UserController().read().order_by('id'))
+    users = list(UserController().read().order_by(
+            desc(order) if reverse else order))
     for user in users:
         last_cons[user.id] = format_timedelta(now - user.last_connection)
     return render_template('admin/dashboard.html', now=datetime.utcnow(),
+            order=order, reverse=reverse,
             last_cons=last_cons, users=users, current_user=current_user)
 
 

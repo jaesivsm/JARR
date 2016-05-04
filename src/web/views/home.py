@@ -2,8 +2,8 @@ import pytz
 import logging
 from datetime import datetime
 
-from flask import current_app, render_template, \
-        request, flash, url_for, redirect
+from flask import (current_app, render_template,
+                   request, flash, url_for, redirect)
 from flask.ext.login import login_required, current_user
 from flask.ext.babel import gettext, get_locale
 from babel.dates import format_datetime, format_timedelta
@@ -14,8 +14,8 @@ from web import utils
 from web.lib.view_utils import etag_match
 from web.views.common import jsonify
 
-from web.controllers import FeedController, \
-                            ArticleController, CategoryController
+from web.controllers import (UserController, CategoryController,
+                             FeedController, ArticleController)
 
 from plugins import readability
 
@@ -27,6 +27,8 @@ logger = logging.getLogger(__name__)
 @login_required
 @etag_match
 def home():
+    UserController(current_user.id).update({'id': current_user.id},
+            {'last_connection': datetime.utcnow()})
     return render_template('home.html')
 
 
