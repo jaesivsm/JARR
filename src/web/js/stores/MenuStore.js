@@ -9,7 +9,7 @@ var MenuStore = assign({}, EventEmitter.prototype, {
     _datas: {filter: 'all', feeds: {}, categories: {}, categories_order: [],
              active_type: null, active_id: null,
              is_admin: false, crawling_method: 'classic',
-             all_unread_count: 0, max_error: 0, error_threshold: 0,
+             all_unread_count: -1, max_error: 0, error_threshold: 0,
              all_folded: false},
     getAll: function() {
         return this._datas;
