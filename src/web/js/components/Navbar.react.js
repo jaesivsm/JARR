@@ -39,11 +39,12 @@ JarrNavBar = React.createClass({
             heading = 'Add a new feed';
             action = '/feed/bookmarklet';
             placeholder = "Site or feed url, we'll sort it out later ;)";
-            body = <Input name="url" type="text" placeholder={placeholder} />;
-        } else {
+            body = <Input name="url" type="text" required
+                          placeholder={placeholder} />;
+        } else if (this.state.modalType == 'addCategory') {
             heading = 'Add a new category';
             action = '/category/create';
-            body = <Input name="name" type="text"
+            body = <Input name="name" type="text" required
                           placeholder="Name, there isn't much more to it" />;
         }
         return (<Modal show={this.state.showModal} onHide={this.close}>
