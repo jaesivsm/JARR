@@ -46,14 +46,16 @@ def try_get_icon_url(url, *splits):
         if split is None:
             continue
         rb_url = rebuild_url(url, split)
-        response = requests.get(rb_url, verify=False, timeout=10)
+        response = None
         # if html in content-type, we assume it's a fancy 404 page
         try:
+            response = requests.get(rb_url, verify=False, timeout=10)
             content_type = response.headers.get('content-type', '')
         except Exception:
             pass
         else:
-            if response.ok and 'html' not in content_type and response.content:
+            if response is not None and response.ok \
+                    and 'html' not in content_type and response.content:
                 return response.url
     return None
 
