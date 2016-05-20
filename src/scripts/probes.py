@@ -3,8 +3,7 @@ import sys
 from datetime import timedelta
 from flask.ext.script import Command, Option
 
-from web.controllers \
-        import UserController, FeedController, ArticleController
+from web.controllers import FeedController, ArticleController
 DEFAULT_HEADERS = {'Content-Type': 'application/json', 'User-Agent': 'munin'}
 LATE_AFTER = 60
 FETCH_RATE = 3
@@ -43,6 +42,7 @@ class FeedProbe(AbstractMuninPlugin):
         print("feeds.critical %d" % int(total / 10))
         print("graph_category web")
         print("graph_scale yes")
+        print("graph_args --logarithmic")
 
     def execute(self):
         delta = timedelta(minutes=LATE_AFTER + FETCH_RATE + 1)
@@ -60,8 +60,10 @@ class ArticleProbe(AbstractMuninPlugin):
         print("articles.label Overall rate")
         print("articles.type DERIVE")
         print("articles.min 0")
-        ucontr = UserController(ignore_context=True)
-        for id_ in sorted(user.id for user in ucontr.read()):
+        fcontr = FeedController(ignore_context=True)
+        for id_ in fcontr.read().with_entities(fcontr._db_cls.user_id)\
+                                .distinct().order_by('feed_user_id'):
+            id_ = id_[0]
             print("articles_user_%s.label Rate for user %s" % (id_, id_))
             print("articles_user_%s.type DERIVE" % id_)
             print("articles_user_%s.min 0" % id_)
