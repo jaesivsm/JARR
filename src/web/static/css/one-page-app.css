@@ -181,4 +181,5 @@
 }
 #article-content img {
   height: unset;
+  referrer-policy: "no-referrer";
 }
