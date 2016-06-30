@@ -18,9 +18,9 @@ import conf
 import json
 import logging
 import feedparser
-from datetime import datetime
 from time import strftime, gmtime
-from concurrent.futures import ThreadPoolExecutor
+from datetime import datetime, timedelta
+from concurrent.futures import wait, ThreadPoolExecutor
 from requests_futures.sessions import FuturesSession
 from web.lib.utils import default_handler, to_hash
 from web.lib.feed_utils import construct_feed_from
@@ -33,6 +33,7 @@ logging.captureWarnings(True)
 class AbstractCrawler:
     pool = ThreadPoolExecutor(max_workers=conf.CRAWLER_NBWORKER)
     session = FuturesSession(executor=pool)
+    _futures = []
 
     def __init__(self, auth):
         self.auth = auth
@@ -47,25 +48,32 @@ class AbstractCrawler:
         if data is None:
             data = {}
         method = getattr(self.session, method)
-        return method("%s%s/%s" % (self.url, conf.API_ROOT.strip('/'), urn),
-                      auth=self.auth, data=json.dumps(data,
-                                                      default=default_handler),
-                      headers={'Content-Type': 'application/json',
-                               'User-Agent': conf.CRAWLER_USER_AGENT})
+        future = method("%s%s/%s" % (self.url, conf.API_ROOT.strip('/'), urn),
+                        auth=self.auth,
+                        data=json.dumps(data, default=default_handler),
+                        headers={'Content-Type': 'application/json',
+                                 'User-Agent': conf.CRAWLER_USER_AGENT})
+        self._futures.append(future)
+        return future
 
-    def wait(self, max_wait=300, checks=2, wait_for=2):
+    def wait(self, max_wait=300, checks=10, wait_for=5):
         checked, second_waited = 0, 0
+        start = datetime.now()
+        max_wait_delta = timedelta(seconds=max_wait)
         while True:
             time.sleep(wait_for)
-            second_waited += wait_for
-            if second_waited > max_wait:
+            if datetime.now() - start > max_wait_delta:
                 logger.warn('Exiting after %d seconds', second_waited)
                 break
-            if self.pool._work_queue.qsize():
+            try:  # no idea why wait throw ValueError around
+                not_done = len(wait(self._futures, timeout=max_wait).not_done)
+            except ValueError:
+                not_done = 1
+            if not_done != 0:
                 checked = 0
                 continue
             checked += 1
-            if checked == checks:
+            if checked >= checks:
                 break
 
 
@@ -82,8 +90,16 @@ class JarrUpdater(AbstractCrawler):
         """Will process the result from the challenge, creating missing article
         and updating the feed"""
         article_created = False
-        if response.result().status_code != 204:
-            results = response.result().json()
+        try:
+            response = response.result()
+            response.raise_for_status()
+        except Exception:
+            logger.exception('error while contacting JARR:')
+            # ignore error on when contacting JARR
+            # leave it to the next iteration
+            return
+        if response.status_code != 204:
+            results = response.json()
             logger.debug('%r %r - %d entries were not matched '
                          'and will be created',
                          self.feed['id'], self.feed['title'], len(results))
@@ -228,8 +244,12 @@ class CrawlerScheduler(AbstractCrawler):
 
     def callback(self, response):
         """processes feeds that need to be fetched"""
-        response = response.result()
-        response.raise_for_status()
+        try:
+            response = response.result()
+            response.raise_for_status()
+        except Exception:
+            logger.exception('Something went wrong when retrieving feeds:')
+            return
         if response.status_code == 204:
             logger.debug("No feed to fetch")
             return
@@ -240,6 +260,7 @@ class CrawlerScheduler(AbstractCrawler):
                          feed['id'], feed['title'])
             future = self.session.get(feed['link'],
                                       headers=self.prepare_headers(feed))
+            self._futures.append(future)
 
             feed_crwlr = FeedCrawler(feed, self.auth)
             future.add_done_callback(feed_crwlr.callback)
