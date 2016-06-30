@@ -2,7 +2,7 @@
 JARR
 ====
 
-.. image:: https://travis-ci.org/jaesivsm/JARR.svg?branch=master
+.. image:: https://api.travis-ci.org/jaesivsm/JARR.svg?branch=master
     :target: https://travis-ci.org/jaesivsm/JARR
 
 .. image:: https://coveralls.io/repos/github/jaesivsm/JARR/badge.svg?branch=master
