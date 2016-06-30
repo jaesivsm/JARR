@@ -1,9 +1,10 @@
 #!/usr/bin/python3
 import sys
-from datetime import timedelta
+from datetime import datetime, timedelta
 from flask.ext.script import Command, Option
 
 from web.controllers import FeedController, ArticleController
+from web.models import User
 DEFAULT_HEADERS = {'Content-Type': 'application/json', 'User-Agent': 'munin'}
 LATE_AFTER = 60
 FETCH_RATE = 3
@@ -32,8 +33,15 @@ class AbstractMuninPlugin(Command):
 
 class FeedProbe(AbstractMuninPlugin):
 
+    def _get_total_feed(self):
+        last_conn_max = datetime.utcnow() - timedelta(days=30)
+        return FeedController(ignore_context=True).read()\
+                     .join(User).filter(User.is_active == True,
+                                        User.last_connection >= last_conn_max)\
+                     .count()
+
     def config(self):
-        total = FeedController(ignore_context=True).read().count()
+        total = self._get_total_feed()
         print("graph_title JARR - Feeds counts")
         print("graph_vlabel feeds")
         print("feeds.label Late feeds")
@@ -49,7 +57,7 @@ class FeedProbe(AbstractMuninPlugin):
         fcontr = FeedController(ignore_context=True)
 
         print("feeds.value %d" % len(list(fcontr.list_late(delta, limit=0))))
-        print("feeds_total.value %d" % fcontr.read().count())
+        print("feeds_total.value %d" % self._get_total_feed())
 
 
 class ArticleProbe(AbstractMuninPlugin):
@@ -61,8 +69,12 @@ class ArticleProbe(AbstractMuninPlugin):
         print("articles.type DERIVE")
         print("articles.min 0")
         fcontr = FeedController(ignore_context=True)
-        for id_ in fcontr.read().with_entities(fcontr._db_cls.user_id)\
-                                .distinct().order_by('feed_user_id'):
+        last_conn_max = datetime.utcnow() - timedelta(days=30)
+        for id_ in fcontr.read()\
+                     .join(User).filter(User.is_active == True,
+                                        User.last_connection >= last_conn_max)\
+                     .with_entities(fcontr._db_cls.user_id)\
+                     .distinct().order_by('feed_user_id'):
             id_ = id_[0]
             print("articles_user_%s.label Rate for user %s" % (id_, id_))
             print("articles_user_%s.type DERIVE" % id_)
