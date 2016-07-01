@@ -107,6 +107,8 @@ class FeedController(AbstractController):
     def update(self, filters, attrs):
         self._ensure_icon(attrs)
         if 'category_id' in attrs:
+            if attrs['category_id'] == 0:
+                attrs['category_id'] = None
             for feed in self.read(**filters):
                 self.__get_art_contr().update({'feed_id': feed.id},
                         {'category_id': attrs['category_id']})
