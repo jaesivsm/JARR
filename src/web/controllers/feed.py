@@ -100,15 +100,22 @@ class FeedController(AbstractController):
         if not icon_contr.read(url=attrs['icon_url']).count():
             icon_contr.create(**{'url': attrs['icon_url']})
 
+    def __clean_feed_fields(self, attrs):
+        if attrs.get('category_id') == 0:
+            attrs['category_id'] = None
+        if 'filters' in attrs:
+            attrs['filters'] = [filter_ for filter_ in attrs['filters']
+                                if type(filter_) is dict]
+
     def create(self, **attrs):
         self._ensure_icon(attrs)
+        self.__clean_feed_fields(attrs)
         return super().create(**attrs)
 
     def update(self, filters, attrs):
         self._ensure_icon(attrs)
+        self.__clean_feed_fields(attrs)
         if 'category_id' in attrs:
-            if attrs['category_id'] == 0:
-                attrs['category_id'] = None
             for feed in self.read(**filters):
                 self.__get_art_contr().update({'feed_id': feed.id},
                         {'category_id': attrs['category_id']})

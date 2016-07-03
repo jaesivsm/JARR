@@ -63,6 +63,10 @@ var PanelMixin = {
                 + '-' + this.props.obj.id + '-' + suffix);
     },
     getCore: function() {
+        /* This is a generic constructor for the main part of the right panel
+         * information. It will construct a dd / dl structure based on the
+         * registered fields of the element and on the mode
+         * its currently in (edit / read) */
         var items = [];
         var key;
         if(!this.state.edit_mode) {
@@ -361,7 +365,7 @@ var Feed = React.createClass({
     },
     removeFilterRow: function(evnt) {
         var obj = this.state.obj;
-        delete obj.filters[evnt.target.getAttribute('data-index')];
+        obj.filters.splice(evnt.target.getAttribute('data-index'), 1);
         this.setState({obj: obj});
     },
     saveFilterChange: function(evnt) {

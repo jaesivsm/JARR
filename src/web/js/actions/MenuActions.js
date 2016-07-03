@@ -18,7 +18,7 @@ var MenuActions = {
                 crawling_method: payload.crawling_method,
                 all_unread_count: payload.all_unread_count,
             });
-            if(setFilterFunc && id) {
+            if(typeof setFilterFunc == 'function' && id) {
                 setFilterFunc(id);
             }
         });
