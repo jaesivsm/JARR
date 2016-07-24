@@ -1,9 +1,13 @@
 import os
-from os.path import abspath, join, dirname
+import json
 import random
+import logging
+from os.path import abspath, join, dirname
 
-ROOT = abspath(join(dirname(globals()['__file__']), '../..'))
+logger = logging.getLogger(__name__)
+ROOT = abspath(join(dirname(globals()['__file__']), '../../..'))
 ABS_CHOICES = {'yes': True, 'y': True, 'no': False, 'n': False}
+DEFAULT_LOG_LEVEL = 'warn'
 SECTIONS = (
         {'options': [
             {'key': 'API_ROOT', 'default': '/api/v2.0', 'edit': False},
@@ -30,7 +34,7 @@ SECTIONS = (
                     ', you must provide the url of a builded one'},
         ]},
         {'prefix': 'LOG', 'edit': False, 'options': [
-            {'key': 'LEVEL', 'default': 'warn', 'test': 'debug',
+            {'key': 'LEVEL', 'default': DEFAULT_LOG_LEVEL, 'test': 'debug',
              'choices': ('debug', 'info', 'warn', 'error', 'fatal')},
             {'key': 'TYPE', 'default': ''},
             {'key': 'PATH', 'default': ''},
@@ -114,32 +118,62 @@ def get_key(section, option):
     return name + option['key']
 
 
-def write_conf(conf_gen):
-    current_section = None
-    in_src = 'bootstrap.py' in os.listdir()
-    path = 'conf.py' if in_src else 'src/conf.py'
-    with open(path, 'w') as fd:
-        for section, key, value in conf_gen:
-            if current_section != section and section:
-                fd.write('\n# %s\n' % section.upper())
-            current_section = section
-            fd.write('%s = %r\n' % (key, value))
+class ConfObject:
+    _paths = ('/etc/jarr.json', '~/.config/jarr.json', 'conf.json')
+    log_level_mapping = {'debug': logging.DEBUG,
+                         'info': logging.INFO,
+                         'warn': logging.WARN,
+                         'error': logging.ERROR,
+                         'fatal': logging.FATAL}
 
+    @property
+    def paths(self):
+        for path in self._paths:
+            yield os.path.abspath(os.path.expanduser(path))
 
-def rewrite(new_conf):
-    import imp
-    import conf
+    def _get_fd(self, mode):
+        fd = None
+        if sum(os.path.exists(path) for path in self.paths) > 1:
+            logger.warn('more than one conf file available in %r, '
+                        'will use the first',
+                        [path for path in self.paths if os.path.exists(path)])
+        for path in self.paths:
+            try:
+                fd = open(path, mode)
+                logger.warn('will use conf from %r', path)
+                return fd
+            except PermissionError:
+                if os.path.exists(path):
+                    logger.warn('permission denied on %s(%s)', path, mode)
+            except FileNotFoundError:
+                pass
 
-    def browse():
+        assert fd is not None, "couldn't find a writable file"
+
+    def reload(self):
+        with self._get_fd('r') as fd:
+            for key, value in json.load(fd).items():
+                setattr(self, key, value)
+        self.LOG_LEVEL = self.log_level_mapping[
+                getattr(self, 'LOG_LEVEL', DEFAULT_LOG_LEVEL).lower()]
+        # filling default missing sections
         for section in SECTIONS:
             for option in section['options']:
                 key = get_key(section, option)
-                if key in new_conf:
-                    value = new_conf[key]
-                elif hasattr(conf, key):
-                    value = getattr(conf, key)
-                else:
-                    value = option.get('default')
-                yield section.get('prefix'), key, value
-    write_conf(browse())
-    imp.reload(conf)
+                if not hasattr(self, key):
+                    setattr(self, key, option['default'])
+
+    def write(self):
+        with self._get_fd('w') as fd:
+            conf = {}
+            for section in SECTIONS:
+                for option in section['options']:
+                    key = get_key(section, option)
+                    conf[key] = getattr(self, key, option['default'])
+            reverse_log_level_mapping = {value: key
+                    for key, value in self.log_level_mapping.items()}
+            conf['LOG_LEVEL'] = reverse_log_level_mapping[conf['LOG_LEVEL']] \
+                    if conf.get('LOG_LEVEL') in reverse_log_level_mapping \
+                    else DEFAULT_LOG_LEVEL
+
+            json.dump(conf, fd, indent=2, sort_keys=True)

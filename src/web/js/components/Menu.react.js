@@ -268,7 +268,7 @@ var Menu = React.createClass({
     },
     componentDidMount: function() {
         var setFilterFunc = null;
-        var id = null;
+        var parent_id = null;
         if(window.location.search.substring(1)) {
             var args = window.location.search.substring(1).split('&');
             args.map(function(arg) {
@@ -276,13 +276,12 @@ var Menu = React.createClass({
                     setFilterFunc = MiddlePanelActions.setCategoryFilter;
                 } else if (arg.split('=')[0] == 'at' && arg.split('=')[1] == 'f') {
                     setFilterFunc = MiddlePanelActions.setFeedFilter;
-
                 } else if (arg.split('=')[0] == 'ai') {
-                    id = parseInt(arg.split('=')[1]);
+                    parent_id = parseInt(arg.split('=')[1]);
                 }
             });
         }
-        MenuActions.reload(setFilterFunc, id);
+        MenuActions.reload('set_filter', setFilterFunc, parent_id);
         MenuStore.addChangeListener(this._onChange);
     },
     componentWillUnmount: function() {

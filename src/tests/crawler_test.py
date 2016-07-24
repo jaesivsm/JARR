@@ -3,7 +3,7 @@ import logging
 from mock import Mock, patch
 from datetime import datetime
 
-import conf
+from bootstrap import conf
 from crawler.http_crawler import CrawlerScheduler
 from web.controllers import UserController, FeedController
 logger = logging.getLogger('web')
@@ -14,11 +14,15 @@ class CrawlerTest(JarrFlaskCommon):
     def setUp(self):
         super().setUp()
         UserController().update({'login': 'admin'}, {'is_api': True})
+        self._is_secure_served \
+                = patch('web.lib.article_cleaner.is_secure_served')
         self._p_req = patch('requests.Session.request')
         self._p_con = patch('crawler.http_crawler.construct_feed_from')
+        self.is_secure_served = self._is_secure_served.start()
         self.jarr_req = self._p_req.start()
         self.jarr_con = self._p_con.start()
 
+        self.is_secure_served.return_value = True
         self.resp_status_code = 200
         self.resp_headers = {}
         self.resp_raise = None
@@ -58,6 +62,7 @@ class CrawlerTest(JarrFlaskCommon):
 
     def tearDown(self):
         super().tearDown()
+        self._is_secure_served.stop()
         self._p_req.stop()
         self._p_con.stop()
 
@@ -79,6 +84,10 @@ class CrawlerTest(JarrFlaskCommon):
         scheduler.wait()
         resp = self._api('get', 'articles', data={'limit': 1000}, user='admin')
         self.assertEquals(143, len(resp.json()))
+
+        for art in resp.json():
+            self.assertFalse('srcset=' in art['content'])
+            self.assertFalse('src="/' in art['content'])
 
         self.resp_status_code = 304
         scheduler.run()

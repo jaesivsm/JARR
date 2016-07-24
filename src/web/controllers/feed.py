@@ -2,7 +2,7 @@ import logging
 import itertools
 from datetime import datetime, timedelta
 
-import conf
+from bootstrap import conf
 from .abstract import AbstractController
 from .icon import IconController
 from web.models import User, Feed
@@ -29,10 +29,14 @@ class FeedController(AbstractController):
         The idea is to keep very active feed up to date and to avoid missing
         articles du to high activity (when, for example, the feed only displays
         its 30 last entries and produces more than one per minutes).
+
+        Feeds of inactive (not connected for more than a month) or manually
+        desactivated users are ignored.
         """
         tenth = delta / 10
         feed_last_retrieved = datetime.utcnow() - delta
         art_last_retr = datetime.utcnow() - (2 * tenth)
+        last_conn_max = datetime.utcnow() - timedelta(days=30)
         min_wait = datetime.utcnow() - tenth
         ac = self.__get_art_contr()
         new_art_feed = (ac.read(retrieved_date__gt=art_last_retr,
@@ -44,7 +48,8 @@ class FeedController(AbstractController):
                            __or__=[{'last_retrieved__lt': feed_last_retrieved},
                                    {'last_retrieved__lt': min_wait,
                                     'id__in': new_art_feed}])
-                     .join(User).filter(User.is_active == True)
+                     .join(User).filter(User.is_active == True,
+                                        User.last_connection >= last_conn_max)
                      .order_by(Feed.last_retrieved))
         if limit:
             query = query.limit(limit)

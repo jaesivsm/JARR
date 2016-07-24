@@ -8,38 +8,38 @@
 <table class="table table-striped">
     <thead>
         <tr>
-            <th>#</th>
-            <th>{{_("Login")}}</th>
-            <th>{{_("Email")}}</th>
-            <th>{{_("Last connection")}}</th>
-            <th>{{_("Admin")}}</th>
-            <th>{{_("View")}}</th>
+            <th><a href="?o={%if not reverse and order == "id"%}-{%endif%}id">#</a></th>
+            <th><a href="?o={%if not reverse and order == "login"%}-{%endif%}login">{{_("Login")}}</a></th>
+            <th><a href="?o={%if not reverse and order == "email"%}-{%endif%}email">{{_("Email")}}</a></th>
+            <th><a href="?o={%if not reverse and order == "last_connection"%}-{%endif%}last_connection">{{_("Last connection")}}</a></th>
+            <th><a href="?o={%if not reverse and order == "is_admin"%}-{%endif%}is_admin">{{_("Admin")}}</a></th>
+            <th>{{_("View")}}</a></th>
             <th>{{_("Edit")}}</th>
         </tr>
     </thead>
     <tbody>
     {% for user in users %}
         <tr>
-            <td>{{ user.id }}</td>
-            <td><a href="{{ url_for("admin.user", user_id=user.id) }}">{{ user.login }}</a></td>
-            <td><a href="mailto:{{ user.email }}">{{ user.email  }}</a></td>
+            <td>{{user.id}}</td>
+            <td><a href="{{url_for("admin.user", user_id=user.id)}}">{{ user.login }}</a></td>
+            <td><a href="mailto:{{user.email}}">{{user.email}}</a></td>
             <td class="date">{{_("%(timedelta)s ago", timedelta=last_cons[user.id])}}</td>
             <td>
                 {% if user.is_admin %}
-                    <span class="glyphicon glyphicon-ok" title="{{ _("This user is an administrator !") }}" />
+                    <span class="glyphicon glyphicon-ok" title="{{_("This user is an administrator !")}}" />
                 {% endif %}
             </td>
             <td>
-                <a href="{{ url_for("admin.user", user_id=user.id) }}"><i class="glyphicon glyphicon-user" title="{{ _('View this user') }}"></i></a>
+                <a href="{{ url_for("admin.user", user_id=user.id) }}"><i class="glyphicon glyphicon-user" title="{{_("View this user")}}"></i></a>
             </td>
             <td>
-                <a href="{{ url_for("user.profile", user_id=user.id) }}"><i class="glyphicon glyphicon-edit" title="{{ _('Edit this user') }}"></i></a>
+                <a href="{{ url_for("user.profile", user_id=user.id) }}"><i class="glyphicon glyphicon-edit" title="{{_("Edit this user")}}"></i></a>
                 {% if not user.is_admin %}
                     <a href="{{ url_for("admin.toggle_user", user_id=user.id) }}">
                     {% if user.is_active %}
-                        <i class="glyphicon glyphicon-ok-sign" title="{{ _("Desactivate this user") }}"></i>
+                        <i class="glyphicon glyphicon-ok-sign" title="{{_("Desactivate this user")}}"></i>
                     {%else%}
-                        <i class="glyphicon glyphicon-ok-circle" title="{{ _("Activate this user") }}"></i>
+                        <i class="glyphicon glyphicon-ok-circle" title="{{_("Activate this user")}}"></i>
                     {%endif%}
                     </a>
                     <a href="{{ url_for("user.delete", user_id=user.id) }}"><i class="glyphicon glyphicon-remove" title="{{ _('Delete this user') }}" onclick="return confirm('{{ _('You are going to delete this account.') }}');"></i></a>

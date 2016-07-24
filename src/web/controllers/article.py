@@ -3,11 +3,12 @@ import logging
 import sqlalchemy
 from sqlalchemy import func
 from collections import Counter
+from datetime import datetime, timedelta
 
 from bootstrap import db
 from .abstract import AbstractController
 from web.controllers import CategoryController, FeedController
-from web.models import Article
+from web.models import User, Article
 
 logger = logging.getLogger(__name__)
 
@@ -29,8 +30,11 @@ class ArticleController(AbstractController):
         return self._count_by(Article.feed_id, filters)
 
     def count_by_user_id(self, **filters):
+        last_conn_max = datetime.utcnow() - timedelta(days=30)
         return dict(db.session.query(Article.user_id, func.count(Article.id))
                               .filter(*self._to_filters(**filters))
+                              .join(User).filter(User.is_active == True,
+                                        User.last_connection >= last_conn_max)
                               .group_by(Article.user_id).all())
 
     def create(self, **attrs):

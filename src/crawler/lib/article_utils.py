@@ -4,8 +4,9 @@ import requests
 import dateutil.parser
 from datetime import datetime, timezone
 
-import conf
+from bootstrap import conf
 from web.lib.utils import to_hash
+from web.lib.article_cleaner import clean_urls
 
 logger = logging.getLogger(__name__)
 
@@ -44,26 +45,18 @@ def construct_article(entry, feed):
                 pass
             else:
                 break
-    content = get_article_content(entry)
 
-    article_link = entry.get('link')
-    if conf.CRAWLER_RESOLV and article_link:
-        try:
-            # resolves URL behind proxies
-            # (like feedproxy.google.com)
-            response = requests.get(article_link, verify=False, timeout=5.0)
-            article_link = response.url
-        except Exception as error:
-            logger.warning("Unable to get the real URL of %s. Error: %s",
-                           article_link, error)
+    content = get_article_content(entry)
+    link = get_article_link(entry)
+    content = clean_urls(content, link)
 
     return {'feed_id': feed['id'],
             'user_id': feed['user_id'],
             'entry_id': extract_id(entry).get('entry_id', None),
-            'link': entry.get('link', feed['site_link']),
+            'link': link, 'content': content,
             'title': html.unescape(entry.get('title', 'No title')),
             'readed': False, 'like': False,
-            'content': content, 'retrieved_date': now, 'date': date or now}
+            'retrieved_date': now, 'date': date or now}
 
 
 def get_article_content(entry):
@@ -73,3 +66,16 @@ def get_article_content(entry):
     elif entry.get('summary'):
         content = entry['summary']
     return content
+
+
+def get_article_link(entry):
+    article_link = entry.get('link')
+    if conf.CRAWLER_RESOLV and article_link:
+        try:
+            # resolves URL behind proxies (like feedproxy.google.com)
+            response = requests.get(article_link, verify=False, timeout=5.0)
+            article_link = response.url
+        except Exception as error:
+            logger.warning("Unable to get the real URL of %s. Error: %s",
+                           article_link, error)
+    return article_link

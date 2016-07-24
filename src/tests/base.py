@@ -11,7 +11,7 @@ from tests.fixtures.filler import populate_db, reset_db
 from flask.ext.login import login_user, logout_user
 from werkzeug.exceptions import NotFound
 
-import conf
+from bootstrap import conf
 
 logger = logging.getLogger('web')
 

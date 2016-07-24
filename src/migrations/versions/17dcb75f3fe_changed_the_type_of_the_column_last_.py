@@ -11,7 +11,7 @@ revision = '17dcb75f3fe'
 down_revision = 'cde34831ea'
 
 from datetime import datetime
-import conf
+from bootstrap import conf
 from alembic import op
 import sqlalchemy as sa
 

@@ -14,10 +14,10 @@ JarrUpdater.callback
 
 import html
 import time
-import conf
 import json
 import logging
 import feedparser
+from bootstrap import conf
 from time import strftime, gmtime
 from datetime import datetime, timedelta
 from concurrent.futures import wait, ThreadPoolExecutor

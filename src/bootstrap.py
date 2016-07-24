@@ -4,22 +4,25 @@
 # required imports and code exection for basic functionning
 
 import os
-import conf
+import json
 import logging
-from urllib.parse import urlsplit
+from urllib.parse import urlparse
 from flask import Flask
 from flask.ext.sqlalchemy import SQLAlchemy
+from lib.conf_handling import ConfObject
 
 
-def to_log_level(level):
-    return {'debug': logging.DEBUG,
-            'info': logging.INFO,
-            'warn': logging.WARN,
-            'error': logging.ERROR,
-            'fatal': logging.FATAL}.get(str(level).lower(), logging.WARN)
-
-
-conf.LOG_LEVEL = to_log_level(conf.LOG_LEVEL)
+conf = ConfObject()
+# handling on the fly migration to new conf style
+if os.path.exists(os.path.abspath('conf.py')):
+    import conf as oldconf
+    for key in dir(oldconf):
+        if key.startswith('_'):
+            continue
+        setattr(conf, key, getattr(oldconf, key))
+    conf.write()
+    os.remove(os.path.abspath('conf.py'))
+conf.reload()
 
 
 def set_logging(log_path=None, log_level=logging.INFO, modules=(),
@@ -52,9 +55,12 @@ if os.environ.get('JARR_TESTING', False) == 'true':
 else:
     application.debug = conf.LOG_LEVEL <= logging.DEBUG
 
-scheme, domain, _, _, _ = urlsplit(conf.PLATFORM_URL)
-application.config['SERVER_NAME'] = domain
-application.config['PREFERRED_URL_SCHEME'] = scheme
+PARSED_PLATFORM_URL = urlparse(conf.PLATFORM_URL)
+application.config['SERVER_NAME'] = PARSED_PLATFORM_URL.netloc
+application.config['PREFERRED_URL_SCHEME'] = PARSED_PLATFORM_URL.scheme
+
+def is_secure_served():
+    return PARSED_PLATFORM_URL.scheme == 'https'
 
 set_logging(conf.LOG_PATH, log_level=conf.LOG_LEVEL)
 

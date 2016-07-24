@@ -2,20 +2,21 @@ import pytz
 import logging
 from datetime import datetime
 
-from flask import current_app, render_template, \
-        request, flash, url_for, redirect
+from flask import (current_app, render_template,
+                   request, flash, url_for, redirect)
 from flask.ext.login import login_required, current_user
 from flask.ext.babel import gettext, get_locale
 from babel.dates import format_datetime, format_timedelta
 
-import conf
+from bootstrap import conf
 from web.lib.utils import redirect_url
+from web.lib.article_cleaner import clean_urls
 from web import utils
 from web.lib.view_utils import etag_match
 from web.views.common import jsonify
 
-from web.controllers import FeedController, \
-                            ArticleController, CategoryController
+from web.controllers import (UserController, CategoryController,
+                             FeedController, ArticleController)
 
 from plugins import readability
 
@@ -27,6 +28,8 @@ logger = logging.getLogger(__name__)
 @login_required
 @etag_match
 def home():
+    UserController(current_user.id).update({'id': current_user.id},
+            {'last_connection': datetime.utcnow()})
     return render_template('home.html')
 
 
@@ -160,7 +163,7 @@ def get_article(article_id, parse=False):
             article['readability_parsed'] = False
         else:
             article['readability_parsed'] = True
-            article['content'] = new_content
+            article['content'] = clean_urls(new_content, article['link'])
             new_attr = {'readability_parsed': True, 'content': new_content}
             contr.update({'id': article['id']}, new_attr)
     return article
