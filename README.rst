@@ -2,11 +2,11 @@
 JARR
 ====
 
-.. image:: https://api.travis-ci.org/jaesivsm/JARR.svg?branch=develop
+.. image:: https://api.travis-ci.org/jaesivsm/JARR.svg?branch=master
     :target: https://travis-ci.org/jaesivsm/JARR
 
-.. image:: https://coveralls.io/repos/github/jaesivsm/JARR/badge.svg?branch=develop
-    :target: https://coveralls.io/github/jaesivsm/JARR?branch=develop
+.. image:: https://coveralls.io/repos/github/jaesivsm/JARR/badge.svg?branch=master
+    :target: https://coveralls.io/github/jaesivsm/JARR?branch=master
 
 Presentation
 ------------
