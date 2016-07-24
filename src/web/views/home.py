@@ -10,6 +10,7 @@ from babel.dates import format_datetime, format_timedelta
 
 import conf
 from web.lib.utils import redirect_url
+from web.lib.article_cleaner import clean_urls
 from web import utils
 from web.lib.view_utils import etag_match
 from web.views.common import jsonify
@@ -162,7 +163,7 @@ def get_article(article_id, parse=False):
             article['readability_parsed'] = False
         else:
             article['readability_parsed'] = True
-            article['content'] = new_content
+            article['content'] = clean_urls(new_content, article['link'])
             new_attr = {'readability_parsed': True, 'content': new_content}
             contr.update({'id': article['id']}, new_attr)
     return article

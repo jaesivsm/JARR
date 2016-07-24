@@ -6,7 +6,7 @@
 import os
 import conf
 import logging
-from urllib.parse import urlsplit
+from urllib.parse import urlparse
 from flask import Flask
 from flask.ext.sqlalchemy import SQLAlchemy
 
@@ -52,9 +52,12 @@ if os.environ.get('JARR_TESTING', False) == 'true':
 else:
     application.debug = conf.LOG_LEVEL <= logging.DEBUG
 
-scheme, domain, _, _, _ = urlsplit(conf.PLATFORM_URL)
-application.config['SERVER_NAME'] = domain
-application.config['PREFERRED_URL_SCHEME'] = scheme
+PARSED_PLATFORM_URL = urlparse(conf.PLATFORM_URL)
+application.config['SERVER_NAME'] = PARSED_PLATFORM_URL.netloc
+application.config['PREFERRED_URL_SCHEME'] = PARSED_PLATFORM_URL.scheme
+
+def is_secure_served():
+    return PARSED_PLATFORM_URL.scheme == 'https'
 
 set_logging(conf.LOG_PATH, log_level=conf.LOG_LEVEL)
 
