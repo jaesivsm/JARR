@@ -13,7 +13,7 @@ down_revision = '19bdaa6208e'
 from alembic import op
 import sqlalchemy as sa
 
-import conf
+from bootstrap import conf
 
 
 def upgrade():

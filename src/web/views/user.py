@@ -8,7 +8,7 @@ from flask.ext.principal import Permission, UserNeed
 from flask.ext.babel import gettext
 from flask.ext.login import current_user, login_required, logout_user
 
-import conf
+from bootstrap import conf
 from lib import emails
 from web.views.common import admin_permission, login_user_bundle
 from web.controllers import (UserController, CategoryController,

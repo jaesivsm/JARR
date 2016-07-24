@@ -10,34 +10,6 @@ path.append(root)
 from lib import conf_handling
 
 
-REQUIREMENTS = ['aiohttp==0.21.0',
-                'alembic==0.8.4',
-                'beautifulsoup4==4.4.1',
-                'feedparser==5.2.1',
-                'Flask==0.10.1',
-                'Flask-Babel==0.9',
-                'Flask-Login==0.3.2',
-                'Flask-Migrate==1.7.0',
-                'Flask-Principal==0.4.0',
-                'Flask-RESTful==0.3.5',
-                'Flask-Script==2.0.5',
-                'Flask-SQLAlchemy==2.1',
-                'Flask-SSLify==0.1.5',
-                'Flask-WTF==0.12',
-                'lxml==3.5.0',
-                'opml==0.5',
-                'python-dateutil==2.4.2',
-                'python-postmark==0.4.7',
-                'rauth==0.7.2',
-                'requests==2.10.0',
-                'requests-futures==0.9.7',
-                'SQLAlchemy==1.0.11',
-                'WTForms==2.1',
-                ]
-POSTGRES_REQ = 'psycopg2==2.6.1'
-DEV_REQUIREMENTS = ['pep8', 'coverage', 'coveralls']
-
-
 def parse_args():
     parser = ArgumentParser("""This script is aimed to bootstrap JARR.
 
@@ -116,9 +88,10 @@ def build_conf(test=False, creds={}):
     logins, passwords = {'CRAWLER_LOGIN'}, {'CRAWLER_PASSWD'}
     if not test:
         try:
-            import conf
+            conf = conf_handling.ConfObject()
+            conf.reload()
             could_import_conf = True
-        except ImportError:
+        except AssertionError:
             pass
         if not could_import_conf:
             creds['login'] = ask("Admin login", default="admin")
@@ -172,17 +145,22 @@ def install_python_deps(args):
     except ImportError:
         print('pip is not available ; aborting', file=stderr)
 
-    import conf
-    imp.reload(conf)
+    conf = conf_handling.ConfObject()
+    try:
+        conf.reload()
+    except Exception:
+        pass
     if not args.no_requirements:
-        install_postgres = 'postgres' in conf.SQLALCHEMY_DATABASE_URI
+        install_postgres = 'postgres' in getattr(
+                conf, 'SQLALCHEMY_DATABASE_URI', '')
 
     print('installing python dependencies...')
-    pip.main(['install', '--quiet', '--upgrade'] + REQUIREMENTS)
+    base_cmd = ['install', '--quiet', '--upgrade', '-r']
+    pip.main(base_cmd + ['requirements.txt'])
     if install_postgres:
-        pip.main(['install', '--quiet', '--upgrade', POSTGRES_REQ])
+        pip.main(base_cmd + ['requirements.postgres.txt'])
     if args.test:
-        pip.main(['install', '--quiet', '--upgrade'] + DEV_REQUIREMENTS)
+        pip.main(base_cmd + ['requirements.dev.txt'])
 
 
 def bootstrap_database(args, creds):
@@ -208,8 +186,10 @@ def build_bundle_js(args):
 def main():
     args = parse_args()
     creds = {}
-    new_conf = list(build_conf(args.test, creds))
-    conf_handling.write_conf(new_conf)
+    conf_obj = conf_handling.ConfObject()
+    for _, key, value in build_conf(args.test, creds):
+        setattr(conf_obj, key, value)
+    conf_obj.write()
     install_python_deps(args)
     bootstrap_database(args, creds)
     init_submodule()

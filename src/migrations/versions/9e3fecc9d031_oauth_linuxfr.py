@@ -12,7 +12,7 @@ down_revision = '122ac0c356c'
 branch_labels = None
 depends_on = None
 
-import conf
+from bootstrap import conf
 from alembic import op
 import sqlalchemy as sa
 

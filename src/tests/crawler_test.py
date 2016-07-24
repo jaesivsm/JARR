@@ -3,7 +3,7 @@ import logging
 from mock import Mock, patch
 from datetime import datetime
 
-import conf
+from bootstrap import conf
 from crawler.http_crawler import CrawlerScheduler
 from web.controllers import UserController, FeedController
 logger = logging.getLogger('web')

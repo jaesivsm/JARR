@@ -2,7 +2,7 @@ import logging
 import itertools
 from datetime import datetime, timedelta
 
-import conf
+from bootstrap import conf
 from .abstract import AbstractController
 from .icon import IconController
 from web.models import User, Feed

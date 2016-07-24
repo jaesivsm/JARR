@@ -11,7 +11,7 @@ from flask.ext.principal import (Principal, AnonymousIdentity, UserNeed,
                                  identity_changed, identity_loaded,
                                  session_identity_loader)
 
-import conf
+from bootstrap import conf
 from web.views.common import admin_role, api_role, login_user_bundle
 from web.controllers import UserController
 from web.forms import SignupForm, SigninForm

@@ -4,7 +4,7 @@ import requests
 import dateutil.parser
 from datetime import datetime, timezone
 
-import conf
+from bootstrap import conf
 from web.lib.utils import to_hash
 from web.lib.article_cleaner import clean_urls
 

@@ -24,7 +24,7 @@ import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
-import conf
+from bootstrap import conf
 
 logger = logging.getLogger(__name__)
 

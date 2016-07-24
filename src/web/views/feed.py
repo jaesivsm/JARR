@@ -7,7 +7,7 @@ from flask import Blueprint, render_template, flash, \
 from flask.ext.babel import gettext
 from flask.ext.login import login_required, current_user
 
-import conf
+from bootstrap import conf
 from web import utils
 from web.lib.view_utils import etag_match
 from web.lib.feed_utils import construct_feed_from

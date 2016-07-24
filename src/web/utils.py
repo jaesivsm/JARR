@@ -23,7 +23,7 @@ from collections import Counter
 from contextlib import contextmanager
 from flask import request
 
-import conf
+from bootstrap import conf
 from web import controllers
 from web.models import Article
 from web.lib.utils import clear_string

@@ -3,7 +3,7 @@ from flask import (request, render_template, flash,
                    url_for, redirect, current_app)
 from flask.ext.babel import gettext
 
-import conf
+from bootstrap import conf
 from web.lib.view_utils import etag_match
 
 logger = logging.getLogger(__name__)

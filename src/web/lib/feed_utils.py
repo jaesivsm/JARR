@@ -5,7 +5,7 @@ import requests
 import feedparser
 from bs4 import BeautifulSoup, SoupStrainer
 
-import conf
+from bootstrap import conf
 from web.lib.utils import try_keys, try_get_icon_url, rebuild_url
 
 logger = logging.getLogger(__name__)

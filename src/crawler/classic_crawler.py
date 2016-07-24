@@ -1,9 +1,9 @@
 import ssl
-import conf
 import asyncio
 import logging
 import feedparser
 import dateutil.parser
+from bootstrap import conf
 from datetime import datetime
 from sqlalchemy import or_
 
