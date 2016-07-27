@@ -45,12 +45,19 @@ def fetch(limit=100, retreive_all=False):
 
 @manager.command
 def reset_feeds():
-    contr = FeedController()
-    step = timedelta(seconds=3600 / contr.read().count())
+    from web.models import User
+    fcontr = FeedController(ignore_context=True)
     now = datetime.utcnow()
-    for i, feed in enumerate(contr.read()
-            .order_by(contr._db_cls.last_retrieved)):
-        contr.update({'id': feed.id},
+    last_conn_max = now - timedelta(days=30)
+
+    feeds = list(fcontr.read().join(User).filter(User.is_active == True,
+                                    User.last_connection >= last_conn_max)\
+                        .with_entities(fcontr._db_cls.user_id)\
+                        .distinct())
+
+    step = timedelta(seconds=3600 / fcontr.read().count())
+    for i, feed in enumerate(feeds):
+        fcontr.update({'id': feed[0]},
                 {'etag': '', 'last_modified': '',
                  'last_retrieved': now - i * step})
 
