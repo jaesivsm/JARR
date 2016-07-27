@@ -140,7 +140,7 @@ class ConfObject:
         for path in self.paths:
             try:
                 fd = open(path, mode)
-                logger.warn('will use conf from %r', path)
+                logger.info('will use conf from %r', path)
                 return fd
             except PermissionError:
                 if os.path.exists(path):
