@@ -33,7 +33,7 @@ def escape_keys(*keys):
 @escape_keys('title', 'description')
 def construct_feed_from(url=None, fp_parsed=None, feed=None, query_site=True):
     requests_kwargs = {'headers': {'User-Agent': conf.CRAWLER_USER_AGENT},
-                       'verify': False}
+                       'verify': False, 'timeout': conf.CRAWLER_TIMEOUT}
     if url is None and fp_parsed is not None:
         url = fp_parsed.get('url')
     if url is not None and fp_parsed is None:

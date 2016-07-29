@@ -48,6 +48,7 @@ SECTIONS = (
              'choices': ABS_CHOICES, 'edit': False},
             {'key': 'USER_AGENT',
              'edit': False, 'default': 'https://github.com/jaesivsm/JARR'},
+            {'key': 'TIMEOUT', 'edit': False, 'default': 30},
         ]},
         {'prefix': 'PLUGINS', 'options': [
             {'key': 'READABILITY_KEY', 'default': '',

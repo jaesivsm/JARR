@@ -1,5 +1,6 @@
 import base64
 import requests
+from bootstrap import conf
 from web.models import Icon
 from .abstract import AbstractController
 
@@ -10,7 +11,11 @@ class IconController(AbstractController):
 
     def _build_from_url(self, attrs):
         if 'url' in attrs and 'content' not in attrs:
-            resp = requests.get(attrs['url'], verify=False)
+            try:
+                resp = requests.get(attrs['url'], verify=False,
+                                    timemout=conf.CRAWLER_TIMEOUT)
+            except Exception:
+                return attrs
             attrs.update({'url': resp.url,
                     'mimetype': resp.headers.get('content-type', None),
                     'content': base64.b64encode(resp.content).decode('utf8')})

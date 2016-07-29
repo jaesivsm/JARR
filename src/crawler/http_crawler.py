@@ -49,7 +49,7 @@ class AbstractCrawler:
             data = {}
         method = getattr(self.session, method)
         future = method("%s%s/%s" % (self.url, conf.API_ROOT.strip('/'), urn),
-                        auth=self.auth,
+                        auth=self.auth, timeout=conf.CRAWLER_TIMEOUT,
                         data=json.dumps(data, default=default_handler),
                         headers={'Content-Type': 'application/json',
                                  'User-Agent': conf.CRAWLER_USER_AGENT})
@@ -259,6 +259,7 @@ class CrawlerScheduler(AbstractCrawler):
             logger.debug('%r %r - fetching resources',
                          feed['id'], feed['title'])
             future = self.session.get(feed['link'],
+                                      timeout=conf.CRAWLER_TIMEOUT,
                                       headers=self.prepare_headers(feed))
             self._futures.append(future)
 

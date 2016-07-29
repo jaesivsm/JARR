@@ -73,7 +73,8 @@ def get_article_link(entry):
     if conf.CRAWLER_RESOLV and article_link:
         try:
             # resolves URL behind proxies (like feedproxy.google.com)
-            response = requests.get(article_link, verify=False, timeout=5.0)
+            response = requests.get(article_link, verify=False,
+                                    timeout=conf.CRAWLER_TIMEOUT)
             article_link = response.url
         except Exception as error:
             logger.warning("Unable to get the real URL of %s. Error: %s",

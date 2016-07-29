@@ -75,6 +75,7 @@ class JarrFlaskCommon(BaseJarrTest):
             del kwargs['user']
 
         urn = path.join(conf.API_ROOT, *map(str, urn_parts))
+        kwargs.pop('timeout', None)  # removing timeout non supported by flask
         resp = method(urn, **kwargs)
         if resp.data and resp.content_type == 'application/json':
             resp.json = lambda *a, **kw: json.loads(resp.data.decode('utf8'))

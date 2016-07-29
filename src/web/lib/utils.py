@@ -4,6 +4,7 @@ import urllib
 import logging
 import requests
 from hashlib import md5
+from bootstrap import conf
 from flask import request, url_for
 
 logger = logging.getLogger(__name__)
@@ -49,7 +50,8 @@ def try_get_icon_url(url, *splits):
         response = None
         # if html in content-type, we assume it's a fancy 404 page
         try:
-            response = requests.get(rb_url, verify=False, timeout=10)
+            response = requests.get(rb_url, verify=False,
+                                    timeout=conf.CRAWLER_TIMEOUT)
             content_type = response.headers.get('content-type', '')
         except Exception:
             pass
