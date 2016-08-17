@@ -1,12 +1,11 @@
 import html
 import logging
-import requests
 import dateutil.parser
 from datetime import datetime, timezone
 from bs4 import BeautifulSoup, SoupStrainer
 
 from bootstrap import conf
-from web.lib.utils import to_hash
+from lib.utils import to_hash, jarr_get
 from web.lib.article_cleaner import clean_urls
 
 logger = logging.getLogger(__name__)
@@ -74,7 +73,7 @@ def get_article_details(entry):
     if conf.CRAWLER_RESOLV and article_link or not article_title:
         try:
             # resolves URL behind proxies (like feedproxy.google.com)
-            response = requests.get(article_link, verify=False, timeout=5.0)
+            response = jarr_get(article_link)
         except Exception as error:
             logger.warning("Unable to get the real URL of %s. Won't fix link "
                            "or title. Error: %s", article_link, error)

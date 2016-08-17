@@ -6,8 +6,8 @@ from flask import (Blueprint, render_template, redirect,
 from flask.ext.babel import gettext, format_timedelta
 from flask.ext.login import login_required, current_user
 
+from lib.utils import redirect_url
 from web.views.common import admin_permission
-from web.lib.utils import redirect_url
 from web.controllers import UserController, FeedController, ArticleController
 
 logger = logging.getLogger(__name__)

@@ -50,8 +50,7 @@ def try_get_icon_url(url, *splits):
         response = None
         # if html in content-type, we assume it's a fancy 404 page
         try:
-            response = requests.get(rb_url, verify=False,
-                                    timeout=conf.CRAWLER_TIMEOUT)
+            response = jarr_get(rb_url)
             content_type = response.headers.get('content-type', '')
         except Exception:
             pass
@@ -79,3 +78,9 @@ def clear_string(data):
 
 def redirect_url(default='home'):
     return request.args.get('next') or request.referrer or url_for(default)
+
+
+def jarr_get(url):
+    return requests.get(url, verify=False, allow_redirects=True,
+                        timeout=conf.CRAWLER_TIMEOUT,
+                        headers={'User-Agent': conf.CRAWLER_USER_AGENT})

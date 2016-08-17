@@ -1,6 +1,5 @@
 import base64
-import requests
-from bootstrap import conf
+from lib.utils import jarr_get
 from web.models import Icon
 from .abstract import AbstractController
 
@@ -12,8 +11,7 @@ class IconController(AbstractController):
     def _build_from_url(self, attrs):
         if 'url' in attrs and 'content' not in attrs:
             try:
-                resp = requests.get(attrs['url'], verify=False,
-                                    timemout=conf.CRAWLER_TIMEOUT)
+                resp = jarr_get(attrs['url'])
             except Exception:
                 return attrs
             attrs.update({'url': resp.url,

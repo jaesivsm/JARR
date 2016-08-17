@@ -22,7 +22,7 @@ from time import strftime, gmtime
 from datetime import datetime, timedelta
 from concurrent.futures import wait, ThreadPoolExecutor
 from requests_futures.sessions import FuturesSession
-from web.lib.utils import default_handler, to_hash
+from lib.utils import default_handler, to_hash
 from web.lib.feed_utils import construct_feed_from
 from crawler.lib.article_utils import extract_id, construct_article
 

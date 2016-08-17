@@ -1,12 +1,10 @@
 import html
 import urllib
 import logging
-import requests
 import feedparser
 from bs4 import BeautifulSoup, SoupStrainer
 
-from bootstrap import conf
-from web.lib.utils import try_keys, try_get_icon_url, rebuild_url
+from lib.utils import try_keys, try_get_icon_url, rebuild_url, jarr_get
 
 logger = logging.getLogger(__name__)
 logging.captureWarnings(True)
@@ -32,13 +30,11 @@ def escape_keys(*keys):
 
 @escape_keys('title', 'description')
 def construct_feed_from(url=None, fp_parsed=None, feed=None, query_site=True):
-    requests_kwargs = {'headers': {'User-Agent': conf.CRAWLER_USER_AGENT},
-                       'verify': False, 'timeout': conf.CRAWLER_TIMEOUT}
     if url is None and fp_parsed is not None:
         url = fp_parsed.get('url')
     if url is not None and fp_parsed is None:
         try:
-            response = requests.get(url, **requests_kwargs)
+            response = jarr_get(url)
             fp_parsed = feedparser.parse(response.content,
                                          request_headers=response.headers)
         except Exception as error:
@@ -72,7 +68,7 @@ def construct_feed_from(url=None, fp_parsed=None, feed=None, query_site=True):
         return feed
 
     try:
-        response = requests.get(feed['site_link'], **requests_kwargs)
+        response = jarr_get(feed['site_link'])
     except Exception as error:
         logger.warn('failed to retreive %r: %r', feed['site_link'], error)
         return feed

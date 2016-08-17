@@ -9,7 +9,7 @@ from flask.ext.babel import gettext, get_locale
 from babel.dates import format_datetime, format_timedelta
 
 from bootstrap import conf
-from web.lib.utils import redirect_url
+from lib.utils import redirect_url
 from web.lib.article_cleaner import clean_urls
 from web import utils
 from web.lib.view_utils import etag_match

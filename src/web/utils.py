@@ -26,7 +26,7 @@ from flask import request
 from bootstrap import conf
 from web import controllers
 from web.models import Article
-from web.lib.utils import clear_string
+from lib.utils import clear_string
 
 logger = logging.getLogger(__name__)
 
