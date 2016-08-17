@@ -3,6 +3,7 @@ import logging
 import requests
 import dateutil.parser
 from datetime import datetime, timezone
+from bs4 import BeautifulSoup, SoupStrainer
 
 from bootstrap import conf
 from web.lib.utils import to_hash
@@ -47,14 +48,13 @@ def construct_article(entry, feed):
                 break
 
     content = get_article_content(entry)
-    link = get_article_link(entry)
+    link, title = get_article_details(entry)
     content = clean_urls(content, link)
 
     return {'feed_id': feed['id'],
             'user_id': feed['user_id'],
             'entry_id': extract_id(entry).get('entry_id', None),
-            'link': link, 'content': content,
-            'title': html.unescape(entry.get('title', 'No title')),
+            'link': link, 'content': content, 'title': title,
             'readed': False, 'like': False,
             'retrieved_date': now, 'date': date or now}
 
@@ -68,15 +68,23 @@ def get_article_content(entry):
     return content
 
 
-def get_article_link(entry):
+def get_article_details(entry):
     article_link = entry.get('link')
-    if conf.CRAWLER_RESOLV and article_link:
+    article_title = html.unescape(entry.get('title', ''))
+    if conf.CRAWLER_RESOLV and article_link or not article_title:
         try:
             # resolves URL behind proxies (like feedproxy.google.com)
-            response = requests.get(article_link, verify=False,
-                                    timeout=conf.CRAWLER_TIMEOUT)
-            article_link = response.url
+            response = requests.get(article_link, verify=False, timeout=5.0)
         except Exception as error:
-            logger.warning("Unable to get the real URL of %s. Error: %s",
-                           article_link, error)
-    return article_link
+            logger.warning("Unable to get the real URL of %s. Won't fix link "
+                           "or title. Error: %s", article_link, error)
+            return article_link, article_title
+        article_link = response.url
+        if not article_title:
+            bs_parsed = BeautifulSoup(response.content, 'html.parser',
+                                      parse_only=SoupStrainer('head'))
+            try:
+                article_title = bs_parsed.find_all('title')[0].text
+            except IndexError:  # no title
+                pass
+    return article_link, article_title
