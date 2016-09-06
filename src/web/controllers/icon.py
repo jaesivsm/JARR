@@ -1,4 +1,5 @@
 import base64
+from bootstrap import db
 from lib.utils import jarr_get
 from web.models import Icon
 from .abstract import AbstractController
@@ -24,3 +25,9 @@ class IconController(AbstractController):
 
     def update(self, filters, attrs):
         return super().update(filters, self._build_from_url(attrs))
+
+    def delete(self, url):
+        obj = self.get(url=url)
+        db.session.delete(obj)
+        db.session.commit()
+        return obj
