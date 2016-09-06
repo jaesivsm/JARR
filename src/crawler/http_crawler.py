@@ -103,15 +103,16 @@ class JarrUpdater(AbstractCrawler):
             logger.debug('%r %r - %d entries were not matched '
                          'and will be created',
                          self.feed['id'], self.feed['title'], len(results))
+            entries = []
             for id_to_create in results:
                 article_created = True
-                entry = construct_article(
+                entries.append(construct_article(
                         self.entries[tuple(sorted(id_to_create.items()))],
-                        self.feed)
+                        self.feed))
                 logger.info('%r %r - creating %r for %r - %r', self.feed['id'],
-                            self.feed['title'], entry['title'],
-                            entry['user_id'], id_to_create)
-                self.query_jarr('post', 'article', entry)
+                            self.feed['title'], entries[-1]['title'],
+                            entries[-1]['user_id'], id_to_create)
+            self.query_jarr('post', 'articles', entries)
 
         logger.debug('%r %r - updating feed etag %r last_mod %r',
                      self.feed['id'], self.feed['title'],
