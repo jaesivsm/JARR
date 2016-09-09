@@ -1,17 +1,22 @@
-from urllib.parse import urlparse, urlunparse, ParseResult
+from urllib.parse import unquote, urlparse, urlunparse, ParseResult
 from bs4 import BeautifulSoup
 from bootstrap import is_secure_served
 
 HTTPS_IFRAME_DOMAINS = ('vimeo.com', 'youtube.com', 'youtu.be')
 
 
-def clean_urls(article_content, article_link):
+def clean_urls(article_content, article_link, fix_readability=False):
     parsed_article_url = urlparse(article_link)
     parsed_content = BeautifulSoup(article_content, 'html.parser')
 
     for img in parsed_content.find_all('img'):
         if 'src' not in img.attrs:
             continue
+        # bug reported to readability, fixing it here for now
+        if fix_readability:
+            splited_src = unquote(img.attrs['src']).split(', ')
+            if len(splited_src) > 1:
+                img.attrs['src'] = splited_src[0].split()[0]
         if is_secure_served() and 'srcset' in img.attrs:
             # removing active content when serving over https
             del img.attrs['srcset']

@@ -163,7 +163,8 @@ def get_article(article_id, parse=False):
             article['readability_parsed'] = False
         else:
             article['readability_parsed'] = True
-            article['content'] = clean_urls(new_content, article['link'])
+            article['content'] = clean_urls(new_content, article['link'],
+                    fix_readability=True)
             new_attr = {'readability_parsed': True, 'content': new_content}
             contr.update({'id': article['id']}, new_attr)
     return article
