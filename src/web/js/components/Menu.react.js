@@ -138,7 +138,7 @@ var CategoryGroup = React.createClass({
             unread = <Badge pullRight>{this.props.unread}</Badge>;
         }
         // folding icon on the right of the category
-        var ctrl = (<Glyphicon onClick={this.toggleFolding} pullLeft
+        var ctrl = (<Glyphicon onClick={this.toggleFolding}
                         glyph={this.state.folded?"menu-right":"menu-down"} />
                     );
 

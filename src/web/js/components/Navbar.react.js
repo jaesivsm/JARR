@@ -10,12 +10,13 @@ var Button = require('react-bootstrap').Button;
 var Input = require('react-bootstrap').Input;
 
 var MenuStore = require('../stores/MenuStore');
+var MenuActions = require('../actions/MenuActions');
 
 JarrNavBar = React.createClass({
     getInitialState: function() {
         return {is_admin: MenuStore.is_admin,
                 crawling_method: MenuStore.crawling_method,
-                showModal: false, modalType: null};
+                showModal: false, modalType: null, modalValue: null};
     },
     buttonFetch: function() {
         if(this.state.is_admin && this.state.crawling_method != 'http') {
@@ -33,22 +34,21 @@ JarrNavBar = React.createClass({
     },
     getModal: function() {
         var heading = null;
-        var action = null;
         var body = null;
         if(this.state.modalType == 'addFeed') {
             heading = 'Add a new feed';
-            action = '/feed/bookmarklet';
             placeholder = "Site or feed url, we'll sort it out later ;)";
             body = <Input name="url" type="text" required
+                          onChange={this.handleModalChange}
                           placeholder={placeholder} />;
         } else if (this.state.modalType == 'addCategory') {
             heading = 'Add a new category';
-            action = '/category/create';
             body = <Input name="name" type="text" required
+                          onChange={this.handleModalChange}
                           placeholder="Name, there isn't much more to it" />;
         }
         return (<Modal show={this.state.showModal} onHide={this.close}>
-                  <form action={action} method="POST">
+                  <form onSubmit={this.submit}>
                     <Modal.Header closeButton>
                       <Modal.Title>{heading}</Modal.Title>
                     </Modal.Header>
@@ -61,8 +61,20 @@ JarrNavBar = React.createClass({
                   </form>
                 </Modal>);
     },
+    handleModalChange: function(evnt) {
+        this.setState({modalValue: evnt.target.value});
+    },
+    submit: function(evnt) {
+        if(this.state.modalType == 'addCategory') {
+            MenuActions.addCategory(this.state.modalValue);
+        } else {
+            MenuActions.addFeed(this.state.modalValue);
+        }
+        evnt.preventDefault()
+        this.close();
+    },
     close: function() {
-        this.setState({showModal: false, modalType: null});
+        this.setState({showModal: false, modalType: null, modalValue: null});
     },
     openAddFeed: function() {
         this.setState({showModal: true, modalType: 'addFeed'});

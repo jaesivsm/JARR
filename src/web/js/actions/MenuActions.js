@@ -34,6 +34,21 @@ var MenuActions = {
             }
         });
     },
+    addCategory: function(name) {
+        jquery.ajax({type: 'POST',
+                     contentType: 'application/json',
+                     data: JSON.stringify({name: name}),
+                     url: "api/v2.0/category",
+                     success: function () {MenuActions.reload();},
+        });
+    },
+    addFeed: function(url) {
+        jquery.ajax({type: 'POST',
+                     data: {url: url},
+                     url: "/feed/bookmarklet",
+                     success: function () {MenuActions.reload();},
+        });
+    },
     setFilter: function(filter) {
         JarrDispatcher.dispatch({
             type: ActionTypes.MENU_FILTER,

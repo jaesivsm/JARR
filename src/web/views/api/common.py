@@ -114,7 +114,10 @@ class PyAggResourceNew(PyAggAbstractResource):
     @api_permission.require(http_exception=403)
     def post(self):
         """Create a single new object"""
-        return self.controller.create(**self.reqparse_args(right='write')), 201
+        attrs = self.reqparse_args(right='write')
+        if not attrs.get('user_id'):
+            attrs['user_id'] = current_user.id
+        return self.controller.create(**attrs), 201
 
 
 class PyAggResourceExisting(PyAggAbstractResource):
@@ -178,6 +181,8 @@ class PyAggResourceMulti(PyAggAbstractResource):
             try:
                 Proxy.json = attrs
                 args = self.reqparse_args('write', req=Proxy, default=False)
+                if not args.get('user_id'):
+                    args['user_id'] = current_user.id
                 obj = self.controller.create(**args)
                 results.append(obj)
             except Exception as error:
