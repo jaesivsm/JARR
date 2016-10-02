@@ -1,8 +1,8 @@
 import json
 from functools import wraps
 from flask import current_app, Response
-from flask.ext.login import login_user
-from flask.ext.principal import (Identity, Permission, RoleNeed,
+from flask_login import login_user
+from flask_principal import (Identity, Permission, RoleNeed,
                                  session_identity_loader, identity_changed)
 from lib.utils import default_handler
 

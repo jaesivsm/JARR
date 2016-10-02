@@ -1,9 +1,9 @@
 var React = require('react');
-var Col = require('react-bootstrap/lib/Col');
-var Badge = require('react-bootstrap/lib/Badge');
-var Button = require('react-bootstrap/lib/Button');
-var ButtonGroup = require('react-bootstrap/lib/ButtonGroup');
-var Glyphicon = require('react-bootstrap/lib/Glyphicon');
+var Col = require('react-bootstrap').Col;
+var Badge = require('react-bootstrap').Badge;
+var Button = require('react-bootstrap').Button;
+var ButtonGroup = require('react-bootstrap').ButtonGroup;
+var Glyphicon = require('react-bootstrap').Glyphicon;
 
 var MenuStore = require('../stores/MenuStore');
 var MenuActions = require('../actions/MenuActions');
@@ -20,21 +20,25 @@ var FeedItem = React.createClass({
     render: function() {
         var icon = null;
         var badge_unread = null;
+        // handling icon, and replacement in case of no-icon
         if(this.props.icon_url){
             icon = (<img width="16px" src={this.props.icon_url} />);
         } else {
             icon = <Glyphicon glyph="ban-circle" />;
         }
+        // handling unread badge
         if(this.props.unread){
             badge_unread = <Badge pullRight>{this.props.unread}</Badge>;
         }
+        // handling it's the selected feed in the menu
         var classes = "nav-feed";
         if(this.props.active) {
             classes += " bg-primary";
         }
-        if(this.props.error_count >= MenuStore._datas.max_error) {
+        // handling error count displaying
+        if(this.props.error_count >= MenuStore.max_error) {
             classes += " bg-danger";
-        } else if(this.props.error_count > MenuStore._datas.error_threshold) {
+        } else if(this.props.error_count > MenuStore.error_threshold) {
             classes += " bg-warning";
         }
         var title = <span className="title">{this.props.title}</span>;
@@ -43,6 +47,7 @@ var FeedItem = React.createClass({
                 </li>
         );
     },
+    // filtering on said feed
     handleClick: function() {
         MiddlePanelActions.setFeedFilter(this.props.feed_id);
     },
@@ -54,6 +59,7 @@ var Category = React.createClass({
                 active_id: React.PropTypes.number},
     render: function() {
         var classes = "nav-cat";
+        // handling this category being the selected one in the menu
         if((this.props.active_type == 'category_id'
             || this.props.category_id == null)
            && this.props.active_id == this.props.category_id) {
@@ -64,12 +70,14 @@ var Category = React.createClass({
                 </li>
         );
     },
+    // filtering on said category
     handleClick: function(evnt) {
         // hack to avoid selection when clicking on folding icon
         if(!evnt.target.classList.contains('glyphicon')) {
             if(this.props.category_id != null) {
                 MiddlePanelActions.setCategoryFilter(this.props.category_id);
             } else {
+                // handling selecting the "all category" item > removing all filters
                 MiddlePanelActions.removeParentFilter();
             }
         }
@@ -95,7 +103,7 @@ var CategoryGroup = React.createClass({
         }
     },
     render: function() {
-        // hidden the no category if empty
+        // hidden the "no / 0 category" if empty
         if(!this.props.cat_id && !this.props.feeds.length) {
             return <ul className="hidden" />;
         }
@@ -107,7 +115,7 @@ var CategoryGroup = React.createClass({
             var feeds = this.props.feeds.filter(function(feed) {
                 if (filter == 'unread' && feed.unread <= 0) {
                     return false;
-                } else if (filter == 'error' && feed.error_count <= MenuStore._datas.error_threshold) {
+                } else if (filter == 'error' && feed.error_count <= MenuStore.error_threshold) {
                     return false;
                 }
                 return true;
@@ -125,9 +133,11 @@ var CategoryGroup = React.createClass({
             var feeds = [];
         }
         var unread = null;
+        // displaying unread count
         if(this.props.unread) {
             unread = <Badge pullRight>{this.props.unread}</Badge>;
         }
+        // folding icon on the right of the category
         var ctrl = (<Glyphicon onClick={this.toggleFolding} pullLeft
                         glyph={this.state.folded?"menu-right":"menu-down"} />
                     );
@@ -142,6 +152,7 @@ var CategoryGroup = React.createClass({
                 </ul>
         );
     },
+    // handling folding
     toggleFolding: function(evnt) {
         this.setState({folded: !this.state.folded});
         evnt.stopPropagation();
@@ -241,7 +252,7 @@ var Menu = React.createClass({
             var feeds = [];
             var unread = 0;
             this.state.categories[cat_id].feeds.map(function(feed_id) {
-                if(this.state.feeds[feed_id].error_count > MenuStore._datas.error_threshold) {
+                if(this.state.feeds[feed_id].error_count > MenuStore.error_threshold) {
                     feed_in_error = true;
                 }
                 unread += this.state.feeds[feed_id].unread;

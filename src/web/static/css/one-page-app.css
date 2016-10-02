@@ -80,6 +80,12 @@
   background-color: #F5F5F5;
   border-right: 1px solid #EEE;
 }
+#middle-panel > .panel {
+  cursor: pointer;
+}
+#middle-panel > .panel:hover {
+  background-color: #f0f0f0;
+}
 #middle-panel .btn-group,
 #menu .btn-group {
   margin-right: 10px;
@@ -96,6 +102,9 @@
 #middle-panel div.list-group-item{
   padding: 5px 8px;
   cursor: pointer;
+}
+#middle-panel div.list-group-item a>img{
+  margin-right: 3px;
 }
 #middle-panel div.list-group-item:hover {
   background-color: #f0f0f0;
@@ -126,15 +135,8 @@
 #right-panel {
   top: 50px;
 }
-#rp-breadcrum{
+#right-panel>*{
   margin-top: 10px;
-  max-height: 34px;
-  overflow: hidden;
-  padding-top: 2px;
-}
-#rp-breadcrum>li{
-  display: inline;
-  line-height: 30px;
 }
 #right-panel-heading>* {
   display: inline-block;

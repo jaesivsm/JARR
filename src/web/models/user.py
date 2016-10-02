@@ -1,42 +1,56 @@
 import re
 from datetime import datetime
+from sqlalchemy import Column, String, Boolean, Integer, DateTime
 from sqlalchemy.orm import validates, relationship
-from flask.ext.login import UserMixin
+from flask_login import UserMixin
 
 from bootstrap import db
 from web.models.right_mixin import RightMixin
+from web.models.category import Category
+from web.models.feed import Feed
+from web.models.article import Article
+from web.models.cluster import Cluster
 
 
 class User(db.Model, UserMixin, RightMixin):
     """
     Represent a user.
     """
-    id = db.Column(db.Integer, primary_key=True)
-    login = db.Column(db.String(), unique=True)
-    password = db.Column(db.String())
-    email = db.Column(db.String(254))
+    id = Column(Integer, primary_key=True)
+    login = Column(String, unique=True)
+    password = Column(String)
+    email = Column(String(254))
+    date_created = Column(DateTime, default=datetime.utcnow)
+    last_connection = Column(DateTime, default=datetime.utcnow)
+    readability_key = Column(String, default='')
+    renew_password_token = Column(String, default='')
 
     # user rights
-    is_active = db.Column(db.Boolean(), default=True)
-    is_admin = db.Column(db.Boolean(), default=False)
-    is_api = db.Column(db.Boolean(), default=False)
+    is_active = Column(Boolean, default=True)
+    is_admin = Column(Boolean, default=False)
+    is_api = Column(Boolean, default=False)
 
-    google_identity = db.Column(db.String())
-    twitter_identity = db.Column(db.String())
-    facebook_identity = db.Column(db.String())
-    linuxfr_identity = db.Column(db.String())
+    # oauth identites
+    google_identity = Column(String)
+    twitter_identity = Column(String)
+    facebook_identity = Column(String)
+    linuxfr_identity = Column(String)
 
-    date_created = db.Column(db.DateTime(), default=datetime.utcnow)
-    last_connection = db.Column(db.DateTime(), default=datetime.utcnow)
-    feeds = db.relationship('Feed', backref='subscriber', lazy='dynamic',
-                            cascade='all,delete-orphan')
-    readability_key = db.Column(db.String(), default='')
-    renew_password_token = db.Column(db.String(), default='')
+    # relationships
+    categories = relationship('Category', backref='user',
+                              cascade='all, delete-orphan',
+                            foreign_keys=[Category.user_id])
+    feeds = relationship('Feed', backref='user',
+                         cascade='all, delete-orphan',
+                            foreign_keys=[Feed.user_id])
+    articles = relationship('Article', backref='user',
+                            cascade='all, delete-orphan',
+                            foreign_keys=[Article.user_id])
+    clusters = relationship('Cluster', backref='user',
+                            cascade='all, delete-orphan',
+                            foreign_keys=[Cluster.user_id])
 
-    categories = relationship('Category', cascade='all, delete-orphan')
-    feeds = relationship('Feed', cascade='all, delete-orphan')
-    articles = relationship('Article', cascade='all, delete-orphan')
-
+    # api whitelists
     @staticmethod
     def _fields_base_write():
         return {'login', 'password', 'email', 'readability_key',

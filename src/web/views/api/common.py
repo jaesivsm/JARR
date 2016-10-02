@@ -22,8 +22,8 @@ import logging
 from functools import wraps
 from werkzeug.exceptions import Unauthorized, BadRequest, Forbidden, NotFound
 from flask import request
-from flask.ext.restful import Resource, reqparse
-from flask.ext.login import current_user
+from flask_restful import Resource, reqparse
+from flask_login import current_user
 
 from web.views.common import admin_permission, api_permission, \
                              login_user_bundle, jsonify
@@ -50,6 +50,7 @@ def authenticate(func):
             return func(*args, **kwargs)
         raise Unauthorized()
     return wrapper
+
 
 def assert_on_request(func):
     @wraps(func)
@@ -127,7 +128,8 @@ class PyAggResourceExisting(PyAggAbstractResource):
         args = self.reqparse_args(right='write', default=False)
         if not args:
             raise BadRequest()
-        return self.controller.update({'id': obj_id}, args), 200
+        return self.controller.update({'id': obj_id},
+                                      args, return_objs=True).first(), 200
 
     def delete(self, obj_id=None):
         """delete a object"""
@@ -149,6 +151,14 @@ class PyAggResourceMulti(PyAggAbstractResource):
             limit, order_by, args = 10, None, {}
         query = self.controller.read(**args)
         if order_by:
+            if order_by.startswith('-'):
+                order_order = 'desc'
+                order_by = order_by[1:]
+            else:
+                order_order = 'asc'
+            order_by = getattr(
+                    getattr(self.controller_cls._db_cls, order_by),
+                    order_order)()
             query = query.order_by(order_by)
         if limit:
             query = query.limit(limit)
@@ -160,7 +170,7 @@ class PyAggResourceMulti(PyAggAbstractResource):
         >>> payload
         [{attr1: val1, attr2: val2}, {attr1: val1, attr2: val2}]
         """
-        status, fail_count, results = 200, 0, []
+        status, fail_count, results = 201, 0, []
 
         class Proxy:
             pass

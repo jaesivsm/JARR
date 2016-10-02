@@ -8,6 +8,8 @@ module.exports = keyMirror({
         CHANGE_ATTR: null,  // edit an attr on an article (like / read)
         RELOAD_MIDDLE_PANEL: null,
         MIDDLE_PANEL_FILTER: null,  // set a filter (read/like/all)
-        LOAD_ARTICLE: null,  // load a single article in right panel
+        LOAD_PARENT: null, // load a feed or a category in the right panel
+        LOAD_CLUSTER: null,  // load a single article in right panel
+        LOAD_ARTICLE: null,  // load an article from the store
         MARK_ALL_AS_READ: null,
 });

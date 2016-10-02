@@ -1,20 +1,20 @@
 var React = require('react');
-var Glyphicon = require('react-bootstrap/lib/Glyphicon');
-var Nav = require('react-bootstrap/lib/Nav');
-var NavItem = require('react-bootstrap/lib/NavItem');
-var Navbar = require('react-bootstrap/lib/Navbar');
-var NavDropdown = require('react-bootstrap/lib/NavDropdown');
-var MenuItem = require('react-bootstrap/lib/MenuItem');
-var Modal = require('react-bootstrap/lib/Modal');
-var Button = require('react-bootstrap/lib/Button');
-var Input = require('react-bootstrap/lib/Input');
+var Glyphicon = require('react-bootstrap').Glyphicon;
+var Nav = require('react-bootstrap').Nav;
+var NavItem = require('react-bootstrap').NavItem;
+var Navbar = require('react-bootstrap').Navbar;
+var NavDropdown = require('react-bootstrap').NavDropdown;
+var MenuItem = require('react-bootstrap').MenuItem;
+var Modal = require('react-bootstrap').Modal;
+var Button = require('react-bootstrap').Button;
+var Input = require('react-bootstrap').Input;
 
 var MenuStore = require('../stores/MenuStore');
 
 JarrNavBar = React.createClass({
     getInitialState: function() {
-        return {is_admin: MenuStore._datas.is_admin,
-                crawling_method: MenuStore._datas.crawling_method,
+        return {is_admin: MenuStore.is_admin,
+                crawling_method: MenuStore.crawling_method,
                 showModal: false, modalType: null};
     },
     buttonFetch: function() {

@@ -30,36 +30,7 @@ class ArticleApiTest(JarrFlaskCommon, ApiCommon):
 
         resp = self._api('get', self.urns, data={'limit': 200}, user='admin')
         self.assertEquals(200, resp.status_code)
-        self.assertEquals(18, len(resp.json()))
-
-    def test_api_update_many(self):
-        resp = self._api('put', self.urns, user='user1',
-                data=[[1, {'like': True}],
-                      [2, {'readed': True}]])
-        self.assertEquals(['ok', 'ok'], resp.json())
-        self.assertEquals(200, resp.status_code)
-        resp = self._api('get', self.urn, 1, user='user1')
-        self.assertEquals(200, resp.status_code)
-        self.assertTrue(resp.json()['like'])
-
-        resp = self._api('get', self.urn, 2, user='user1')
-        self.assertEquals(200, resp.status_code)
-        self.assertTrue(resp.json()['readed'])
-
-        resp = self._api('put', self.urns, user='user1',
-                data=[[1, {'like': False}],
-                      [15, {'readed': True}]])
-        self.assertEquals(206, resp.status_code)
-        self.assertEquals(['ok', 'nok'], resp.json())
-
-        resp = self._api('put', self.urns, user='user1',
-                data=[[16, {'readed': True}],
-                      [17, {'readed': True}]])
-        self.assertEquals(500, resp.status_code)
-        self.assertEquals(['nok', 'nok'], resp.json())
-
-        resp = self._api('get', self.urn, 17, user='user1')
-        self.assertEquals(404, resp.status_code)
+        self.assertEquals(36, len(resp.json()))
 
     def test_article_challenge_method(self):
         articles = self._api('get', self.urns, user='user1').json()
@@ -76,11 +47,11 @@ class ArticleApiTest(JarrFlaskCommon, ApiCommon):
         # user2 doesn't know user1 article, will consider them as knew
         resp = self._api('get', 'articles/challenge', user='user2',
                 data={'ids': [{'id': art['id']} for art in articles]})
-        self.assertEquals(9, len(resp.json()))
+        self.assertEquals(10, len(resp.json()))
         # fake ids won't be recognised either and considered as new
         resp = self._api('get', 'articles/challenge', user='user2',
                 data={'ids': [{'entry_id': art['id']} for art in articles]})
-        self.assertEquals(9, len(resp.json()))
+        self.assertEquals(10, len(resp.json()))
 
     def test_api_creation(self):
         resp = self._api('post', self.urn, user='user1', data={'feed_id': 1})

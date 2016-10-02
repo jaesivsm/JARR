@@ -4,20 +4,37 @@ var ActionTypes = require('../constants/JarrConstants');
 var MenuActions = require('../actions/MenuActions');
 
 var RightPanelActions = {
-    loadArticle: function(article_id, was_read_before, to_parse) {
+    loadParent: function(parent_type, parent_id) {
+        JarrDispatcher.dispatch({
+            type: ActionTypes.LOAD_PARENT,
+            filter_type: parent_type,
+            filter_id: parent_id
+        });
+    },
+    loadCluster: function(cluster_id, was_read_before, to_parse, article_id) {
         var suffix = '';
         if(to_parse) {
             suffix = '/parse';
+            if(article_id) {
+                suffix += '/' + article_id
+            }
         }
-        jquery.getJSON('/getart/' + article_id + suffix,
+        jquery.getJSON('/getclu/' + cluster_id + suffix,
             function(payload) {
                 JarrDispatcher.dispatch({
-                    type: ActionTypes.LOAD_ARTICLE,
-                    article: payload,
+                    type: ActionTypes.LOAD_CLUSTER,
+                    cluster: payload,
                     was_read_before: was_read_before,
+                    article_id: article_id,
                 });
             }
         );
+    },
+    loadArticle: function(article_id) {
+        JarrDispatcher.dispatch({
+            type: ActionTypes.LOAD_ARTICLE,
+            article_id: article_id,
+        });
     },
     _apiReq: function(meth, id, obj_type, data, success_callback) {
         var args = {type: meth, contentType: 'application/json',

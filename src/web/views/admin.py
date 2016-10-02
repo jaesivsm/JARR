@@ -3,15 +3,16 @@ from sqlalchemy import desc
 from datetime import datetime
 from flask import (Blueprint, render_template, redirect,
                    flash, url_for, request)
-from flask.ext.babel import gettext, format_timedelta
-from flask.ext.login import login_required, current_user
+from flask_babel import gettext, format_timedelta
+from flask_login import login_required, current_user
 
 from lib.utils import redirect_url
 from web.views.common import admin_permission
-from web.controllers import UserController, FeedController, ArticleController
+from web.controllers import UserController, FeedController, ClusterController
 
 logger = logging.getLogger(__name__)
 admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
+
 
 @admin_bp.route('/dashboard', methods=['GET', 'POST'])
 @login_required
@@ -42,11 +43,11 @@ def user(user_id=None):
     """
     user = UserController().get(id=user_id)
     if user is not None:
-        article_contr = ArticleController(user_id)
+        clu_contr = ClusterController(user_id)
         return render_template('/admin/user.html', user=user,
                 feeds=FeedController().read(user_id=user_id).order_by('title'),
-                article_count=article_contr.count_by_feed(),
-                unread_article_count=article_contr.count_by_feed(readed=False))
+                counts=clu_contr.count_by_feed(),
+                unread_counts=clu_contr.count_by_feed(read=False))
 
     else:
         flash(gettext('This user does not exist.'), 'warn')

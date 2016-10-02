@@ -104,7 +104,6 @@ async def insert_database(user, feed):
                 is_updated = True
             if existing_article.content != content:
                 existing_article.content = content
-                existing_article.readed = False
                 is_updated = True
             if is_updated:
                 art_contr.update({'entry_id': existing_article.entry_id},

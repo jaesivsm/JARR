@@ -11,7 +11,7 @@ class FeedApiTest(JarrFlaskCommon, ApiCommon):
         resp = self._api('get', self.urns, data={'order_by': '-id'},
                          user='user1')
         self.assertEquals(200, resp.status_code)
-        self.assertEquals(3, len(resp.json()))
+        self.assertEquals(6, len(resp.json()))
         self.assertTrue(resp.json()[0]['id'] > resp.json()[-1]['id'])
 
         resp = self._api('get', self.urns,
@@ -25,11 +25,11 @@ class FeedApiTest(JarrFlaskCommon, ApiCommon):
 
         resp = self._api('get', self.urns, user='admin')
         self.assertEquals(200, resp.status_code)
-        self.assertEquals(6, len(resp.json()))
+        self.assertEquals(10, len(resp.json()))
 
         resp = self._api('get', self.urns, data={'limit': 200}, user='admin')
         self.assertEquals(200, resp.status_code)
-        self.assertEquals(6, len(resp.json()))
+        self.assertEquals(12, len(resp.json()))
 
     def test_api_update_many(self):
         resp = self._api('put', self.urns, user='user1',
@@ -73,22 +73,24 @@ class FeedApiTest(JarrFlaskCommon, ApiCommon):
         self.assertEquals(403, resp.status_code)
         UserController().update({'login__in': ['admin', 'user1']},
                                 {'is_api': True})
-        resp = self._api('get', 'feeds/fetchable', user='user1')
-        self.assertEquals(3, len(resp.json()))
+        resp = self._api('get', 'feeds/fetchable', user='user1',
+                         data={'limit': 100})
+        self.assertEquals(6, len(resp.json()))
         self.assertEquals(200, resp.status_code)
 
         resp = self._api('get', 'feeds/fetchable', user='user1')
         self.assertEquals(204, resp.status_code)
 
-        resp = self._api('get', 'feeds/fetchable', user='admin')
-        self.assertEquals(3, len(resp.json()))
+        resp = self._api('get', 'feeds/fetchable', user='admin',
+                         data={'limit': 100})
+        self.assertEquals(6, len(resp.json()))
         self.assertEquals(200, resp.status_code)
         resp = self._api('get', 'feeds/fetchable', user='admin')
         self.assertEquals(204, resp.status_code)
 
         resp = self._api('get', 'feeds/fetchable', user='user1',
                          data={'refresh_rate': 0})
-        self.assertEquals(3, len(resp.json()))
+        self.assertEquals(5, len(resp.json()))
         resp = self._api('get', 'feeds/fetchable', user='admin',
                          data={'refresh_rate': 0})
         self.assertEquals(5, len(resp.json()))

@@ -1,4 +1,4 @@
-"""empty message
+"""adding linuxfr as an oauth provider
 
 Revision ID: 9e3fecc9d031
 Revises: 122ac0c356c

@@ -2,16 +2,21 @@ from tests.base import JarrFlaskCommon
 from tests.api.common import ApiCommon
 
 
-class CategoryApiTest(JarrFlaskCommon, ApiCommon):
-    urn = 'category'
-    urns = 'categories'
+class ClusterApiTest(JarrFlaskCommon, ApiCommon):
+    urn = 'cluster'
+    urns = 'clusters'
 
     def test_api_list(self):
-        resp = self._api('get', self.urns, data={'order_by': '-id'},
+        resp = self._api('get', self.urns,
+                         data={'order_by': '-id'},
                          user='user1')
         self.assertEquals(200, resp.status_code)
-        self.assertEquals(4, len(resp.json()))
+        self.assertEquals(9, len(resp.json()))
         self.assertTrue(resp.json()[0]['id'] > resp.json()[-1]['id'])
+
+        resp = self._api('get', self.urns, user='user1')
+        self.assertEquals(200, resp.status_code)
+        self.assertEquals(9, len(resp.json()))
 
         resp = self._api('get', self.urns, data={'limit': 1}, user='user1')
         self.assertEquals(200, resp.status_code)
@@ -19,38 +24,37 @@ class CategoryApiTest(JarrFlaskCommon, ApiCommon):
 
         resp = self._api('get', self.urns, user='admin')
         self.assertEquals(200, resp.status_code)
-        self.assertEquals(8, len(resp.json()))
+        self.assertEquals(10, len(resp.json()))
 
         resp = self._api('get', self.urns, data={'limit': 200}, user='admin')
         self.assertEquals(200, resp.status_code)
-        self.assertEquals(8, len(resp.json()))
+        self.assertEquals(18, len(resp.json()))
 
     def test_api_update_many(self):
         resp = self._api('put', self.urns, user='user1',
-                data=[[1, {'name': 'updated name 1'}],
-                      [2, {'name': 'updated name 2'}]])
-        self.assertEquals(200, resp.status_code)
+                data=[[1, {'liked': True}],
+                      [2, {'read': True}]])
         self.assertEquals(['ok', 'ok'], resp.json())
-
+        self.assertEquals(200, resp.status_code)
         resp = self._api('get', self.urn, 1, user='user1')
         self.assertEquals(200, resp.status_code)
-        self.assertEquals('updated name 1', resp.json()['name'])
+        self.assertTrue(resp.json()['liked'])
 
         resp = self._api('get', self.urn, 2, user='user1')
         self.assertEquals(200, resp.status_code)
-        self.assertEquals('updated name 2', resp.json()['name'])
+        self.assertTrue(resp.json()['read'])
 
         resp = self._api('put', self.urns, user='user1',
-                data=[[1, {'name': 'updated name 1'}],
-                      [3, {'name': 'updated name 3'}]])
+                data=[[1, {'liked': False}],
+                      [15, {'read': True}]])
         self.assertEquals(206, resp.status_code)
         self.assertEquals(['ok', 'nok'], resp.json())
 
         resp = self._api('put', self.urns, user='user1',
-                data=[[3, {'name': 'updated name 3'}],
-                      [4, {'name': 'updated name 4'}]])
+                data=[[16, {'read': True}],
+                      [17, {'read': True}]])
         self.assertEquals(500, resp.status_code)
         self.assertEquals(['nok', 'nok'], resp.json())
 
-        resp = self._api('get', self.urn, 3, user='user1')
+        resp = self._api('get', self.urn, 17, user='user1')
         self.assertEquals(404, resp.status_code)

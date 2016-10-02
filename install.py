@@ -150,9 +150,11 @@ def install_python_deps(args):
         conf.reload()
     except Exception:
         pass
-    if not args.no_requirements:
-        install_postgres = 'postgres' in getattr(
-                conf, 'SQLALCHEMY_DATABASE_URI', '')
+    if args.no_requirements:
+        return
+
+    install_postgres = 'postgres' in getattr(
+            conf, 'SQLALCHEMY_DATABASE_URI', '')
 
     print('installing python dependencies...')
     base_cmd = ['install', '--quiet', '--upgrade', '-r']

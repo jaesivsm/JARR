@@ -9,7 +9,14 @@ icon_bp = Blueprint('icon', __name__, url_prefix='/icon')
 @icon_bp.route('/', methods=['GET'])
 @etag_match
 def icon():
-    icon = IconController().get(url=request.args['url'])
+    ctr = IconController()
+    icon = ctr.get(url=request.args['url'])
+    if icon.content is None:
+        ctr.delete(request.args['url'])
+        content = ''
+    else:
+        content = icon.content
+
     headers = {'Cache-Control': 'max-age=86400',
                'Content-Type': icon.mimetype}
-    return Response(base64.b64decode(icon.content), headers=headers)
+    return Response(base64.b64decode(content), headers=headers)

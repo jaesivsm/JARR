@@ -23,8 +23,7 @@ var shouldFetch = function(filters) {
 }
 var reloadIfNecessaryAndDispatch = function(dispath_payload) {
     if(shouldFetch(dispath_payload)) {
-        var filters = MiddlePanelStore.getRequestFilter(
-                    dispath_payload.display_search);
+        var filters = MiddlePanelStore.getRequestFilter(dispath_payload.display_search);
         MiddlePanelStore.filter_whitelist.map(function(key) {
             if(key in dispath_payload) {
                 filters[key] = dispath_payload[key];
@@ -38,7 +37,7 @@ var reloadIfNecessaryAndDispatch = function(dispath_payload) {
         }
         jquery.getJSON('/middle_panel', filters,
                 function(payload) {
-                    dispath_payload.articles = payload.articles;
+                    dispath_payload.clusters = payload.clusters;
                     dispath_payload.filters = filters;
                     JarrDispatcher.dispatch(dispath_payload);
                     _last_fetched_with = MiddlePanelStore.getRequestFilter();
@@ -97,38 +96,38 @@ var MiddlePanelActions = {
             filter: filter,
         });
     },
-    changeRead: function(category_id, feed_id, article_id, new_value){
+    changeRead: function(cluster_id, new_value){
         jquery.ajax({type: 'PUT',
                 contentType: 'application/json',
-                data: JSON.stringify({readed: new_value}),
-                url: "api/v2.0/article/" + article_id,
-                success: function () {
+                data: JSON.stringify({read: new_value}),
+                url: "api/v2.0/cluster/" + cluster_id,
+                success: function (payload) {
                     JarrDispatcher.dispatch({
                         type: ActionTypes.CHANGE_ATTR,
                         attribute: 'read',
                         value_bool: new_value,
                         value_num: new_value ? -1 : 1,
-                        articles: [{article_id: article_id,
-                                    category_id: category_id,
-                                    feed_id: feed_id}],
+                        clusters: [{cluster_id: cluster_id,
+                                    categories_id: payload.categories_id,
+                                    feeds_id: payload.feeds_id}],
                     });
                 },
         });
     },
-    changeLike: function(category_id, feed_id, article_id, new_value){
+    changeLike: function(cluster_id, new_value){
         jquery.ajax({type: 'PUT',
                 contentType: 'application/json',
-                data: JSON.stringify({like: new_value}),
-                url: "api/v2.0/article/" + article_id,
-                success: function () {
+                data: JSON.stringify({liked: new_value}),
+                url: "api/v2.0/cluster/" + cluster_id,
+                success: function (payload) {
                     JarrDispatcher.dispatch({
                         type: ActionTypes.CHANGE_ATTR,
                         attribute: 'liked',
                         value_bool: new_value,
                         value_num: new_value ? -1 : 1,
-                        articles: [{article_id: article_id,
-                                    category_id: category_id,
-                                    feed_id: feed_id}],
+                        clusters: [{cluster_id: cluster_id,
+                                    categories_id: payload.categories_id,
+                                    feeds_id: payload.feeds_id}],
                     });
                 },
         });
@@ -142,7 +141,7 @@ var MiddlePanelActions = {
                 success: function (payload) {
                     JarrDispatcher.dispatch({
                         type: ActionTypes.MARK_ALL_AS_READ,
-                        articles: payload.articles,
+                        clusters: payload.clusters,
                     });
                 },
         });

@@ -9,7 +9,7 @@ var MenuActions = {
     // PARENT FILTERS
     reload: function(set_filter, setFilterFunc, id) {
         jquery.getJSON('/menu', function(payload) {
-            var old_all_unread_count = MenuStore._datas['all_unread_count'];
+            var old_all_unread_count = MenuStore.all_unread_count;
             JarrDispatcher.dispatch({
                 type: ActionTypes.RELOAD_MENU,
                 feeds: payload.feeds,

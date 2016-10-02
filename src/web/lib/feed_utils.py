@@ -17,16 +17,11 @@ def is_parsing_ok(parsed_feed):
     return parsed_feed['entries'] or not parsed_feed['bozo']
 
 
-def escape_keys(*keys):
-    def wrapper(func):
-        def metawrapper(*args, **kwargs):
-            result = func(*args, **kwargs)
-            for key in keys:
-                if result.get(key):
-                    result[key] = html.unescape(result[key])
-            return result
-        return metawrapper
-    return wrapper
+def _escape_title_and_desc(feed):
+    for key in 'title', 'description':
+        if feed.get(key):
+            feed[key] = html.unescape(feed[key])
+    return feed
 
 
 def _browse_feedparser_feed(feed, check):
@@ -37,7 +32,6 @@ def _browse_feedparser_feed(feed, check):
             return link['href']
 
 
-@escape_keys('title', 'description')
 def construct_feed_from(url=None, fp_parsed=None, feed=None, query_site=True):
     if url is None and fp_parsed is not None:
         url = fp_parsed.get('url')
@@ -89,13 +83,13 @@ def construct_feed_from(url=None, fp_parsed=None, feed=None, query_site=True):
 
     if not feed.get('site_link') or not query_site \
             or all(bool(feed.get(k)) for k in ('link', 'title', 'icon_url')):
-        return feed
+        return _escape_title_and_desc(feed)
 
     try:
         response = jarr_get(feed['site_link'])
     except Exception as error:
         logger.warn('failed to retreive %r: %r', feed['site_link'], error)
-        return feed
+        return _escape_title_and_desc(feed)
     bs_parsed = BeautifulSoup(response.content, 'html.parser',
                               parse_only=SoupStrainer('head'))
 
@@ -140,4 +134,4 @@ def construct_feed_from(url=None, fp_parsed=None, feed=None, query_site=True):
                 feed['link'] = rebuild_url(alternates[0].attrs['href'],
                                            feed_split)
                 break
-    return feed
+    return _escape_title_and_desc(feed)

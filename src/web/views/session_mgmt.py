@@ -4,12 +4,12 @@ import logging
 from werkzeug.exceptions import NotFound
 from flask import (render_template, flash, session, request,
                    url_for, redirect, current_app)
-from flask.ext.babel import gettext
-from flask.ext.login import LoginManager, logout_user, \
-                            login_required, current_user
-from flask.ext.principal import (Principal, AnonymousIdentity, UserNeed,
-                                 identity_changed, identity_loaded,
-                                 session_identity_loader)
+from flask_babel import gettext
+from flask_login import LoginManager, logout_user, \
+                        login_required, current_user
+from flask_principal import (Principal, AnonymousIdentity, UserNeed,
+                             identity_changed, identity_loaded,
+                             session_identity_loader)
 
 from bootstrap import conf
 from web.views.common import admin_role, api_role, login_user_bundle

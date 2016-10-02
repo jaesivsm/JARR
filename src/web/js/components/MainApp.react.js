@@ -1,6 +1,5 @@
 var React = require('react');
-var Col = require('react-bootstrap/lib/Col');
-var Grid = require('react-bootstrap/lib/Grid');
+var Grid = require('react-bootstrap').Grid;
 
 var JarrNavBar = require('./Navbar.react');
 var Menu = require('./Menu.react');
@@ -14,11 +13,7 @@ var MainApp = React.createClass({
                     <JarrNavBar />
                     <Grid fluid id="jarr-container">
                         <Menu />
-                        <Col id="middle-panel" mdOffset={3} lgOffset={2}
-                                            xs={12} sm={4} md={4} lg={4}>
-                            <MiddlePanel.MiddlePanelFilter />
-                            <MiddlePanel.MiddlePanel />
-                        </Col>
+                        <MiddlePanel />
                         <RightPanel />
                     </Grid>
                 </div>

@@ -1,10 +1,13 @@
 var React = require('react');
 
-var Row = require('react-bootstrap/lib/Row');
-var Button = require('react-bootstrap/lib/Button');
-var ButtonGroup = require('react-bootstrap/lib/ButtonGroup');
-var Glyphicon = require('react-bootstrap/lib/Glyphicon');
+var Col = require('react-bootstrap').Col;
+var Row = require('react-bootstrap').Row;
+var Panel = require('react-bootstrap').Panel;
+var Button = require('react-bootstrap').Button;
+var ButtonGroup = require('react-bootstrap').ButtonGroup;
+var Glyphicon = require('react-bootstrap').Glyphicon;
 
+var MenuStore = require('../stores/MenuStore');
 var MiddlePanelStore = require('../stores/MiddlePanelStore');
 var MiddlePanelActions = require('../actions/MiddlePanelActions');
 var RightPanelActions = require('../actions/RightPanelActions');
@@ -12,15 +15,16 @@ var RightPanelActions = require('../actions/RightPanelActions');
 var JarrTime = require('./time.react');
 
 var TableLine = React.createClass({
-    propTypes: {article_id: React.PropTypes.number.isRequired,
+    propTypes: {cluster_id: React.PropTypes.number.isRequired,
+                main_article_id: React.PropTypes.number.isRequired,
                 feed_title: React.PropTypes.string.isRequired,
-                icon_url: React.PropTypes.string,
                 title: React.PropTypes.string.isRequired,
                 rel_date: React.PropTypes.string.isRequired,
                 date: React.PropTypes.string.isRequired,
                 read: React.PropTypes.bool.isRequired,
                 selected: React.PropTypes.bool.isRequired,
                 liked: React.PropTypes.bool.isRequired,
+                feeds_id: React.PropTypes.array.isRequired,
     },
     getInitialState: function() {
         return {read: this.props.read, liked: this.props.liked,
@@ -28,16 +32,17 @@ var TableLine = React.createClass({
     },
     render: function() {
         var liked = this.state.liked ? 'l' : '';
-        var icon = null;
-        if(this.props.icon_url){
-            icon = (<img width="16px" src={this.props.icon_url} />);
-        } else {
-            icon = <Glyphicon glyph="ban-circle" />;
-        }
-        var title = (<a href={'/article/redirect/' + this.props.article_id}
+        var title = (<a href={'/cluster/redirect/' + this.props.id}
                         onClick={this.openRedirectLink} target="_blank"
                         title={this.props.feed_title}>
-                        {icon} {this.props.feed_title}
+                        {this.props.feeds_id.map(function(feed_id) {
+                            var feed = MenuStore.feeds[feed_id];
+                            if(feed && feed.icon_url) {
+                                return <img key={feed_id} width="16px" src={feed.icon_url} />;
+                            }
+                            return <Glyphicon key={feed_id} glyph="ban-circle" />;
+                        })}
+                        {this.props.feed_title}
                      </a>);
         var read = (<Glyphicon glyph={this.state.read?"check":"unchecked"}
                                onClick={this.toogleRead} />);
@@ -48,10 +53,9 @@ var TableLine = React.createClass({
         if(this.props.selected) {
             clsses += " active";
         }
-        return (<div className={clsses} onClick={this.loadArticle} title={this.props.title}>
+        return (<div className={clsses} onClick={this.loadCluster} title={this.props.title}>
                     <span>{title}</span>
-                    <JarrTime text={this.props.date}
-                              stamp={this.props.rel_date} />
+                    <JarrTime text={this.props.date} stamp={this.props.rel_date} />
                     <div>{read} {liked} {this.props.title}</div>
                 </div>
         );
@@ -63,22 +67,20 @@ var TableLine = React.createClass({
     },
     toogleRead: function(evnt) {
         this.setState({read: !this.state.read}, function() {
-            MiddlePanelActions.changeRead(this.props.category_id,
-                    this.props.feed_id, this.props.article_id, this.state.read);
+            MiddlePanelActions.changeRead(this.props.cluster_id, this.state.read);
         }.bind(this));
         evnt.stopPropagation();
     },
     toogleLike: function(evnt) {
         this.setState({liked: !this.state.liked}, function() {
-            MiddlePanelActions.changeLike(this.props.category_id,
-                    this.props.feed_id, this.props.article_id, this.state.liked);
+            MiddlePanelActions.changeLike(this.props.cluster_id, this.state.liked);
         }.bind(this));
         evnt.stopPropagation();
     },
-    loadArticle: function() {
+    loadCluster: function() {
         this.setState({selected: true, read: true}, function() {
-            RightPanelActions.loadArticle(
-                    this.props.article_id, this.props.read);
+            RightPanelActions.loadCluster(
+                    this.props.cluster_id, this.props.read);
         }.bind(this));
     },
     stopPropagation: function(evnt) {
@@ -88,9 +90,9 @@ var TableLine = React.createClass({
 
 var MiddlePanelSearchRow = React.createClass({
     getInitialState: function() {
-        return {query: MiddlePanelStore._datas.query,
-                search_title: MiddlePanelStore._datas.search_title,
-                search_content: MiddlePanelStore._datas.search_content,
+        return {query: MiddlePanelStore.query,
+                search_title: MiddlePanelStore.search_title,
+                search_content: MiddlePanelStore.search_content,
         };
     },
     render: function() {
@@ -143,10 +145,49 @@ var MiddlePanelSearchRow = React.createClass({
     },
 });
 
+var MiddlePanelParentFilterRow = React.createClass({
+    getInitialState: function() {
+        return {id: MenuStore.active_id,
+                type: MenuStore.active_type,
+        };
+    },
+    render: function() {
+        var cn;
+        var img;
+        var content = "Selected ";
+        if (this.state.type == 'feed_id') {
+            var feed = MenuStore.feeds[this.state.id];
+            img = <img width="16px" src={feed.icon_url} />;
+            content += "Feed: " + feed.title;
+        } else if (this.state.type == 'category_id') {
+            content += "Category: " + MenuStore.categories[this.state.id].name;
+        } else {
+            cn = "hidden";
+        }
+        return (<Panel className={cn} onClick={this.showParent}>
+                    {img}
+                    {content}
+                </Panel>);
+    },
+    showParent: function(evnt) {
+        RightPanelActions.loadParent(this.state.type, this.state.id);
+    },
+    componentDidMount: function() {
+        MenuStore.addChangeListener(this._onChange);
+    },
+    componentWillUnmount: function() {
+        MenuStore.removeChangeListener(this._onChange);
+    },
+    _onChange: function() {
+        this.setState({id: MenuStore.active_id,
+                       type: MenuStore.active_type});
+    },
+});
+
 var MiddlePanelFilter = React.createClass({
     getInitialState: function() {
-        return {filter: MiddlePanelStore._datas.filter,
-                display_search: MiddlePanelStore._datas.display_search};
+        return {filter: MiddlePanelStore.filter,
+                display_search: MiddlePanelStore.display_search};
     },
     render: function() {
         var search_row = null;
@@ -157,18 +198,18 @@ var MiddlePanelFilter = React.createClass({
                 <Row className="show-grid">
                     <ButtonGroup>
                         <Button active={this.state.filter == "all"}
-                                title="Display all articles"
+                                title="Display all clusters"
                                 onClick={this.setAllFilter} bsSize="small">
                             <Glyphicon glyph="menu-hamburger" />
                         </Button>
                         <Button active={this.state.filter == "unread"}
-                                title="Display only unread article"
+                                title="Display only unread clusters"
                                 onClick={this.setUnreadFilter}
                                 bsSize="small">
                             <Glyphicon glyph="unchecked" />
                         </Button>
                         <Button active={this.state.filter == "liked"}
-                                title="Filter only liked articles"
+                                title="Filter only liked clusters"
                                 onClick={this.setLikedFilter}
                                 bsSize="small">
                             <Glyphicon glyph="star" />
@@ -176,14 +217,14 @@ var MiddlePanelFilter = React.createClass({
                     </ButtonGroup>
                     <ButtonGroup>
                         <Button onClick={this.toogleSearch}
-                                title="Search through displayed articles"
+                                title="Search through displayed clusters"
                                 bsSize="small">
                             <Glyphicon glyph="search" />
                         </Button>
                     </ButtonGroup>
                     <ButtonGroup>
                         <Button onClick={MiddlePanelActions.markAllAsRead}
-                                title="Mark all displayed article as read"
+                                title="Mark all displayed clusters as read"
                                 bsSize="small">
                             <Glyphicon glyph="trash" />
                         </Button>
@@ -219,31 +260,30 @@ var MiddlePanelFilter = React.createClass({
     },
 });
 
-var MiddlePanel = React.createClass({
+var ClusterList = React.createClass({
     getInitialState: function() {
-        return {filter: MiddlePanelStore._datas.filter, articles: []};
+        return {filter: MiddlePanelStore.filter, clusters: []};
     },
     render: function() {
         return (<Row className="show-grid">
                     <div className="list-group">
-                    {this.state.articles.map(function(article){
-                        var key = "a" + article.article_id;
-                        if(article.read) {key+="r";}
-                        if(article.liked) {key+="l";}
-                        if(article.selected) {key+="s";}
+                    {this.state.clusters.map(function(cluster){
+                        var key = "clu" + cluster.id;
+                        if(cluster.read) {key+="r";}
+                        if(cluster.liked) {key+="l";}
+                        if(cluster.selected) {key+="s";}
                         return (<TableLine key={key}
-                                        title={article.title}
-                                        icon_url={article.icon_url}
-                                        read={article.read}
-                                        liked={article.liked}
-                                        rel_date={article.rel_date}
-                                        date={article.date}
-                                        selected={article.selected}
-                                        article_id={article.article_id}
-                                        feed_id={article.feed_id}
+                                        title={cluster.main_title}
+                                        read={cluster.read}
+                                        liked={cluster.liked}
+                                        rel_date={cluster.rel_date}
+                                        date={cluster.date}
+                                        selected={cluster.selected}
+                                        cluster_id={cluster.id}
+                                        main_article_id={cluster.main_article_id}
+                                        feeds_id={cluster.feeds_id}
                                         locales={['en']}
-                                        category_id={article.category_id}
-                                        feed_title={article.feed_title} />);})}
+                                        feed_title={cluster.main_feed_title} />);})}
                     </div>
                 </Row>
         );
@@ -256,10 +296,21 @@ var MiddlePanel = React.createClass({
         MiddlePanelStore.removeChangeListener(this._onChange);
     },
     _onChange: function() {
-        this.setState({filter: MiddlePanelStore._datas.filter,
-                       articles: MiddlePanelStore.getArticles()});
+        this.setState({filter: MiddlePanelStore.filter,
+                       clusters: MiddlePanelStore.getClusters()});
     },
 });
 
-module.exports = {MiddlePanel: MiddlePanel,
-                  MiddlePanelFilter: MiddlePanelFilter};
+var MiddlePanel = React.createClass({
+    render: function() {
+        return (<Col id="middle-panel" mdOffset={3} lgOffset={2}
+                                       xs={12} sm={4} md={4} lg={4}>
+                    <MiddlePanelParentFilterRow />
+                    <MiddlePanelFilter />
+                    <ClusterList />
+                </Col>
+        );
+    },
+});
+
+module.exports = MiddlePanel;

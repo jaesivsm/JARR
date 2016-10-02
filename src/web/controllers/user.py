@@ -23,6 +23,6 @@ class UserController(AbstractController):
         self._handle_password(attrs)
         return super().create(**attrs)
 
-    def update(self, filters, attrs):
+    def update(self, filters, attrs, *args, **kwargs):
         self._handle_password(attrs)
-        return super().update(filters, attrs)
+        return super().update(filters, attrs, *args, **kwargs)

@@ -1,10 +1,10 @@
-from flask.ext.wtf import Form
+from flask_wtf import Form
 from flask import url_for, redirect
-from flask.ext.babel import lazy_gettext
+from flask_babel import lazy_gettext
 from werkzeug.exceptions import NotFound
 from wtforms import TextField, PasswordField, BooleanField, \
                     SubmitField, SelectField, validators, HiddenField
-from flask.ext.wtf.html5 import EmailField
+from flask_wtf.html5 import EmailField
 
 from web import utils
 from web.controllers import UserController

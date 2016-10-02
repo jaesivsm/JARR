@@ -23,21 +23,24 @@ class ArticleController(AbstractController):
                 continue
             yield id_
 
-    def count_by_category(self, **filters):
-        return self._count_by(Article.category_id, filters)
-
     def count_by_feed(self, **filters):
-        return self._count_by(Article.feed_id, filters)
+        if self.user_id:
+            filters['user_id'] = self.user_id
+        return dict(db.session.query(Article.feed_id, func.count('id'))
+                              .filter(*self._to_filters(**filters))
+                              .group_by(Article.feed_id).all())
 
     def count_by_user_id(self, **filters):
         last_conn_max = datetime.utcnow() - timedelta(days=30)
         return dict(db.session.query(Article.user_id, func.count(Article.id))
                               .filter(*self._to_filters(**filters))
-                              .join(User).filter(User.is_active == True,
+                              .join(User).filter(User.is_active.__eq__(True),
                                         User.last_connection >= last_conn_max)
                               .group_by(Article.user_id).all())
 
     def create(self, **attrs):
+        from web.controllers.cluster import ClusterController
+        cluster_contr = ClusterController(self.user_id)
         # handling special denorm for article rights
         assert 'feed_id' in attrs, "must provide feed_id when creating article"
         feed = FeedController(
@@ -48,6 +51,7 @@ class ArticleController(AbstractController):
         attrs['user_id'], attrs['category_id'] = feed.user_id, feed.category_id
 
         # handling feed's filters
+        cluster_read, cluster_liked = None, False
         for filter_ in feed.filters or []:
             match = False
             if filter_.get('type') == 'regex':
@@ -61,17 +65,19 @@ class ArticleController(AbstractController):
                 continue
 
             if filter_.get('action') == 'mark as read':
-                attrs['readed'] = True
+                cluster_read = True
                 logger.warn("article %s will be created as read",
                             attrs['link'])
             elif filter_.get('action') == 'mark as favorite':
-                attrs['like'] = True
+                cluster_liked = True
                 logger.warn("article %s will be created as liked",
                             attrs['link'])
 
-        return super().create(**attrs)
+        article = super().create(**attrs)
+        cluster_contr.clusterize(article, cluster_read, cluster_liked)
+        return article
 
-    def update(self, filters, attrs):
+    def update(self, filters, attrs, *args, **kwargs):
         user_id = attrs.get('user_id', self.user_id)
         if 'feed_id' in attrs:
             feed = FeedController().get(id=attrs['feed_id'])
@@ -82,7 +88,7 @@ class ArticleController(AbstractController):
             cat = CategoryController().get(id=attrs['category_id'])
             assert self.user_id is None or cat.user_id == user_id, \
                     "no right on cat %r" % cat.id
-        return super().update(filters, attrs)
+        return super().update(filters, attrs, *args, **kwargs)
 
     def get_history(self, year=None, month=None):
         "Sort articles by year and month."
@@ -101,8 +107,3 @@ class ArticleController(AbstractController):
             else:
                 articles_counter[article.date.year] += 1
         return articles_counter, articles
-
-    def read_light(self, **filters):
-        return super().read(**filters).with_entities(Article.id, Article.title,
-                Article.readed, Article.like, Article.feed_id, Article.date,
-                Article.category_id).order_by(Article.date.desc())

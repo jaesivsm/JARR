@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 import sys
 from datetime import datetime, timedelta
-from flask.ext.script import Command, Option
+from flask_script import Command, Option
 
 from web.controllers import FeedController, ArticleController
 from web.models import User

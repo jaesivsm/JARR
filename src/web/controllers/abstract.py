@@ -3,7 +3,7 @@ import dateutil.parser
 from bootstrap import db
 from datetime import datetime
 from collections import defaultdict
-from sqlalchemy import and_, or_, func
+from sqlalchemy import and_, or_
 from werkzeug.exceptions import Forbidden, NotFound
 
 logger = logging.getLogger(__name__)
@@ -25,7 +25,8 @@ class AbstractController:
         except TypeError:
             self.user_id = user_id
 
-    def _to_filters(self, **filters):
+    @classmethod
+    def _to_filters(cls, **filters):
         """
         Will translate filters to sqlalchemy filter.
         This method will also apply user_id restriction if available.
@@ -37,26 +38,26 @@ class AbstractController:
         db_filters = set()
         for key, value in filters.items():
             if key == '__or__':
-                db_filters.add(or_(*[and_(*self._to_filters(**sub_filter))
+                db_filters.add(or_(*[and_(*cls._to_filters(**sub_filter))
                                      for sub_filter in value]))
             elif key.endswith('__gt'):
-                db_filters.add(getattr(self._db_cls, key[:-4]) > value)
+                db_filters.add(getattr(cls._db_cls, key[:-4]) > value)
             elif key.endswith('__lt'):
-                db_filters.add(getattr(self._db_cls, key[:-4]) < value)
+                db_filters.add(getattr(cls._db_cls, key[:-4]) < value)
             elif key.endswith('__ge'):
-                db_filters.add(getattr(self._db_cls, key[:-4]) >= value)
+                db_filters.add(getattr(cls._db_cls, key[:-4]) >= value)
             elif key.endswith('__le'):
-                db_filters.add(getattr(self._db_cls, key[:-4]) <= value)
+                db_filters.add(getattr(cls._db_cls, key[:-4]) <= value)
             elif key.endswith('__ne'):
-                db_filters.add(getattr(self._db_cls, key[:-4]) != value)
+                db_filters.add(getattr(cls._db_cls, key[:-4]) != value)
             elif key.endswith('__in'):
-                db_filters.add(getattr(self._db_cls, key[:-4]).in_(value))
+                db_filters.add(getattr(cls._db_cls, key[:-4]).in_(value))
             elif key.endswith('__like'):
-                db_filters.add(getattr(self._db_cls, key[:-6]).like(value))
+                db_filters.add(getattr(cls._db_cls, key[:-6]).like(value))
             elif key.endswith('__ilike'):
-                db_filters.add(getattr(self._db_cls, key[:-7]).ilike(value))
+                db_filters.add(getattr(cls._db_cls, key[:-7]).ilike(value))
             else:
-                db_filters.add(getattr(self._db_cls, key) == value)
+                db_filters.add(getattr(cls._db_cls, key) == value)
         return db_filters
 
     def _get(self, **filters):
@@ -98,10 +99,12 @@ class AbstractController:
     def read(self, **filters):
         return self._get(**filters)
 
-    def update(self, filters, attrs):
+    def update(self, filters, attrs, return_objs=False):
         assert attrs, "attributes to update must not be empty"
         result = self._get(**filters).update(attrs, synchronize_session=False)
         db.session.commit()
+        if return_objs:
+            return self._get(**filters)
         return result
 
     def delete(self, obj_id):
@@ -117,26 +120,30 @@ class AbstractController:
         return self.user_id is None \
                 or getattr(obj, self._user_id_key, None) == self.user_id
 
-    def _count_by(self, elem_to_group_by, filters):
-        if self.user_id:
-            filters['user_id'] = self.user_id
-        return dict(db.session.query(elem_to_group_by, func.count('id'))
-                              .filter(*self._to_filters(**filters))
-                              .group_by(elem_to_group_by).all())
+    @classmethod
+    def _extra_columns(cls, role, right=None):
+        return {}
 
     @classmethod
     def _get_attrs_desc(cls, role, right=None):
         result = defaultdict(dict)
         if role == 'admin':
-            columns = cls._db_cls.__table__.columns.keys()
+            columns = set(cls._db_cls.__table__.columns.keys())\
+                    .union(cls._db_cls.fields_base_read())\
+                    .union(cls._db_cls.fields_base_write())\
+                    .union(cls._db_cls.fields_api_read())\
+                    .union(cls._db_cls.fields_api_write())
         else:
             assert role in {'base', 'api'}, 'unknown role %r' % role
             assert right in {'read', 'write'}, \
                     "right must be 'read' or 'write' with role %r" % role
             columns = getattr(cls._db_cls, 'fields_%s_%s' % (role, right))()
         for column in columns:
+            try:
+                db_col = getattr(cls._db_cls, column).property.columns[0]
+            except AttributeError:
+                continue
             result[column] = {}
-            db_col = getattr(cls._db_cls, column).property.columns[0]
             try:
                 result[column]['type'] = db_col.type.python_type
             except NotImplementedError:
@@ -149,4 +156,5 @@ class AbstractController:
                 result[column]['type'] = lambda x: dateutil.parser.parse(x)
             elif db_col.default:
                 result[column]['default'] = db_col.default.arg
+        result.update(cls._extra_columns(role, right))
         return result

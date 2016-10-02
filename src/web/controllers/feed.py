@@ -48,7 +48,7 @@ class FeedController(AbstractController):
                            __or__=[{'last_retrieved__lt': feed_last_retrieved},
                                    {'last_retrieved__lt': min_wait,
                                     'id__in': new_art_feed}])
-                     .join(User).filter(User.is_active == True,
+                     .join(User).filter(User.is_active.__eq__(True),
                                         User.last_connection >= last_conn_max)
                      .order_by(Feed.last_retrieved))
         if limit:
@@ -117,11 +117,11 @@ class FeedController(AbstractController):
         self.__clean_feed_fields(attrs)
         return super().create(**attrs)
 
-    def update(self, filters, attrs):
+    def update(self, filters, attrs, *args, **kwargs):
         self._ensure_icon(attrs)
         self.__clean_feed_fields(attrs)
         if 'category_id' in attrs:
             for feed in self.read(**filters):
                 self.__get_art_contr().update({'feed_id': feed.id},
                         {'category_id': attrs['category_id']})
-        return super().update(filters, attrs)
+        return super().update(filters, attrs, *args, **kwargs)

@@ -54,7 +54,6 @@ def construct_article(entry, feed):
             'user_id': feed['user_id'],
             'entry_id': extract_id(entry).get('entry_id', None),
             'link': link, 'content': content, 'title': title,
-            'readed': False, 'like': False,
             'retrieved_date': now, 'date': date or now}
 
 

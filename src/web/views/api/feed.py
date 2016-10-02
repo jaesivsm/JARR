@@ -1,6 +1,6 @@
 from bootstrap import conf
 from flask import current_app
-from flask.ext.restful import Api
+from flask_restful import Api
 
 from web.views.common import api_permission
 from web.controllers.feed import FeedController, DEFAULT_LIMIT

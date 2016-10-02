@@ -16,7 +16,7 @@ def default_handler(obj, role='admin'):
         return obj.isoformat()
     if hasattr(obj, 'dump'):
         return obj.dump(role=role)
-    if isinstance(obj, (set, frozenset, types.GeneratorType)):
+    if isinstance(obj, (set, frozenset, filter, types.GeneratorType)):
         return list(obj)
     if isinstance(obj, BaseException):
         return str(obj)

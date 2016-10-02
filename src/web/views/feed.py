@@ -4,14 +4,14 @@ from werkzeug.exceptions import BadRequest
 
 from flask import Blueprint, render_template, flash, \
                   redirect, request, url_for
-from flask.ext.babel import gettext
-from flask.ext.login import login_required, current_user
+from flask_babel import gettext
+from flask_login import login_required, current_user
 
 from bootstrap import conf
 from web import utils
 from web.lib.view_utils import etag_match
 from web.lib.feed_utils import construct_feed_from
-from web.controllers import FeedController, ArticleController
+from web.controllers import FeedController, ClusterController
 
 logger = logging.getLogger(__name__)
 feeds_bp = Blueprint('feeds', __name__, url_prefix='/feeds')
@@ -23,11 +23,11 @@ feed_bp = Blueprint('feed', __name__, url_prefix='/feed')
 @etag_match
 def feeds():
     "Lists the subscribed  feeds in a table."
-    art_contr = ArticleController(current_user.id)
+    clu_contr = ClusterController(current_user.id)
     return render_template('feeds.html',
             feeds=FeedController(current_user.id).read(),
-            unread_article_count=art_contr.count_by_feed(readed=False),
-            article_count=art_contr.count_by_feed())
+            unread_counts=clu_contr.count_by_feed(read=False),
+            counts=clu_contr.count_by_feed())
 
 
 @feed_bp.route('/bookmarklet', methods=['GET', 'POST'])

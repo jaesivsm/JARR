@@ -8,7 +8,7 @@ from os import path
 from base64 import b64encode
 from runserver import application
 from tests.fixtures.filler import populate_db, reset_db
-from flask.ext.login import login_user, logout_user
+from flask_login import login_user, logout_user
 from werkzeug.exceptions import NotFound
 
 from bootstrap import conf

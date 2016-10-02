@@ -24,7 +24,8 @@ class IconController(AbstractController):
         return super().create(**self._build_from_url(attrs))
 
     def update(self, filters, attrs):
-        return super().update(filters, self._build_from_url(attrs))
+        attrs = self._build_from_url(attrs)
+        return super().update(filters, attrs, *args, **kwargs)
 
     def delete(self, url):
         obj = self.get(url=url)

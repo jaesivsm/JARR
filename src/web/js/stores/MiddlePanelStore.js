@@ -8,52 +8,57 @@ var assign = require('object-assign');
 var MiddlePanelStore = assign({}, EventEmitter.prototype, {
     filter_whitelist: ['filter', 'filter_id', 'filter_type', 'display_search',
                        'query', 'search_title', 'search_content'],
-    _datas: {articles: [], selected_article: null,
-             filter: 'unread', filter_type: null, filter_id: null,
-             display_search: false, query: null,
-             search_title: true, search_content: false},
-    getAll: function() {
-        return this._datas;
-    },
+    clusters: [],
+    selected_cluster: null,
+    filter: 'unread',
+    filter_type: null,
+    filter_id: null,
+    display_search: false,
+    query: null,
+    search_title: true,
+    search_content: false,
+
     getRequestFilter: function(display_search) {
-        var filters = {'filter': this._datas.filter,
-                       'filter_type': this._datas.filter_type,
-                       'filter_id': this._datas.filter_id,
+        var filters = {'filter': this.filter,
+                       'filter_type': this.filter_type,
+                       'filter_id': this.filter_id,
         };
-        if(display_search || (display_search == undefined && this._datas.display_search)) {
-            filters.query = this._datas.query;
-            filters.search_title = this._datas.search_title;
-            filters.search_content = this._datas.search_content;
+        if(display_search || (display_search == undefined && this.display_search)) {
+            filters.query = this.query;
+            filters.search_title = this.search_title;
+            filters.search_content = this.search_content;
         };
         return filters;
     },
-    getArticles: function() {
+    getClusters: function() {
         var key = null;
         var id = null;
-        if (this._datas.filter_type) {
-            key = this._datas.filter_type;
-            id = this._datas.filter_id;
+        if (this.filter_type == 'feed_id') {
+            key = 'feeds_id';
+            id = this.filter_id;
+        } else if (this.filter_type == 'category_id') {
+            key = 'categories_id';
+            id = this.filter_id;
         }
-        return this._datas.articles
-        .map(function(article) {
-            if(article.article_id == this._datas.selected_article) {
-                article.selected = true;
-            } else if(article.selected) {
-                article.selected = false;
+        return this.clusters
+        .map(function(cluster) { // marking cluster as selected or not selected
+            if(cluster.id == this.selected_cluster) {
+                cluster.selected = true;
+            } else if(cluster.selected) {
+                cluster.selected = false;
             }
-            return article;
+            return cluster;
         }.bind(this))
-        .filter(function(article) {
-            return (article.selected || ((!key || article[key] == id)
-                    && (this._datas.filter == 'all'
-                        || (this._datas.filter == 'unread' && !article.read)
-                        || (this._datas.filter == 'liked' && article.liked))));
+        .filter(function(cluster) {  // applying set filters on cluster list
+            return (cluster.selected || ((!key || cluster[key].indexOf(id) > -1)
+                    && (this.filter == 'all'
+                        || (this.filter == 'unread' && !cluster.read)
+                        || (this.filter == 'liked' && cluster.liked))));
         }.bind(this));
-
     },
-    setArticles: function(articles) {
-        if(articles || articles == []) {
-            this._datas.articles = articles;
+    setClusters: function(clusters) {
+        if(clusters || clusters == []) {
+            this.clusters = clusters;
             return true;
         }
         return false;
@@ -61,9 +66,9 @@ var MiddlePanelStore = assign({}, EventEmitter.prototype, {
     registerFilter: function(action) {
         var changed = false;
         this.filter_whitelist.map(function(key) {
-            if(key in action && this._datas[key] != action[key]) {
+            if(key in action && this[key] != action[key]) {
                 changed = true;
-                this._datas[key] = action[key];
+                this[key] = action[key];
             }
         }.bind(this));
         return changed;
@@ -86,36 +91,36 @@ MiddlePanelStore.dispatchToken = JarrDispatcher.register(function(action) {
             || action.type == ActionTypes.PARENT_FILTER
             || action.type == ActionTypes.MIDDLE_PANEL_FILTER) {
         changed = MiddlePanelStore.registerFilter(action);
-        changed = MiddlePanelStore.setArticles(action.articles) || changed;
+        changed = MiddlePanelStore.setClusters(action.clusters) || changed;
     } else if (action.type == ActionTypes.MARK_ALL_AS_READ) {
         changed = MiddlePanelStore.registerFilter(action);
-        for(var i in action.articles) {
-            action.articles[i].read = true;
+        for(var i in action.clusters) {
+            action.clusters[i].read = true;
         }
-        changed = MiddlePanelStore.setArticles(action.articles) || changed;
+        changed = MiddlePanelStore.setClusters(action.clusters) || changed;
     } else if (action.type == ActionTypes.CHANGE_ATTR) {
-            var attr = action.attribute;
-            var val = action.value_bool;
-            action.articles.map(function(article) {
-                for (var i in MiddlePanelStore._datas.articles) {
-                    if(MiddlePanelStore._datas.articles[i].article_id == article.article_id) {
-                        if (MiddlePanelStore._datas.articles[i][attr] != val) {
-                            MiddlePanelStore._datas.articles[i][attr] = val;
-                            // avoiding redraw if not filter, display won't change anyway
-                            if(MiddlePanelStore._datas.filter != 'all') {
-                                changed = true;
-                            }
+        var attr = action.attribute;
+        var val = action.value_bool;
+        action.clusters.map(function(cluster) {
+            for (var i in MiddlePanelStore.clusters) {
+                if(MiddlePanelStore.clusters[i].id == cluster.id) {
+                    if (MiddlePanelStore.clusters[i][attr] != val) {
+                        MiddlePanelStore.clusters[i][attr] = val;
+                        // avoiding redraw if not filter, display won't change anyway
+                        if(MiddlePanelStore.filter != 'all') {
+                            changed = true;
                         }
-                        break;
                     }
+                    break;
                 }
-            });
-    } else if (action.type == ActionTypes.LOAD_ARTICLE) {
+            }
+        });
+    } else if (action.type == ActionTypes.LOAD_CLUSTER) {
         changed = true;
-        MiddlePanelStore._datas.selected_article = action.article.id;
-        for (var i in MiddlePanelStore._datas.articles) {
-            if(MiddlePanelStore._datas.articles[i].article_id == action.article.id) {
-                MiddlePanelStore._datas.articles[i].read = true;
+        MiddlePanelStore.selected_cluster = action.cluster.id;
+        for (var i in MiddlePanelStore.clusters) {
+            if(MiddlePanelStore.clusters[i].id == action.cluster.id) {
+                MiddlePanelStore.clusters[i].read = true;
                 break;
             }
         }

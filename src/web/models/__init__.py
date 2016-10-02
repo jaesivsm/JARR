@@ -3,20 +3,17 @@ from .user import User
 from .article import Article
 from .icon import Icon
 from .category import Category
+from .cluster import Cluster
 
-from sqlalchemy.engine import reflection
-from sqlalchemy.schema import (
-        MetaData,
-        Table,
-        DropTable,
-        ForeignKeyConstraint,
-        DropConstraint)
-
-__all__ = ['Feed', 'User', 'Article', 'Icon', 'Category']
+__all__ = ['Feed', 'User', 'Article', 'Icon', 'Category', 'Cluster']
 
 
 def db_empty(db):
     "Will drop every datas stocked in db."
+    # func rarely use, import only when needed
+    from sqlalchemy.engine import reflection
+    from sqlalchemy.schema import (MetaData, Table, DropTable,
+                                   ForeignKeyConstraint, DropConstraint)
     # From http://www.sqlalchemy.org/trac/wiki/UsageRecipes/DropEverything
     conn = db.engine.connect()
 

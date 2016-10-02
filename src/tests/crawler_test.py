@@ -78,12 +78,12 @@ class CrawlerTest(JarrFlaskCommon):
     def test_http_crawler_add_articles(self):
         scheduler = CrawlerScheduler('admin', 'admin')
         resp = self._api('get', 'articles', data={'limit': 1000}, user='admin')
-        self.assertEquals(18, len(resp.json()))
+        self.assertEquals(36, len(resp.json()))
 
         scheduler.run()
         scheduler.wait()
         resp = self._api('get', 'articles', data={'limit': 1000}, user='admin')
-        self.assertEquals(143, len(resp.json()))
+        self.assertEquals(161, len(resp.json()))
 
         for art in resp.json():
             self.assertFalse('srcset=' in art['content'])
@@ -93,30 +93,30 @@ class CrawlerTest(JarrFlaskCommon):
         scheduler.run()
         scheduler.wait()
         resp = self._api('get', 'articles', data={'limit': 1000}, user='admin')
-        self.assertEquals(143, len(resp.json()))
+        self.assertEquals(161, len(resp.json()))
 
     def test_no_add_on_304(self):
         scheduler = CrawlerScheduler('admin', 'admin')
         self.resp_status_code = 304
         resp = self._api('get', 'articles', data={'limit': 1000}, user='admin')
-        self.assertEquals(18, len(resp.json()))
+        self.assertEquals(36, len(resp.json()))
 
         scheduler.run()
         scheduler.wait()
         resp = self._api('get', 'articles', data={'limit': 1000}, user='admin')
-        self.assertEquals(18, len(resp.json()))
+        self.assertEquals(36, len(resp.json()))
 
     def test_matching_etag(self):
         self._reset_feeds_freshness(etag='fake etag')
         self.resp_headers = {'etag': 'fake etag'}
         resp = self._api('get', 'articles', data={'limit': 1000}, user='admin')
-        self.assertEquals(18, len(resp.json()))
+        self.assertEquals(36, len(resp.json()))
         scheduler = CrawlerScheduler('admin', 'admin')
 
         scheduler.run()
         scheduler.wait()
         resp = self._api('get', 'articles', data={'limit': 1000}, user='admin')
-        self.assertEquals(18, len(resp.json()))
+        self.assertEquals(36, len(resp.json()))
 
         self._reset_feeds_freshness(etag='jarr/fake etag')
         self.resp_headers = {'etag': 'jarr/fake etag'}
@@ -124,7 +124,7 @@ class CrawlerTest(JarrFlaskCommon):
         scheduler.run()
         scheduler.wait()
         resp = self._api('get', 'articles', data={'limit': 1000}, user='admin')
-        self.assertEquals(18, len(resp.json()))
+        self.assertEquals(36, len(resp.json()))
 
         self._reset_feeds_freshness(etag='jarr/fake etag')
         self.resp_headers = {'etag': '########################'}
@@ -132,4 +132,4 @@ class CrawlerTest(JarrFlaskCommon):
         scheduler.run()
         scheduler.wait()
         resp = self._api('get', 'articles', data={'limit': 1000}, user='admin')
-        self.assertEquals(143, len(resp.json()))
+        self.assertEquals(161, len(resp.json()))

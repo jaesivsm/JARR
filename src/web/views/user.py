@@ -4,9 +4,9 @@ from datetime import datetime
 from werkzeug.exceptions import NotFound, Forbidden
 from flask import (Blueprint, render_template, redirect,
                    flash, url_for, request, make_response)
-from flask.ext.principal import Permission, UserNeed
-from flask.ext.babel import gettext
-from flask.ext.login import current_user, login_required, logout_user
+from flask_principal import Permission, UserNeed
+from flask_babel import gettext
+from flask_login import current_user, login_required, logout_user
 
 from bootstrap import conf
 from lib import emails

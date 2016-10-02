@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 import calendar
 from flask import request
-from flask.ext.babel import Babel
+from flask_babel import Babel
 from bootstrap import conf, application
 
 if conf.ON_HEROKU:
@@ -32,7 +32,7 @@ application.jinja_env.autoescape = False
 with application.app_context():
     from web import views
     application.register_blueprint(views.articles_bp)
-    application.register_blueprint(views.article_bp)
+    application.register_blueprint(views.cluster_bp)
     application.register_blueprint(views.feeds_bp)
     application.register_blueprint(views.feed_bp)
     application.register_blueprint(views.categories_bp)

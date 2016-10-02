@@ -1,9 +1,11 @@
 var React = require('react');
-var Col = require('react-bootstrap/lib/Col');
-var Glyphicon = require('react-bootstrap/lib/Glyphicon');
-var Button = require('react-bootstrap/lib/Button');
-var ButtonGroup = require('react-bootstrap/lib/ButtonGroup');
-var Modal = require('react-bootstrap/lib/Modal');
+var Col = require('react-bootstrap').Col;
+var Nav = require('react-bootstrap').Nav;
+var Modal = require('react-bootstrap').Modal;
+var Button = require('react-bootstrap').Button;
+var NavItem = require('react-bootstrap').NavItem;
+var Glyphicon = require('react-bootstrap').Glyphicon;
+var ButtonGroup = require('react-bootstrap').ButtonGroup;
 
 var RightPanelActions = require('../actions/RightPanelActions');
 var RightPanelStore = require('../stores/RightPanelStore');
@@ -201,7 +203,8 @@ var Article = React.createClass({
     reloadParsed: function() {
         if(this.props.obj.readability_available
                 && !this.props.obj.readability_parsed) {
-            RightPanelActions.loadArticle(this.props.obj.id, true, true);
+            RightPanelActions.loadCluster(this.props.obj.cluster_id,
+                                          true, true, this.props.obj.id);
         }
     },
 });
@@ -276,7 +279,10 @@ var Feed = React.createClass({
         rows.push(<dt key={'d-title'}>Filters</dt>);
         for(var i in this.state.obj.filters) {
             rows.push(<dd key={'d' + i}>
-                    When {this.state.obj.filters[i]['action on']} on "{this.state.obj.filters[i].pattern}" ({this.state.obj.filters[i].type}) => {this.state.obj.filters[i].action}
+                        When {this.state.obj.filters[i]['action on']}
+                        on "{this.state.obj.filters[i].pattern}"
+                        ({this.state.obj.filters[i].type})
+                        "=" {this.state.obj.filters[i].action}
                     </dd>);
         }
         return <dl className="dl-horizontal">{rows}</dl>;
@@ -285,12 +291,12 @@ var Feed = React.createClass({
         var content = null;
         if(this.state.edit_mode) {
             var categ_options = [];
-            for(var index in MenuStore._datas.categories_order) {
-                var cat_id = MenuStore._datas.categories_order[index];
+            for(var index in MenuStore.categories_order) {
+                var cat_id = MenuStore.categories_order[index];
                 categ_options.push(
                         <option value={cat_id}
-                                key={MenuStore._datas.categories[cat_id].id}>
-                            {MenuStore._datas.categories[cat_id].name}
+                                key={MenuStore.categories[cat_id].id}>
+                            {MenuStore.categories[cat_id].name}
                         </option>);
             }
             content = (<select name="category_id" className="form-control"
@@ -299,17 +305,17 @@ var Feed = React.createClass({
                             {categ_options}
                        </select>);
         } else {
-            content = MenuStore._datas.categories[this.props.obj.category_id].name;
+            content = MenuStore.categories[this.props.obj.category_id].name;
         }
         return (<dl className="dl-horizontal">
                   <dt>Category</dt><dd>{content}</dd>
                 </dl>);
     },
     getErrorFields: function() {
-        if(this.props.obj.error_count < MenuStore._datas.error_threshold) {
+        if(this.props.obj.error_count < MenuStore.error_threshold) {
             return;
         }
-        if(this.props.obj.error_count < MenuStore._datas.max_error) {
+        if(this.props.obj.error_count < MenuStore.max_error) {
             return (<dl className="dl-horizontal">
                         <dt>State</dt>
                         <dd>The download of this feed has encountered some problems. However its error counter will be reinitialized at the next successful retrieving.</dd>
@@ -385,7 +391,10 @@ var Category = React.createClass({
     getExtraButton: function () {return null;},
     isRemovable: function() {return this.isEditable();},
     obj_type: 'category',
-    fields: [{'title': 'Category name', 'type': 'string', 'key': 'name'}],
+    fields: [{'title': 'Category name', 'type': 'string', 'key': 'name'},
+             {'title': 'Allow clustering on title',
+              'type': 'bool', 'key': 'cluster_on_title'},
+    ],
     getTitle: function() {return this.props.obj.name;},
     getBody: function() {
         return (<div className="panel-body">
@@ -397,78 +406,58 @@ var Category = React.createClass({
 
 var RightPanel = React.createClass({
     getInitialState: function() {
-        return {category: null, feed: null, article: null, current: null};
+        return {category: null, feed: null,
+                cluster: null, article: null, current: null};
     },
-    getCategoryCrum: function() {
-        return (<li><a onClick={this.selectCategory} href="#">
-                    {this.state.category.name}
-                </a></li>);
-    },
-    getFeedCrum: function() {
-        return (<li><a onClick={this.selectFeed} href="#">
-                    {this.state.feed.title}
-                </a></li>);
-    },
-    getArticleCrum: function() {
-        return <li>{this.state.article.title}</li>;
+    loadArticle: function(article_id) {
+        var article;
+        for(var i in this.state.cluster.articles) {
+            if(this.state.cluster.articles[i].id == article_id) {
+                article = this.state.cluster.articles[i];
+                break;
+            }
+        }
+        if(MenuStore.feeds[article.feed_id].readability_auto_parse && !article.readability_parsed) {
+            RightPanelActions.loadCluster(article.cluster_id, true, true, article.id);
+        } else {
+            RightPanelActions.loadArticle(article_id);
+        }
     },
     render: function() {
         window.scrollTo(0, 0);
-        var brd_category = null;
-        var brd_feed = null;
-        var brd_article = null;
-        var breadcrum = null;
-        if(this.state.category) {
-            brd_category = (<li className="rp-crum">
-                                <a onClick={this.selectCategory} href="#">
-                                    {this.state.category.name}
-                                </a>
-                            </li>);
-        }
-        if(this.state.feed) {
-            brd_feed = (<li className="rp-crum">
-                            <a onClick={this.selectFeed} href="#">
-                                {this.state.feed.title}
-                            </a>
-                        </li>);
-        }
-        if(this.state.article) {
-            brd_article = <li className="rp-crum">{this.state.article.title}</li>;
-        }
-        if(brd_category || brd_feed || brd_article) {
-            breadcrum = (<ol className="breadcrumb" id="rp-breadcrum">
-                            {brd_category}
-                            {brd_feed}
-                            {brd_article}
-                         </ol>);
-        }
-        if(this.state.current == 'article') {
-            var cntnt = (<Article type='article' obj={this.state.article}
-                    key={this.state.article.id} />);
+        var content;
+        var tabs;
+        if(this.state.current == 'cluster') {
+            content = (<Article type='article' obj={this.state.article}
+                                key={this.state.article.id} />);
+            if(this.state.cluster.articles.length > 1) {
+                tabs = (<Nav bsStyle="pills" justified
+                             activeKey={this.state.article.id}
+                             onSelect={this.loadArticle}>
+                            {this.state.cluster.articles.map(function(art) {
+                                var feed = MenuStore.feeds[art.feed_id];
+                                return (<NavItem key={art.id} eventKey={art.id} bsStyle="pills" >
+                                            <img width="16px" src={feed.icon_url} />
+                                            {feed.title}
+                                        </NavItem>);
+                            })}
+                        </Nav>);
+            }
         } else if(this.state.current == 'feed') {
-            var cntnt = (<Feed type='feed' obj={this.state.feed}
-                    key={this.state.feed.id} />);
+            content = (<Feed type='feed' obj={this.state.feed}
+                             key={this.state.feed.id} />);
         } else if(this.state.current == 'category') {
-            var cntnt = (<Category type='category' obj={this.state.category}
-                    key={this.state.category.id} />);
+            content = (<Category type='category' obj={this.state.category}
+                                 key={this.state.category.id} />);
         }
 
         return (<Col id="right-panel" xsHidden
                         smOffset={4} mdOffset={7} lgOffset={6}
                         sm={8} md={5} lg={6}>
-                    {breadcrum}
-                    {cntnt}
+                    {tabs}
+                    {content}
                 </Col>
         );
-    },
-    selectCategory: function() {
-        this.setState({current: 'category'});
-    },
-    selectFeed: function() {
-        this.setState({current: 'feed'});
-    },
-    selectArticle: function() {
-        this.setState({current: 'article'});
     },
     componentDidMount: function() {
         RightPanelStore.addChangeListener(this._onChange);

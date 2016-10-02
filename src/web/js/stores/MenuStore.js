@@ -6,30 +6,51 @@ var assign = require('object-assign');
 
 
 var MenuStore = assign({}, EventEmitter.prototype, {
-    _datas: {filter: 'all', feeds: {}, categories: {}, categories_order: [],
-             active_type: null, active_id: null,
-             is_admin: false, crawling_method: 'classic',
-             all_unread_count: -1, max_error: 0, error_threshold: 0,
-             all_folded: false},
+    filter: 'all',  // menu filter among "all" and "unread"
+    feeds: {},  // feeds with their ids as key
+    categories: {},  // categories with their ids as key
+    categories_order: [],
+    active_type: null,
+    active_id: null,
+    is_admin: false,
+    crawling_method: 'classic',
+    all_unread_count: -1,
+    max_error: 0,
+    error_threshold: 0,
+    all_folded: false,
+
     getAll: function() {
-        return this._datas;
+        return this;
     },
     setFilter: function(value) {
-        if(this._datas.filter != value) {
-            this._datas.filter = value;
-            this._datas.all_folded = null;
-            this.emitChange();
+        if(this.filter != value) {
+            this.filter = value;
+            return true;
         }
+        return false;
     },
     setActive: function(type, value) {
-        if(this._datas.active_id != value || this._datas.active_type != type) {
-            this._datas.active_type = type;
-            this._datas.active_id = value;
-            this._datas.all_folded = null;
-            this.emitChange();
+        if(this.active_id != value || this.active_type != type) {
+            this.active_type = type;
+            this.active_id = value;
+            return true;
         }
+        return false;
     },
-    emitChange: function() {
+    readCluster: function(cluster, value) {
+        cluster.feeds_id.map(function(feed_id) {
+            this.feeds[feed_id].unread += value;
+        }.bind(this));
+        cluster.categories_id.map(function(category_id) {
+            this.categories[category_id].unread += value;
+        }.bind(this));
+    },
+    emitChange: function(all_folded) {
+        if (all_folded) {
+            this.all_folded = all_folded;
+        } else {
+            this.all_folded = null;
+        }
         this.emit(CHANGE_EVENT);
     },
     addChangeListener: function(callback) {
@@ -44,87 +65,51 @@ var MenuStore = assign({}, EventEmitter.prototype, {
 MenuStore.dispatchToken = JarrDispatcher.register(function(action) {
     switch(action.type) {
         case ActionTypes.RELOAD_MENU:
-            MenuStore._datas['feeds'] = action.feeds;
-            MenuStore._datas['categories'] = action.categories;
-            MenuStore._datas['categories_order'] = action.categories_order;
-            MenuStore._datas['is_admin'] = action.is_admin;
-            MenuStore._datas['max_error'] = action.max_error;
-            MenuStore._datas['error_threshold'] = action.error_threshold;
-            MenuStore._datas['crawling_method'] = action.crawling_method;
-            MenuStore._datas['all_unread_count'] = action.all_unread_count;
-            MenuStore._datas.all_folded = null;
+            MenuStore.feeds = action.feeds;
+            MenuStore.categories = action.categories;
+            MenuStore.categories_order = action.categories_order;
+            MenuStore.is_admin = action.is_admin;
+            MenuStore.max_error = action.max_error;
+            MenuStore.error_threshold = action.error_threshold;
+            MenuStore.crawling_method = action.crawling_method;
+            MenuStore.all_unread_count = action.all_unread_count;
             MenuStore.emitChange();
             break;
         case ActionTypes.PARENT_FILTER:
-            MenuStore.setActive(action.filter_type, action.filter_id);
-            if(action.filters && action.articles && !action.filters.query
-                    && action.filters.filter == 'unread') {
-                var new_unread = {};
-                action.articles.map(function(article) {
-                    if(!(article.feed_id in new_unread)) {
-                        new_unread[article.feed_id] = 0;
-                    }
-                    if(!article.read) {
-                        new_unread[article.feed_id] += 1;
-                    }
-                });
-                var changed = false;
-                for(var feed_id in new_unread) {
-                    var old_unread = MenuStore._datas.feeds[feed_id].unread;
-                    if(old_unread == new_unread[feed_id]) {
-                        continue;
-                    }
-                    changed = true;
-                    MenuStore._datas.feeds[feed_id].unread = new_unread[feed_id];
-                    var cat_id = MenuStore._datas.feeds[feed_id].category_id;
-                    MenuStore._datas.categories[cat_id].unread -= old_unread;
-                    MenuStore._datas.categories[cat_id].unread += new_unread[feed_id];
-                }
-                if(changed) {
-                    MenuStore._datas.all_folded = null;
-                    MenuStore.emitChange();
-                }
+            if(MenuStore.setActive(action.filter_type, action.filter_id)) {
+                MenuStore.emitChange();
             }
             break;
         case ActionTypes.MENU_FILTER:
-            MenuStore.setFilter(action.filter);
+            if (MenuStore.setFilter(action.filter)) {
+                MenuStore.emitChange();
+            }
             break;
         case ActionTypes.CHANGE_ATTR:
             if(action.attribute != 'read') {
                 return;
             }
-            var val = action.value_num;
-            action.articles.map(function(article) {
-                MenuStore._datas.categories[article.category_id].unread += val;
-                MenuStore._datas.feeds[article.feed_id].unread += val;
+            action.clusters.map(function(cluster) {
+                MenuStore.readCluster(cluster, action.value_num);
             });
-            MenuStore._datas.all_folded = null;
             MenuStore.emitChange();
             break;
-        case ActionTypes.LOAD_ARTICLE:
+        case ActionTypes.LOAD_CLUSTER:
             if(!action.was_read_before) {
-                MenuStore._datas.categories[action.article.category_id].unread -= 1;
-                MenuStore._datas.feeds[action.article.feed_id].unread -= 1;
-                MenuStore._datas.all_folded = null;
+                MenuStore.readCluster(action.cluster, -1);
                 MenuStore.emitChange();
             }
             break;
         case ActionTypes.TOGGLE_MENU_FOLD:
-            MenuStore._datas.all_folded = action.all_folded;
-            MenuStore.emitChange();
+            MenuStore.emitChange(action.all_folded);
             break;
         case ActionTypes.MARK_ALL_AS_READ:
-            action.articles.map(function(art) {
-                if(!art.read) {
-                    MenuStore._datas.feeds[art.feed_id].unread -= 1;
-                    if(art.category_id) {
-                        MenuStore._datas.categories[art.category_id].unread -= 1;
-
-                    }
+            action.clusters.map(function(cluster) {
+                if(!cluster.read) {
+                    MenuStore.readCluster(cluster, -1);
                 }
             });
 
-            MenuStore._datas.all_folded = null;
             MenuStore.emitChange();
             break;
         default:

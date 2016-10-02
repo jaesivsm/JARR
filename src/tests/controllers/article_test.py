@@ -1,5 +1,6 @@
 from tests.base import BaseJarrTest
-from web.controllers import UserController, ArticleController, FeedController
+from web.controllers import (UserController, ArticleController, FeedController,
+                             ClusterController)
 
 
 class ArticleControllerTest(BaseJarrTest):
@@ -10,97 +11,97 @@ class ArticleControllerTest(BaseJarrTest):
         self._test_controller_rights(article,
                 UserController().get(id=article['user_id']))
 
-    def test_article_get_unread(self):
-        self.assertEquals({1: 3, 2: 3, 3: 3},
-                ArticleController(2).count_by_feed(readed=False))
-        self.assertEquals({4: 3, 5: 3, 6: 3},
-                ArticleController(3).count_by_feed(readed=False))
-
     def test_create_using_filters(self):
         feed_ctr = FeedController(2)
         feed1 = feed_ctr.read()[0].dump()
         feed2 = feed_ctr.read()[1].dump()
         feed3 = feed_ctr.read()[2].dump()
-        feed_ctr.update({'id': feed1['id']},
-                        {'filters': [{"type": "simple match",
-                                      "pattern": "no see pattern",
-                                      "action on": "match",
-                                      "action": "mark as read"}]})
         feed_ctr.update({'id': feed3['id']},
                         {'filters': [{"type": "regex",
                                       "pattern": ".*(pattern1|pattern2).*",
                                       "action on": "no match",
                                       "action": "mark as favorite"},
                                      {"type": "simple match",
-                                      "pattern": "no see pattern",
+                                      "pattern": "pattern3",
                                       "action on": "match",
                                       "action": "mark as read"}]})
+        feed_ctr.update({'id': feed1['id']},
+                        {'filters': [{"type": "simple match",
+                                      "pattern": "pattern3",
+                                      "action on": "match",
+                                      "action": "mark as read"}]})
+
         art1 = ArticleController(2).create(
-                entry_id="thisisnotatest",
+                entry_id="will be read and faved 1",
                 feed_id=feed1['id'],
-                title="garbage no see pattern garbage",
+                title="garbage pattern1 pattern3 garbage",
                 content="doesn't matter",
-                link="doesn't matter either")
+                link="cluster1")
+        self.assertTrue(art1.cluster.read)
+        self.assertFalse(art1.cluster.liked)
+
         art2 = ArticleController(2).create(
-                entry_id="thisisnotatesteither",
+                entry_id="will be ignored 2",
                 feed_id=feed1['id'],
                 title="garbage see pattern garbage",
                 content="doesn't matter2",
-                link="doesn't matter either2")
+                link="is ignored 2")
+        self.assertFalse(art2.cluster.read)
+        self.assertFalse(art2.cluster.liked)
 
         art3 = ArticleController(2).create(
-                entry_id="thisisnotatest",
+                entry_id="will be read 3",
                 user_id=2,
                 feed_id=feed2['id'],
-                title="garbage no see pattern garbage",
+                title="garbage pattern3 garbage",
                 content="doesn't matter",
-                link="doesn't matter either")
+                link="doesn't matter either3")
+        self.assertFalse(art3.cluster.read)
+        self.assertFalse(art3.cluster.liked)
+
         art4 = ArticleController(2).create(
-                entry_id="thisisnotatesteither",
+                entry_id="will be ignored 4",
                 user_id=2,
                 feed_id=feed2['id'],
                 title="garbage see pattern garbage",
                 content="doesn't matter2",
-                link="doesn't matter either2")
+                link="doesn't matter either4")
+        self.assertFalse(art4.cluster.read)
+        self.assertFalse(art4.cluster.liked)
 
         art5 = ArticleController(2).create(
-                entry_id="thisisnotatest",
+                entry_id="will be faved 5",
+                feed_id=feed3['id'],
+                title="garbage anti-attern3 garbage",
+                content="doesn't matter",
+                link="cluster1")
+        self.assertTrue(art5.cluster.read,
+                "should be read because it clustered")
+        self.assertTrue(art5.cluster.liked)
+
+        art6 = ArticleController(2).create(
+                entry_id="will be faved 6",
                 feed_id=feed3['id'],
                 title="garbage pattern1 garbage",
-                content="doesn't matter",
-                link="doesn't matter either")
-        art6 = ArticleController(2).create(
-                entry_id="thisisnotatesteither",
-                feed_id=feed3['id'],
-                title="garbage pattern2 garbage",
                 content="doesn't matter2",
-                link="doesn't matter either2")
+                link="doesn't matter 6")
+        self.assertFalse(art6.cluster.read)
+        self.assertFalse(art6.cluster.liked)
+
         art7 = ArticleController(2).create(
-                entry_id="thisisnotatesteither",
+                entry_id="will be read 7",
                 feed_id=feed3['id'],
-                title="garbage no see pattern3 garbage",
+                title="garbage pattern3 garbage",
                 content="doesn't matter3",
-                link="doesn't matter either3")
+                link="doesn't matter either7")
+        self.assertTrue(art7.cluster.read)
+        self.assertTrue(art7.cluster.liked)
+
         art8 = ArticleController(2).create(
-                entry_id="thisisnotatesteither",
+                entry_id="will be ignored",
                 feed_id=feed3['id'],
                 title="garbage pattern4 garbage",
                 content="doesn't matter4",
-                link="doesn't matter either4")
-
-        self.assertTrue(art1.readed)
-        self.assertFalse(art1.like)
-        self.assertFalse(art2.readed)
-        self.assertFalse(art2.like)
-        self.assertFalse(art3.readed)
-        self.assertFalse(art3.like)
-        self.assertFalse(art4.readed)
-        self.assertFalse(art4.like)
-        self.assertFalse(art5.readed)
-        self.assertFalse(art5.like)
-        self.assertFalse(art6.readed)
-        self.assertFalse(art6.like)
-        self.assertTrue(art7.readed)
-        self.assertTrue(art7.like)
-        self.assertFalse(art8.readed)
-        self.assertTrue(art8.like)
+                link="doesn't matter either8")
+        self.assertFalse(art8.cluster.read)
+        self.assertTrue(art8.cluster.liked)

@@ -4,11 +4,10 @@
 # required imports and code exection for basic functionning
 
 import os
-import json
 import logging
 from urllib.parse import urlparse
 from flask import Flask
-from flask.ext.sqlalchemy import SQLAlchemy
+from flask_sqlalchemy import SQLAlchemy
 from lib.conf_handling import ConfObject
 
 
@@ -50,6 +49,7 @@ application.config.from_object(conf)
 if os.environ.get('JARR_TESTING', False) == 'true':
     application.debug = True
     application.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
+    conf.SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'
     application.config['TESTING'] = True
     conf.CRAWLER_NBWORKER = 1
 else:
