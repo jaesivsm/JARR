@@ -2,14 +2,15 @@ import html
 import urllib
 import logging
 import feedparser
+from bootstrap import conf
 from bs4 import BeautifulSoup, SoupStrainer
 
-from lib.utils import try_keys, try_get_icon_url, rebuild_url, jarr_get
+from lib.utils import try_get_icon_url, rebuild_url, jarr_get
 
 logger = logging.getLogger(__name__)
 logging.captureWarnings(True)
-ACCEPTED_MIMETYPES = ('application/rss+xml', 'application/rdf+xml',
-                      'application/atom+xml', 'application/xml', 'text/xml')
+FEED_MIMETYPES = ('application/atom+xml', 'application/rss+xml',
+                  'application/rdf+xml', 'application/xml', 'text/xml')
 
 
 def is_parsing_ok(parsed_feed):
@@ -28,15 +29,22 @@ def escape_keys(*keys):
     return wrapper
 
 
+def _browse_feedparser_feed(feed, check):
+    if feed.get('feed', {}).get('links') is None:
+        return
+    for link in feed['feed']['links']:
+        if check(link):
+            return link['href']
+
+
 @escape_keys('title', 'description')
 def construct_feed_from(url=None, fp_parsed=None, feed=None, query_site=True):
     if url is None and fp_parsed is not None:
         url = fp_parsed.get('url')
     if url is not None and fp_parsed is None:
         try:
-            response = jarr_get(url)
-            fp_parsed = feedparser.parse(response.content,
-                                         request_headers=response.headers)
+            fp_parsed = feedparser.parse(url,
+                    request_headers={'User-Agent': conf.CRAWLER_USER_AGENT})
         except Exception as error:
             logger.warn('failed to retreive that url: %r', error)
             fp_parsed = {'bozo': True}
@@ -44,14 +52,30 @@ def construct_feed_from(url=None, fp_parsed=None, feed=None, query_site=True):
     feed = feed or {}
     feed_split = urllib.parse.urlsplit(url)
     site_split = None
+    feed['site_link'] = url
+    feed['link'] = _browse_feedparser_feed(fp_parsed,
+            lambda link: link['type'] in FEED_MIMETYPES)
+
+    if not is_parsing_ok(fp_parsed) and feed.get('link'):
+        try:
+            fp_parsed = feedparser.parse(feed['link'],
+                    request_headers={'User-Agent': conf.CRAWLER_USER_AGENT})
+        except Exception as error:
+            logger.warn('failed to retreive that url: %r', error)
+            fp_parsed = {'bozo': True}
+        url = feed['link']
+
     if is_parsing_ok(fp_parsed):
         feed['link'] = url
-        feed['site_link'] = try_keys(fp_parsed['feed'], 'href', 'link')
-        feed['title'] = fp_parsed['feed'].get('title')
-        feed['description'] = try_keys(fp_parsed['feed'], 'subtitle', 'title')
-        feed['icon_url'] = try_keys(fp_parsed['feed'], 'icon')
-    else:
-        feed['site_link'] = url
+        feed['site_link'] = fp_parsed['feed'].get('link') \
+                or _browse_feedparser_feed(fp_parsed,
+                    lambda link: link['rel'] == 'alternate'
+                            and link['type'] == 'text/html')
+    feed['title'] = fp_parsed['feed'].get('title_detail', {}).get('value')
+    feed['description'] = fp_parsed['feed']\
+            .get('subtitle_detail', {}).get('value')
+    feed['icon_url'] = _browse_feedparser_feed(fp_parsed,
+            lambda link: 'icon' in link['rel'])
 
     if feed.get('site_link'):
         feed['site_link'] = rebuild_url(feed['site_link'], feed_split)
@@ -109,7 +133,7 @@ def construct_feed_from(url=None, fp_parsed=None, feed=None, query_site=True):
             del feed['icon_url']
 
     if not feed.get('link'):
-        for type_ in ACCEPTED_MIMETYPES:
+        for type_ in FEED_MIMETYPES:
             alternates = bs_parsed.find_all(check_keys(
                     rel=['alternate'], type=[type_]))
             if len(alternates) >= 1:
