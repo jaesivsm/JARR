@@ -18,13 +18,6 @@ JarrNavBar = React.createClass({
                 crawling_method: MenuStore.crawling_method,
                 showModal: false, modalType: null, modalValue: null};
     },
-    buttonFetch: function() {
-        if(this.state.is_admin && this.state.crawling_method != 'http') {
-            return (<NavItem eventKey={2} href="/fetch">
-                        <Glyphicon glyph="import" />Fetch
-                    </NavItem>);
-        }
-    },
     sectionAdmin: function() {
         if(this.state.is_admin) {
             return (<MenuItem href="/admin/dashboard">
@@ -93,7 +86,6 @@ JarrNavBar = React.createClass({
                     </Navbar.Header>
                     <Navbar.Collapse>
                     <Nav pullRight>
-                        {this.buttonFetch()}
                         <NavItem className="jarrnavitem"
                                  onClick={this.openAddFeed} href="#">
                             <Glyphicon glyph="plus-sign" />Add a new feed

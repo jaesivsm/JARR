@@ -51,8 +51,8 @@ def reset_feeds():
     last_conn_max = now - timedelta(days=30)
 
     feeds = list(fcontr.read().join(User).filter(User.is_active == True,
-                                    User.last_connection >= last_conn_max)\
-                        .with_entities(fcontr._db_cls.user_id)\
+                                    User.last_connection >= last_conn_max)
+                        .with_entities(fcontr._db_cls.user_id)
                         .distinct())
 
     step = timedelta(seconds=3600 / fcontr.read().count())
@@ -60,37 +60,6 @@ def reset_feeds():
         fcontr.update({'id': feed[0]},
                 {'etag': '', 'last_modified': '',
                  'last_retrieved': now - i * step})
-
-
-@manager.command
-def fetch_asyncio(user_id, feed_id):
-    "Crawl the feeds with asyncio."
-    import asyncio
-
-    with application.app_context():
-        from flask_login import current_user
-        from crawler import classic_crawler
-        ucontr = UserController()
-        users = []
-        try:
-            users = [ucontr.get(user_id)]
-        except:
-            users = ucontr.read()
-        finally:
-            if users == []:
-                users = ucontr.read()
-
-        try:
-            feed_id = int(feed_id)
-        except:
-            feed_id = None
-
-        loop = asyncio.get_event_loop()
-        for user in users:
-            if user.is_active:
-                logger.warn("Fetching articles for " + user.login)
-                classic_crawler.retrieve_feed(loop, current_user, feed_id)
-        loop.close()
 
 
 manager.add_command('probe_articles', ArticleProbe())

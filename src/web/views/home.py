@@ -166,21 +166,3 @@ def mark_all_as_read():
     processed_articles = clusters_to_json(clu_contr.join_read(**filters))
     clu_contr.update(filters, {'read': True})
     return processed_articles
-
-
-@current_app.route('/fetch', methods=['GET'])
-@current_app.route('/fetch/<int:feed_id>', methods=['GET'])
-@login_required
-def fetch(feed_id=None):
-    """
-    Triggers the download of news.
-    News are downloaded in a separated process, mandatory for Heroku.
-    """
-    if conf.CRAWLING_METHOD == "classic" \
-            and (not conf.ON_HEROKU or current_user.is_admin):
-        utils.fetch(current_user.id, feed_id)
-        flash(gettext("Downloading articles..."), "info")
-    else:
-        flash(gettext("The manual retrieving of news is only available " +
-                      "for administrator, on the Heroku platform."), "info")
-    return redirect(redirect_url())

@@ -63,9 +63,6 @@ def bookmarklet():
               'warning')
     feed = feed_contr.create(**feed)
     flash(gettext('Feed was successfully created.'), 'success')
-    if feed.enabled and conf.CRAWLER_TYPE == "classic":
-        utils.fetch(current_user.id, feed.id)
-        flash(gettext("Downloading articles for the new feed..."), 'info')
     return redirect(url_for('home', at='f', ai=feed.id))
 
 
@@ -79,17 +76,3 @@ def inactives():
     inactives = FeedController(current_user.id).get_inactives(nb_days)
     return render_template('inactives.html',
                            inactives=inactives, nb_days=nb_days)
-
-
-@feed_bp.route('/duplicates/<int:feed_id>', methods=['GET'])
-@login_required
-def duplicates(feed_id):
-    """
-    Return duplicates article for a feed.
-    """
-    feed, duplicates = FeedController(current_user.id).get_duplicates(feed_id)
-    if len(duplicates) == 0:
-        flash(gettext('No duplicates in the feed "{}".').format(feed.title),
-                'info')
-        return redirect(url_for('home'))
-    return render_template('duplicates.html', duplicates=duplicates, feed=feed)

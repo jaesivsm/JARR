@@ -64,23 +64,6 @@ class FeedController(AbstractController):
                         {'last_retrieved': now})
         return feeds
 
-    def get_duplicates(self, feed_id):
-        """
-        Compare a list of documents by pair.
-        Pairs of duplicates are sorted by "retrieved date".
-        """
-        feed = self.get(id=feed_id)
-        duplicates = []
-        for pair in itertools.combinations(feed.articles, 2):
-            date1, date2 = pair[0].date, pair[1].date
-            if clear_string(pair[0].title) == clear_string(pair[1].title) \
-                    and (date1 - date2) < timedelta(days=1):
-                if pair[0].retrieved_date < pair[1].retrieved_date:
-                    duplicates.append((pair[0], pair[1]))
-                else:
-                    duplicates.append((pair[1], pair[0]))
-        return feed, duplicates
-
     def get_inactives(self, nb_days):
         today = datetime.utcnow()
         inactives = []
