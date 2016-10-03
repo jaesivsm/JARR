@@ -119,10 +119,12 @@ class ClusterController(AbstractController):
         if feed_id:
             cluster_has_feed = exists(select([art_feed_alias.feed_id])
                     .where(and_(art_feed_alias.cluster_id == Cluster.id,
+                                art_feed_alias.user_id == self.user_id,
                                 art_feed_alias.feed_id == feed_id))
                     .correlate(Cluster))
             query = query.join(art_feed_alias,
-                               art_feed_alias.cluster_id == Cluster.id)\
+                               and_(art_feed_alias.user_id == self.user_id,
+                                    art_feed_alias.cluster_id == Cluster.id))\
                          .filter(cluster_has_feed)
         else:
             query = query.join(art_feed_alias,
@@ -132,10 +134,12 @@ class ClusterController(AbstractController):
             # as every article doesn't obligatorily have a category > outerjoin
             cluster_has_category = exists(select([art_cat_alias.category_id])
                     .where(and_(art_cat_alias.cluster_id == Cluster.id,
+                                art_cat_alias.user_id == self.user_id,
                                 art_cat_alias.category_id == category_id))
                     .correlate(Cluster))
             query = query.join(art_cat_alias,
-                               art_cat_alias.cluster_id == Cluster.id)\
+                               and_(art_cat_alias.user_id == self.user_id,
+                                    art_cat_alias.cluster_id == Cluster.id))\
                          .filter(cluster_has_category)
 
         # applying common filter (read / liked)

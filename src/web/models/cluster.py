@@ -34,8 +34,11 @@ class Cluster(db.Model, RightMixin):
             foreign_keys=[Article.cluster_id, Article.category_id])
 
     # index
-    cluster_liked_user_id_main_date = Index('liked', 'user_id', 'main_date')
-    cluster_read_user_id_main_date = Index('read', 'user_id', 'main_date')
+    cluster_cluster_uid_date = Index('user_id', 'main_date DESC NULLS LAST')
+    cluster_cluster_liked_uid_date = Index(
+            'liked', 'user_id', 'main_date DESC NULLS LAST')
+    cluster_cluster_read_uid_date = Index(
+            'read', 'user_id', 'main_date DESC NULLS LAST')
 
     @property
     def categories_id(self):

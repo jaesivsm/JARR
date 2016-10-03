@@ -41,16 +41,9 @@ def upgrade():
     from web.models import Cluster, Feed, Article
     if 'sqlite' not in conf.SQLALCHEMY_DATABASE_URI:
         op.create_foreign_key(None, 'article', 'cluster',
-                            ['cluster_id'], ['id'])
+                              ['cluster_id'], ['id'])
         op.create_foreign_key(None, 'cluster', 'article',
-                            ['main_article_id'], ['id'])
-
-        op.execute('CREATE INDEX cluster_uid_date ON cluster '
-                   '(user_id, main_date DESC NULLS LAST);')
-        op.execute('CREATE INDEX cluster_liked_uid_date ON cluster '
-                   '(liked, user_id, main_date DESC NULLS LAST);')
-        op.execute('CREATE INDEX cluster_read_uid_date ON cluster '
-                   '(read, user_id, main_date DESC NULLS LAST);')
+                              ['main_article_id'], ['id'])
 
         print('%s - Creating clusters' % datetime.now().isoformat())
         op.execute("""
@@ -68,6 +61,8 @@ def upgrade():
                 .values(main_title=Article.title,
                         main_feed_title=Feed.title,
                         main_article_id=Article.id))
+
+        print('%s - setting article to clusters' % datetime.now().isoformat())
         op.execute("""UPDATE article SET cluster_id = cluster.id
                       FROM cluster WHERE cluster.main_link = article.link
                                      AND article.user_id = cluster.user_id;""")
@@ -92,7 +87,7 @@ def upgrade():
     "main_feed_title = (SELECT feed.title FROM article, feed %(WHERE)s "
                        "AND article.feed_id = feed.id);" % {'WHERE': WHERE})
 
-        print('%s - Updating articles' % datetime.now().isoformat())
+        print('%s - setting article to clusters' % datetime.now().isoformat())
         op.execute("""UPDATE article
                       SET cluster_id = (SELECT cluster.id FROM cluster
                                         WHERE cluster.main_link = article.link
@@ -102,6 +97,26 @@ def upgrade():
     with op.batch_alter_table('article') as batch_op:
         batch_op.drop_column('readed')
         batch_op.drop_column('like')
+
+    if 'sqlite' not in conf.SQLALCHEMY_DATABASE_URI:
+        print('%s - creating index 0/5' % datetime.now().isoformat())
+        op.execute('CREATE INDEX article_uid_cluid ON article '
+                   '(user_id, cluster_id);')
+        print('%s - creating index 1/5' % datetime.now().isoformat())
+        op.execute('CREATE INDEX article_uid_cid_cluid ON article'
+                   '(user_id, category_id, cluster_id);')
+        print('%s - creating index 2/5' % datetime.now().isoformat())
+        op.execute('CREATE INDEX article_uid_fid_cluid ON article'
+                   '(user_id, feed_id, cluster_id);')
+        print('%s - creating index 3/5' % datetime.now().isoformat())
+        op.execute('CREATE INDEX cluster_uid_date ON cluster '
+                   '(user_id, main_date DESC NULLS LAST);')
+        print('%s - creating index 4/5' % datetime.now().isoformat())
+        op.execute('CREATE INDEX cluster_liked_uid_date ON cluster '
+                   '(liked, user_id, main_date DESC NULLS LAST);')
+        print('%s - creating index 5/5' % datetime.now().isoformat())
+        op.execute('CREATE INDEX cluster_read_uid_date ON cluster '
+                   '(read, user_id, main_date DESC NULLS LAST);')
 
 
 def downgrade():
