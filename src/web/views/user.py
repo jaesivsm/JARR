@@ -37,11 +37,11 @@ def opml_export():
 @user_bp.route('/opml/import', methods=['POST'])
 @login_required
 def opml_import():
-    if request.files.get('opmlfile', None) is None:
+    if request.files.get('opml.xml', None) is None:
         flash(gettext('Got no file'), 'warning')
         return redirect(url_for('user.profile'))
 
-    data = request.files.get('opmlfile', None)
+    data = request.files.get('opml.xml', None)
     try:
         subscriptions = opml.from_string(data.read())
     except:
@@ -66,7 +66,7 @@ def opml_import():
 
         # handling categories
         cat_id = None
-        category = getattr(line, 'category', None)
+        category = getattr(line, 'category', '').lstrip('/')
         if category:
             if category not in categories:
                 new_category = ccontr.create(name=category)

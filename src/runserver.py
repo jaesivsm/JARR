@@ -35,8 +35,6 @@ with application.app_context():
     application.register_blueprint(views.cluster_bp)
     application.register_blueprint(views.feeds_bp)
     application.register_blueprint(views.feed_bp)
-    application.register_blueprint(views.categories_bp)
-    application.register_blueprint(views.category_bp)
     application.register_blueprint(views.icon_bp)
     application.register_blueprint(views.admin_bp)
     application.register_blueprint(views.users_bp)

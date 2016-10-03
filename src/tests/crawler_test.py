@@ -28,7 +28,7 @@ class CrawlerTest(JarrFlaskCommon):
         self.resp_raise = None
 
         def _api_req(method, url, **kwargs):
-            if url in set('feed%d' % i for i in range(5)):
+            if url.startswith('feed') and len(url) == 6:
                 class Proxy:
                     status_code = self.resp_status_code
                     headers = self.resp_headers

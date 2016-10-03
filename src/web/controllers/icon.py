@@ -23,7 +23,7 @@ class IconController(AbstractController):
     def create(self, **attrs):
         return super().create(**self._build_from_url(attrs))
 
-    def update(self, filters, attrs):
+    def update(self, filters, attrs, *args, **kwargs):
         attrs = self._build_from_url(attrs)
         return super().update(filters, attrs, *args, **kwargs)
 

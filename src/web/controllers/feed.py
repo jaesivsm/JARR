@@ -1,12 +1,10 @@
 import logging
-import itertools
 from datetime import datetime, timedelta
 
 from bootstrap import conf
 from .abstract import AbstractController
 from .icon import IconController
 from web.models import User, Feed
-from lib.utils import clear_string
 
 logger = logging.getLogger(__name__)
 DEFAULT_LIMIT = 5

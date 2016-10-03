@@ -7,10 +7,8 @@ from flask import Blueprint, render_template, flash, \
 from flask_babel import gettext
 from flask_login import login_required, current_user
 
-from bootstrap import conf
-from web import utils
 from web.lib.view_utils import etag_match
-from web.lib.feed_utils import construct_feed_from
+from lib.feed_utils import construct_feed_from
 from web.controllers import FeedController, ClusterController
 
 logger = logging.getLogger(__name__)

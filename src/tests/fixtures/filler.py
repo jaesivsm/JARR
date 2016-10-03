@@ -24,7 +24,7 @@ def populate_db():
             string += " art%s" % a
         return string
 
-    for _ in range(2):
+    for k in range(2):
         article_total = 0
         for user in (user1, user2):
             for i in range(3):
@@ -32,9 +32,9 @@ def populate_db():
                 if i:
                     cat_id = ccontr.create(user_id=user.id,
                                         name=to_name(user, i)).id
-                feed = fcontr.create(link="feed%d" % i, user_id=user.id,
-                                    category_id=cat_id,
-                                    title=to_name(user, i, i))
+                feed = fcontr.create(link="feed%d%d" % (k, i), user_id=user.id,
+                                     category_id=cat_id,
+                                     title=to_name(user, i, i))
                 for j in range(3):
                     entry = to_name(user, i, i, j)
                     article_total += 1

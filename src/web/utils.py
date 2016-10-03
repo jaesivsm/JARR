@@ -4,28 +4,15 @@
 # - HTML processing.
 #
 
-import re
-import sys
-import glob
 import logging
-import operator
-import urllib
-import itertools
-import subprocess
-import sqlalchemy
-try:
-    from urlparse import urlparse, parse_qs, urlunparse
-except:
-    from urllib.parse import urlparse, parse_qs, urlunparse, urljoin
-from datetime import timedelta
 from collections import Counter
-from contextlib import contextmanager
+from urllib.parse import urlparse, urljoin
+
+import sqlalchemy
 from flask import request
 
-from bootstrap import conf
 from web import controllers
 from web.models import Article
-from lib.utils import clear_string
 
 logger = logging.getLogger(__name__)
 

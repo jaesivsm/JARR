@@ -1,5 +1,4 @@
-from flask import Blueprint, render_template, redirect, flash, url_for
-from flask_babel import gettext
+from flask import Blueprint, render_template
 from flask_login import login_required, current_user
 
 from web.controllers import ArticleController

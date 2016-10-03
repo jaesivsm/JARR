@@ -2,16 +2,13 @@ import pytz
 import logging
 from datetime import datetime
 
-from flask import (current_app, render_template,
-                   request, flash, url_for, redirect)
+from flask import current_app, render_template, request, flash, url_for
 from flask_login import login_required, current_user
-from flask_babel import gettext, get_locale
+from flask_babel import get_locale
 from babel.dates import format_datetime, format_timedelta
 
 from bootstrap import conf
-from lib.utils import redirect_url
 from web.lib.article_cleaner import clean_urls
-from web import utils
 from web.lib.view_utils import etag_match, clusters_to_json
 from web.views.common import jsonify
 

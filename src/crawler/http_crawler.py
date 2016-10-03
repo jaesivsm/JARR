@@ -23,7 +23,7 @@ from datetime import datetime, timedelta
 from concurrent.futures import wait, ThreadPoolExecutor
 from requests_futures.sessions import FuturesSession
 from lib.utils import default_handler, to_hash
-from web.lib.feed_utils import construct_feed_from, is_parsing_ok
+from lib.feed_utils import construct_feed_from, is_parsing_ok
 from crawler.lib.article_utils import extract_id, construct_article
 
 logger = logging.getLogger(__name__)
@@ -177,7 +177,7 @@ class FeedCrawler(AbstractCrawler):
         except Exception as error:
             error_count = self.feed['error_count'] + 1
             logger.warn('%r %r - an error occured while fetching '
-                        'feed; bumping  error count to %r',
+                        'feed; bumping error count to %r',
                         self.feed['id'], self.feed['title'], error_count)
             future = self.query_jarr('put', 'feed/%d' % self.feed['id'],
                                       {'error_count': error_count,

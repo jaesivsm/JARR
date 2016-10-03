@@ -68,7 +68,7 @@
             <a href="{{url_for("user.opml_export")}}" class="btn btn-default">{{ _("Export feeds to OPML") }}</a>
             <form action="{{url_for("user.opml_import")}}" method="post" enctype="multipart/form-data">
                 <span class="btn btn-default btn-file">{{ _("Import feeds from an OPML file") }}
-                    <input type="file" name="opmlfile" />
+                    <input type="file" name="opml.xml" />
                 </span>
                 <button class="btn btn-default" type="submit">OK</button>
             </form>
