@@ -1,13 +1,13 @@
 import logging
 from bootstrap import conf, db
 
-from sqlalchemy import func, Integer, or_, and_
+from sqlalchemy import func, Integer, and_
+from sqlalchemy.orm import aliased
 from sqlalchemy.sql import select, exists
 from sqlalchemy.dialects.postgres import ARRAY
 from werkzeug.exceptions import NotFound
 from .abstract import AbstractController
 from web.models import Cluster, Article
-from web.models.relationships import cluster_as_feed, cluster_as_category
 from web.controllers.article import ArticleController
 
 logger = logging.getLogger(__name__)
@@ -57,9 +57,6 @@ class ClusterController(AbstractController):
             cluster.main_date = article.date
             cluster.main_feed_title = article.feed.title
             cluster.main_article_id = article.id
-        cluster.feeds.append(article.feed)
-        if article.category_id:
-            cluster.categories.append(article.category)
         db.session.add(cluster)
         db.session.add(article)
         db.session.commit()
@@ -92,25 +89,25 @@ class ClusterController(AbstractController):
             if not filters['id__in']:
                 return
 
-        caf_cols = cluster_as_feed.columns
-        cac_cols = cluster_as_category.columns
         fields = {key: getattr(Cluster, key) for key in ('main_title', 'id',
                   'liked', 'read', 'main_article_id', 'main_feed_title',
                   'main_date', 'main_link')}
         sqla_fields = list(fields.values())
         selected_fields = list(fields.values())
 
+        art_feed_alias, art_cat_alias = aliased(Article), aliased(Article)
         if 'sqlite' in conf.SQLALCHEMY_DATABASE_URI:
-            selected_fields.append(
-                    func.group_concat(caf_cols['feed_id']).label('feeds_id'))
+            selected_fields.append(func.group_concat(
+                    art_feed_alias.feed_id).label('feeds_id'))
             if category_id:
                 selected_fields.append(func.group_concat(
-                        cac_cols['category_id']).label('categories_id'))
+                        art_cat_alias.category_id).label('categories_id'))
         else:
-            selected_fields.append(func.array_agg(caf_cols['feed_id'],
+            selected_fields.append(func.array_agg(art_feed_alias.feed_id,
                     type_=ARRAY(Integer)).label('feeds_id'))
             if category_id:
-                selected_fields.append(func.array_agg(cac_cols['category_id'],
+                selected_fields.append(func.array_agg(
+                        art_cat_alias.category_id,
                         type_=ARRAY(Integer)).label('categories_id'))
 
         # DESC of what's going on below :
@@ -120,25 +117,25 @@ class ClusterController(AbstractController):
         # adding parent filter, but we can't just filter on one id, because
         # we'll miss all the other parent of the cluster
         if feed_id:
-            cluster_has_feed = exists(select([caf_cols['feed_id']])
-                    .where(and_(caf_cols['cluster_id'] == Cluster.id,
-                                caf_cols['feed_id'] == feed_id))
+            cluster_has_feed = exists(select([art_feed_alias.feed_id])
+                    .where(and_(art_feed_alias.cluster_id == Cluster.id,
+                                art_feed_alias.feed_id == feed_id))
                     .correlate(Cluster))
-            query = query.join(cluster_as_feed,
-                               caf_cols['cluster_id'] == Cluster.id)\
+            query = query.join(art_feed_alias,
+                               art_feed_alias.cluster_id == Cluster.id)\
                          .filter(cluster_has_feed)
         else:
-            query = query.join(cluster_as_feed,
-                    caf_cols['cluster_id'] == Cluster.id)
+            query = query.join(art_feed_alias,
+                               art_feed_alias.cluster_id == Cluster.id)
         if category_id:
             # joining only if filtering on categories to lighten the query
             # as every article doesn't obligatorily have a category > outerjoin
-            cluster_has_category = exists(select([cac_cols['category_id']])
-                    .where(and_(cac_cols['cluster_id'] == Cluster.id,
-                                cac_cols['category_id'] == category_id))
+            cluster_has_category = exists(select([art_cat_alias.category_id])
+                    .where(and_(art_cat_alias.cluster_id == Cluster.id,
+                                art_cat_alias.category_id == category_id))
                     .correlate(Cluster))
-            query = query.join(cluster_as_category,
-                               cac_cols['cluster_id'] == Cluster.id)\
+            query = query.join(art_cat_alias,
+                               art_cat_alias.cluster_id == Cluster.id)\
                          .filter(cluster_has_category)
 
         # applying common filter (read / liked)
@@ -168,16 +165,16 @@ class ClusterController(AbstractController):
         return {'articles': {'type': list}}
 
     def count_by_feed(self, **filters):
-        return self._count_by(cluster_as_feed.columns['feed_id'], **filters)
+        return self._count_by(Article.feed_id, **filters)
 
     def count_by_category(self, **filters):
-        return self._count_by(cluster_as_category.columns['category_id'],
-                              **filters)
+        return self._count_by(Article.category_id, **filters)
 
     def _count_by(self, group_on, **filters):
         if self.user_id:
             filters['user_id'] = self.user_id
-        return dict(db.session.query(group_on, func.count('cluster_id'))
-                              .outerjoin(Cluster)
+        return dict(db.session.query(group_on, func.count(Article.cluster_id))
+                              .outerjoin(Cluster,
+                                         Article.cluster_id == Cluster.id)
                               .filter(*self._to_filters(**filters))
                               .group_by(group_on).all())

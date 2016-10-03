@@ -5,7 +5,6 @@ from sqlalchemy.orm import relationship
 from bootstrap import db
 from web.models.article import Article
 from web.models.right_mixin import RightMixin
-from web.models.relationships import cluster_as_category, cluster_as_feed
 
 
 class Cluster(db.Model, RightMixin):
@@ -25,15 +24,14 @@ class Cluster(db.Model, RightMixin):
     # relationship
     main_article_id = Column(Integer, ForeignKey('article.id'))
     user_id = Column(Integer, ForeignKey('user.id'))
-    feeds = relationship('Feed', back_populates='clusters',
-                         secondary=cluster_as_feed,
-                         lazy=True)
-    categories = relationship('Category', back_populates='clusters',
-                              secondary=cluster_as_category,
-                              lazy=True)
-    articles = relationship('Article', backref='cluster',
-                            cascade='all,delete-orphan', order_by=Article.date,
-                            foreign_keys=[Article.cluster_id])
+    articles = relationship('Article', back_populates='cluster',
+                            foreign_keys=[Article.cluster_id],
+                            cascade='all,delete-orphan',
+                            order_by=Article.date.asc())
+    feeds = relationship('Article', back_populates='cluster',
+                         foreign_keys=[Article.feed_id, Article.cluster_id])
+    categories = relationship('Article', back_populates='cluster',
+            foreign_keys=[Article.cluster_id, Article.category_id])
 
     # index
     cluster_liked_user_id_main_date = Index('liked', 'user_id', 'main_date')
@@ -65,7 +63,7 @@ class Cluster(db.Model, RightMixin):
     def _fields_base_read():
         return {'id', 'user_id', 'categories_id', 'feeds_id',
                 'main_link', 'main_title', 'main_feed_title', 'main_date',
-                'created_date', 'cluster_type', 'icons_url', 'articles'}
+                'created_date', 'cluster_type', 'articles'}
 
     def __repr__(self):
         return "<Cluster(id=%d, title=%r, date=%r)>" \

@@ -3,7 +3,6 @@ from sqlalchemy import (Index, Column, ForeignKey,
                         String, Boolean, Integer, DateTime, PickleType)
 from sqlalchemy.orm import relationship, validates
 from bootstrap import db
-from web.models.relationships import cluster_as_feed
 from web.models.right_mixin import RightMixin
 
 
@@ -34,10 +33,9 @@ class Feed(db.Model, RightMixin):
     icon_url = Column(String, ForeignKey('icon.url'), default=None)
     user_id = Column(Integer, ForeignKey('user.id'))
     category_id = Column(Integer, ForeignKey('category.id'))
-    articles = relationship('Article', backref='feed',
+    articles = relationship('Article', back_populates='feed',
                             cascade='all,delete-orphan')
-    clusters = relationship('Cluster', back_populates='feeds',
-                            secondary=cluster_as_feed)
+    clusters = relationship('Article', back_populates='feed')
 
     # index
     idx_feed_uid_cid = Index('user_id', 'category_id')

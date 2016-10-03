@@ -33,23 +33,12 @@ def upgrade():
             sa.Column('user_id', sa.Integer(), nullable=True),
             sa.ForeignKeyConstraint(['user_id'], ['user.id']),
             sa.PrimaryKeyConstraint('id'))
-    op.create_table('cluster_as_category',
-            sa.Column('cluster_id', sa.Integer(), nullable=True),
-            sa.Column('category_id', sa.Integer(), nullable=True),
-            sa.ForeignKeyConstraint(['category_id'], ['category.id']),
-            sa.ForeignKeyConstraint(['cluster_id'], ['cluster.id']))
-    op.create_table('cluster_as_feed',
-            sa.Column('cluster_id', sa.Integer(), nullable=True),
-            sa.Column('feed_id', sa.Integer(), nullable=True),
-            sa.ForeignKeyConstraint(['cluster_id'], ['cluster.id']),
-            sa.ForeignKeyConstraint(['feed_id'], ['feed.id']))
     op.add_column('category',
             sa.Column('cluster_on_title', sa.Boolean(), default=False))
     op.add_column('article',
             sa.Column('cluster_id', sa.Integer(), nullable=True))
 
     from web.models import Cluster, Feed, Article
-    from web.models.relationships import cluster_as_feed, cluster_as_category
     if 'sqlite' not in conf.SQLALCHEMY_DATABASE_URI:
         op.create_foreign_key(None, 'article', 'cluster',
                             ['cluster_id'], ['id'])
@@ -110,20 +99,6 @@ def upgrade():
                                         AND article.user_id = cluster.user_id);
     """)
 
-    print('%s - feeding cluster_as_feed' % datetime.now().isoformat())
-    op.execute("""
-INSERT INTO cluster_as_feed (cluster_id, feed_id)
-SELECT article.cluster_id, article.feed_id
-    FROM article GROUP BY article.cluster_id, article.feed_id;
-""")
-
-    print('%s - feeding cluster_as_category' % datetime.now().isoformat())
-    op.execute("""
-INSERT INTO cluster_as_category (cluster_id, category_id)
-SELECT article.cluster_id, article.category_id
-    FROM article GROUP BY article.cluster_id, article.category_id;
-""")
-
     with op.batch_alter_table('article') as batch_op:
         batch_op.drop_column('readed')
         batch_op.drop_column('like')
@@ -136,6 +111,4 @@ def downgrade():
     op.drop_constraint(None, 'article', type_='foreignkey')
     with op.batch_alter_table('article') as batch_op:
         batch_op.drop_column('cluster_id')
-    op.drop_table('cluster_as_feed')
-    op.drop_table('cluster_as_category')
     op.drop_table('cluster')

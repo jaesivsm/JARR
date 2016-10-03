@@ -1,6 +1,7 @@
 from datetime import datetime
 from sqlalchemy import (Column, Index, ForeignKey,
                         Integer, String, Boolean, DateTime)
+from sqlalchemy.orm import relationship
 from bootstrap import db
 from web.models.right_mixin import RightMixin
 
@@ -21,6 +22,13 @@ class Article(db.Model, RightMixin):
     feed_id = Column(Integer, ForeignKey('feed.id'))
     category_id = Column(Integer, ForeignKey('category.id'))
     cluster_id = Column(Integer, ForeignKey('cluster.id'))
+
+    cluster = relationship('Cluster', back_populates='articles',
+                           foreign_keys=[cluster_id])
+    category = relationship('Category', back_populates='articles',
+                            foreign_keys=[category_id])
+    feed = relationship('Feed', back_populates='articles',
+                        foreign_keys=[feed_id])
 
     # index
     idx_article_eid_cid_uid = Index('entry_id', 'category_id', 'user_id')
