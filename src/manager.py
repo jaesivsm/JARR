@@ -50,7 +50,7 @@ def reset_feeds():
     now = datetime.utcnow()
     last_conn_max = now - timedelta(days=30)
 
-    feeds = list(fcontr.read().join(User).filter(User.is_active == True,
+    feeds = list(fcontr.read().join(User).filter(User.is_active.__eq__(True),
                                     User.last_connection >= last_conn_max)
                         .with_entities(fcontr._db_cls.user_id)
                         .distinct())

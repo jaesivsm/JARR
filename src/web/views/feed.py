@@ -41,19 +41,11 @@ def bookmarklet():
     feed_exists = list(feed_contr.read(__or__=[{'link': url},
                                                {'site_link': url}]))
     if feed_exists:
-        flash(gettext("Couldn't add feed: feed already exists."),
-                "warning")
+        flash(gettext("Didn't add feed: feed already exists."),
+              "warning")
         return redirect(url_for('home', at='f', ai=feed_exists[0].id))
 
-    try:
-        feed = construct_feed_from(url)
-    except requests.exceptions.ConnectionError:
-        flash(gettext("Impossible to connect to the address: {}.".format(url)),
-              "danger")
-        return redirect(url_for('home'))
-    except Exception:
-        logger.exception('something bad happened when fetching %r', url)
-        return redirect(url_for('home'))
+    feed = construct_feed_from(url)
     if not feed.get('link'):
         feed['enabled'] = False
         flash(gettext("Couldn't find a feed url, you'll need to find a Atom or"

@@ -124,12 +124,13 @@ class JarrUpdater(AbstractCrawler):
                                     strftime('%a, %d %b %Y %X %Z', gmtime()))}
 
         if not is_parsing_ok(self.parsed_feed):
-            up_feed['last_error'] = str(self.parsed_feed['bozo_exception'])
+            up_feed['last_error'] = str(self.parsed_feed.get('bozo_exception'))
             up_feed['error_count'] = self.feed['error_count'] + 1
             return self.query_jarr('put', 'feed/%d' % self.feed['id'], up_feed)
 
         fresh_feed = construct_feed_from(url=self.feed['link'],
-                                         fp_parsed=self.parsed_feed)
+                                         fp_parsed=self.parsed_feed,
+                                         feed=self.feed)
         if fresh_feed.get('description'):
             fresh_feed['description'] \
                     = html.unescape(fresh_feed['description'])

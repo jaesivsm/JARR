@@ -36,7 +36,7 @@ class FeedProbe(AbstractMuninPlugin):
     def _get_total_feed(self):
         last_conn_max = datetime.utcnow() - timedelta(days=30)
         return FeedController(ignore_context=True).read()\
-                     .join(User).filter(User.is_active == True,
+                     .join(User).filter(User.is_active.__eq__(True),
                                         User.last_connection >= last_conn_max)\
                      .count()
 
@@ -71,7 +71,7 @@ class ArticleProbe(AbstractMuninPlugin):
         fcontr = FeedController(ignore_context=True)
         last_conn_max = datetime.utcnow() - timedelta(days=30)
         for id_ in fcontr.read()\
-                     .join(User).filter(User.is_active == True,
+                     .join(User).filter(User.is_active.__eq__(True),
                                         User.last_connection >= last_conn_max)\
                      .with_entities(fcontr._db_cls.user_id)\
                      .distinct().order_by('feed_user_id'):

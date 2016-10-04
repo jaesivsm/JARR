@@ -59,6 +59,7 @@ PARSED_PLATFORM_URL = urlparse(conf.PLATFORM_URL)
 application.config['SERVER_NAME'] = PARSED_PLATFORM_URL.netloc
 application.config['PREFERRED_URL_SCHEME'] = PARSED_PLATFORM_URL.scheme
 
+
 def is_secure_served():
     return PARSED_PLATFORM_URL.scheme == 'https'
 
