@@ -24,7 +24,7 @@ from concurrent.futures import wait, ThreadPoolExecutor
 from requests_futures.sessions import FuturesSession
 from lib.utils import default_handler, to_hash
 from lib.feed_utils import construct_feed_from, is_parsing_ok
-from crawler.lib.article_utils import extract_id, construct_article
+from lib.article_utils import extract_id, construct_article
 
 logger = logging.getLogger(__name__)
 logging.captureWarnings(True)
@@ -217,9 +217,9 @@ class FeedCrawler(AbstractCrawler):
         ids, entries = [], {}
         parsed_response = feedparser.parse(response.content)
         for entry in parsed_response['entries']:
-            entry_ids = extract_id(entry)
-            entry_ids['feed_id'] = self.feed['id']
-            entry_ids['user_id'] = self.feed['user_id']
+            entry_ids = {'entry_id': extract_id(entry),
+                         'feed_id': self.feed['id'],
+                         'user_id': self.feed['user_id']}
             entries[tuple(sorted(entry_ids.items()))] = entry
             ids.append(entry_ids)
         logger.debug('%r %r - found %d entries %r',

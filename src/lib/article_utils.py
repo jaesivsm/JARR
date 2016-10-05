@@ -5,31 +5,16 @@ from datetime import datetime, timezone
 from bs4 import BeautifulSoup, SoupStrainer
 
 from bootstrap import conf
-from lib.utils import to_hash, jarr_get
+from lib.utils import jarr_get
 from web.lib.article_cleaner import clean_urls
 
 logger = logging.getLogger(__name__)
 
 
-def extract_id(entry, keys=[('link', 'link')], force_id=False):
-    """For a given entry will return a dict that allows to identify it. The
-    dict will be constructed on the uid of the entry. if that identifier is
-    absent, the dict will be constructed upon the values of "keys".
-    """
-    entry_id = entry.get('entry_id') or entry.get('id')
-    if entry_id:
-        return {'entry_id': entry_id}
-    if not entry_id and force_id:
-        return to_hash("".join(entry[entry_key] for _, entry_key in keys
-                                   if entry_key in entry).encode('utf8'))
-    else:
-        ids = {}
-        for entry_key, key in keys:
-            if entry_key in entry and key not in ids:
-                ids[key] = entry[entry_key]
-                if 'date' in key:
-                    ids[key] = dateutil.parser.parse(ids[key]).isoformat()
-        return ids
+def extract_id(entry):
+    """ extract a value from an entry that will identify it among the other of
+    that feed"""
+    return entry.get('entry_id') or entry.get('id') or entry['link']
 
 
 def construct_article(entry, feed):
@@ -52,7 +37,7 @@ def construct_article(entry, feed):
 
     return {'feed_id': feed['id'],
             'user_id': feed['user_id'],
-            'entry_id': extract_id(entry).get('entry_id', None),
+            'entry_id': extract_id(entry),
             'link': link, 'content': content, 'title': title,
             'retrieved_date': now, 'date': date or now}
 
@@ -76,7 +61,7 @@ def get_article_details(entry):
         except Exception as error:
             logger.warning("Unable to get the real URL of %s. Won't fix link "
                            "or title. Error: %s", article_link, error)
-            return article_link, article_title
+            return article_link, article_title or 'No title'
         article_link = response.url
         if not article_title:
             bs_parsed = BeautifulSoup(response.content, 'html.parser',
@@ -85,4 +70,4 @@ def get_article_details(entry):
                 article_title = bs_parsed.find_all('title')[0].text
             except IndexError:  # no title
                 pass
-    return article_link, article_title
+    return article_link, article_title or 'No title'
