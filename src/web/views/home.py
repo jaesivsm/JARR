@@ -93,9 +93,10 @@ def _get_filters(in_dict):
     if in_dict.get('filter') == 'unread':
         filters['read'] = False
     elif in_dict.get('filter') == 'liked':
-        filters['like'] = True
+        filters['liked'] = True
     filter_type = in_dict.get('filter_type')
-    if filter_type in {'feed_id', 'category_id'} and in_dict.get('filter_id'):
+    if filter_type in {'feed_id', 'category_id'} \
+            and (in_dict.get('filter_id') or in_dict.get('filter_id') == 0):
         filters[filter_type] = int(in_dict['filter_id']) or None
     return filters
 
@@ -159,7 +160,9 @@ def get_cluster(cluster_id, parse=False, article_id=None):
 @login_required
 def mark_all_as_read():
     filters = _get_filters(request.json)
-    clu_contr = ClusterController(current_user.id)
-    processed_articles = clusters_to_json(clu_contr.join_read(**filters))
-    clu_contr.update(filters, {'read': True})
-    return processed_articles
+    clu_ctrl = ClusterController(current_user.id)
+    clusters = list(clu_ctrl.join_read(**filters))
+    if clusters:
+        clu_ctrl.update({'id__in': [clu['id'] for clu in clusters]},
+                        {'read': True})
+    return clusters_to_json(clusters)

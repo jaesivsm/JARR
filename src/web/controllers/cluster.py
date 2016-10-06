@@ -11,6 +11,7 @@ from web.models import Cluster, Article
 from web.controllers.article import ArticleController
 
 logger = logging.getLogger(__name__)
+SQLITE_ENGINE = 'sqlite' in conf.SQLALCHEMY_DATABASE_URI
 
 
 class ClusterController(AbstractController):
@@ -72,8 +73,10 @@ class ClusterController(AbstractController):
                                         cluster_read, cluster_liked)
         return self._create_from_article(article, cluster_read, cluster_liked)
 
-    def join_read(self, feed_id=None, category_id=None, **filters):
+    def join_read(self, feed_id=None, **filters):
         art_filters = {}
+        filter_on_category = 'category_id' in filters
+        category_id = filters.pop('category_id', None)
         if self.user_id:
             filters['user_id'] = self.user_id
 
@@ -96,16 +99,16 @@ class ClusterController(AbstractController):
         selected_fields = list(fields.values())
 
         art_feed_alias, art_cat_alias = aliased(Article), aliased(Article)
-        if 'sqlite' in conf.SQLALCHEMY_DATABASE_URI:
+        if SQLITE_ENGINE:
             selected_fields.append(func.group_concat(
                     art_feed_alias.feed_id).label('feeds_id'))
-            if category_id:
+            if filter_on_category:
                 selected_fields.append(func.group_concat(
                         art_cat_alias.category_id).label('categories_id'))
         else:
             selected_fields.append(func.array_agg(art_feed_alias.feed_id,
                     type_=ARRAY(Integer)).label('feeds_id'))
-            if category_id:
+            if filter_on_category:
                 selected_fields.append(func.array_agg(
                         art_cat_alias.category_id,
                         type_=ARRAY(Integer)).label('categories_id'))
@@ -129,10 +132,11 @@ class ClusterController(AbstractController):
         else:
             query = query.join(art_feed_alias,
                                art_feed_alias.cluster_id == Cluster.id)
-        if category_id:
+        if filter_on_category:
             # joining only if filtering on categories to lighten the query
             # as every article doesn't obligatorily have a category > outerjoin
-            cluster_has_category = exists(select([art_cat_alias.category_id])
+            category_filter = exists(
+                    select([art_cat_alias.category_id])
                     .where(and_(art_cat_alias.cluster_id == Cluster.id,
                                 art_cat_alias.user_id == self.user_id,
                                 art_cat_alias.category_id == category_id))
@@ -140,27 +144,27 @@ class ClusterController(AbstractController):
             query = query.join(art_cat_alias,
                                and_(art_cat_alias.user_id == self.user_id,
                                     art_cat_alias.cluster_id == Cluster.id))\
-                         .filter(cluster_has_category)
+                         .filter(category_filter)
 
         # applying common filter (read / liked)
         # grouping all the fields so that agreg works on distant ids
         query = query.group_by(*sqla_fields)\
-                     .filter(*self._to_filters(**filters))
+                    .filter(*self._to_filters(**filters))
 
         for clu in query.order_by(Cluster.main_date.desc()).limit(1000):
             row = {}
             for key in fields:
                 row[key] = getattr(clu, key)
-            if 'sqlite' in conf.SQLALCHEMY_DATABASE_URI:
+            if SQLITE_ENGINE:
                 row['feeds_id'] = set(map(int, clu.feeds_id.split(',')))
-                if category_id and clu.categories_id:
+                if filter_on_category and clu.categories_id:
                     row['categories_id'] = set(
                             map(int, clu.categories_id.split(',')))
-                elif category_id:
+                elif filter_on_category:
                     row['categories_id'] = [0]
             else:
                 row['feeds_id'] = set(clu.feeds_id)
-                if category_id:
+                if filter_on_category:
                     row['categories_id'] = set(clu.categories_id)
             yield row
 

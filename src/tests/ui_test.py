@@ -11,61 +11,87 @@ class BaseUiTest(JarrFlaskCommon):
     def tearDown(self):
         self.app.get('/logout')
 
+    def assertClusterCount(self, count, filters=''):
+        if filters and not filters.startswith('?'):
+            filters = '?' + filters
+        resp = self.app.get('/middle_panel%s' % filters)
+        self.assertEquals(200, resp.status_code)
+        clusters = json.loads(resp.data.decode('utf8'))['clusters']
+        self.assertEquals(count, len(clusters))
+        return clusters
+
     def test_menu(self):
         resp = self.app.get('/menu')
         self.assertEquals(200, resp.status_code)
 
     def test_middle_panel(self):
-        resp = self.app.get('/middle_panel')
-        self.assertEquals(200, resp.status_code)
-        self.assertEquals(9,
-                len(json.loads(resp.data.decode('utf8'))['clusters']))
-        resp = self.app.get('/middle_panel?filter=unread')
-        self.assertEquals(200, resp.status_code)
-        self.assertEquals(9,
-                len(json.loads(resp.data.decode('utf8'))['clusters']))
+        clusters = self.assertClusterCount(9)
+        self.assertClusterCount(9, 'filter=unread')
+        self.assertClusterCount(0, 'filter=liked')
+        self._api('put', 'cluster', clusters[0]['id'],
+                  data={'liked': True}, user='user1')
+        self.assertClusterCount(1, 'filter=liked')
+        self.assertClusterCount(3, 'filter_type=feed_id&filter_id=1')
+        self.assertClusterCount(3, 'filter_type=feed_id&filter_id=1')
+        self.assertClusterCount(3, 'filter_type=category_id&filter_id=0')
 
     def test_search(self):
-        resp = self.app.get('/middle_panel?query=test')
-        self.assertEquals(200, resp.status_code)
-        resp = self.app.get('/middle_panel?query=test&search_title=true')
-        self.assertEquals(200, resp.status_code)
-        resp = self.app.get('/middle_panel?query=test&search_content=true')
-        self.assertEquals(200, resp.status_code)
-        resp = self.app.get('/middle_panel?query=test'
-                            '&search_title=true&search_content=true')
-        self.assertEquals(200, resp.status_code)
+        self.assertClusterCount(0, 'query=test')
+        self.assertClusterCount(9, 'query=user1')
+        self.assertClusterCount(3, 'query=feed1&search_title=true')
+        self.assertClusterCount(3, 'query=user1%20feed0&search_content=true')
+        self.assertClusterCount(1,
+                'query=content 3&search_title=true&search_content=true')
 
     def test_middle_panel_filtered_on_category(self):
         cat_id = 1
-        resp = self.app.get(
-                '/middle_panel?filter_type=category_id&filter_id=%d' % cat_id)
-        self.assertEquals(200, resp.status_code)
-        clusters = json.loads(resp.data.decode('utf8'))['clusters']
+        clusters = self.assertClusterCount(3,
+                'filter_type=category_id&filter_id=%d' % cat_id)
         for cluster in clusters:
             self.assertTrue(cat_id in cluster['categories_id'],
                     "%d not in %r" % (cat_id, cluster['categories_id']))
-        self.assertEquals(3, len(clusters))
 
     def test_middle_panel_filtered_on_feed(self):
         feed_id = 3
-        resp = self.app.get(
-                '/middle_panel?filter_type=feed_id&filter_id=%d' % feed_id)
-        clusters = json.loads(resp.data.decode('utf8'))['clusters']
+        clusters = self.assertClusterCount(3,
+                'filter_type=feed_id&filter_id=%d' % feed_id)
         for cluster in clusters:
             self.assertTrue(feed_id in cluster['feeds_id'],
                     "%d not in %r" % (feed_id, cluster['feeds_id']))
-        self.assertEquals(3, len(clusters))
-        self.assertEquals(200, resp.status_code)        # marking all as read
 
-    def test_mark_all_as_read(self):
-        resp = self.app.put('/mark_all_as_read', data='{}',
+    def _mark_as_read(self, filters={}):
+        resp = self.app.put('/mark_all_as_read', data=json.dumps(filters),
                 headers={'Content-Type': 'application/json'})
         self.assertEquals(200, resp.status_code)
-        resp = self.app.get('/middle_panel?filter=unread')
-        self.assertEquals(200, resp.status_code)
-        self.assertEquals(0,
-                len(json.loads(resp.data.decode('utf8'))['clusters']))
+
+    def test_mark_all_as_read(self):
+        self.assertClusterCount(9, 'filter=unread')
+        self._mark_as_read()
+        self.assertClusterCount(0, 'filter=unread')
+
+    def test_mark_all_as_read_filter(self):
+        self.assertClusterCount(9, 'filter=unread')
+        self._mark_as_read({'filter': "unread",
+                            'filter_type': None, 'filter_id': None})
+        self.assertClusterCount(0, 'filter=unread')
+
+    def test_mark_feed_as_read(self):
+        self.assertClusterCount(9, 'filter=unread')
+        self._mark_as_read({"filter": "unread",
+                            "filter_type": "feed_id", "filter_id": 1})
+        self.assertClusterCount(6, 'filter=unread')
+
+    def test_mark_category_as_read(self):
+        self.assertClusterCount(9, 'filter=unread')
+        self._mark_as_read({"filter": "unread", "filter_type": "category_id",
+                            "filter_id": 1})
+        self.assertClusterCount(6, 'filter=unread')
+
+    def test_mark_no_category_as_read(self):
+        self.assertClusterCount(9, 'filter=unread')
+        self._mark_as_read({"filter": "unread", "filter_type": "category_id",
+                            "filter_id": 0})
+        self.assertClusterCount(6, 'filter=unread')
 
     def test_getclu(self):
         resp = self.app.get('/getclu/1',
