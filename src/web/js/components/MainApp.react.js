@@ -5,6 +5,7 @@ var JarrNavBar = require('./Navbar.react');
 var Menu = require('./Menu.react');
 var MiddlePanel = require('./MiddlePanel.react');
 var RightPanel = require('./RightPanel.react');
+var Notifications = require('./Notifications.react');
 
 
 var MainApp = React.createClass({
@@ -16,6 +17,7 @@ var MainApp = React.createClass({
                         <MiddlePanel />
                         <RightPanel />
                     </Grid>
+                    <Notifications />
                 </div>
        );
     },

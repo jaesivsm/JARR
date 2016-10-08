@@ -1,5 +1,4 @@
 import logging
-import requests.exceptions
 from werkzeug.exceptions import BadRequest
 
 from flask import Blueprint, render_template, flash, \
@@ -31,21 +30,37 @@ def feeds():
 @feed_bp.route('/bookmarklet', methods=['GET', 'POST'])
 @login_required
 def bookmarklet():
+    def check_feeds(link, site_link):
+        filters = []
+        if link:
+            filters.append({'link': link})
+        if link:
+            filters.append({'site_link': site_link})
+        filters = {'__or__': filters} if len(filters) > 1 else filters[0]
+        feed_exists = feed_contr.read(**filters).first()
+        if feed_exists:
+            flash(gettext("Didn't add feed: feed already exists."),
+                  "warning")
+        return feed_exists
+
     feed_contr = FeedController(current_user.id)
     url = (request.args if request.method == 'GET' else request.form)\
             .get('url', None)
+
     if not url:
         flash(gettext("Couldn't add feed: url missing."), "error")
         raise BadRequest("url is missing")
 
-    feed_exists = list(feed_contr.read(__or__=[{'link': url},
-                                               {'site_link': url}]))
-    if feed_exists:
-        flash(gettext("Didn't add feed: feed already exists."),
-              "warning")
-        return redirect(url_for('home', at='f', ai=feed_exists[0].id))
+    existing_feed = check_feeds(url, url)
+    if existing_feed:
+        return redirect(url_for('home', at='f', ai=existing_feed.id))
 
     feed = construct_feed_from(url)
+
+    existing_feed = check_feeds(feed.get('link'), feed.get('site_link'))
+    if existing_feed:
+        return redirect(url_for('home', at='f', ai=existing_feed.id))
+
     if not feed.get('link'):
         feed['enabled'] = False
         flash(gettext("Couldn't find a feed url, you'll need to find a Atom or"
@@ -59,9 +74,6 @@ def bookmarklet():
 @feeds_bp.route('/inactives', methods=['GET'])
 @login_required
 def inactives():
-    """
-    List of inactive feeds.
-    """
     nb_days = int(request.args.get('nb_days', 365))
     inactives = FeedController(current_user.id).get_inactives(nb_days)
     return render_template('inactives.html',

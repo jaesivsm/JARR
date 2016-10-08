@@ -17,12 +17,15 @@ class Article(db.Model, RightMixin):
     retrieved_date = Column(DateTime, default=datetime.utcnow)
     readability_parsed = Column(Boolean, default=False)
 
-    # relationships
-    user_id = Column(Integer, ForeignKey('user.id'))
-    feed_id = Column(Integer, ForeignKey('feed.id'))
-    category_id = Column(Integer, ForeignKey('category.id'))
+    # foreign keys
+    user_id = Column(Integer, ForeignKey('user.id', ondelete='CASCADE'))
+    feed_id = Column(Integer, ForeignKey('feed.id', ondelete='CASCADE'))
+    category_id = Column(Integer,
+                         ForeignKey('category.id', ondelete='CASCADE'))
     cluster_id = Column(Integer, ForeignKey('cluster.id'))
 
+    # relationships
+    user = relationship('User', back_populates='articles')
     cluster = relationship('Cluster', back_populates='articles',
                            foreign_keys=[cluster_id])
     category = relationship('Category', back_populates='articles',

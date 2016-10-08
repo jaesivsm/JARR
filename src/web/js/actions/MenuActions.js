@@ -10,17 +10,8 @@ var MenuActions = {
     reload: function(set_filter, setFilterFunc, id) {
         jquery.getJSON('/menu', function(payload) {
             var old_all_unread_count = MenuStore.all_unread_count;
-            JarrDispatcher.dispatch({
-                type: ActionTypes.RELOAD_MENU,
-                feeds: payload.feeds,
-                categories: payload.categories,
-                categories_order: payload.categories_order,
-                is_admin: payload.is_admin,
-                max_error: payload.max_error,
-                error_threshold: payload.error_threshold,
-                crawling_method: payload.crawling_method,
-                all_unread_count: payload.all_unread_count,
-            });
+            payload.type = ActionTypes.RELOAD_MENU;
+            JarrDispatcher.dispatch(payload);
             /* setfilter param is here so were sure it's called in the sole
              * purpose of setting filter and that the setFilterFunc is not
              * some event passed by react

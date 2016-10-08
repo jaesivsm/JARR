@@ -36,7 +36,6 @@
                 <td>
                     <a href="{{ url_for("home", at="f", ai=feed.id) }}"><i class="glyphicon glyphicon-th-list" title="{{ _('Articles') }}"></i></a>
                     <a href="{{ url_for("home", at="f", ai=feed.id) }}"><i class="glyphicon glyphicon-edit" title="{{ _('Edit this feed') }}"></i></a>
-                    <a href="{{ url_for("feed.duplicates", feed_id=feed.id) }}"><i class="glyphicon glyphicon-book" title="{{ _('Duplicate articles') }}"></i></a>
                 </td>
         </tr>
         {% endfor %}

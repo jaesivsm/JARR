@@ -13,6 +13,7 @@ class CrawlerTest(JarrFlaskCommon):
 
     def setUp(self):
         super().setUp()
+        self.wait_params = {'checks': 3, 'wait_for': 2, 'max_wait': 60}
         UserController().update({'login': 'admin'}, {'is_api': True})
         self._is_secure_served \
                 = patch('web.lib.article_cleaner.is_secure_served')
@@ -81,7 +82,7 @@ class CrawlerTest(JarrFlaskCommon):
         self.assertEquals(36, len(resp.json()))
 
         scheduler.run()
-        scheduler.wait()
+        scheduler.wait(**self.wait_params)
         resp = self._api('get', 'articles', data={'limit': 1000}, user='admin')
         self.assertEquals(161, len(resp.json()))
 
@@ -91,7 +92,7 @@ class CrawlerTest(JarrFlaskCommon):
 
         self.resp_status_code = 304
         scheduler.run()
-        scheduler.wait()
+        scheduler.wait(**self.wait_params)
         resp = self._api('get', 'articles', data={'limit': 1000}, user='admin')
         self.assertEquals(161, len(resp.json()))
 
@@ -102,7 +103,7 @@ class CrawlerTest(JarrFlaskCommon):
         self.assertEquals(36, len(resp.json()))
 
         scheduler.run()
-        scheduler.wait()
+        scheduler.wait(**self.wait_params)
         resp = self._api('get', 'articles', data={'limit': 1000}, user='admin')
         self.assertEquals(36, len(resp.json()))
 
@@ -114,7 +115,7 @@ class CrawlerTest(JarrFlaskCommon):
         scheduler = CrawlerScheduler('admin', 'admin')
 
         scheduler.run()
-        scheduler.wait()
+        scheduler.wait(**self.wait_params)
         resp = self._api('get', 'articles', data={'limit': 1000}, user='admin')
         self.assertEquals(36, len(resp.json()))
 
@@ -122,7 +123,7 @@ class CrawlerTest(JarrFlaskCommon):
         self.resp_headers = {'etag': 'jarr/fake etag'}
 
         scheduler.run()
-        scheduler.wait()
+        scheduler.wait(**self.wait_params)
         resp = self._api('get', 'articles', data={'limit': 1000}, user='admin')
         self.assertEquals(36, len(resp.json()))
 
@@ -130,6 +131,6 @@ class CrawlerTest(JarrFlaskCommon):
         self.resp_headers = {'etag': '########################'}
 
         scheduler.run()
-        scheduler.wait()
+        scheduler.wait(**self.wait_params)
         resp = self._api('get', 'articles', data={'limit': 1000}, user='admin')
         self.assertEquals(161, len(resp.json()))

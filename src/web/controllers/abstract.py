@@ -93,24 +93,29 @@ class AbstractController:
 
         obj = self._db_cls(**attrs)
         db.session.add(obj)
+        db.session.flush()
         db.session.commit()
         return obj
 
     def read(self, **filters):
         return self._get(**filters)
 
-    def update(self, filters, attrs, return_objs=False):
+    def update(self, filters, attrs, return_objs=False, commit=True):
         assert attrs, "attributes to update must not be empty"
         result = self._get(**filters).update(attrs, synchronize_session=False)
-        db.session.commit()
+        if commit:
+            db.session.flush()
+            db.session.commit()
         if return_objs:
             return self._get(**filters)
         return result
 
-    def delete(self, obj_id):
+    def delete(self, obj_id, commit=True):
         obj = self.get(id=obj_id)
         db.session.delete(obj)
-        db.session.commit()
+        if commit:
+            db.session.flush()
+            db.session.commit()
         return obj
 
     def _has_right_on(self, obj):

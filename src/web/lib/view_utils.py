@@ -1,11 +1,13 @@
 import pytz
 from functools import wraps
 from datetime import datetime
-from flask import request, Response, make_response
+from flask import request, Response, make_response, get_flashed_messages
 from flask_babel import get_locale
 from babel.dates import format_datetime, format_timedelta
 from web.views.common import jsonify
 from lib.utils import to_hash
+
+ACCEPTED_LEVELS = {'success', 'info', 'warning', 'error'}
 
 
 def etag_match(func):
@@ -41,7 +43,14 @@ def _iter_on_rows(rows, now, locale):
         yield row
 
 
+def get_notifications():
+    for msg in get_flashed_messages(with_categories=True):
+        yield {'level': msg[0] if msg[0] in ACCEPTED_LEVELS else 'info',
+               'message': msg[1]}
+
+
 @jsonify
 def clusters_to_json(clusters):
     return {'clusters': _iter_on_rows(clusters,
-                                      datetime.utcnow(), get_locale())}
+                                      datetime.utcnow(), get_locale()),
+            'notifications': get_notifications()}

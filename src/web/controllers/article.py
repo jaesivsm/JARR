@@ -66,11 +66,11 @@ class ArticleController(AbstractController):
 
             if filter_.get('action') == 'mark as read':
                 cluster_read = True
-                logger.warn("article %s will be created as read",
+                logger.info("article article will be created as read %r",
                             attrs['link'])
             elif filter_.get('action') == 'mark as favorite':
                 cluster_liked = True
-                logger.warn("article %s will be created as liked",
+                logger.info("article article will be created as liked %r",
                             attrs['link'])
 
         article = super().create(**attrs)
@@ -107,3 +107,25 @@ class ArticleController(AbstractController):
             else:
                 articles_counter[article.date.year] += 1
         return articles_counter, articles
+
+    def remove_from_all_clusters(self, article_id):
+        """Removes article with id == article_id from the cluster it belongs to
+        If it's the only article of the cluster will delete the cluster
+        Return True if the article is deleted at the end or not
+        """
+        from web.controllers import ClusterController
+        clu_ctrl = ClusterController(self.user_id)
+        # FIXME : update all articles
+        article = self.get(id=article_id)
+        cluster = article.cluster
+        if len(cluster.articles) == 1:
+            clu_ctrl.delete(cluster.id)
+            return False
+        clu_ctrl.update({'id': cluster.id},
+                        {'main_article_id': cluster.articles[1].id})
+        return True
+
+    def delete(self, obj_id):
+        still_delete_article = self.remove_from_all_clusters(obj_id)
+        if still_delete_article:
+            return super().delete(obj_id)

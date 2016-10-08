@@ -29,13 +29,20 @@ class Feed(db.Model, RightMixin):
     last_error = Column(String, default="")
     error_count = Column(Integer, default=0)
 
-    # relationships
+    # foreign keys
     icon_url = Column(String, ForeignKey('icon.url'), default=None)
-    user_id = Column(Integer, ForeignKey('user.id'))
-    category_id = Column(Integer, ForeignKey('category.id'))
+    user_id = Column(Integer, ForeignKey('user.id', ondelete='CASCADE'))
+    category_id = Column(Integer,
+                         ForeignKey('category.id', ondelete='CASCADE'))
+
+    # relationships
+    user = relationship('User', back_populates='feeds')
+    category = relationship('Category', back_populates='feeds')
     articles = relationship('Article', back_populates='feed',
                             cascade='all,delete-orphan')
-    clusters = relationship('Article', back_populates='feed')
+    clusters = relationship('Cluster', back_populates='feeds',
+            foreign_keys='[Article.feed_id, Article.cluster_id]',
+            secondary='article')
 
     # index
     idx_feed_uid_cid = Index('user_id', 'category_id')

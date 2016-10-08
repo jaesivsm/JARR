@@ -8,6 +8,13 @@ from web.controllers import (ArticleController, ClusterController,
 class ClusterControllerTest(BaseJarrTest):
     _contr_cls = ClusterController
 
+    def test_delete(self):
+        clu_ctrl = ClusterController()
+        for cluster in clu_ctrl.read():
+            clu_ctrl.delete(cluster.id)
+        self.assertEquals(0, ClusterController(2).read().count())
+        self.assertEquals(0, ArticleController(2).read().count())
+
     def test_article_get_unread(self):
         self.assertEquals({1: 3, 2: 3, 3: 3, 7: 3, 8: 3, 9: 3},
                 ClusterController(2).count_by_feed(read=False))

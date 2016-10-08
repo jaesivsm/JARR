@@ -21,16 +21,22 @@ class Cluster(db.Model, RightMixin):
     main_title = Column(String)
     main_link = Column(String, default=None)
 
-    # relationship
+    # foreign keys
     main_article_id = Column(Integer, ForeignKey('article.id'))
-    user_id = Column(Integer, ForeignKey('user.id'))
+    user_id = Column(Integer, ForeignKey('user.id', ondelete='CASCADE'))
+
+    # relationships
+    user = relationship('User', back_populates='clusters')
+    main_article = relationship('Article', uselist=False,
+                                foreign_keys=[main_article_id])
     articles = relationship('Article', back_populates='cluster',
-                            foreign_keys=[Article.cluster_id],
-                            cascade='all,delete-orphan',
-                            order_by=Article.date.asc())
-    feeds = relationship('Article', back_populates='cluster',
-                         foreign_keys=[Article.feed_id, Article.cluster_id])
-    categories = relationship('Article', back_populates='cluster',
+            foreign_keys=[Article.cluster_id],
+            order_by=Article.date.asc())
+    feeds = relationship('Feed', back_populates='clusters',
+            secondary='article',
+            foreign_keys=[Article.feed_id, Article.cluster_id])
+    categories = relationship('Category', back_populates='clusters',
+            secondary='article',
             foreign_keys=[Article.cluster_id, Article.category_id])
 
     # index

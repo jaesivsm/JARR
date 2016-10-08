@@ -6,10 +6,6 @@ from flask_login import UserMixin
 
 from bootstrap import db
 from web.models.right_mixin import RightMixin
-from web.models.category import Category
-from web.models.feed import Feed
-from web.models.article import Article
-from web.models.cluster import Cluster
 
 
 class User(db.Model, UserMixin, RightMixin):
@@ -37,18 +33,18 @@ class User(db.Model, UserMixin, RightMixin):
     linuxfr_identity = Column(String)
 
     # relationships
-    categories = relationship('Category', backref='user',
+    categories = relationship('Category', back_populates='user',
                               cascade='all, delete-orphan',
-                            foreign_keys=[Category.user_id])
-    feeds = relationship('Feed', backref='user',
+                              foreign_keys='[Category.user_id]')
+    feeds = relationship('Feed', back_populates='user',
                          cascade='all, delete-orphan',
-                            foreign_keys=[Feed.user_id])
-    articles = relationship('Article', backref='user',
+                         foreign_keys='[Feed.user_id]')
+    articles = relationship('Article', back_populates='user',
                             cascade='all, delete-orphan',
-                            foreign_keys=[Article.user_id])
-    clusters = relationship('Cluster', backref='user',
+                            foreign_keys='[Article.user_id]')
+    clusters = relationship('Cluster', back_populates='user',
                             cascade='all, delete-orphan',
-                            foreign_keys=[Cluster.user_id])
+                            foreign_keys='[Cluster.user_id]')
 
     # api whitelists
     @staticmethod

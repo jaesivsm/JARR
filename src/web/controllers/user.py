@@ -26,3 +26,9 @@ class UserController(AbstractController):
     def update(self, filters, attrs, *args, **kwargs):
         self._handle_password(attrs)
         return super().update(filters, attrs, *args, **kwargs)
+
+    def delete(self, obj_id):
+        from web.controllers import ClusterController, ArticleController
+        ClusterController(self.user_id).update({}, {'main_article_id': None})
+        ArticleController(self.user_id).update({}, {'cluster_id': None})
+        return super().delete(obj_id)

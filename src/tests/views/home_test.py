@@ -1,12 +1,16 @@
 import json
+from mock import patch
 from tests.base import JarrFlaskCommon
+from web.controllers import UserController, FeedController
 
 
 class BaseUiTest(JarrFlaskCommon):
 
     def setUp(self):
         super().setUp()
-        self.app.post('/login', data={'login': 'user1', 'password': 'user1'})
+        self.user = UserController().get(id=2)
+        self.app.post('/login', data={'login': self.user.login,
+                                      'password': self.user.login})
 
     def tearDown(self):
         self.app.get('/logout')
@@ -97,6 +101,7 @@ class BaseUiTest(JarrFlaskCommon):
         resp = self.app.get('/getclu/1',
                 headers={'Content-Type': 'application/json'})
         self.assertEquals(200, resp.status_code)
+        assert 'notifications' in json.loads(resp.data.decode('utf8'))
         self.app.get('/logout')
         self.app.post('/login', data={'login': 'user2', 'password': 'user2'})
         resp = self.app.get('/getclu/1',
@@ -113,3 +118,39 @@ class BaseUiTest(JarrFlaskCommon):
         self.assertEquals(200, self.app.get('/').status_code)
         self.assertEquals(302, self.app.get('/logout').status_code)
         self.assertEquals(302, self.app.get('/').status_code)
+
+    @patch('web.views.feed.construct_feed_from')
+    def test_bookmarklet(self, construct_feed_from):
+        feed = {'icon_url': 'https://www.journalduhacker.net/'
+                    'assets/jdh-ico-2c6c8060958bf86c28b20d0c83f1bbc5.ico',
+                'link': 'https://www.journalduhacker.net/rss',
+                'site_link': 'https://www.journalduhacker.net/',
+                'title': 'Journal du hacker'}
+        construct_feed_from.return_value = feed
+
+        fctrl = FeedController(self.user.id)
+        resp = self.app.get('/feed/bookmarklet')
+        self.assertEquals(400, resp.status_code)
+
+        self.assertEquals(0, fctrl.read(link=feed['link']).count())
+        self.assertEquals(0, fctrl.read(site_link=feed['site_link']).count())
+
+        resp = self.app.get('/feed/bookmarklet?url=%s' % feed['link'])
+        self.assertEquals(302, resp.status_code)
+        self.assertEquals(1, fctrl.read(link=feed['link']).count())
+        self.assertEquals(1, fctrl.read(site_link=feed['site_link']).count())
+
+        resp = self.app.get('/feed/bookmarklet?url=%s' % feed['link'])
+        self.assertEquals(302, resp.status_code)
+        self.assertEquals(1, fctrl.read(link=feed['link']).count())
+        self.assertEquals(1, fctrl.read(site_link=feed['site_link']).count())
+
+        resp = self.app.get('/feed/bookmarklet?url=%s' % feed['site_link'])
+        self.assertEquals(302, resp.status_code)
+        self.assertEquals(1, fctrl.read(link=feed['link']).count())
+        self.assertEquals(1, fctrl.read(site_link=feed['site_link']).count())
+
+        resp = self.app.get('/feed/bookmarklet?url=blabla')
+        self.assertEquals(302, resp.status_code)
+        self.assertEquals(1, fctrl.read(link=feed['link']).count())
+        self.assertEquals(1, fctrl.read(site_link=feed['site_link']).count())

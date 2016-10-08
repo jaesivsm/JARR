@@ -45,7 +45,7 @@ def opml_import():
     try:
         subscriptions = opml.from_string(data.read())
     except:
-        flash(gettext("Couldn't parse file"), 'danger')
+        flash(gettext("Couldn't parse file"), 'error')
         return redirect(request.referrer)
 
     ccontr = CategoryController(current_user.id)

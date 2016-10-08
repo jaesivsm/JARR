@@ -21,7 +21,7 @@ def authentication_required(error):
 def authentication_failed(error):
     if conf.API_ROOT in request.url:
         return error
-    flash(gettext('Forbidden.'), 'danger')
+    flash(gettext('Forbidden.'), 'error')
     return redirect(url_for('login'))
 
 

@@ -50,7 +50,7 @@ def user(user_id=None):
                 unread_counts=clu_contr.count_by_feed(read=False))
 
     else:
-        flash(gettext('This user does not exist.'), 'warn')
+        flash(gettext('This user does not exist.'), 'warning')
         return redirect(redirect_url())
 
 
@@ -67,7 +67,7 @@ def toggle_user(user_id=None):
             {'is_active': not user.is_active})
 
     if not user_changed:
-        flash(gettext('This user does not exist.'), 'danger')
+        flash(gettext('This user does not exist.'), 'error')
         return redirect(url_for('admin.dashboard'))
 
     else:

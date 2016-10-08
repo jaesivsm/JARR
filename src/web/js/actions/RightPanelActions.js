@@ -24,6 +24,7 @@ var RightPanelActions = {
                 JarrDispatcher.dispatch({
                     type: ActionTypes.LOAD_CLUSTER,
                     cluster: payload,
+                    notifications: payload.notifications,
                     was_read_before: was_read_before,
                     article_id: article_id,
                 });

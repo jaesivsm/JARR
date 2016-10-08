@@ -29,10 +29,11 @@ class BaseUiTest(JarrFlaskCommon):
         self.assertTrue(
                 opml_dump.startswith('<?xml version="1.0" encoding="utf-8"'))
         self.assertTrue(opml_dump.endswith('</opml>'))
-        for ctrl_cls in ArticleController, ClusterController:
-            ctrl = ctrl_cls(self.user.id)
-            for item in ctrl.read():
-                ctrl.delete(item.id)
+        actrl = ArticleController(self.user.id)
+        for item in actrl.read():
+            actrl.delete(item.id)
+        self.assertEquals(0, ClusterController(self.user.id).read().count())
+        self.assertEquals(0, ArticleController(self.user.id).read().count())
         no_category_feed = []
         existing_feeds = {}
         for feed in self.fctrl.read():

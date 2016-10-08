@@ -168,6 +168,12 @@ class ClusterController(AbstractController):
                     row['categories_id'] = set(clu.categories_id)
             yield row
 
+    def delete(self, obj_id):
+        from web.controllers import ArticleController
+        self.update({'id': obj_id}, {'main_article_id': None}, commit=False)
+        ArticleController(self.user_id).read(cluster_id=obj_id).delete()
+        return super().delete(obj_id)
+
     @classmethod
     def _extra_columns(cls, role, right):
         return {'articles': {'type': list}}

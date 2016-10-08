@@ -9,7 +9,7 @@ from babel.dates import format_datetime, format_timedelta
 
 from bootstrap import conf
 from web.lib.article_cleaner import clean_urls
-from web.lib.view_utils import etag_match, clusters_to_json
+from web.lib.view_utils import etag_match, clusters_to_json, get_notifications
 from web.views.common import jsonify
 
 from web.controllers import (UserController, CategoryController,
@@ -71,6 +71,7 @@ def get_menu():
             'max_error': conf.FEED_ERROR_MAX,
             'error_threshold': conf.FEED_ERROR_THRESHOLD,
             'is_admin': current_user.is_admin,
+            'notifications': get_notifications(),
             'all_unread_count': 0}
 
 
@@ -144,7 +145,7 @@ def get_cluster(cluster_id, parse=False, article_id=None):
             new_content = clean_urls(new_content, article['link'],
                                      fix_readability=True)
         except Exception as error:
-            flash("Readability failed with %r" % error, "danger")
+            flash("Readability failed with %r" % error, "warning")
             article['readability_parsed'] = False
         else:
             article['readability_parsed'] = True
@@ -153,6 +154,7 @@ def get_cluster(cluster_id, parse=False, article_id=None):
                         {'readability_parsed': True, 'content': new_content})
     for article in cluster.articles:
         article['readability_available'] = readability_available
+    cluster['notifications'] = get_notifications()
     return cluster
 
 

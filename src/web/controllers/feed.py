@@ -104,5 +104,11 @@ class FeedController(AbstractController):
         if 'category_id' in attrs:
             for feed in self.read(**filters):
                 self.__get_art_contr().update({'feed_id': feed.id},
-                        {'category_id': attrs['category_id']})
+                        {'category_id': attrs['category_id']}, *args, **kwargs)
         return super().update(filters, attrs, *args, **kwargs)
+
+    def delete(self, obj_id):
+        actrl = self.__get_art_contr()
+        for article in self.get(id=obj_id).articles:
+            actrl.remove_from_all_clusters(article.id)
+        return super().delete(obj_id)
