@@ -13,7 +13,7 @@ var MenuStore = assign({}, EventEmitter.prototype, {
     active_type: null,
     active_id: null,
     is_admin: false,
-    crawling_method: 'classic',
+    crawling_method: 'http',
     all_unread_count: -1,
     max_error: 0,
     error_threshold: 0,
@@ -76,9 +76,39 @@ MenuStore.dispatchToken = JarrDispatcher.register(function(action) {
             MenuStore.emitChange();
             break;
         case ActionTypes.PARENT_FILTER:
-            if(MenuStore.setActive(action.filter_type, action.filter_id)) {
-                MenuStore.emitChange();
+            var changed = MenuStore.setActive(action.filter_type, action.filter_id);
+            if(action.filters && action.clusters && !action.filters.query
+                    && action.filters.filter == 'unread') {
+                var new_unread = {};
+                action.clusters.map(function(cluster) {
+                    cluster.feeds_id.map(function(feed_id) {
+                        if(!(feed_id in new_unread)) {
+                            new_unread[feed_id] = 0;
+                        }
+                        if(!cluster.read) {
+                            new_unread[feed_id] += 1;
+                        }
+                    });
+                });
+                for(var feed_id in new_unread) {
+                    var cat_id = MenuStore.feeds[feed_id].category_id;
+                    var old_unread = MenuStore.feeds[feed_id].unread;
+                    if(old_unread > new_unread[feed_id]) {
+                        continue;
+                    }
+                    changed = true;
+                    if((MenuStore.active_type == 'feed_id'
+                            && MenuStore.active_id == feed_id)
+                            || (MenuStore.active_type == 'category_id'
+                                && MenuStore.active_id == cat_id)
+                            || (MenuStore.active_type == null)) {
+                        MenuStore.feeds[feed_id].unread = new_unread[feed_id];
+                        MenuStore.categories[cat_id].unread -= old_unread;
+                        MenuStore.categories[cat_id].unread += new_unread[feed_id];
+                    }
+                }
             }
+            if(changed) {MenuStore.emitChange();}
             break;
         case ActionTypes.MENU_FILTER:
             if (MenuStore.setFilter(action.filter)) {
@@ -109,7 +139,6 @@ MenuStore.dispatchToken = JarrDispatcher.register(function(action) {
                     MenuStore.readCluster(cluster, -1);
                 }
             });
-
             MenuStore.emitChange();
             break;
         default:

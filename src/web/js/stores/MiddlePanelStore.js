@@ -103,7 +103,7 @@ MiddlePanelStore.dispatchToken = JarrDispatcher.register(function(action) {
         var val = action.value_bool;
         action.clusters.map(function(cluster) {
             for (var i in MiddlePanelStore.clusters) {
-                if(MiddlePanelStore.clusters[i].id == cluster.id) {
+                if(MiddlePanelStore.clusters[i].id == cluster.cluster_id) {
                     if (MiddlePanelStore.clusters[i][attr] != val) {
                         MiddlePanelStore.clusters[i][attr] = val;
                         // avoiding redraw if not filter, display won't change anyway

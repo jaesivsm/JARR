@@ -3,48 +3,25 @@ var ActionTypes = require('../constants/JarrConstants');
 var jquery = require('jquery');
 var MiddlePanelStore = require('../stores/MiddlePanelStore');
 
-var _last_fetched_with = {};
-var shouldFetch = function(filters) {
-    return true;  // FIXME disabling intelligent fetch for now, no caching better that bad one
-//    if(filters.filter != null // undefined means unchanged
-//            && (_last_fetched_with.filter != 'all'
-//                || _last_fetched_with.filter != filters.filter)) {
-//        return true;
-//    }
-//    if(_last_fetched_with.filter_type != null) {
-//        if(_last_fetched_with.filter_type != filters.filter_type) {
-//            return true;
-//        }
-//        if(_last_fetched_with.filter_id != filters.filter_id) {
-//            return true;
-//        }
-//    }
-//    return false;
-}
 var reloadIfNecessaryAndDispatch = function(dispath_payload) {
-    if(shouldFetch(dispath_payload)) {
-        var filters = MiddlePanelStore.getRequestFilter(dispath_payload.display_search);
-        MiddlePanelStore.filter_whitelist.map(function(key) {
-            if(key in dispath_payload) {
-                filters[key] = dispath_payload[key];
-            }
-            if(filters[key] == null) {
-                delete filters[key];
-            }
-        });
-        if('display_search' in filters) {
-            delete filters['display_search'];
+    var filters = MiddlePanelStore.getRequestFilter(dispath_payload.display_search);
+    MiddlePanelStore.filter_whitelist.map(function(key) {
+        if(key in dispath_payload) {
+            filters[key] = dispath_payload[key];
         }
-        jquery.getJSON('/middle_panel', filters,
-                function(payload) {
-                    dispath_payload.clusters = payload.clusters;
-                    dispath_payload.filters = filters;
-                    JarrDispatcher.dispatch(dispath_payload);
-                    _last_fetched_with = MiddlePanelStore.getRequestFilter();
-        });
-    } else {
-        JarrDispatcher.dispatch(dispath_payload);
+        if(filters[key] == null) {
+            delete filters[key];
+        }
+    });
+    if('display_search' in filters) {
+        delete filters['display_search'];
     }
+    jquery.getJSON('/middle_panel', filters,
+            function(payload) {
+                dispath_payload.clusters = payload.clusters;
+                dispath_payload.filters = filters;
+                JarrDispatcher.dispatch(dispath_payload);
+    });
 }
 
 
