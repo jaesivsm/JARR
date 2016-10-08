@@ -115,14 +115,11 @@ class ArticleController(AbstractController):
         """
         from web.controllers import ClusterController
         clu_ctrl = ClusterController(self.user_id)
-        # FIXME : update all articles
-        article = self.get(id=article_id)
-        cluster = article.cluster
+        cluster = self.get(id=article_id).cluster
         if len(cluster.articles) == 1:
             clu_ctrl.delete(cluster.id)
             return False
-        clu_ctrl.update({'id': cluster.id},
-                        {'main_article_id': cluster.articles[1].id})
+        clu_ctrl._enrich_cluster(cluster, cluster.articles[1])
         return True
 
     def delete(self, obj_id):

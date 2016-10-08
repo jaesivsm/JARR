@@ -32,7 +32,7 @@ var TableLine = React.createClass({
     },
     render: function() {
         var liked = this.state.liked ? 'l' : '';
-        var title = (<a href={'/cluster/redirect/' + this.props.id}
+        var title = (<a href={'/cluster/redirect/' + this.props.cluster_id}
                         onClick={this.openRedirectLink} target="_blank"
                         title={this.props.feed_title}>
                         {this.props.feeds_id.map(function(feed_id) {
@@ -149,6 +149,8 @@ var MiddlePanelParentFilterRow = React.createClass({
     getInitialState: function() {
         return {id: MenuStore.active_id,
                 type: MenuStore.active_type,
+                title: null,
+                icon_url: null,
         };
     },
     render: function() {
@@ -156,11 +158,10 @@ var MiddlePanelParentFilterRow = React.createClass({
         var img;
         var content = "Selected ";
         if (this.state.type == 'feed_id') {
-            var feed = MenuStore.feeds[this.state.id];
-            img = <img width="16px" src={feed.icon_url} />;
-            content += "Feed: " + feed.title;
+            content += "Feed: " + this.state.title;
+            img = <img width="16px" src={this.state.icon_url} />;
         } else if (this.state.type == 'category_id') {
-            content += "Category: " + MenuStore.categories[this.state.id].name;
+            content += "Category: " + this.state.title;
         } else {
             cn = "hidden";
         }
@@ -179,8 +180,16 @@ var MiddlePanelParentFilterRow = React.createClass({
         MenuStore.removeChangeListener(this._onChange);
     },
     _onChange: function() {
-        this.setState({id: MenuStore.active_id,
-                       type: MenuStore.active_type});
+        var new_state = {id: MenuStore.active_id, title: null,
+                         type: MenuStore.active_type, icon_url: null};
+        if (new_state.type == 'feed_id' && new_state.id in MenuStore.feeds) {
+            new_state.title = MenuStore.feeds[new_state.id].title;
+            new_state.icon_url = MenuStore.feeds[new_state.id].icon_url;
+        } else if (new_state.type == 'category_id'
+                   && new_state.id in MenuStore.categories) {
+            new_state.title = MenuStore.categories[new_state.id].name;
+        }
+        this.setState(new_state);
     },
 });
 

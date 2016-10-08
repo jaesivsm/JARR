@@ -1,10 +1,12 @@
 import logging
+from sqlalchemy import and_
+from sqlalchemy.sql import select, update
 from datetime import datetime, timedelta
 
-from bootstrap import conf
-from .abstract import AbstractController
-from .icon import IconController
-from web.models import User, Feed
+from bootstrap import db, conf, SQLITE_ENGINE
+from web.controllers.abstract import AbstractController
+from web.controllers.icon import IconController
+from web.models import User, Feed, Article, Cluster
 
 logger = logging.getLogger(__name__)
 DEFAULT_LIMIT = 5
@@ -101,10 +103,31 @@ class FeedController(AbstractController):
     def update(self, filters, attrs, *args, **kwargs):
         self._ensure_icon(attrs)
         self.__clean_feed_fields(attrs)
-        if 'category_id' in attrs:
+        if {'title', 'category_id'}.intersection(attrs):
             for feed in self.read(**filters):
-                self.__get_art_contr().update({'feed_id': feed.id},
-                        {'category_id': attrs['category_id']}, *args, **kwargs)
+                if 'category_id' in attrs:
+                    self.__get_art_contr().update({'feed_id': feed.id},
+                            {'category_id': attrs['category_id']})
+                if 'title' in attrs:
+                    # sqlite doesn't support join on update, but they're REALLY
+                    # more efficient so we'll use them anyway with postgres
+                    if self.user_id:
+                        where_clause = and_(Article.user_id == self.user_id,
+                                            Article.feed_id == feed.id)
+                    else:
+                        where_clause = Article.feed_id == feed.id
+                    if SQLITE_ENGINE:
+                        stmt = select([Article.id]).where(where_clause)
+                        stmt = update(Cluster)\
+                                .where(Cluster.main_article_id.in_(stmt))\
+                                .values(main_feed_title=attrs['title'])
+                    else:  # pragma: no cover
+                        stmt = update(Cluster)\
+                                .where(and_(
+                                       Article.id == Cluster.main_article_id,
+                                       where_clause))\
+                                .values(dict(main_feed_title=attrs['title']))
+                    db.session.execute(stmt)
         return super().update(filters, attrs, *args, **kwargs)
 
     def delete(self, obj_id):

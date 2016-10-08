@@ -16,7 +16,8 @@ var MenuActions = {
              * purpose of setting filter and that the setFilterFunc is not
              * some event passed by react
              */
-            if(set_filter == 'set_filter' && typeof setFilterFunc == 'function'  && id) {
+            if(set_filter == 'set_filter' && typeof setFilterFunc == 'function'
+                    && (id || id == 0)) {
                 setFilterFunc(id);
             /* old_all_unread_count will be -1 on first iteration,
              * so it won't be triggered twice */

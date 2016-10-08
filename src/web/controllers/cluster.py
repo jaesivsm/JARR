@@ -1,5 +1,5 @@
 import logging
-from bootstrap import conf, db
+from bootstrap import db, SQLITE_ENGINE
 
 from sqlalchemy import func, Integer, and_
 from sqlalchemy.orm import aliased
@@ -11,7 +11,6 @@ from web.models import Cluster, Article
 from web.controllers.article import ArticleController
 
 logger = logging.getLogger(__name__)
-SQLITE_ENGINE = 'sqlite' in conf.SQLALCHEMY_DATABASE_URI
 
 
 class ClusterController(AbstractController):
@@ -46,14 +45,15 @@ class ClusterController(AbstractController):
         self._enrich_cluster(cluster, article, cluster_read, cluster_liked)
 
     def _enrich_cluster(self, cluster, article,
-                        cluster_read=None, cluster_liked=False):
+                        cluster_read=None, cluster_liked=False,
+                        force_article_as_main=False):
         article.cluster = cluster
         # a cluster
         if cluster_read is not None:
             cluster.read = cluster.read and cluster_read
         # once one article is liked the cluster is liked
         cluster.liked = cluster.liked or cluster_liked
-        if cluster.main_date > article.date:
+        if cluster.main_date > article.date or force_article_as_main:
             cluster.main_title = article.title
             cluster.main_date = article.date
             cluster.main_feed_title = article.feed.title
@@ -105,7 +105,7 @@ class ClusterController(AbstractController):
             if filter_on_category:
                 selected_fields.append(func.group_concat(
                         art_cat_alias.category_id).label('categories_id'))
-        else:
+        else:  # pragma: no cover
             selected_fields.append(func.array_agg(art_feed_alias.feed_id,
                     type_=ARRAY(Integer)).label('feeds_id'))
             if filter_on_category:
@@ -162,7 +162,7 @@ class ClusterController(AbstractController):
                             map(int, clu.categories_id.split(',')))
                 elif filter_on_category:
                     row['categories_id'] = [0]
-            else:
+            else:  # pragma: no cover
                 row['feeds_id'] = set(clu.feeds_id)
                 if filter_on_category:
                     row['categories_id'] = set(clu.categories_id)

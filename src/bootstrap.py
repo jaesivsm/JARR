@@ -55,6 +55,7 @@ if os.environ.get('JARR_TESTING', False) == 'true':
 else:
     application.debug = conf.LOG_LEVEL <= logging.DEBUG
 
+SQLITE_ENGINE = 'sqlite' in conf.SQLALCHEMY_DATABASE_URI
 PARSED_PLATFORM_URL = urlparse(conf.PLATFORM_URL)
 application.config['SERVER_NAME'] = PARSED_PLATFORM_URL.netloc
 application.config['PREFERRED_URL_SCHEME'] = PARSED_PLATFORM_URL.scheme

@@ -2,6 +2,9 @@ var jquery = require('jquery');
 var JarrDispatcher = require('../dispatcher/JarrDispatcher');
 var ActionTypes = require('../constants/JarrConstants');
 var MenuActions = require('../actions/MenuActions');
+var MenuStore = require('../stores/MenuStore');
+var MiddlePanelActions = require('../actions/MiddlePanelActions');
+
 
 var RightPanelActions = {
     loadParent: function(parent_type, parent_id) {
@@ -45,10 +48,34 @@ var RightPanelActions = {
         jquery.ajax(args);
     },
     putObj: function(id, obj_type, fields) {
-        this._apiReq('PUT', id, obj_type, fields, MenuActions.reload);
+        function callback() {
+            MenuActions.reload();
+            if('title' in fields && obj_type == 'feed') {
+                MiddlePanelActions.reload();
+            }
+        }
+        this._apiReq('PUT', id, obj_type, fields, callback);
     },
     delObj: function(id, obj_type, fields) {
-        this._apiReq('DELETE', id, obj_type, null, MenuActions.reload);
+        var future_active_type;
+        var future_active_id = 0;
+        if(obj_type == 'feed') {
+            future_active_type = 'category_id';
+            future_active_id = MenuStore.feeds[id].category_id;
+        }
+        function callback() {
+            var cmd;
+            var reload_callback;
+            if(obj_type == 'feed') {
+                cmd = 'set_filter';
+                reload_callback = MiddlePanelActions.setCategoryFilter;
+            } else if (obj_type == 'category') {
+                cmd = 'set_filter';
+                reload_callback = MiddlePanelActions.removeParentFilter;
+            }
+            MenuActions.reload(cmd, reload_callback, future_active_id);
+        }
+        this._apiReq('DELETE', id, obj_type, null, callback);
     },
     resetErrors: function(feed_id) {
         this._apiReq('PUT', feed_id, 'feed', {error_count: 0, last_error: ''},
