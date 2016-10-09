@@ -13,7 +13,6 @@ logger = logging.getLogger(__name__)
 def authentication_required(error):
     if conf.API_ROOT in request.url:
         return error
-    flash(gettext('Authentication required.'), 'info')
     return redirect(url_for('login'))
 
 

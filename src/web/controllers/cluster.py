@@ -131,7 +131,8 @@ class ClusterController(AbstractController):
                          .filter(cluster_has_feed)
         else:
             query = query.join(art_feed_alias,
-                               art_feed_alias.cluster_id == Cluster.id)
+                               and_(art_feed_alias.user_id == self.user_id,
+                                    art_feed_alias.cluster_id == Cluster.id))
         if filter_on_category:
             # joining only if filtering on categories to lighten the query
             # as every article doesn't obligatorily have a category > outerjoin

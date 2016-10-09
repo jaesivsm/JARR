@@ -1,5 +1,7 @@
+import re
 import html
 import logging
+from enum import Enum
 import dateutil.parser
 from datetime import datetime, timezone
 from bs4 import BeautifulSoup, SoupStrainer
@@ -17,29 +19,37 @@ def extract_id(entry):
     return entry.get('entry_id') or entry.get('id') or entry['link']
 
 
-def construct_article(entry, feed):
+def construct_article(entry, feed, fields=None):
     "Safe method to transorm a feedparser entry into an article"
     now = datetime.utcnow()
-    date = None
-    for date_key in ('published', 'created', 'date'):
-        if entry.get(date_key):
-            try:
-                date = dateutil.parser.parse(entry[date_key])\
-                        .astimezone(timezone.utc)
-            except Exception:
-                pass
-            else:
-                break
+    article = {}
 
-    content = get_article_content(entry)
-    link, title = get_article_details(entry)
-    content = clean_urls(content, link)
-
-    return {'feed_id': feed['id'],
-            'user_id': feed['user_id'],
-            'entry_id': extract_id(entry),
-            'link': link, 'content': content, 'title': title,
-            'retrieved_date': now, 'date': date or now}
+    def push_in_article(key, value):
+        if fields is None or key in fields:
+            article[key] = value
+    push_in_article('feed_id', feed['id'])
+    push_in_article('user_id', feed['user_id'])
+    push_in_article('entry_id', extract_id(entry))
+    push_in_article('retrieved_date', now)
+    if fields is None or 'date' in fields:
+        for date_key in ('published', 'created', 'updated'):
+            if entry.get(date_key):
+                try:
+                    article['date'] = dateutil.parser.parse(entry[date_key])\
+                            .astimezone(timezone.utc)
+                except Exception:
+                    pass
+                else:
+                    break
+    push_in_article('content', get_article_content(entry))
+    if fields is None or {'link', 'title'}.intersection(fields):
+        link, title = get_article_details(entry)
+        push_in_article('link', link)
+        push_in_article('title', title)
+        push_in_article('content', clean_urls(article['content'], link))
+    push_in_article('tags', [tag.get('term').strip()
+                             for tag in entry.get('tags', [])])
+    return article
 
 
 def get_article_content(entry):
@@ -71,3 +81,72 @@ def get_article_details(entry):
             except IndexError:  # no title
                 pass
     return article_link, article_title or 'No title'
+
+
+class FiltersAction(Enum):
+    READ = 'mark as read'
+    LIKED = 'mark as favorite'
+    SKIP = 'skipped'
+
+
+class FiltersType(Enum):
+    REGEX = 'regex'
+    MATCH = 'simple match'
+    EXACT_MATCH = 'exact match'
+    TAG_MATCH = 'tag match'
+    TAG_CONTAINS = 'tag contains'
+
+
+class FiltersTrigger(Enum):
+    MATCH = 'match'
+    NO_MATCH = 'no match'
+
+
+def process_filters(filters, article, only_actions=None):
+    skipped, read, liked = False, None, False
+    filters = filters or []
+    if only_actions is None:
+        only_actions = set(FiltersAction)
+    for filter_ in filters:
+        match = False
+        try:
+            pattern = filter_.get('pattern', '')
+            filter_type = FiltersType(filter_.get('type'))
+            filter_action = FiltersAction(filter_.get('action'))
+            filter_trigger = FiltersTrigger(filter_.get('action on'))
+            if filter_type is not FiltersType.REGEX:
+                pattern = pattern.lower()
+        except ValueError:
+            continue
+        if filter_action not in only_actions:
+            logger.debug('ignoring filter %r' % filter_)
+            continue
+
+        title = article.get('title').lower()
+        tags = [tag.lower() for tag in article.get('tags', [])]
+        if filter_type is FiltersType.REGEX:
+            match = re.match(pattern, title)
+        elif filter_type is FiltersType.MATCH:
+            match = pattern in title
+        elif filter_type is FiltersType.EXACT_MATCH:
+            match = pattern == title
+        elif filter_type is FiltersType.TAG_MATCH:
+            match = pattern in tags
+        elif filter_type is FiltersType.TAG_CONTAINS:
+            match = any(pattern in tag for tag in tags)
+        take_action = match and filter_trigger is FiltersTrigger.MATCH \
+                or not match and filter_trigger is FiltersTrigger.NO_MATCH
+
+        if not take_action:
+            continue
+
+        if filter_action is FiltersAction.READ:
+            read = True
+        elif filter_action is FiltersAction.LIKED:
+            liked = True
+        elif filter_action is FiltersAction.SKIP:
+            skipped = True
+
+    if skipped or read or liked:
+        logger.info("%r applied on %r", filter_action.value, article['link'])
+    return skipped, read, liked

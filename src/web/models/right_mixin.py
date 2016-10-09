@@ -1,3 +1,6 @@
+from sqlalchemy.ext.associationproxy import _AssociationList
+
+
 class RightMixin:
 
     @staticmethod
@@ -54,4 +57,7 @@ class RightMixin:
             dico = {k: getattr(self, k) for k in self.fields_base_read()}
         if hasattr(self, '__dump__'):
             dico.update(self.__dump__)
+        for key, value in dico.items():  # preventing association proxy to die
+            if isinstance(value, _AssociationList):
+                dico[key] = list(value)
         return dico

@@ -2,6 +2,7 @@ from datetime import datetime
 from sqlalchemy import (Column, Index, ForeignKey,
                         Integer, String, Boolean, DateTime)
 from sqlalchemy.orm import relationship
+from sqlalchemy.ext.associationproxy import association_proxy
 from bootstrap import db
 from web.models.right_mixin import RightMixin
 
@@ -32,6 +33,11 @@ class Article(db.Model, RightMixin):
                             foreign_keys=[category_id])
     feed = relationship('Feed', back_populates='articles',
                         foreign_keys=[feed_id])
+    tag_objs = relationship('Tag', back_populates='article',
+                            cascade='all,delete-orphan',
+                            lazy=False,
+                            foreign_keys='[Tag.article_id]')
+    tags = association_proxy('tag_objs', 'text')
 
     # index
     article_uid_cluid = Index('user_id', 'cluster_id')
@@ -49,7 +55,11 @@ class Article(db.Model, RightMixin):
     @staticmethod
     def _fields_base_read():
         return {'id', 'entry_id', 'link', 'title', 'content', 'date',
-                'retrieved_date', 'user_id'}
+                'retrieved_date', 'user_id', 'tags'}
+
+    @staticmethod
+    def _fields_api_write():
+        return {'tags'}
 
     def __repr__(self):
         return "<Article(id=%d, entry_id=%s, title=%r, " \

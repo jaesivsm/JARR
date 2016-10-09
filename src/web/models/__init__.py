@@ -4,8 +4,9 @@ from .article import Article
 from .icon import Icon
 from .category import Category
 from .cluster import Cluster
+from .tag import Tag
 
-__all__ = ['Feed', 'User', 'Article', 'Icon', 'Category', 'Cluster']
+__all__ = ['Feed', 'User', 'Article', 'Icon', 'Category', 'Cluster', 'Tag']
 
 
 def db_empty(db):

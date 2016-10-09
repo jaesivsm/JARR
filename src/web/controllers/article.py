@@ -1,4 +1,3 @@
-import re
 import logging
 import sqlalchemy
 from sqlalchemy import func
@@ -9,6 +8,7 @@ from bootstrap import db
 from .abstract import AbstractController
 from web.controllers import CategoryController, FeedController
 from web.models import User, Article
+from lib.article_utils import process_filters
 
 logger = logging.getLogger(__name__)
 
@@ -50,31 +50,11 @@ class ArticleController(AbstractController):
                     "no right on feed %r" % feed.id
         attrs['user_id'], attrs['category_id'] = feed.user_id, feed.category_id
 
-        # handling feed's filters
-        cluster_read, cluster_liked = None, False
-        for filter_ in feed.filters or []:
-            match = False
-            if filter_.get('type') == 'regex':
-                match = re.match(filter_['pattern'], attrs.get('title', ''))
-            elif filter_.get('type') == 'simple match':
-                match = filter_['pattern'] in attrs.get('title', '')
-            take_action = match and filter_.get('action on') == 'match' \
-                    or not match and filter_.get('action on') == 'no match'
-
-            if not take_action:
-                continue
-
-            if filter_.get('action') == 'mark as read':
-                cluster_read = True
-                logger.info("article article will be created as read %r",
-                            attrs['link'])
-            elif filter_.get('action') == 'mark as favorite':
-                cluster_liked = True
-                logger.info("article article will be created as liked %r",
-                            attrs['link'])
-
+        skipped, read, liked = process_filters(feed.filters, attrs)
+        if skipped:
+            return None
         article = super().create(**attrs)
-        cluster_contr.clusterize(article, cluster_read, cluster_liked)
+        cluster_contr.clusterize(article, read, liked)
         return article
 
     def update(self, filters, attrs, *args, **kwargs):
@@ -122,7 +102,14 @@ class ArticleController(AbstractController):
         clu_ctrl._enrich_cluster(cluster, cluster.articles[1])
         return True
 
-    def delete(self, obj_id):
+    def delete(self, obj_id, commit=True):
         still_delete_article = self.remove_from_all_clusters(obj_id)
         if still_delete_article:
-            return super().delete(obj_id)
+            obj = self.get(id=obj_id)
+            for tag in obj.tag_objs:
+                db.session.delete(tag)
+            db.session.delete(obj)
+            if commit:
+                db.session.flush()
+                db.session.commit()
+            return obj

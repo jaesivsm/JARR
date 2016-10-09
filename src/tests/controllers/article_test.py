@@ -29,6 +29,15 @@ class ArticleControllerTest(BaseJarrTest):
                                       "pattern": "pattern3",
                                       "action on": "match",
                                       "action": "mark as read"}]})
+        feed_ctr.update({'id': feed2['id']},
+                        {'filters': [{"type": "tag match",
+                                      "pattern": "pattern4",
+                                      "action on": "match",
+                                      "action": "skipped"},
+                                     {"type": "tag contains",
+                                      "pattern": "pattern5",
+                                      "action on": "match",
+                                      "action": "skipped"}]})
 
         art1 = ArticleController(2).create(
                 entry_id="will be read and faved 1",
@@ -104,3 +113,23 @@ class ArticleControllerTest(BaseJarrTest):
                 link="doesn't matter either8")
         self.assertFalse(art8.cluster.read)
         self.assertTrue(art8.cluster.liked)
+
+        art9 = ArticleController(2).create(
+                entry_id="unique9",
+                feed_id=feed2['id'],
+                title="garbage", tags=['garbage', 'pattern4'],
+                content="doesn't matterç",
+                link="doesn't matter either9")
+        self.assertIsNone(art9)
+        self.assertEquals(0,
+                ArticleController(2).read(entry_id='unique9').count())
+
+        art10 = ArticleController(2).create(
+                entry_id="will be ignored",
+                feed_id=feed2['id'],
+                title="garbage", tags=['pattern5 garbage', 'garbage'],
+                content="doesn't matter10",
+                link="doesn't matter either10")
+        self.assertIsNone(art10)
+        self.assertEquals(0,
+                ArticleController(2).read(entry_id='unique10').count())

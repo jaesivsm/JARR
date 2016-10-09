@@ -40,9 +40,9 @@ var MenuStore = assign({}, EventEmitter.prototype, {
     readCluster: function(cluster, value) {
         cluster.feeds_id.map(function(feed_id) {
             this.feeds[feed_id].unread += value;
-        }.bind(this));
-        cluster.categories_id.map(function(category_id) {
-            this.categories[category_id].unread += value;
+            if(this.feeds[feed_id].category_id) {
+                this.categories[this.feeds[feed_id].category_id].unread += value;
+            }
         }.bind(this));
     },
     emitChange: function(all_folded) {

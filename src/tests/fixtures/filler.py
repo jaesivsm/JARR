@@ -14,7 +14,7 @@ def populate_db():
                                   password=name)
                     for name in ["user1", "user2"]]
 
-    def to_name(u, c=None, f=None, a=None):
+    def to_name(u, c=None, f=None, a=None, *args):
         string = u.login
         if c:
             string += " cat%s" % c
@@ -22,7 +22,7 @@ def populate_db():
             string += " feed%s" % f
         if a is not None:
             string += " art%s" % a
-        return string
+        return string + ''.join(args)
 
     for k in range(2):
         article_total = 0
@@ -41,6 +41,8 @@ def populate_db():
                     acontr.create(entry_id=entry,
                             link='http://test.te/%d' % article_total,
                             feed_id=feed.id, user_id=user.id,
+                            tags=[to_name(user, i, i, j, '1'),
+                                  to_name(user, i, i, j, '2')],
                             category_id=cat_id, title=entry,
                             content="content %d" % article_total)
 

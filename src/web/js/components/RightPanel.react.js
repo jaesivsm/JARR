@@ -72,47 +72,52 @@ var PanelMixin = {
         var items = [];
         var key;
         if(!this.state.edit_mode) {
-        this.fields.filter(function(field) {
-            return field.type != 'ignore';
-        }).map(function(field) {
-            key = this.getKey('dt', field.key);
-            items.push(<dt key={key}>{field.title}</dt>);
-            key = this.getKey('dd', field.key);
-            if(field.type == 'string') {
-                items.push(<dd key={key}>{this.props.obj[field.key]}</dd>);
-            } else if(field.type == 'bool') {
-                if(this.props.obj[field.key]) {
-                    items.push(<dd key={key}><Glyphicon glyph="ok" /></dd>);
-                } else {
-                    items.push(<dd key={key}><Glyphicon glyph="pause" /></dd>);
-                }
-            } else if (field.type == 'link') {
-                items.push(<dd key={key}>
-                              <a href={this.props.obj[field.key]}>
-                            {this.props.obj[field.key]}
-                              </a>
-                           </dd>);
-            }
-        }.bind(this));
+            this.fields.filter(function(field) {
+                        return field.type != 'ignore';
+                    }).map(function(field) {
+                        if(field.type == 'list' && this.props.obj[field.key].length == 0) {
+                            return;
+                        }
+                        key = this.getKey('dt', field.key);
+                        items.push(<dt key={key}>{field.title}</dt>);
+                        key = this.getKey('dd', field.key);
+                        if(field.type == 'string') {
+                            items.push(<dd key={key}>{this.props.obj[field.key]}</dd>);
+                        } else if(field.type == 'list') {
+                            items.push(<dd key={key}>{this.props.obj[field.key].join(', ')}</dd>);
+                        } else if(field.type == 'bool') {
+                            if(this.props.obj[field.key]) {
+                                items.push(<dd key={key}><Glyphicon glyph="ok" /></dd>);
+                            } else {
+                                items.push(<dd key={key}><Glyphicon glyph="pause" /></dd>);
+                            }
+                        } else if (field.type == 'link') {
+                            items.push(<dd key={key}>
+                                        <a href={this.props.obj[field.key]}>
+                                            {this.props.obj[field.key]}
+                                        </a>
+                                    </dd>);
+                        }
+                    }.bind(this));
         } else {
-        this.fields.filter(function(field) {
-            return field.type != 'ignore';
-        }).map(function(field) {
-            key = this.getKey('dd', field.key);
-            items.push(<dt key={key}>{field.title}</dt>);
-            key = this.getKey('dt', field.key);
-            var input = null;
-            if(field.type == 'string' || field.type == 'link') {
-                input = (<input type="text" name={field.key}
-                                onChange={this.saveField}
-                                defaultValue={this.props.obj[field.key]} />);
-            } else if (field.type == 'bool') {
-                input = (<input type="checkbox" name={field.key}
-                                onChange={this.saveField}
-                                defaultChecked={this.props.obj[field.key]} />);
-            }
-            items.push(<dd key={key}>{input}</dd>);
-        }.bind(this));
+            this.fields.filter(function(field) {
+                        return field.type != 'ignore';
+                    }).map(function(field) {
+                        key = this.getKey('dd', field.key);
+                        items.push(<dt key={key}>{field.title}</dt>);
+                        key = this.getKey('dt', field.key);
+                        var input = null;
+                        if(field.type == 'string' || field.type == 'link') {
+                            input = (<input type="text" name={field.key}
+                                            onChange={this.saveField}
+                                            defaultValue={this.props.obj[field.key]} />);
+                        } else if (field.type == 'bool') {
+                            input = (<input type="checkbox" name={field.key}
+                                            onChange={this.saveField}
+                                            defaultChecked={this.props.obj[field.key]} />);
+                        }
+                        items.push(<dd key={key}>{input}</dd>);
+                    }.bind(this));
         }
         return (<dl className="dl-horizontal">{items}</dl>);
     },
@@ -175,6 +180,7 @@ var Article = React.createClass({
     isRemovable: function() {return true;},
     fields: [{'title': 'Date', 'type': 'string', 'key': 'date'},
              {'title': 'Original link', 'type': 'link', 'key': 'link'},
+             {'title': 'Tags', 'type': 'list', 'key': 'tags'},
     ],
     obj_type: 'article',
     getTitle: function() {return this.props.obj.title;},
@@ -247,14 +253,18 @@ var Feed = React.createClass({
                 <select name="type" className="form-control"
                         data-index={i} onChange={this.saveFilterChange}
                         defaultValue={filter.type}>
-                    <option value='simple match'>simple match</option>
-                    <option value='regex'>regex</option>
+                    <option value='simple match'>title contains</option>
+                    <option value='regex'>title match regex</option>
+                    <option value='exact match'>title is</option>
+                    <option value='tag match'>one of the tag is</option>
+                    <option value='tag contains'>one of the tag contains</option>
                 </select>
                 <select name="action" className="form-control"
                         data-index={i} onChange={this.saveFilterChange}
                         defaultValue={filter.action}>
                     <option value="mark as read">mark as read</option>
                     <option value="mark as favorite">mark as favorite</option>
+                    <option value="skipped">ignore this article</option>
                 </select>
             </dd>);
     },

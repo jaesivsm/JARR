@@ -24,7 +24,7 @@ from concurrent.futures import wait, ThreadPoolExecutor
 from requests_futures.sessions import FuturesSession
 from lib.utils import default_handler, to_hash
 from lib.feed_utils import construct_feed_from, is_parsing_ok
-from lib.article_utils import extract_id, construct_article
+from lib.article_utils import construct_article, process_filters, FiltersAction
 
 logger = logging.getLogger(__name__)
 logging.captureWarnings(True)
@@ -181,9 +181,9 @@ class FeedCrawler(AbstractCrawler):
                         'feed; bumping error count to %r',
                         self.feed['id'], self.feed['title'], error_count)
             future = self.query_jarr('put', 'feed/%d' % self.feed['id'],
-                                      {'error_count': error_count,
-                                       'last_error': str(error),
-                                       'user_id': self.feed['user_id']})
+                                     {'error_count': error_count,
+                                      'last_error': str(error),
+                                      'user_id': self.feed['user_id']})
             return
 
         if response.status_code == 304:
@@ -215,13 +215,24 @@ class FeedCrawler(AbstractCrawler):
                     self.feed['id'], self.feed['title'])
 
         ids, entries = [], {}
+        feedparser
         parsed_response = feedparser.parse(response.content)
         for entry in parsed_response['entries']:
-            entry_ids = {'entry_id': extract_id(entry),
-                         'feed_id': self.feed['id'],
-                         'user_id': self.feed['user_id']}
+            entry_ids = construct_article(entry, self.feed,
+                        {'entry_id', 'feed_id', 'user_id', 'tags'})
+            skipped, _, _ = process_filters(self.feed['filters'], entry_ids,
+                                            {FiltersAction.SKIP})
+            if skipped:
+                logger.debug('%r %r - skipping article',
+                             self.feed['id'], self.feed['title'])
+                continue
+            del entry_ids['tags']
             entries[tuple(sorted(entry_ids.items()))] = entry
             ids.append(entry_ids)
+        if not ids:
+            logger.info('%r %r - all articles skipped, adding nothing',
+                        self.feed['id'], self.feed['title'])
+            return
         logger.debug('%r %r - found %d entries %r',
                      self.feed['id'], self.feed['title'], len(ids), ids)
         future = self.query_jarr('get', 'articles/challenge', {'ids': ids})

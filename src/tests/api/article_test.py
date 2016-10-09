@@ -57,16 +57,26 @@ class ArticleApiTest(JarrFlaskCommon, ApiCommon):
         resp = self._api('post', self.urn, user='user1', data={'feed_id': 1})
         self.assertEquals(403, resp.status_code)
         UserController().update({'login': 'user1'}, {'is_api': True})
-        resp = self._api('post', self.urn, user='user1', data={'feed_id': 1})
+
+        resp = self._api('post', self.urn, user='user1',
+                         data={'feed_id': 1, 'tags': ['tag1', 'tag2']})
+        content = resp.json()
         self.assertEquals(201, resp.status_code)
-        self.assertEquals(2, resp.json()['user_id'])
+        self.assertEquals(2, content['user_id'])
+        self.assertEquals(['tag1', 'tag2'], content['tags'])
+
+        resp = self._api('get', "%s/%s" % (self.urn, content['id']))
+        self.assertEquals(['tag1', 'tag2'], resp.json()['tags'])
+
         resp = self._api('post', self.urn, user='user1', data={'feed_id': 1})
         self.assertEquals(2, resp.json()['user_id'])
         self.assertEquals(201, resp.status_code)
+
         resp = self._api('post', self.urn, user='user2',
                 data={'user_id': 2, 'feed_id': 1})
         self.assertEquals(403, resp.status_code)
         UserController().update({'login': 'user2'}, {'is_api': True})
+
         resp = self._api('post', self.urn, user='user2',
                 data={'user_id': 2, 'feed_id': 1})
         self.assertEquals(404, resp.status_code)

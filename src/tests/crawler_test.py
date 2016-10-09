@@ -107,6 +107,24 @@ class CrawlerTest(JarrFlaskCommon):
         resp = self._api('get', 'articles', data={'limit': 1000}, user='admin')
         self.assertEquals(36, len(resp.json()))
 
+    @patch('crawler.http_crawler.JarrUpdater.callback')
+    def test_no_add_feed_skip(self, jarr_updated_callback):
+        scheduler = CrawlerScheduler('admin', 'admin')
+        self.resp_status_code = 304
+        resp = self._api('get', 'articles', data={'limit': 1000}, user='admin')
+        self.assertEquals(36, len(resp.json()))
+        FeedController().update({}, {'filters': [{"type": "tag contains",
+                                                  "action on": "match",
+                                                  "pattern": "pattern5",
+                                                  "action": "skipped"}]})
+
+        scheduler.run()
+        scheduler.wait(**self.wait_params)
+        self.assertFalse(jarr_updated_callback.called,
+                "all articles should have been skipped")
+        resp = self._api('get', 'articles', data={'limit': 1000}, user='admin')
+        self.assertEquals(36, len(resp.json()))
+
     def test_matching_etag(self):
         self._reset_feeds_freshness(etag='fake etag')
         self.resp_headers = {'etag': 'fake etag'}

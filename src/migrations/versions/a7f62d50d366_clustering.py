@@ -13,7 +13,7 @@ branch_labels = None
 depends_on = None
 
 from datetime import datetime
-from bootstrap import conf
+from bootstrap import SQLITE_ENGINE
 from alembic import op
 import sqlalchemy as sa
 
@@ -39,7 +39,7 @@ def upgrade():
             sa.Column('cluster_id', sa.Integer(), nullable=True))
 
     from web.models import Cluster, Feed, Article
-    if 'sqlite' not in conf.SQLALCHEMY_DATABASE_URI:
+    if not SQLITE_ENGINE:
         op.create_foreign_key(None, 'article', 'cluster',
                               ['cluster_id'], ['id'])
         op.create_foreign_key(None, 'cluster', 'article',
@@ -98,26 +98,27 @@ def upgrade():
         batch_op.drop_column('readed')
         batch_op.drop_column('like')
 
-    if 'sqlite' not in conf.SQLALCHEMY_DATABASE_URI:
-        print('%s - creating index 0/5' % datetime.now().isoformat())
-        op.execute('CREATE INDEX article_uid_cluid ON article '
-                   '(user_id, cluster_id);')
-        print('%s - creating index 1/5' % datetime.now().isoformat())
+    if not SQLITE_ENGINE:
+        print('%s - creating index 0/6' % datetime.now().isoformat())
+        op.execute('CREATE INDEX article_cluid ON article (cluster_id);')
+        print('%s - creating index 1/6' % datetime.now().isoformat())
         op.execute('CREATE INDEX article_uid_cid_cluid ON article'
                    '(user_id, category_id, cluster_id);')
-        print('%s - creating index 2/5' % datetime.now().isoformat())
+        print('%s - creating index 2/6' % datetime.now().isoformat())
         op.execute('CREATE INDEX article_uid_fid_cluid ON article'
                    '(user_id, feed_id, cluster_id);')
-        print('%s - creating index 3/5' % datetime.now().isoformat())
+        print('%s - creating index 3/6' % datetime.now().isoformat())
         op.execute('CREATE INDEX cluster_uid_date ON cluster '
                    '(user_id, main_date DESC NULLS LAST);')
-        print('%s - creating index 4/5' % datetime.now().isoformat())
+        print('%s - creating index 4/6' % datetime.now().isoformat())
         op.execute('CREATE INDEX cluster_liked_uid_date ON cluster '
                    '(liked, user_id, main_date DESC NULLS LAST);')
-        print('%s - creating index 5/5' % datetime.now().isoformat())
+        print('%s - creating index 5/6' % datetime.now().isoformat())
         op.execute('CREATE INDEX cluster_read_uid_date ON cluster '
                    '(read, user_id, main_date DESC NULLS LAST);')
-
+        print('%s - creating index 6/6' % datetime.now().isoformat())
+        op.execute('CREATE INDEX cluster_uid_mlink ON cluster '
+                   '(user_id, main_link);')
 
 def downgrade():
     op.add_column('article',

@@ -4,6 +4,7 @@ from bootstrap import db
 from datetime import datetime
 from collections import defaultdict
 from sqlalchemy import and_, or_
+from sqlalchemy.ext.associationproxy import AssociationProxy
 from werkzeug.exceptions import Forbidden, NotFound
 
 logger = logging.getLogger(__name__)
@@ -144,6 +145,9 @@ class AbstractController:
                     "right must be 'read' or 'write' with role %r" % role
             columns = getattr(cls._db_cls, 'fields_%s_%s' % (role, right))()
         for column in columns:
+            if isinstance(getattr(cls._db_cls, column), AssociationProxy):
+                result[column] = {'type': list, 'default': list}
+                continue
             try:
                 db_col = getattr(cls._db_cls, column).property.columns[0]
             except AttributeError:
