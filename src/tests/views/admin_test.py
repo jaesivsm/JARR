@@ -1,5 +1,3 @@
-from io import BytesIO
-from mock import patch
 from tests.base import JarrFlaskCommon
 from web.controllers import UserController
 from flask_principal import PermissionDenied

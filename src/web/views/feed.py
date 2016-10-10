@@ -34,7 +34,7 @@ def bookmarklet():
         filters = []
         if link:
             filters.append({'link': link})
-        if link:
+        if site_link:
             filters.append({'site_link': site_link})
         filters = {'__or__': filters} if len(filters) > 1 else filters[0]
         feed_exists = feed_contr.read(**filters).first()

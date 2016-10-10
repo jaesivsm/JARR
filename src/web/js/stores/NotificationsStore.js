@@ -24,12 +24,7 @@ var NotificationsStore = assign({}, EventEmitter.prototype, {
         this.notifs = this.notifs.filter(function(notif) {return !notif.read;});
         return this.notifs;
     },
-    emitChange: function(all_folded) {
-        if (all_folded) {
-            this.all_folded = all_folded;
-        } else {
-            this.all_folded = null;
-        }
+    emitChange: function() {
         this.emit(CHANGE_EVENT);
     },
     addChangeListener: function(callback) {

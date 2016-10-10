@@ -11,6 +11,7 @@ from lib.utils import jarr_get
 from web.lib.article_cleaner import clean_urls
 
 logger = logging.getLogger(__name__)
+PROCESSED_DATE_KEYS = {'published', 'created', 'updated'}
 
 
 def extract_id(entry):
@@ -25,14 +26,14 @@ def construct_article(entry, feed, fields=None):
     article = {}
 
     def push_in_article(key, value):
-        if fields is None or key in fields:
+        if not fields or key in fields:
             article[key] = value
     push_in_article('feed_id', feed['id'])
     push_in_article('user_id', feed['user_id'])
     push_in_article('entry_id', extract_id(entry))
     push_in_article('retrieved_date', now)
-    if fields is None or 'date' in fields:
-        for date_key in ('published', 'created', 'updated'):
+    if not fields or 'date' in fields:
+        for date_key in PROCESSED_DATE_KEYS:
             if entry.get(date_key):
                 try:
                     article['date'] = dateutil.parser.parse(entry[date_key])\
@@ -69,8 +70,8 @@ def get_article_details(entry):
             # resolves URL behind proxies (like feedproxy.google.com)
             response = jarr_get(article_link)
         except Exception as error:
-            logger.warning("Unable to get the real URL of %s. Won't fix link "
-                           "or title. Error: %s", article_link, error)
+            logger.warn("Unable to get the real URL of %s. Won't fix link "
+                        "or title. Error: %s", article_link, error)
             return article_link, article_title or 'No title'
         article_link = response.url
         if not article_title:
@@ -122,7 +123,7 @@ def process_filters(filters, article, only_actions=None):
             logger.debug('ignoring filter %r' % filter_)
             continue
 
-        title = article.get('title').lower()
+        title = article.get('title', '').lower()
         tags = [tag.lower() for tag in article.get('tags', [])]
         if filter_type is FiltersType.REGEX:
             match = re.match(pattern, title)
@@ -148,5 +149,6 @@ def process_filters(filters, article, only_actions=None):
             skipped = True
 
     if skipped or read or liked:
-        logger.info("%r applied on %r", filter_action.value, article['link'])
+        logger.info("%r applied on %r", filter_action.value,
+                    article.get('link') or article.get('title'))
     return skipped, read, liked

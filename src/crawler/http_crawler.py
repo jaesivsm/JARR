@@ -56,25 +56,29 @@ class AbstractCrawler:
         self._futures.append(future)
         return future
 
-    def wait(self, max_wait=300, checks=10, wait_for=5):
-        checked, second_waited = 0, 0
+    def wait(self, max_wait=600, wait_for=2):
         start = datetime.now()
         max_wait_delta = timedelta(seconds=max_wait)
         while True:
             time.sleep(wait_for)
-            if datetime.now() - start > max_wait_delta:
-                logger.warn('Exiting after %d seconds', second_waited)
-                break
-            try:  # no idea why wait throw ValueError around
-                not_done = len(wait(self._futures, timeout=max_wait).not_done)
-            except ValueError:
-                not_done = 1
-            if not_done != 0:
-                checked = 0
+            # checking not thread is still running
+            # some thread are running and we are not behind
+            if datetime.now() - start <= max_wait_delta \
+                    and any(fu.running() for fu in self._futures):
+                # let's wait and see if it's not okay next time
                 continue
-            checked += 1
-            if checked >= checks:
+            # all thread are done, let's exit
+            if all(fu.done() for fu in self._futures):
                 break
+            # some thread are still running and we're gonna future.wait on 'em
+            wait_minus_passed = max_wait - (datetime.now() - start).seconds
+            if wait_minus_passed > 0:
+                max_wait = wait_minus_passed
+            try:  # no idea why wait throw ValueError around
+                wait(self._futures, timeout=max_wait)
+            except ValueError:
+                logger.exception('something bad happened:')
+            break
 
 
 class JarrUpdater(AbstractCrawler):
@@ -215,9 +219,10 @@ class FeedCrawler(AbstractCrawler):
                     self.feed['id'], self.feed['title'])
 
         ids, entries = [], {}
-        feedparser
         parsed_response = feedparser.parse(response.content)
         for entry in parsed_response['entries']:
+            if not entry:
+                continue
             entry_ids = construct_article(entry, self.feed,
                         {'entry_id', 'feed_id', 'user_id', 'tags'})
             skipped, _, _ = process_filters(self.feed['filters'], entry_ids,

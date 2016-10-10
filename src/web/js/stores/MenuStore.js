@@ -46,7 +46,7 @@ var MenuStore = assign({}, EventEmitter.prototype, {
         }.bind(this));
     },
     emitChange: function(all_folded) {
-        if (all_folded) {
+        if (all_folded == true || all_folded == false) {
             this.all_folded = all_folded;
         } else {
             this.all_folded = null;

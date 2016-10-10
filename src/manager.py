@@ -38,9 +38,8 @@ def fetch(limit=100, retreive_all=False):
     "Crawl the feeds with the client crawler."
     from crawler.http_crawler import CrawlerScheduler
     scheduler = CrawlerScheduler(conf.CRAWLER_LOGIN, conf.CRAWLER_PASSWD)
-    with scheduler.pool:
-        scheduler.run(limit=limit, retreive_all=retreive_all)
-        scheduler.wait()
+    scheduler.run(limit=limit, retreive_all=retreive_all)
+    scheduler.wait()
 
 
 @manager.command
