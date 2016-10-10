@@ -224,7 +224,8 @@ class FeedCrawler(AbstractCrawler):
             if not entry:
                 continue
             entry_ids = construct_article(entry, self.feed,
-                        {'entry_id', 'feed_id', 'user_id', 'tags'})
+                        {'title', 'entry_id', 'feed_id', 'user_id', 'tags'},
+                        fetch=False)
             skipped, _, _ = process_filters(self.feed['filters'], entry_ids,
                                             {FiltersAction.SKIP})
             if skipped:

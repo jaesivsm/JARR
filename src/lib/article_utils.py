@@ -20,7 +20,7 @@ def extract_id(entry):
     return entry.get('entry_id') or entry.get('id') or entry['link']
 
 
-def construct_article(entry, feed, fields=None):
+def construct_article(entry, feed, fields=None, fetch=True):
     "Safe method to transorm a feedparser entry into an article"
     now = datetime.utcnow()
     article = {}
@@ -44,10 +44,11 @@ def construct_article(entry, feed, fields=None):
                     break
     push_in_article('content', get_article_content(entry))
     if fields is None or {'link', 'title'}.intersection(fields):
-        link, title = get_article_details(entry)
+        link, title = get_article_details(entry, fetch)
         push_in_article('link', link)
         push_in_article('title', title)
-        push_in_article('content', clean_urls(article['content'], link))
+        if 'content' in article:
+            push_in_article('content', clean_urls(article['content'], link))
     push_in_article('tags', [tag.get('term').strip()
                              for tag in entry.get('tags', [])])
     return article
@@ -62,10 +63,10 @@ def get_article_content(entry):
     return content
 
 
-def get_article_details(entry):
+def get_article_details(entry, fetch=True):
     article_link = entry.get('link')
     article_title = html.unescape(entry.get('title', ''))
-    if conf.CRAWLER_RESOLV and article_link or not article_title:
+    if fetch and conf.CRAWLER_RESOLV and article_link or not article_title:
         try:
             # resolves URL behind proxies (like feedproxy.google.com)
             response = jarr_get(article_link)
