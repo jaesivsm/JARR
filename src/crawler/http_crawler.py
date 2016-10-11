@@ -24,7 +24,7 @@ from concurrent.futures import wait, ThreadPoolExecutor
 from requests_futures.sessions import FuturesSession
 from lib.utils import default_handler, to_hash
 from lib.feed_utils import construct_feed_from, is_parsing_ok
-from lib.article_utils import construct_article, process_filters, FiltersAction
+from lib.article_utils import construct_article, get_skip_and_ids
 
 logger = logging.getLogger(__name__)
 logging.captureWarnings(True)
@@ -59,7 +59,7 @@ class AbstractCrawler:
     def wait(self, max_wait=600, wait_for=2, checks=2):
         start, checked = datetime.now(), 0
         max_wait_delta = timedelta(seconds=max_wait)
-        time.sleep(wait_for * 3)
+        time.sleep(wait_for * 2)
         while True:
             time.sleep(wait_for)
             # checking not thread is still running
@@ -122,11 +122,6 @@ class JarrUpdater(AbstractCrawler):
                             entries[-1]['user_id'], id_to_create)
             self.query_jarr('post', 'articles', entries)
 
-        logger.debug('%r %r - updating feed etag %r last_mod %r',
-                     self.feed['id'], self.feed['title'],
-                     self.headers.get('etag', ''),
-                     self.headers.get('last-modified', ''))
-
         up_feed = {'etag': self.headers.get('etag', ''),
                    'last_modified': self.headers.get('last-modified',
                                     strftime('%a, %d %b %Y %X %Z', gmtime()))}
@@ -150,6 +145,9 @@ class JarrUpdater(AbstractCrawler):
         # re-getting that feed earlier since new entries appeared
         if article_created:
             up_feed['last_retrieved'] = datetime.utcnow()
+        else:
+            logger.info('%r %r - all article matched in db, adding nothing',
+                        self.feed['id'], self.feed['title'])
 
         diff_keys = {key for key in up_feed
                      if up_feed[key] != self.feed.get(key)}
@@ -224,24 +222,22 @@ class FeedCrawler(AbstractCrawler):
 
         ids, entries = [], {}
         parsed_response = feedparser.parse(response.content)
+        skipped_list = []
         for entry in parsed_response['entries']:
             if not entry:
                 continue
-            entry_ids = construct_article(entry, self.feed,
-                        {'title', 'entry_id', 'feed_id', 'user_id', 'tags'},
-                        fetch=False)
-            skipped, _, _ = process_filters(self.feed['filters'], entry_ids,
-                                            {FiltersAction.SKIP})
+            skipped, entry_ids = get_skip_and_ids(entry, self.feed)
             if skipped:
+                skipped_list.append(entry_ids)
                 logger.debug('%r %r - skipping article',
                              self.feed['id'], self.feed['title'])
                 continue
-            del entry_ids['tags']
             entries[tuple(sorted(entry_ids.items()))] = entry
             ids.append(entry_ids)
-        if not ids:
-            logger.info('%r %r - all articles skipped, adding nothing',
-                        self.feed['id'], self.feed['title'])
+        if not ids and skipped_list:
+            logger.debug('%r %r - nothing to add (skipped %r) %r',
+                         self.feed['id'], self.feed['title'], skipped_list,
+                         parsed_response)
             return
         logger.debug('%r %r - found %d entries %r',
                      self.feed['id'], self.feed['title'], len(ids), ids)

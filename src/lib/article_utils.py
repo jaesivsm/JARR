@@ -139,7 +139,12 @@ def process_filters(filters, article, only_actions=None):
         if filter_action not in only_actions:
             logger.debug('ignoring filter %r' % filter_)
             continue
-
+        if filter_action in {FiltersType.REGEX, FiltersType.MATCH,
+                FiltersType.EXACT_MATCH} and 'title' not in article:
+            continue
+        if filter_action in {FiltersType.TAG_MATCH, FiltersType.TAG_CONTAINS} \
+                and 'tags' not in article:
+            continue
         title = article.get('title', '').lower()
         tags = [tag.lower() for tag in article.get('tags', [])]
         if filter_type is FiltersType.REGEX:
@@ -169,3 +174,12 @@ def process_filters(filters, article, only_actions=None):
         logger.info("%r applied on %r", filter_action.value,
                     article.get('link') or article.get('title'))
     return skipped, read, liked
+
+
+def get_skip_and_ids(entry, feed):
+    entry_ids = construct_article(entry, feed,
+                {'entry_id', 'feed_id', 'user_id'}, fetch=False)
+    skipped, _, _ = process_filters(feed['filters'],
+            construct_article(entry, feed, {'title', 'tags'}, fetch=False),
+            {FiltersAction.SKIP})
+    return skipped, entry_ids

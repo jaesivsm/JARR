@@ -116,6 +116,14 @@ class CrawlerTest(JarrFlaskCommon):
         FeedController().update({}, {'filters': [{"type": "tag contains",
                                                   "action on": "match",
                                                   "pattern": "pattern5",
+                                                  "action": "skipped"},
+                                                 {"type": "simple match",
+                                                  "action on": "match",
+                                                  "pattern": "pattern5",
+                                                  "action": "mark as read"},
+                                                 {"type": "regex",
+                                                  "action on": "match",
+                                                  "pattern": "pattern5",
                                                   "action": "skipped"}]})
 
         scheduler.run()
