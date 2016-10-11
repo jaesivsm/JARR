@@ -1,6 +1,6 @@
 import logging
 from sqlalchemy import and_
-from sqlalchemy.sql import select, update
+from sqlalchemy.sql import select, update, delete
 from datetime import datetime, timedelta
 
 from bootstrap import db, conf, SQLITE_ENGINE
@@ -131,7 +131,39 @@ class FeedController(AbstractController):
         return super().update(filters, attrs, *args, **kwargs)
 
     def delete(self, obj_id):
+        from web.controllers.cluster import ClusterController
+        feed = self.get(id=obj_id)
         actrl = self.__get_art_contr()
-        for article in self.get(id=obj_id).articles:
-            actrl.remove_from_all_clusters(article.id)
+        clu_ctrl = ClusterController(self.user_id)
+
+        # removing back ref from cluster to article
+        clu_ctrl.update({'main_article_id__in': actrl.read(feed_id=obj_id)
+                                                     .with_entities('id')},
+                        {'main_article_id': None})
+
+        def select_art(col):
+            return select([col]).where(and_(Cluster.id == Article.cluster_id,
+                                            Article.user_id == feed.user_id))\
+                                .order_by(Article.date.asc()).limit(1)
+
+        # removing articles
+        db.session.execute(delete(Article).where(
+                and_(Article.feed_id == feed.id,
+                     Article.user_id == feed.user_id)))
+
+        # reclustering
+        clu_ctrl.update({'main_article_id': None},
+                {'main_title': select_art(Article.title),
+                 'main_article_id': select_art(Article.id),
+                 'main_feed_title': select([Feed.title])
+                                    .where(and_(
+                                           Cluster.id == Article.cluster_id,
+                                           Article.user_id == feed.user_id,
+                                           Feed.id == Article.feed_id,
+                                           Feed.user_id == feed.user_id))
+                                    .order_by(Article.date.asc()).limit(1)})
+        # removing remaing clusters
+        db.session.execute(delete(Cluster).where(
+                and_(Cluster.user_id == feed.user_id,
+                     Cluster.main_article_id.__eq__(None))))
         return super().delete(obj_id)
