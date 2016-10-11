@@ -28,7 +28,7 @@ def set_logging(log_path=None, log_level=logging.INFO, modules=(),
                 log_format='%(asctime)s %(levelname)s %(message)s'):
 
     if not modules:
-        modules = ('root', 'bootstrap', 'runserver',
+        modules = ('root', 'bootstrap', 'runserver', 'lib',
                    'web', 'crawler', 'manager', 'plugins')
     if log_path:
         handler = logging.FileHandler(log_path)

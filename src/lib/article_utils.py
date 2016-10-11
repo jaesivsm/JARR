@@ -3,6 +3,8 @@ import html
 import logging
 from enum import Enum
 import dateutil.parser
+from urllib.parse import urlsplit, urlunsplit, SplitResult
+from requests.exceptions import MissingSchema
 from datetime import datetime, timezone
 from bs4 import BeautifulSoup, SoupStrainer
 
@@ -69,10 +71,24 @@ def get_article_details(entry, fetch=True):
     if fetch and conf.CRAWLER_RESOLV and article_link or not article_title:
         try:
             # resolves URL behind proxies (like feedproxy.google.com)
-            response = jarr_get(article_link)
+            response = jarr_get(article_link, timeout=5)
+        except MissingSchema:
+            split, failed = urlsplit(article_link), False
+            for scheme in 'https', 'http':
+                new_link = urlunsplit(SplitResult(scheme, *split[1:]))
+                try:
+                    response = jarr_get(new_link, timeout=5)
+                except Exception as error:
+                    failed = True
+                    continue
+                failed = False
+                article_link = new_link
+                break
+            if failed:
+                return article_link, article_title or 'No title'
         except Exception as error:
-            logger.warn("Unable to get the real URL of %s. Won't fix link "
-                        "or title. Error: %s", article_link, error)
+            logger.info("Unable to get the real URL of %s. Won't fix "
+                        "link or title. Error: %s", article_link, error)
             return article_link, article_title or 'No title'
         article_link = response.url
         if not article_title:

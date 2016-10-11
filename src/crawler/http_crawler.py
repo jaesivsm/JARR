@@ -56,9 +56,10 @@ class AbstractCrawler:
         self._futures.append(future)
         return future
 
-    def wait(self, max_wait=600, wait_for=2):
-        start = datetime.now()
+    def wait(self, max_wait=600, wait_for=2, checks=2):
+        start, checked = datetime.now(), 0
         max_wait_delta = timedelta(seconds=max_wait)
+        time.sleep(wait_for * 3)
         while True:
             time.sleep(wait_for)
             # checking not thread is still running
@@ -66,6 +67,9 @@ class AbstractCrawler:
             if datetime.now() - start <= max_wait_delta \
                     and any(fu.running() for fu in self._futures):
                 # let's wait and see if it's not okay next time
+                continue
+            if checks == checked:
+                checked += 1
                 continue
             # all thread are done, let's exit
             if all(fu.done() for fu in self._futures):
@@ -155,7 +159,7 @@ class JarrUpdater(AbstractCrawler):
             return  # meaningless if no new article has been published
         logger.info('%r %r - pushing feed attrs %r',
                 self.feed['id'], self.feed['title'],
-                {key: "%s -> %s" % (up_feed[key], self.feed.get(key))
+                {key: "%r -> %r" % (self.feed.get(key), up_feed[key])
                  for key in up_feed if up_feed[key] != self.feed.get(key)})
 
         self.query_jarr('put', 'feed/%d' % self.feed['id'], up_feed)

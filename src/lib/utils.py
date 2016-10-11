@@ -80,7 +80,9 @@ def redirect_url(default='home'):
     return request.args.get('next') or request.referrer or url_for(default)
 
 
-def jarr_get(url):
-    return requests.get(url, verify=False, allow_redirects=True,
-                        timeout=conf.CRAWLER_TIMEOUT,
-                        headers={'User-Agent': conf.CRAWLER_USER_AGENT})
+def jarr_get(url, **kwargs):
+    request_kwargs = {'verify': False, 'allow_redirects': True,
+                      'timeout': conf.CRAWLER_TIMEOUT,
+                      'headers': {'User-Agent': conf.CRAWLER_USER_AGENT}}
+    request_kwargs.update(kwargs)
+    return requests.get(url, **request_kwargs)
