@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta
 from manager import db_create, db_empty
 from web.controllers import UserController, CategoryController, \
                             FeedController, ArticleController
@@ -13,19 +14,20 @@ def populate_db():
     user1, user2 = [ucontr.create(login=name, email="%s@test.te" % name,
                                   password=name)
                     for name in ["user1", "user2"]]
-
-    def to_name(u, c=None, f=None, a=None, *args):
-        string = u.login
-        if c:
-            string += " cat%s" % c
-        if f is not None:
-            string += " feed%s" % f
-        if a is not None:
-            string += " art%s" % a
-        return string + ''.join(args)
+    now = datetime.now()
 
     for k in range(2):
         article_total = 0
+
+        def to_name(u, c=None, f=None, a=None, *args):
+            string = "i%d %s" % (k, u.login)
+            if c:
+                string += " cat%s" % c
+            if f is not None:
+                string += " feed%s" % f
+            if a is not None:
+                string += " art%s" % a
+            return string + ''.join(args)
         for user in (user1, user2):
             for i in range(3):
                 cat_id = None
@@ -44,6 +46,7 @@ def populate_db():
                             tags=[to_name(user, i, i, j, '1'),
                                   to_name(user, i, i, j, '2')],
                             category_id=cat_id, title=entry,
+                            date=now + timedelta(seconds=k),
                             content="content %d" % article_total)
 
 def reset_db():
