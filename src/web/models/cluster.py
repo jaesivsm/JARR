@@ -72,7 +72,7 @@ class Cluster(db.Model, RightMixin):
     def _fields_base_read():
         return {'id', 'user_id', 'categories_id', 'feeds_id',
                 'main_link', 'main_title', 'main_feed_title', 'main_date',
-                'created_date', 'cluster_type', 'articles'}
+                'created_date', 'cluster_type', 'articles', 'main_article_id'}
 
     def __repr__(self):
         return "<Cluster(id=%d, title=%r, date=%r)>" \
