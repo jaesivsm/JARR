@@ -57,7 +57,7 @@ def bookmarklet():
 
     feed = construct_feed_from(url)
 
-    existing_feed = check_feeds(feed.get('link'), feed.get('site_link'))
+    existing_feed = check_feeds(feed.get('link'), feed.get('link'))
     if existing_feed:
         return redirect(url_for('home', at='f', ai=existing_feed.id))
 

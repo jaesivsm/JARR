@@ -1,4 +1,5 @@
 import logging
+from datetime import timedelta
 from bootstrap import db, SQLITE_ENGINE
 
 from sqlalchemy import func, Integer, and_
@@ -18,12 +19,16 @@ class ClusterController(AbstractController):
 
     def _get_cluster_by_link(self, article):
         return self.read(user_id=article.user_id,
+                         main_date__lt=article.date + timedelta(days=7),
+                         main_date__gt=article.date - timedelta(days=7),
                          main_link=article.link).first()
 
     def _get_cluster_by_title(self, article):
         if article.category and article.category.cluster_on_title:
             try:
                 article = ArticleController(self.user_id).get(
+                        date__lt=article.date + timedelta(days=7),
+                        date__gt=article.date - timedelta(days=7),
                         user_id=article.user_id,
                         category_id=article.category_id,
                         title__ilike=article.title)

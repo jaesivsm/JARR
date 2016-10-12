@@ -1,11 +1,11 @@
-from tests.base import JarrFlaskCommon
+import unittest
 import json
 from mock import patch
 from requests.exceptions import MissingSchema
 from lib.article_utils import construct_article
 
 
-class ConstructArticleTest(JarrFlaskCommon):
+class ConstructArticleTest(unittest.TestCase):
     response_url = '//www.pariszigzag.fr/paris-insolite-secret/'\
                    'les-plus-belles-boulangeries-de-paris'
 
@@ -46,14 +46,15 @@ class ConstructArticleTest(JarrFlaskCommon):
         self.assertEquals(1, article['feed_id'])
 
     def test_missing_scheme(self):
-        response = self.get_response('https:')
-        self.jarr_get_patch.side_effect = [MissingSchema, response]
+        response = self.get_response('http:')
+        self.jarr_get_patch.side_effect = [
+                MissingSchema, MissingSchema, response]
         entry = self.get_entry()
         entry['link'] = entry['link'][5:]
 
         article = construct_article(entry, {'id': 1, 'user_id': 1})
 
-        self.assertEquals(2, self.jarr_get_patch.call_count)
+        self.assertEquals(3, self.jarr_get_patch.call_count)
         self.assertEquals(response.url, self.jarr_get_patch.call_args[0][0])
         self.assertEquals('http://www.pariszigzag.fr/?p=56413',
                           article['entry_id'])

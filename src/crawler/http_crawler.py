@@ -12,7 +12,6 @@ JarrUpdater.callback
     to create the missing entries
 """
 
-import html
 import time
 import json
 import logging
@@ -28,12 +27,12 @@ from lib.article_utils import construct_article, get_skip_and_ids
 
 logger = logging.getLogger(__name__)
 logging.captureWarnings(True)
+FUTURES = []
 
 
 class AbstractCrawler:
     pool = ThreadPoolExecutor(max_workers=conf.CRAWLER_NBWORKER)
     session = FuturesSession(executor=pool)
-    _futures = []
 
     def __init__(self, auth):
         self.auth = auth
@@ -53,10 +52,10 @@ class AbstractCrawler:
                         data=json.dumps(data, default=default_handler),
                         headers={'Content-Type': 'application/json',
                                  'User-Agent': conf.CRAWLER_USER_AGENT})
-        self._futures.append(future)
+        FUTURES.append(future)
         return future
 
-    def wait(self, max_wait=600, wait_for=2, checks=2):
+    def wait(self, max_wait=600, wait_for=2, checks=10):
         start, checked = datetime.now(), 0
         max_wait_delta = timedelta(seconds=max_wait)
         time.sleep(wait_for * 2)
@@ -65,21 +64,21 @@ class AbstractCrawler:
             # checking not thread is still running
             # some thread are running and we are not behind
             if datetime.now() - start <= max_wait_delta \
-                    and any(fu.running() for fu in self._futures):
+                    and any(fu.running() for fu in FUTURES):
                 # let's wait and see if it's not okay next time
                 continue
-            if checks == checked:
+            if checks > checked:
                 checked += 1
                 continue
             # all thread are done, let's exit
-            if all(fu.done() for fu in self._futures):
+            if all(fu.done() for fu in FUTURES):
                 break
             # some thread are still running and we're gonna future.wait on 'em
             wait_minus_passed = max_wait - (datetime.now() - start).seconds
             if wait_minus_passed > 0:
                 max_wait = wait_minus_passed
             try:  # no idea why wait throw ValueError around
-                wait(self._futures, timeout=max_wait)
+                wait(FUTURES, timeout=max_wait)
             except ValueError:
                 logger.exception('something bad happened:')
             break
@@ -114,51 +113,53 @@ class JarrUpdater(AbstractCrawler):
             entries = []
             for id_to_create in results:
                 article_created = True
-                entries.append(construct_article(
+                entry = construct_article(
                         self.entries[tuple(sorted(id_to_create.items()))],
-                        self.feed))
+                        self.feed)
                 logger.info('%r %r - creating %r for %r - %r', self.feed['id'],
-                            self.feed['title'], entries[-1]['title'],
-                            entries[-1]['user_id'], id_to_create)
+                            self.feed['title'], entry.get('title'),
+                            entry.get('user_id'), id_to_create)
+                entries.append(entry)
             self.query_jarr('post', 'articles', entries)
 
-        up_feed = {'etag': self.headers.get('etag', ''),
-                   'last_modified': self.headers.get('last-modified',
-                                    strftime('%a, %d %b %Y %X %Z', gmtime()))}
-
         if not is_parsing_ok(self.parsed_feed):
-            up_feed['last_error'] = str(self.parsed_feed.get('bozo_exception'))
-            up_feed['error_count'] = self.feed['error_count'] + 1
-            return self.query_jarr('put', 'feed/%d' % self.feed['id'], up_feed)
+            logger.info('%r %r - parsing failed, bumping error count',
+                        self.feed['id'], self.feed['title'])
+            return self.query_jarr('put', 'feed/%d' % self.feed['id'],
+                    {'last_error': str(self.parsed_feed.get('bozo_exception')),
+                     'error_count': self.feed['error_count'] + 1})
 
-        fresh_feed = construct_feed_from(url=self.feed['link'],
-                                         fp_parsed=self.parsed_feed,
-                                         feed=self.feed)
-        if fresh_feed.get('description'):
-            fresh_feed['description'] \
-                    = html.unescape(fresh_feed['description'])
+        up_feed = construct_feed_from(url=self.feed['link'],
+                                      fp_parsed=self.parsed_feed,
+                                      feed=self.feed)
 
-        for key in 'description', 'site_link', 'icon_url':
-            if fresh_feed.get(key) and fresh_feed[key] != self.feed.get(key):
-                up_feed[key] = fresh_feed[key]
+        up_feed['etag'] = self.headers.get('etag', '')
+        up_feed['last_modified'] = self.headers.get('last-modified',
+                strftime('%a, %d %b %Y %X %Z', gmtime()))
+
+        up_feed.pop('link', None)  # not updating feed url
         up_feed['user_id'] = self.feed['user_id']
-        # re-getting that feed earlier since new entries appeared
-        if article_created:
-            up_feed['last_retrieved'] = datetime.utcnow()
-        else:
+        up_feed['last_error'] = None
+        up_feed['error_count'] = 0
+        if not article_created:
             logger.info('%r %r - all article matched in db, adding nothing',
                         self.feed['id'], self.feed['title'])
 
-        diff_keys = {key for key in up_feed
-                     if up_feed[key] != self.feed.get(key)}
-        if not diff_keys:
+        # updating only changed attrs
+        up_feed = {key: value for key, value in up_feed.items()
+                   if up_feed[key] != self.feed.get(key)}
+        if not up_feed:
+            logger.info('%r %r - nothing to update in feed attrs',
+                        self.feed['id'], self.feed['title'])
             return  # no change in the feed, no update
-        if not article_created and diff_keys == {'last_modified', 'etag'}:
+        if not article_created and set(up_feed) == {'last_modified', 'etag'}:
+            logger.info('%r %r - feed changed attrs are meaningless, ignoring',
+                        self.feed['id'], self.feed['title'])
             return  # meaningless if no new article has been published
         logger.info('%r %r - pushing feed attrs %r',
                 self.feed['id'], self.feed['title'],
                 {key: "%r -> %r" % (self.feed.get(key), up_feed[key])
-                 for key in up_feed if up_feed[key] != self.feed.get(key)})
+                 for key in up_feed})
 
         self.query_jarr('put', 'feed/%d' % self.feed['id'], up_feed)
 
@@ -173,7 +174,7 @@ class FeedCrawler(AbstractCrawler):
         """Will reset the errors counters on a feed that have known errors"""
         if self.feed.get('error_count') or self.feed.get('last_error'):
             self.query_jarr('put', 'feed/%d' % self.feed['id'],
-                            {'error_count': 0, 'last_error': ''})
+                            {'error_count': 0, 'last_error': None})
 
     def callback(self, response):
         """will fetch the feed and interprete results (304, etag) or will
@@ -183,9 +184,10 @@ class FeedCrawler(AbstractCrawler):
             response.raise_for_status()
         except Exception as error:
             error_count = self.feed['error_count'] + 1
-            logger.warn('%r %r - an error occured while fetching '
-                        'feed; bumping error count to %r',
-                        self.feed['id'], self.feed['title'], error_count)
+            if self.feed['error_count'] > conf.FEED_ERROR_THRESHOLD:
+                logger.warn('%r %r - an error occured while fetching '
+                            'feed; bumping error count to %r',
+                            self.feed['id'], self.feed['title'], error_count)
             future = self.query_jarr('put', 'feed/%d' % self.feed['id'],
                                      {'error_count': error_count,
                                       'last_error': str(error),
@@ -221,7 +223,7 @@ class FeedCrawler(AbstractCrawler):
                     self.feed['id'], self.feed['title'])
 
         ids, entries = [], {}
-        parsed_response = feedparser.parse(response.content)
+        parsed_response = feedparser.parse(response.content.strip())
         skipped_list = []
         for entry in parsed_response['entries']:
             if not entry:
@@ -283,7 +285,7 @@ class CrawlerScheduler(AbstractCrawler):
             future = self.session.get(feed['link'],
                                       timeout=conf.CRAWLER_TIMEOUT,
                                       headers=self.prepare_headers(feed))
-            self._futures.append(future)
+            FUTURES.append(future)
 
             feed_crwlr = FeedCrawler(feed, self.auth)
             future.add_done_callback(feed_crwlr.callback)

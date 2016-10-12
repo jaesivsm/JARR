@@ -92,7 +92,7 @@ class FeedController(AbstractController):
         if attrs.get('category_id') == 0:
             attrs['category_id'] = None
         if 'filters' in attrs:
-            attrs['filters'] = [filter_ for filter_ in attrs['filters']
+            attrs['filters'] = [filter_ for filter_ in (attrs['filters'] or [])
                                 if type(filter_) is dict]
 
     def create(self, **attrs):

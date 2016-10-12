@@ -13,7 +13,7 @@ class CrawlerTest(JarrFlaskCommon):
 
     def setUp(self):
         super().setUp()
-        self.wait_params = {'wait_for': 5, 'max_wait': 30}
+        self.wait_params = {'wait_for': 1, 'max_wait': 10, 'checks': 1}
         UserController().update({'login': 'admin'}, {'is_api': True})
         self._is_secure_served \
                 = patch('web.lib.article_cleaner.is_secure_served')

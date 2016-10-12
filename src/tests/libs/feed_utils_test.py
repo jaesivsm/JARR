@@ -1,8 +1,8 @@
-from tests.base import JarrFlaskCommon
+import unittest
 from lib.feed_utils import construct_feed_from
 
 
-class ConstructFeedFromTest(JarrFlaskCommon):
+class ConstructFeedFromTest(unittest.TestCase):
 
     @property
     def jdh_feed(self):

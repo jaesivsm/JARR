@@ -2,6 +2,7 @@ import html
 import urllib
 import logging
 import feedparser
+from copy import deepcopy
 from bootstrap import conf
 from bs4 import BeautifulSoup, SoupStrainer
 
@@ -25,12 +26,22 @@ def _escape_title_and_desc(feed):
 
 
 def _browse_feedparser_feed(feed, check, default=None):
-    if feed.get('feed', {}).get('links') is None:
+    if not feed.get('feed', {}).get('links'):
         return default
     for link in feed['feed']['links']:
         if check(link):
             return link['href']
     return default
+
+
+def get_parsed_feed(url):
+    try:
+        fp_parsed = feedparser.parse(url,
+                request_headers={'User-Agent': conf.CRAWLER_USER_AGENT})
+    except Exception as error:
+        logger.warn('failed to retreive that url: %r', error)
+        fp_parsed = {'bozo': 1, 'feed': {}, 'entries': []}
+    return fp_parsed
 
 
 def construct_feed_from(url=None, fp_parsed=None, feed=None):
@@ -41,45 +52,29 @@ def construct_feed_from(url=None, fp_parsed=None, feed=None):
     fp_parsed: a feedparser object previously obtained
     feed: an existing feed dict, will be updated
     """
-    feed = feed or {'link': url, 'site_link': url}
-    if not url and fp_parsed:
+    feed = deepcopy(feed) if feed else {}
+    if not url and hasattr(fp_parsed, 'get') and fp_parsed.get('href'):
         url = fp_parsed.get('href')
 
     # we'll try to obtain our first parsing from feedparser
     if url and not fp_parsed:
-        try:
-            fp_parsed = feedparser.parse(url,
-                    request_headers={'User-Agent': conf.CRAWLER_USER_AGENT})
-        except Exception as error:
-            logger.warn('failed to retreive that url: %r', error)
-            fp_parsed = {'bozo': 1, 'feed': {}, 'entries': []}
+        fp_parsed = get_parsed_feed(url)
     assert url is not None and fp_parsed is not None
 
-    if not is_parsing_ok(fp_parsed):
-        feed['link'] = None
+    if is_parsing_ok(fp_parsed):
+        feed['link'] = url
+    else:
+        # trying to get link url from data parsed by feedparser
+        feed['link'] = _browse_feedparser_feed(fp_parsed,
+                lambda link: link['type'] in FEED_MIMETYPES,
+                default=feed.get('link'))
+        if feed['link'] and feed['link'] != url:
+            # trying newly got url
+            fp_parsed = get_parsed_feed(feed['link'])
+            if not is_parsing_ok(fp_parsed):  # didn't work, no link found
+                feed['link'] = None
+        feed['site_link'] = url
 
-    # updating link
-    feed['link'] = _browse_feedparser_feed(fp_parsed,
-            lambda link: link['type'] in FEED_MIMETYPES,
-            default=feed.get('link'))
-
-    # parsing failed but we obtained a new link to try
-    if not is_parsing_ok(fp_parsed) and feed.get('link') != url:
-        try:
-            fp_parsed = feedparser.parse(feed['link'],
-                    request_headers={'User-Agent': conf.CRAWLER_USER_AGENT})
-        except Exception as error:
-            logger.warn('failed to retreive that url: %r', error)
-            fp_parsed = {'bozo': 1, 'feed': {}, 'entries': []}
-        url = feed['link']
-
-        if not is_parsing_ok(fp_parsed):
-            feed['link'] = None
-
-    # extracting maximum values from parsed feed
-    feed['link'] = _browse_feedparser_feed(fp_parsed,
-            lambda link: link['type'] in FEED_MIMETYPES,
-            default=feed.get('link') or url)
     if fp_parsed['feed'].get('link'):
         feed['site_link'] = fp_parsed['feed']['link']
     else:
@@ -100,17 +95,9 @@ def construct_feed_from(url=None, fp_parsed=None, feed=None):
     elif fp_parsed['feed'].get('subtitle_detail', {}).get('value'):
         feed['description'] = fp_parsed['feed']['subtitle_detail']['value']
 
-    feed['icon_url'] = _browse_feedparser_feed(fp_parsed,
-            lambda link: 'icon' in link['rel'], default=feed.get('icon_url'))
-    if 'icon_url' not in feed:
-        del feed['icon_url']
-
     # trying to make up for missing values
     feed_split = urllib.parse.urlsplit(url)
     site_split = None
-    if not feed.get('site_link') and not feed.get('link'):
-        feed['site_link'] = url
-
     if feed.get('site_link'):
         feed['site_link'] = rebuild_url(feed['site_link'], feed_split)
         site_split = urllib.parse.urlsplit(feed['site_link'])
@@ -120,6 +107,24 @@ def construct_feed_from(url=None, fp_parsed=None, feed=None):
                 feed['icon_url'], site_split, feed_split)
         if feed['icon_url'] is None:
             del feed['icon_url']
+
+    old_icon_url = feed.get('icon_url')
+    feed['icon_url'] = _browse_feedparser_feed(fp_parsed,
+            lambda link: 'icon' in link['rel'])
+    if feed['icon_url'] and feed['icon_url'] != old_icon_url:
+        feed['icon_url'] = try_get_icon_url(feed['icon_url'],
+                site_split, feed_split)
+
+    if not feed['icon_url'] and fp_parsed.get('feed', {}).get('icon'):
+        feed['icon_url'] = try_get_icon_url(fp_parsed['feed']['icon'],
+                site_split, feed_split)
+    if not feed['icon_url'] and fp_parsed.get('feed', {}).get('logo'):
+        feed['icon_url'] = try_get_icon_url(fp_parsed['feed']['logo'],
+                site_split, feed_split)
+    if not feed['icon_url'] and old_icon_url:
+        feed['icon_url'] = old_icon_url
+    elif not feed['icon_url']:
+        del feed['icon_url']
 
     nothing_to_fill = all(bool(feed.get(key))
                           for key in ('link', 'title', 'icon_url'))

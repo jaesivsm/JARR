@@ -38,7 +38,7 @@ def rebuild_url(url, base_split):
     new_split = urllib.parse.SplitResult(
             scheme=split.scheme or base_split.scheme,
             netloc=split.netloc or base_split.netloc,
-            path=split.path, query='', fragment='')
+            path=split.path, query=split.query, fragment=split.fragment)
     return urllib.parse.urlunsplit(new_split)
 
 
