@@ -1,10 +1,12 @@
 #!/usr/bin/python3
 import sys
 from datetime import datetime, timedelta
+
 from flask_script import Command, Option
 
-from web.controllers import FeedController, ArticleController
+from web.controllers import ArticleController, FeedController
 from web.models import User
+
 DEFAULT_HEADERS = {'Content-Type': 'application/json', 'User-Agent': 'munin'}
 LATE_AFTER = 60
 FETCH_RATE = 3

@@ -1,13 +1,14 @@
-from bootstrap import conf
-import dateutil.parser
 from datetime import datetime
+
+import dateutil.parser
 from flask import current_app
 from flask_restful import Api
 
-from web.views.common import api_permission
+from bootstrap import conf
 from web.controllers import ArticleController
-from web.views.api.common import (PyAggAbstractResource,
-        PyAggResourceNew, PyAggResourceExisting, PyAggResourceMulti)
+from web.views.api.common import (PyAggAbstractResource, PyAggResourceExisting,
+                                  PyAggResourceMulti, PyAggResourceNew)
+from web.views.common import api_permission
 
 
 class ArticleNewAPI(PyAggResourceNew):

@@ -1,22 +1,19 @@
-import pytz
 import logging
 from datetime import datetime
 
-from flask import current_app, render_template, request, flash, url_for
-from flask_login import login_required, current_user
-from flask_babel import get_locale
+import pytz
 from babel.dates import format_datetime, format_timedelta
+from flask import current_app, flash, render_template, request, url_for
+from flask_babel import get_locale
+from flask_login import current_user, login_required
 
 from bootstrap import conf
-from web.lib.article_cleaner import clean_urls
-from web.lib.view_utils import etag_match, clusters_to_json, get_notifications
-from web.views.common import jsonify
-
-from web.controllers import (UserController, CategoryController,
-                             FeedController, ArticleController,
-                             ClusterController)
-
 from plugins import readability
+from web.controllers import (ArticleController, CategoryController,
+                             ClusterController, FeedController, UserController)
+from web.lib.article_cleaner import clean_urls
+from web.lib.view_utils import clusters_to_json, etag_match, get_notifications
+from web.views.common import jsonify
 
 localize = pytz.utc.localize
 logger = logging.getLogger(__name__)

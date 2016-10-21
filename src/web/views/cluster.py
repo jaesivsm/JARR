@@ -1,5 +1,6 @@
 from flask import Blueprint, redirect
-from flask_login import login_required, current_user
+from flask_login import current_user, login_required
+
 from web.controllers import ClusterController
 
 cluster_bp = Blueprint('cluster', __name__, url_prefix='/cluster')

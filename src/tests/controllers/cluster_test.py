@@ -1,8 +1,9 @@
-from random import randint
 from datetime import timedelta
+from random import randint
+
 from tests.base import BaseJarrTest
-from web.controllers import (ArticleController, ClusterController,
-                             FeedController, CategoryController)
+from web.controllers import (ArticleController, CategoryController,
+                             ClusterController, FeedController)
 
 
 class ClusterControllerTest(BaseJarrTest):

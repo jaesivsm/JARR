@@ -1,6 +1,7 @@
 import logging
-from flask import (request, render_template, flash,
-                   url_for, redirect, current_app)
+
+from flask import (current_app, flash, redirect, render_template, request,
+                   url_for)
 from flask_babel import gettext
 
 from bootstrap import conf

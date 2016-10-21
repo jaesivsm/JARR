@@ -1,5 +1,5 @@
 from tests.base import BaseJarrTest
-from web.controllers import UserController, ArticleController, FeedController
+from web.controllers import ArticleController, FeedController, UserController
 
 
 class ArticleControllerTest(BaseJarrTest):

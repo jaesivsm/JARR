@@ -1,7 +1,9 @@
 from datetime import datetime
-from sqlalchemy import (Index, Column, ForeignKey,
-                        String, Boolean, Integer, DateTime, PickleType)
+
+from sqlalchemy import (Boolean, Column, DateTime, ForeignKey, Index, Integer,
+                        PickleType, String)
 from sqlalchemy.orm import relationship, validates
+
 from bootstrap import db
 from web.models.right_mixin import RightMixin
 

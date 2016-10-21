@@ -12,10 +12,11 @@ down_revision = '493abdb2b73'
 branch_labels = None
 depends_on = None
 
-from bootstrap import conf
-from alembic import op
 import sqlalchemy as sa
-from sqlalchemy.sql import table, column
+from alembic import op
+from sqlalchemy.sql import column, table
+
+from bootstrap import conf
 
 
 def get_tables():

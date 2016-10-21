@@ -1,12 +1,13 @@
 import html
-import urllib
 import logging
-import feedparser
+import urllib
 from copy import deepcopy
-from bootstrap import conf
+
+import feedparser
 from bs4 import BeautifulSoup, SoupStrainer
 
-from lib.utils import try_get_icon_url, rebuild_url, jarr_get
+from bootstrap import conf
+from lib.utils import jarr_get, rebuild_url, try_get_icon_url
 
 logger = logging.getLogger(__name__)
 logging.captureWarnings(True)

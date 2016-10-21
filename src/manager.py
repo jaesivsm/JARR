@@ -2,13 +2,14 @@
 # -*- coding: utf-8 -*-
 import logging
 from datetime import datetime, timedelta
-from flask_script import Manager
-from flask_migrate import Migrate, MigrateCommand
 
-from bootstrap import application, db, conf
+from flask_migrate import Migrate, MigrateCommand
+from flask_script import Manager
+
 import web.models
-from web.controllers import FeedController, UserController
+from bootstrap import application, conf, db
 from scripts.probes import ArticleProbe, FeedProbe
+from web.controllers import FeedController, UserController
 
 logger = logging.getLogger(__name__)
 Migrate(application, db)

@@ -1,9 +1,10 @@
 from io import BytesIO
+
 from mock import patch
+
 from tests.base import JarrFlaskCommon
-from web.controllers import (UserController, CategoryController,
-                             FeedController,
-                             ClusterController, ArticleController)
+from web.controllers import (ArticleController, CategoryController,
+                             ClusterController, FeedController, UserController)
 
 
 class BaseUiTest(JarrFlaskCommon):

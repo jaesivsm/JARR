@@ -1,8 +1,9 @@
 import re
 from datetime import datetime
-from sqlalchemy import Column, String, Boolean, Integer, DateTime
-from sqlalchemy.orm import validates, relationship
+
 from flask_login import UserMixin
+from sqlalchemy import Boolean, Column, DateTime, Integer, String
+from sqlalchemy.orm import relationship, validates
 
 from bootstrap import db
 from web.models.right_mixin import RightMixin

@@ -1,5 +1,5 @@
-from tests.base import JarrFlaskCommon
 from tests.api.common import ApiCommon
+from tests.base import JarrFlaskCommon
 from web.controllers import UserController
 
 

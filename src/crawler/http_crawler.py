@@ -12,18 +12,20 @@ JarrUpdater.callback
     to create the missing entries
 """
 
-import time
 import json
 import logging
-import feedparser
-from bootstrap import conf
-from time import strftime, gmtime
+import time
+from concurrent.futures import ThreadPoolExecutor, wait
 from datetime import datetime, timedelta
-from concurrent.futures import wait, ThreadPoolExecutor
+from time import gmtime, strftime
+
+import feedparser
 from requests_futures.sessions import FuturesSession
-from lib.utils import default_handler, to_hash
-from lib.feed_utils import construct_feed_from, is_parsing_ok
+
+from bootstrap import conf
 from lib.article_utils import construct_article, get_skip_and_ids
+from lib.feed_utils import construct_feed_from, is_parsing_ok
+from lib.utils import default_handler, to_hash
 
 logger = logging.getLogger(__name__)
 logging.captureWarnings(True)

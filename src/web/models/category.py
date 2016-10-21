@@ -1,6 +1,6 @@
-from sqlalchemy import (Index, Column, ForeignKey,
-                        Integer, String, Boolean)
+from sqlalchemy import Boolean, Column, ForeignKey, Index, Integer, String
 from sqlalchemy.orm import relationship
+
 from bootstrap import db
 from web.models.right_mixin import RightMixin
 

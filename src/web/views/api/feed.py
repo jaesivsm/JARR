@@ -1,14 +1,11 @@
-from bootstrap import conf
 from flask import current_app
 from flask_restful import Api
 
+from bootstrap import conf
+from web.controllers.feed import DEFAULT_LIMIT, FeedController
+from web.views.api.common import (PyAggAbstractResource, PyAggResourceExisting,
+                                  PyAggResourceMulti, PyAggResourceNew)
 from web.views.common import api_permission
-from web.controllers.feed import FeedController, DEFAULT_LIMIT
-
-from web.views.api.common import PyAggAbstractResource, \
-                                 PyAggResourceNew, \
-                                 PyAggResourceExisting, \
-                                 PyAggResourceMulti
 
 
 class FeedNewAPI(PyAggResourceNew):

@@ -1,7 +1,14 @@
 import logging
-from bootstrap import set_logging
+
 from alembic import context
+# add your model's MetaData object here
+# for 'autogenerate' support
+# from myapp import mymodel
+# target_metadata = mymodel.Base.metadata
+from flask import current_app
 from sqlalchemy import engine_from_config, pool
+
+from bootstrap import set_logging
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -14,11 +21,6 @@ set_logging(modules=('root', 'sqlalchemy'), log_format=log_format,
             log_level=logging.WARNING)
 set_logging(modules=('alembic'), log_format=log_format)
 
-# add your model's MetaData object here
-# for 'autogenerate' support
-# from myapp import mymodel
-# target_metadata = mymodel.Base.metadata
-from flask import current_app
 config.set_main_option('sqlalchemy.url',
         current_app.config.get('SQLALCHEMY_DATABASE_URI'))
 target_metadata = current_app.extensions['migrate'].db.metadata

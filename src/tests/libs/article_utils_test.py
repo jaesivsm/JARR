@@ -1,7 +1,9 @@
-import unittest
 import json
+import unittest
+
 from mock import patch
 from requests.exceptions import MissingSchema
+
 from lib.article_utils import construct_article
 
 

@@ -1,7 +1,9 @@
 import json
+
 from mock import patch
+
 from tests.base import JarrFlaskCommon
-from web.controllers import UserController, FeedController
+from web.controllers import FeedController, UserController
 
 
 class BaseUiTest(JarrFlaskCommon):

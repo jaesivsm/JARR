@@ -1,14 +1,13 @@
 import logging
+
+from flask import Blueprint, flash, redirect, render_template, request, url_for
+from flask_babel import gettext
+from flask_login import current_user, login_required
 from werkzeug.exceptions import BadRequest
 
-from flask import Blueprint, render_template, flash, \
-                  redirect, request, url_for
-from flask_babel import gettext
-from flask_login import login_required, current_user
-
-from web.lib.view_utils import etag_match
 from lib.feed_utils import construct_feed_from
-from web.controllers import FeedController, ClusterController
+from web.controllers import ClusterController, FeedController
+from web.lib.view_utils import etag_match
 
 logger = logging.getLogger(__name__)
 feeds_bp = Blueprint('feeds', __name__, url_prefix='/feeds')

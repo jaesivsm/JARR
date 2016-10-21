@@ -6,7 +6,7 @@
 
 import logging
 from collections import Counter
-from urllib.parse import urlparse, urljoin
+from urllib.parse import urljoin, urlparse
 
 import sqlalchemy
 from flask import request

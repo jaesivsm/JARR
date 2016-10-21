@@ -1,15 +1,17 @@
 import logging
 from datetime import timedelta
-from bootstrap import db, SQLITE_ENGINE
 
-from sqlalchemy import func, Integer, and_
-from sqlalchemy.orm import aliased
-from sqlalchemy.sql import select, exists
+from sqlalchemy import Integer, and_, func
 from sqlalchemy.dialects.postgres import ARRAY
+from sqlalchemy.orm import aliased
+from sqlalchemy.sql import exists, select
 from werkzeug.exceptions import NotFound
-from .abstract import AbstractController
-from web.models import Cluster, Article
+
+from bootstrap import SQLITE_ENGINE, db
 from web.controllers.article import ArticleController
+from web.models import Article, Cluster
+
+from .abstract import AbstractController
 
 logger = logging.getLogger(__name__)
 

@@ -1,12 +1,13 @@
-import re
 import html
 import logging
-from enum import Enum
-import dateutil.parser
-from urllib.parse import urlsplit, urlunsplit, SplitResult
-from requests.exceptions import MissingSchema
+import re
 from datetime import datetime, timezone
+from enum import Enum
+from urllib.parse import SplitResult, urlsplit, urlunsplit
+
+import dateutil.parser
 from bs4 import BeautifulSoup, SoupStrainer
+from requests.exceptions import MissingSchema
 
 from bootstrap import conf
 from lib.utils import jarr_get

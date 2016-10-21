@@ -1,9 +1,11 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
 import calendar
+
 from flask import request
 from flask_babel import Babel
-from bootstrap import conf, application
+
+from bootstrap import application, conf
 
 if conf.ON_HEROKU:
     from flask_sslify import SSLify

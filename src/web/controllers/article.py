@@ -1,14 +1,16 @@
 import logging
-import sqlalchemy
-from sqlalchemy import func
 from collections import Counter
 from datetime import datetime, timedelta
 
+import sqlalchemy
+from sqlalchemy import func
+
 from bootstrap import db
-from .abstract import AbstractController
-from web.controllers import CategoryController, FeedController
-from web.models import User, Article
 from lib.article_utils import process_filters
+from web.controllers import CategoryController, FeedController
+from web.models import Article, User
+
+from .abstract import AbstractController
 
 logger = logging.getLogger(__name__)
 

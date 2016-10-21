@@ -12,8 +12,9 @@ down_revision = 'a7f62d50d366'
 branch_labels = None
 depends_on = None
 
-from alembic import op
 import sqlalchemy as sa
+from alembic import op
+
 from web.models.article import Article
 
 

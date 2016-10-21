@@ -1,6 +1,7 @@
-from bootstrap import db
 from sqlalchemy import Column, String
 from sqlalchemy.orm import relationship
+
+from bootstrap import db
 
 
 class Icon(db.Model):

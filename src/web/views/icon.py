@@ -1,5 +1,7 @@
 import base64
+
 from flask import Blueprint, Response, request
+
 from web.controllers import IconController
 from web.lib.view_utils import etag_match
 

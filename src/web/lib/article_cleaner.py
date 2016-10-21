@@ -1,5 +1,7 @@
-from urllib.parse import unquote, urlparse, urlunparse, ParseResult
+from urllib.parse import ParseResult, unquote, urlparse, urlunparse
+
 from bs4 import BeautifulSoup
+
 from bootstrap import is_secure_served
 
 HTTPS_IFRAME_DOMAINS = ('vimeo.com', 'youtube.com', 'youtu.be')

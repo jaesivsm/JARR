@@ -3,13 +3,14 @@
 
 # required imports and code exection for basic functionning
 
-import os
 import logging
+import os
 from urllib.parse import urlparse
+
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
-from lib.conf_handling import ConfObject
 
+from lib.conf_handling import ConfObject
 
 conf = ConfObject()
 # handling on the fly migration to new conf style

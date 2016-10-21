@@ -1,8 +1,10 @@
 from datetime import datetime
-from sqlalchemy import (Column, Index, ForeignKey,
-                        Integer, String, Boolean, DateTime)
-from sqlalchemy.orm import relationship
+
+from sqlalchemy import (Boolean, Column, DateTime, ForeignKey, Index, Integer,
+                        String)
 from sqlalchemy.ext.associationproxy import association_proxy
+from sqlalchemy.orm import relationship
+
 from bootstrap import db
 from web.models.right_mixin import RightMixin
 

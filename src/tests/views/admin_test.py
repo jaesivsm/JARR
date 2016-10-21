@@ -1,6 +1,7 @@
+from flask_principal import PermissionDenied
+
 from tests.base import JarrFlaskCommon
 from web.controllers import UserController
-from flask_principal import PermissionDenied
 
 
 class BaseUiTest(JarrFlaskCommon):
@@ -79,4 +80,3 @@ class BaseUiTest(JarrFlaskCommon):
         self.assertEquals(302, resp.status_code)
         self.assertFalse(self.uctrl.get(id=self.user.id).is_active)
         self.logout()
-

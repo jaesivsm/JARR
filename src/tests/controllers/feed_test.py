@@ -1,6 +1,6 @@
 from tests.base import BaseJarrTest
-from web.controllers import (UserController, FeedController,
-                             ArticleController, ClusterController)
+from web.controllers import (ArticleController, ClusterController,
+                             FeedController, UserController)
 
 
 class FeedControllerTest(BaseJarrTest):

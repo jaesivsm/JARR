@@ -3,8 +3,8 @@ from flask_restful import Api
 
 from bootstrap import conf
 from web.controllers import ClusterController
-from web.views.api.common import (
-        PyAggResourceNew, PyAggResourceExisting, PyAggResourceMulti)
+from web.views.api.common import (PyAggResourceExisting, PyAggResourceMulti,
+                                  PyAggResourceNew)
 
 
 class ClusterNewAPI(PyAggResourceNew):

@@ -1,14 +1,14 @@
 import logging
-from sqlalchemy import desc
 from datetime import datetime
-from flask import (Blueprint, render_template, redirect,
-                   flash, url_for, request)
-from flask_babel import gettext, format_timedelta
-from flask_login import login_required, current_user
+
+from flask import Blueprint, flash, redirect, render_template, request, url_for
+from flask_babel import format_timedelta, gettext
+from flask_login import current_user, login_required
+from sqlalchemy import desc
 
 from lib.utils import redirect_url
+from web.controllers import ClusterController, FeedController, UserController
 from web.views.common import admin_permission
-from web.controllers import UserController, FeedController, ClusterController
 
 logger = logging.getLogger(__name__)
 admin_bp = Blueprint('admin', __name__, url_prefix='/admin')

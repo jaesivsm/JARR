@@ -1,7 +1,9 @@
 import base64
+
 from bootstrap import db
 from lib.utils import jarr_get
 from web.models import Icon
+
 from .abstract import AbstractController
 
 

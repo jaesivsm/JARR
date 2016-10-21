@@ -4,14 +4,16 @@ os.environ['JARR_TESTING'] = 'true'
 import json
 import logging
 import unittest
-from os import path
 from base64 import b64encode
-from runserver import application
-from tests.fixtures.filler import populate_db, reset_db
+from os import path
+
 from flask_login import login_user, logout_user
 from werkzeug.exceptions import NotFound
 
 from bootstrap import conf
+from runserver import application
+from tests.fixtures.filler import populate_db, reset_db
+
 
 logger = logging.getLogger('web')
 

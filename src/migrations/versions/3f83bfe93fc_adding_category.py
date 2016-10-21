@@ -9,9 +9,10 @@ Create Date: 2015-09-01 14:15:04.212563
 revision = '3f83bfe93fc'
 down_revision = '25ca960a207'
 
-from bootstrap import conf
-from alembic import op
 import sqlalchemy as sa
+from alembic import op
+
+from bootstrap import conf
 
 
 def upgrade():

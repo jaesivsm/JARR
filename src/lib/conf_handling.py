@@ -1,8 +1,8 @@
-import os
 import json
-import random
 import logging
-from os.path import abspath, join, dirname
+import os
+import random
+from os.path import abspath, dirname, join
 
 logger = logging.getLogger(__name__)
 ROOT = abspath(join(dirname(globals()['__file__']), '../../..'))

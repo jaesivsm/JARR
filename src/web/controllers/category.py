@@ -1,5 +1,6 @@
-from .abstract import AbstractController
 from web.models import Category
+
+from .abstract import AbstractController
 
 
 class CategoryController(AbstractController):

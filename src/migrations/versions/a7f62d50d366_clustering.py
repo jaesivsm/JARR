@@ -13,9 +13,11 @@ branch_labels = None
 depends_on = None
 
 from datetime import datetime
-from bootstrap import SQLITE_ENGINE
-from alembic import op
+
 import sqlalchemy as sa
+from alembic import op
+
+from bootstrap import SQLITE_ENGINE
 
 
 def upgrade():

@@ -1,11 +1,13 @@
-import pytz
-from functools import wraps
 from datetime import datetime
-from flask import request, Response, make_response, get_flashed_messages
-from flask_babel import get_locale
+from functools import wraps
+
+import pytz
 from babel.dates import format_datetime, format_timedelta
-from web.views.common import jsonify
+from flask import Response, get_flashed_messages, make_response, request
+from flask_babel import get_locale
+
 from lib.utils import to_hash
+from web.views.common import jsonify
 
 ACCEPTED_LEVELS = {'success', 'info', 'warning', 'error'}
 

@@ -1,11 +1,13 @@
+import logging
 import re
 import types
 import urllib
-import logging
-import requests
 from hashlib import md5
-from bootstrap import conf
+
+import requests
 from flask import request, url_for
+
+from bootstrap import conf
 
 logger = logging.getLogger(__name__)
 

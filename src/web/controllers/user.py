@@ -1,7 +1,10 @@
 import logging
-from werkzeug import generate_password_hash, check_password_hash
-from .abstract import AbstractController
+
+from werkzeug import check_password_hash, generate_password_hash
+
 from web.models import User
+
+from .abstract import AbstractController
 
 logger = logging.getLogger(__name__)
 

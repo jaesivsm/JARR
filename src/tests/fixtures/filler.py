@@ -1,7 +1,8 @@
 from datetime import datetime, timedelta
+
 from manager import db_create, db_empty
-from web.controllers import UserController, CategoryController, \
-                            FeedController, ArticleController
+from web.controllers import (ArticleController, CategoryController,
+                             FeedController, UserController)
 
 
 def populate_db():

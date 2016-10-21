@@ -1,12 +1,13 @@
 import logging
-from sqlalchemy import and_
-from sqlalchemy.sql import select, update, delete
 from datetime import datetime, timedelta
 
-from bootstrap import db, conf, SQLITE_ENGINE
+from sqlalchemy import and_
+from sqlalchemy.sql import delete, select, update
+
+from bootstrap import SQLITE_ENGINE, conf, db
 from web.controllers.abstract import AbstractController
 from web.controllers.icon import IconController
-from web.models import User, Feed, Article, Cluster
+from web.models import Article, Cluster, Feed, User
 
 logger = logging.getLogger(__name__)
 DEFAULT_LIMIT = 5

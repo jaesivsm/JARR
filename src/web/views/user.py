@@ -1,20 +1,19 @@
-import opml
 import random
 from datetime import datetime
-from werkzeug.exceptions import NotFound, Forbidden
-from flask import (Blueprint, render_template, redirect,
-                   flash, url_for, request, make_response)
-from flask_principal import Permission, UserNeed
+
+import opml
+from flask import (Blueprint, flash, make_response, redirect, render_template,
+                   request, url_for)
 from flask_babel import gettext
 from flask_login import current_user, login_required, logout_user
+from flask_principal import Permission, UserNeed
+from werkzeug.exceptions import Forbidden, NotFound
 
 from bootstrap import conf
 from lib import emails
+from web.controllers import CategoryController, FeedController, UserController
+from web.forms import PasswordModForm, ProfileForm, RecoverPasswordForm
 from web.views.common import admin_permission, login_user_bundle
-from web.controllers import (UserController, CategoryController,
-                             FeedController)
-
-from web.forms import ProfileForm, PasswordModForm, RecoverPasswordForm
 
 users_bp = Blueprint('users', __name__, url_prefix='/users')
 user_bp = Blueprint('user', __name__, url_prefix='/user')

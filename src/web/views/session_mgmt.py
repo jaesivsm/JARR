@@ -1,21 +1,20 @@
 import json
 import logging
 
-from werkzeug.exceptions import NotFound
-from flask import (render_template, flash, session, request,
-                   url_for, redirect, current_app)
+from flask import (current_app, flash, redirect, render_template, request,
+                   session, url_for)
 from flask_babel import gettext
-from flask_login import LoginManager, logout_user, \
-                        login_required, current_user
-from flask_principal import (Principal, AnonymousIdentity, UserNeed,
+from flask_login import LoginManager, current_user, login_required, logout_user
+from flask_principal import (AnonymousIdentity, Principal, UserNeed,
                              identity_changed, identity_loaded,
                              session_identity_loader)
+from rauth import OAuth1Service, OAuth2Service
+from werkzeug.exceptions import NotFound
 
 from bootstrap import conf
-from web.views.common import admin_role, api_role, login_user_bundle
 from web.controllers import UserController
-from web.forms import SignupForm, SigninForm
-from rauth import OAuth1Service, OAuth2Service
+from web.forms import SigninForm, SignupForm
+from web.views.common import admin_role, api_role, login_user_bundle
 
 Principal(current_app)
 # Create a permission with a single Need, in this case a RoleNeed.
