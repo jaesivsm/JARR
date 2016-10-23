@@ -133,7 +133,7 @@ JarrNavBar = React.createClass({
         var datas = MenuStore.getAll();
         this.setState({is_admin: datas.is_admin,
                        crawling_method: datas.crawling_method});
-    },
+    }
 });
 
 module.exports = JarrNavBar;

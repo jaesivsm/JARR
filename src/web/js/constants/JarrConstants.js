@@ -11,5 +11,5 @@ module.exports = keyMirror({
         LOAD_PARENT: null, // load a feed or a category in the right panel
         LOAD_CLUSTER: null,  // load a single article in right panel
         LOAD_ARTICLE: null,  // load an article from the store
-        MARK_ALL_AS_READ: null,
+        MARK_ALL_AS_READ: null
 });

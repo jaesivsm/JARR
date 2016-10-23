@@ -50,7 +50,7 @@ var RightPanelActions = {
     putObj: function(id, obj_type, fields) {
         function callback() {
             MenuActions.reload();
-            if('title' in fields && obj_type == 'feed') {
+            if('title' in fields && obj_type === 'feed') {
                 MiddlePanelActions.reload();
             }
         }
@@ -59,17 +59,17 @@ var RightPanelActions = {
     delObj: function(id, obj_type, fields) {
         var future_active_type;
         var future_active_id = 0;
-        if(obj_type == 'feed') {
+        if(obj_type === 'feed') {
             future_active_type = 'category_id';
             future_active_id = MenuStore.feeds[id].category_id;
         }
         function callback() {
             var cmd;
             var reload_callback;
-            if(obj_type == 'feed') {
+            if(obj_type === 'feed') {
                 cmd = 'set_filter';
                 reload_callback = MiddlePanelActions.setCategoryFilter;
-            } else if (obj_type == 'category') {
+            } else if (obj_type === 'category') {
                 cmd = 'set_filter';
                 reload_callback = MiddlePanelActions.removeParentFilter;
             }
@@ -81,7 +81,7 @@ var RightPanelActions = {
         this._apiReq('PUT', feed_id, 'feed', {error_count: 0, last_error: ''},
                      MenuActions.reload);
 
-    },
+    }
 };
 
 module.exports = RightPanelActions;

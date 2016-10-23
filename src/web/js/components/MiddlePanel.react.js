@@ -24,7 +24,7 @@ var TableLine = React.createClass({
                 read: React.PropTypes.bool.isRequired,
                 selected: React.PropTypes.bool.isRequired,
                 liked: React.PropTypes.bool.isRequired,
-                feeds_id: React.PropTypes.array.isRequired,
+                feeds_id: React.PropTypes.array.isRequired
     },
     getInitialState: function() {
         return {read: this.props.read, liked: this.props.liked,
@@ -85,14 +85,14 @@ var TableLine = React.createClass({
     },
     stopPropagation: function(evnt) {
         evnt.stopPropagation();
-    },
+    }
 });
 
 var MiddlePanelSearchRow = React.createClass({
     getInitialState: function() {
         return {query: MiddlePanelStore.query,
                 search_title: MiddlePanelStore.search_title,
-                search_content: MiddlePanelStore.search_content,
+                search_content: MiddlePanelStore.search_content
         };
     },
     render: function() {
@@ -142,7 +142,7 @@ var MiddlePanelSearchRow = React.createClass({
         if(evnt) {
             evnt.preventDefault();
         }
-    },
+    }
 });
 
 var MiddlePanelParentFilterRow = React.createClass({
@@ -150,7 +150,7 @@ var MiddlePanelParentFilterRow = React.createClass({
         return {id: MenuStore.active_id,
                 type: MenuStore.active_type,
                 title: null,
-                icon_url: null,
+                icon_url: null
         };
     },
     render: function() {
@@ -190,7 +190,7 @@ var MiddlePanelParentFilterRow = React.createClass({
             new_state.title = MenuStore.categories[new_state.id].name;
         }
         this.setState(new_state);
-    },
+    }
 });
 
 var MiddlePanelFilter = React.createClass({
@@ -266,7 +266,7 @@ var MiddlePanelFilter = React.createClass({
                 }
             }.bind(this)
         );
-    },
+    }
 });
 
 var ClusterList = React.createClass({
@@ -307,7 +307,7 @@ var ClusterList = React.createClass({
     _onChange: function() {
         this.setState({filter: MiddlePanelStore.filter,
                        clusters: MiddlePanelStore.getClusters()});
-    },
+    }
 });
 
 var MiddlePanel = React.createClass({
@@ -319,7 +319,7 @@ var MiddlePanel = React.createClass({
                     <ClusterList />
                 </Col>
         );
-    },
+    }
 });
 
 module.exports = MiddlePanel;

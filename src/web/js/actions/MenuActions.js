@@ -52,7 +52,7 @@ var MenuActions = {
             type: ActionTypes.TOGGLE_MENU_FOLD,
             all_folded: all_folded,
         });
-    },
+    }
 };
 
 module.exports = MenuActions;

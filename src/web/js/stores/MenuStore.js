@@ -58,7 +58,7 @@ var MenuStore = assign({}, EventEmitter.prototype, {
     },
     removeChangeListener: function(callback) {
         this.removeListener(CHANGE_EVENT, callback);
-    },
+    }
 });
 
 
@@ -101,7 +101,7 @@ MenuStore.dispatchToken = JarrDispatcher.register(function(action) {
                             && MenuStore.active_id == feed_id)
                             || (MenuStore.active_type == 'category_id'
                                 && MenuStore.active_id == cat_id)
-                            || (MenuStore.active_type == null)) {
+                            || (MenuStore.active_type === null)) {
                         MenuStore.feeds[feed_id].unread = new_unread[feed_id];
                         MenuStore.categories[cat_id].unread -= old_unread;
                         MenuStore.categories[cat_id].unread += new_unread[feed_id];

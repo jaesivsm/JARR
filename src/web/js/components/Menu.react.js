@@ -15,7 +15,7 @@ var FeedItem = React.createClass({
                 unread: React.PropTypes.number.isRequired,
                 error_count: React.PropTypes.number.isRequired,
                 icon_url: React.PropTypes.string,
-                active: React.PropTypes.bool.isRequired,
+                active: React.PropTypes.bool.isRequired
     },
     render: function() {
         var icon = null;
@@ -50,7 +50,7 @@ var FeedItem = React.createClass({
     // filtering on said feed
     handleClick: function() {
         MiddlePanelActions.setFeedFilter(this.props.feed_id);
-    },
+    }
 });
 
 var Category = React.createClass({
@@ -81,7 +81,7 @@ var Category = React.createClass({
                 MiddlePanelActions.removeParentFilter();
             }
         }
-    },
+    }
 });
 
 var CategoryGroup = React.createClass({
@@ -92,7 +92,7 @@ var CategoryGroup = React.createClass({
                 name: React.PropTypes.string.isRequired,
                 feeds: React.PropTypes.array.isRequired,
                 unread: React.PropTypes.number.isRequired,
-                folded: React.PropTypes.bool,
+                folded: React.PropTypes.bool
     },
     getInitialState: function() {
         return {folded: false};
@@ -156,7 +156,7 @@ var CategoryGroup = React.createClass({
     toggleFolding: function(evnt) {
         this.setState({folded: !this.state.folded});
         evnt.stopPropagation();
-    },
+    }
 });
 
 var MenuFilter = React.createClass({
@@ -227,7 +227,7 @@ var MenuFilter = React.createClass({
         this.setState({allFolded: !this.state.allFolded}, function() {
             MenuActions.toggleAllFolding(this.state.allFolded);
         }.bind(this));
-    },
+    }
 });
 
 var Menu = React.createClass({
@@ -288,7 +288,7 @@ var Menu = React.createClass({
                 } else if (arg.split('=')[0] == 'at' && arg.split('=')[1] == 'f') {
                     setFilterFunc = MiddlePanelActions.setFeedFilter;
                 } else if (arg.split('=')[0] == 'ai') {
-                    parent_id = parseInt(arg.split('=')[1]);
+                    parent_id = parseInt(arg.split('=')[1], 10);
                 }
             });
         }
@@ -307,7 +307,7 @@ var Menu = React.createClass({
                        active_type: datas.active_type,
                        active_id: datas.active_id,
                        all_folded: datas.all_folded});
-    },
+    }
 });
 
 module.exports = Menu;

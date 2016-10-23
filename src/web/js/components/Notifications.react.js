@@ -10,14 +10,14 @@ var Notifications = React.createClass({
                 message: notif.message,
                 level: notif.level,
                 autoDismiss: 30,
-                onRemove: this.removeNotification,
+                onRemove: this.removeNotification
         });
     },
     removeNotification: function(notif) {
         for(var idx in NotificationsStore.notifs) {
-            if(NotificationsStore.notifs[idx].read == false
-                    && NotificationsStore.notifs[idx].level == notif.level
-                    && NotificationsStore.notifs[idx].message == notif.message) {
+            if(NotificationsStore.notifs[idx].read === false
+                    && NotificationsStore.notifs[idx].level === notif.level
+                    && NotificationsStore.notifs[idx].message === notif.message) {
                 NotificationsStore.notifs[idx].read = true;
                 break;
             }
@@ -41,7 +41,7 @@ var Notifications = React.createClass({
                 NotificationsStore.notifs[idx].read = true;
             }
         }
-    },
+    }
 });
 
 module.exports = Notifications;

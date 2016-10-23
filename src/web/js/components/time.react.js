@@ -7,7 +7,7 @@ var JarrTime = React.createClass({
         return (<time dateTime={this.props.text} title={this.props.text}>
                     {this.props.stamp}
                 </time>);
-    },
+    }
 });
 
 module.exports = JarrTime;

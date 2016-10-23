@@ -171,7 +171,7 @@ var PanelMixin = {
         this.setState({edit_mode: false}, function() {
             RightPanelActions.putObj(this.props.obj.id, this.obj_type, to_push);
         }.bind(this));
-    },
+    }
 };
 
 var Article = React.createClass({
@@ -180,7 +180,7 @@ var Article = React.createClass({
     isRemovable: function() {return true;},
     fields: [{'title': 'Date', 'type': 'string', 'key': 'date'},
              {'title': 'Original link', 'type': 'link', 'key': 'link'},
-             {'title': 'Tags', 'type': 'list', 'key': 'tags'},
+             {'title': 'Tags', 'type': 'list', 'key': 'tags'}
     ],
     obj_type: 'article',
     getTitle: function() {return this.props.obj.title;},
@@ -212,7 +212,7 @@ var Article = React.createClass({
             RightPanelActions.loadCluster(this.props.obj.cluster_id,
                                           true, true, this.props.obj.id);
         }
-    },
+    }
 });
 
 var Feed = React.createClass({
@@ -228,7 +228,7 @@ var Feed = React.createClass({
              {'title': 'Auto Readability',
               'type': 'bool', 'key': 'readability_auto_parse'},
              {'title': 'Filters', 'type': 'ignore', 'key': 'filters'},
-             {'title': 'Category', 'type': 'ignore', 'key': 'category_id'},
+             {'title': 'Category', 'type': 'ignore', 'key': 'category_id'}
     ],
     getTitle: function() {return this.props.obj.title;},
     getExtraButton: function() {return null;},
@@ -389,7 +389,7 @@ var Feed = React.createClass({
         var obj = this.state.obj;
         obj.filters[index][evnt.target.name] = evnt.target.value;
         this.setState({obj: obj});
-    },
+    }
 });
 
 var Category = React.createClass({
@@ -411,7 +411,7 @@ var Category = React.createClass({
                     {this.getCore()}
                     {this.state.edit_mode?this.getSubmit():null}
                 </div>);
-    },
+    }
 });
 
 var RightPanel = React.createClass({
@@ -477,7 +477,7 @@ var RightPanel = React.createClass({
     },
     _onChange: function() {
         this.setState(RightPanelStore.getAll());
-    },
+    }
 });
 
 module.exports = RightPanel;

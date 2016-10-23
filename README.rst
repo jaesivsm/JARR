@@ -8,6 +8,10 @@ JARR
 .. image:: https://coveralls.io/repos/github/jaesivsm/JARR/badge.svg?branch=develop
     :target: https://coveralls.io/github/jaesivsm/JARR?branch=develop
 
+.. image:: https://codeclimate.com/github/jaesivsm/JARR/badges/gpa.svg
+    :target: https://codeclimate.com/github/jaesivsm/JARR
+    :alt: Code Climate
+
 Presentation
 ------------
 

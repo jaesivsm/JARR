@@ -20,7 +20,7 @@ var MainApp = React.createClass({
                     <Notifications />
                 </div>
        );
-    },
+    }
 });
 
 module.exports = MainApp;

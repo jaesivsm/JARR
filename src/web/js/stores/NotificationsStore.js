@@ -13,10 +13,10 @@ var NotificationsStore = assign({}, EventEmitter.prototype, {
         var count = this.notifs.length;
         for(var idx in notifications) {
             this.notifs.push({
-                    key: parseInt(idx) + count,
+                    key: parseInt(idx, 10) + count,
                     read: false,
                     level: notifications[idx].level,
-                    message: notifications[idx].message,
+                    message: notifications[idx].message
             });
         }
     },
@@ -32,7 +32,7 @@ var NotificationsStore = assign({}, EventEmitter.prototype, {
     },
     removeChangeListener: function(callback) {
         this.removeListener(CHANGE_EVENT, callback);
-    },
+    }
 });
 
 NotificationsStore.dispatchToken = JarrDispatcher.register(function(action) {

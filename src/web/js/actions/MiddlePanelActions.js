@@ -122,7 +122,7 @@ var MiddlePanelActions = {
                     });
                 },
         });
-    },
+    }
 };
 
 module.exports = MiddlePanelActions;
