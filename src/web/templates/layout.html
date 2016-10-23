@@ -105,9 +105,7 @@
     <!-- Bootstrap core JavaScript -->
     <!-- Placed at the end of the document so the pages load faster -->
     <script type="text/javascript" src="{{ url_for("static", filename="js/jquery.js") }}"></script>
-    <script type="text/javascript" src="{{ url_for("static", filename="js/bootstrap.js") }}"></script>
-    <script type="text/javascript" src="{{ url_for("static", filename="js/articles.js") }}"></script>
-    <script type="text/javascript" src="{{ url_for("static", filename="js/feed.js") }}"></script>
+    <script type="text/javascript" src="{{ url_for("static", filename="js/bootstrap.min.js") }}"></script>
     <script type="text/javascript" class="source">
         var filter_ = {% if filter_ %}"{{ filter_ }}"{% else %}undefined{% endif %};
         if (filter_ == undefined) {
