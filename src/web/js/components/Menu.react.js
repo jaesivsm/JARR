@@ -6,26 +6,25 @@ var ButtonGroup = require('react-bootstrap').ButtonGroup;
 var Glyphicon = require('react-bootstrap').Glyphicon;
 
 var MenuStore = require('../stores/MenuStore');
+var IconStore = require('../stores/IconStore');
 var MenuActions = require('../actions/MenuActions');
 var MiddlePanelActions = require('../actions/MiddlePanelActions');
+
+var FeedIcon = require('./icon.react');
 
 var FeedItem = React.createClass({
     propTypes: {feed_id: React.PropTypes.number.isRequired,
                 title: React.PropTypes.string.isRequired,
                 unread: React.PropTypes.number.isRequired,
                 error_count: React.PropTypes.number.isRequired,
-                icon_url: React.PropTypes.string,
-                active: React.PropTypes.bool.isRequired
+                active: React.PropTypes.bool.isRequired,
     },
     render: function() {
-        var icon = null;
         var badge_unread = null;
-        // handling icon, and replacement in case of no-icon
-        if(this.props.icon_url){
-            icon = (<img width="16px" src={this.props.icon_url} />);
-        } else {
-            icon = <Glyphicon glyph="ban-circle" />;
-        }
+        console.log(this.props.title);
+        console.log(this.props.feed_id);
+        console.log(IconStore.getIcon(this.props.feed_id));
+        var icon = <FeedIcon feed_id={this.props.feed_id} />;
         // handling unread badge
         if(this.props.unread){
             badge_unread = <Badge pullRight>{this.props.unread}</Badge>;
@@ -125,8 +124,7 @@ var CategoryGroup = React.createClass({
                 return (<FeedItem key={"f" + feed.id} feed_id={feed.id}
                                 title={feed.title} unread={feed.unread}
                                 error_count={feed.error_count}
-                                active={a_type == 'feed_id' && a_id == feed.id}
-                                icon_url={feed.icon_url} />
+                                active={a_type == 'feed_id' && a_id == feed.id} />
                 );
             });
         } else {
@@ -294,9 +292,11 @@ var Menu = React.createClass({
         }
         MenuActions.reload('set_filter', setFilterFunc, parent_id);
         MenuStore.addChangeListener(this._onChange);
+        IconStore.addChangeListener(this._onChange);
     },
     componentWillUnmount: function() {
         MenuStore.removeChangeListener(this._onChange);
+        IconStore.removeChangeListener(this._onChange);
     },
     _onChange: function() {
         var datas = MenuStore.getAll();

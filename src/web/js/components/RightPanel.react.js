@@ -10,7 +10,10 @@ var ButtonGroup = require('react-bootstrap').ButtonGroup;
 var RightPanelActions = require('../actions/RightPanelActions');
 var RightPanelStore = require('../stores/RightPanelStore');
 var MenuStore = require('../stores/MenuStore');
+var IconStore = require('../stores/IconStore');
 var JarrTime = require('./time.react');
+
+var FeedIcon = require('./icon.react');
 
 var PanelMixin = {
     propTypes: {obj: React.PropTypes.object.isRequired},
@@ -19,8 +22,10 @@ var PanelMixin = {
     },
     getHeader: function() {
         var icon = null;
-        if(this.props.obj.icon_url){
-            icon = (<img width="16px" src={this.props.obj.icon_url} />);
+        if(this.obj_type == 'feed'){
+            icon = <FeedIcon feed_id={this.props.obj.id} />;
+        } else if (this.obj_type == 'article') {
+            icon = <FeedIcon feed_id={this.props.obj.feed_id} />;
         }
         var btn_grp = null;
         if(this.isEditable() || this.isRemovable()) {
@@ -446,8 +451,9 @@ var RightPanel = React.createClass({
                              onSelect={this.loadArticle}>
                             {this.state.cluster.articles.map(function(art) {
                                 var feed = MenuStore.feeds[art.feed_id];
-                                return (<NavItem key={art.id} eventKey={art.id} bsStyle="pills" >
-                                            <img width="16px" src={feed.icon_url} />
+                                return (<NavItem key={art.id} eventKey={art.id}
+                                                 bsStyle="pills" >
+                                            <FeedIcon feed_id={feed.id} />
                                             {feed.title}
                                         </NavItem>);
                             })}
@@ -471,9 +477,11 @@ var RightPanel = React.createClass({
     },
     componentDidMount: function() {
         RightPanelStore.addChangeListener(this._onChange);
+        IconStore.addChangeListener(this._onChange);
     },
     componentWillUnmount: function() {
         RightPanelStore.removeChangeListener(this._onChange);
+        IconStore.removeChangeListener(this._onChange);
     },
     _onChange: function() {
         this.setState(RightPanelStore.getAll());

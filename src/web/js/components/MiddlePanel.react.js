@@ -8,11 +8,13 @@ var ButtonGroup = require('react-bootstrap').ButtonGroup;
 var Glyphicon = require('react-bootstrap').Glyphicon;
 
 var MenuStore = require('../stores/MenuStore');
+var IconStore = require('../stores/IconStore');
 var MiddlePanelStore = require('../stores/MiddlePanelStore');
 var MiddlePanelActions = require('../actions/MiddlePanelActions');
 var RightPanelActions = require('../actions/RightPanelActions');
 
 var JarrTime = require('./time.react');
+var FeedIcon = require('./icon.react');
 
 var TableLine = React.createClass({
     propTypes: {cluster_id: React.PropTypes.number.isRequired,
@@ -36,11 +38,7 @@ var TableLine = React.createClass({
                         onClick={this.openRedirectLink} target="_blank"
                         title={this.props.feed_title}>
                         {this.props.feeds_id.map(function(feed_id) {
-                            var feed = MenuStore.feeds[feed_id];
-                            if(feed && feed.icon_url) {
-                                return <img key={feed_id} width="16px" src={feed.icon_url} />;
-                            }
-                            return <Glyphicon key={feed_id} glyph="ban-circle" />;
+                            return <FeedIcon key={feed_id} feed_id={feed_id} />;
                         })}
                         {this.props.feed_title}
                      </a>);
@@ -147,11 +145,7 @@ var MiddlePanelSearchRow = React.createClass({
 
 var MiddlePanelParentFilterRow = React.createClass({
     getInitialState: function() {
-        return {id: MenuStore.active_id,
-                type: MenuStore.active_type,
-                title: null,
-                icon_url: null
-        };
+        return {id: null, type: null, title: null};
     },
     render: function() {
         var cn;
@@ -159,7 +153,7 @@ var MiddlePanelParentFilterRow = React.createClass({
         var content = "Selected ";
         if (this.state.type == 'feed_id') {
             content += "Feed: " + this.state.title;
-            img = <img width="16px" src={this.state.icon_url} />;
+            img = <FeedIcon key={this.state.id} feed_id={this.state.id} />;
         } else if (this.state.type == 'category_id') {
             content += "Category: " + this.state.title;
         } else {
@@ -175,16 +169,17 @@ var MiddlePanelParentFilterRow = React.createClass({
     },
     componentDidMount: function() {
         MenuStore.addChangeListener(this._onChange);
+        IconStore.addChangeListener(this._onChange);
     },
     componentWillUnmount: function() {
         MenuStore.removeChangeListener(this._onChange);
+        IconStore.removeChangeListener(this._onChange);
     },
     _onChange: function() {
         var new_state = {id: MenuStore.active_id, title: null,
-                         type: MenuStore.active_type, icon_url: null};
+                         type: MenuStore.active_type};
         if (new_state.type == 'feed_id' && new_state.id in MenuStore.feeds) {
             new_state.title = MenuStore.feeds[new_state.id].title;
-            new_state.icon_url = MenuStore.feeds[new_state.id].icon_url;
         } else if (new_state.type == 'category_id'
                    && new_state.id in MenuStore.categories) {
             new_state.title = MenuStore.categories[new_state.id].name;
