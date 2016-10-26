@@ -22,8 +22,7 @@ class FeedsAPI(PyAggResourceMulti):
 
 class FetchableFeedAPI(PyAggAbstractResource):
     controller_cls = FeedController
-    attrs = {'max_error': {'type': int, 'default': conf.FEED_ERROR_MAX},
-             'limit': {'type': int, 'default': DEFAULT_LIMIT},
+    attrs = {'limit': {'type': int, 'default': DEFAULT_LIMIT},
              'refresh_rate': {'type': int, 'default': conf.FEED_REFRESH_RATE}}
 
     @api_permission.require(http_exception=403)

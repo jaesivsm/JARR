@@ -20,8 +20,17 @@ class FeedController(AbstractController):
         from .article import ArticleController
         return ArticleController(self.user_id)
 
-    def list_late(self, delta, max_error=conf.FEED_ERROR_MAX,
-                  limit=DEFAULT_LIMIT):
+    def get_active_feed(self, **filters):
+        filters['error_count__lt'] = conf.FEED_ERROR_MAX
+        query = self.read(enabled=True, **filters)
+        if conf.FEED_STOP_FETCH:
+            last_conn = datetime.utcnow() - timedelta(
+                    days=conf.FEED_STOP_FETCH)
+            return query.join(User).filter(User.is_active.__eq__(True),
+                                           User.last_connection >= last_conn)
+        return query
+
+    def list_late(self, delta, limit=DEFAULT_LIMIT):
         """Will list either late feed (which have been retrieved for the last
         time sooner than now minus the delta (default to 1h)) or the feed with
         articles recentrly created (later than now minus a quarter the delta
@@ -34,32 +43,17 @@ class FeedController(AbstractController):
         Feeds of inactive (not connected for more than a month) or manually
         desactivated users are ignored.
         """
-        tenth = delta / 10
         feed_last_retrieved = datetime.utcnow() - delta
-        art_last_retr = datetime.utcnow() - (2 * tenth)
-        last_conn_max = datetime.utcnow() - timedelta(days=30)
-        min_wait = datetime.utcnow() - tenth
-        ac = self.__get_art_contr()
-        new_art_feed = (ac.read(retrieved_date__gt=art_last_retr,
-                                retrieved_date__lt=min_wait)
-                          .with_entities(ac._db_cls.feed_id)
-                          .distinct())
-
-        query = (self.read(error_count__lt=max_error, enabled=True,
-                           __or__=[{'last_retrieved__lt': feed_last_retrieved},
-                                   {'last_retrieved__lt': min_wait,
-                                    'id__in': new_art_feed}])
-                     .join(User).filter(User.is_active.__eq__(True),
-                                        User.last_connection >= last_conn_max)
-                     .order_by(Feed.last_retrieved))
+        query = self.get_active_feed(last_retrieved__lt=feed_last_retrieved)\
+                     .order_by(Feed.last_retrieved)
         if limit:
             query = query.limit(limit)
         yield from query
 
-    def list_fetchable(self, max_error=conf.FEED_ERROR_MAX,
-            limit=DEFAULT_LIMIT, refresh_rate=conf.FEED_REFRESH_RATE):
+    def list_fetchable(self, limit=DEFAULT_LIMIT,
+                       refresh_rate=conf.FEED_REFRESH_RATE):
         now, delta = datetime.utcnow(), timedelta(minutes=refresh_rate)
-        feeds = list(self.list_late(delta, max_error, limit))
+        feeds = list(self.list_late(delta, limit))
         if feeds:
             self.update({'id__in': [feed.id for feed in feeds]},
                         {'last_retrieved': now})

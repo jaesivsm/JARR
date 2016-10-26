@@ -104,6 +104,10 @@ SECTIONS = (
              'type': int, 'default': 3, 'edit': False},
             {'key': 'REFRESH_RATE',
              'default': 60, 'type': int, 'edit': False},
+            {'key': 'STOP_FETCH', 'default': 30, 'type': int, 'edit': False,
+             'ask': "The number of days after which, if a user didn't connect "
+                    "we'll stop fetching his feeds, (0 will desactivate this "
+                    "feature)"},
         ]},
         {'prefix': 'WEBSERVER', 'edit': False, 'options': [
             {'key': 'HOST', 'default': '0.0.0.0', 'edit': False},

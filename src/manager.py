@@ -7,8 +7,9 @@ from flask_migrate import Migrate, MigrateCommand
 from flask_script import Manager
 
 import web.models
+
 from bootstrap import application, conf, db
-from scripts.probes import ArticleProbe, FeedProbe
+from scripts.probes import ArticleProbe, FeedProbe, FeedLatenessProbe
 from web.controllers import FeedController, UserController
 
 logger = logging.getLogger(__name__)
@@ -52,10 +53,10 @@ def reset_feeds():
 
     feeds = list(fcontr.read().join(User).filter(User.is_active.__eq__(True),
                                     User.last_connection >= last_conn_max)
-                        .with_entities(fcontr._db_cls.user_id)
+                        .with_entities(fcontr._db_cls.id)
                         .distinct())
 
-    step = timedelta(seconds=3600 / fcontr.read().count())
+    step = timedelta(seconds=3600 / len(feeds))
     for i, feed in enumerate(feeds):
         fcontr.update({'id': feed[0]},
                 {'etag': '', 'last_modified': '',
@@ -64,6 +65,7 @@ def reset_feeds():
 
 manager.add_command('probe_articles', ArticleProbe())
 manager.add_command('probe_feeds', FeedProbe())
+manager.add_command('probe_feeds_lateness', FeedLatenessProbe())
 
 if __name__ == '__main__':  # pragma: no cover
     manager.run()
