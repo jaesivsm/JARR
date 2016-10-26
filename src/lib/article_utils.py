@@ -52,8 +52,8 @@ def construct_article(entry, feed, fields=None, fetch=True):
         push_in_article('title', title)
         if 'content' in article:
             push_in_article('content', clean_urls(article['content'], link))
-    push_in_article('tags', [tag.get('term').strip()
-                             for tag in entry.get('tags', [])])
+    push_in_article('tags', {tag.get('term').strip()
+                             for tag in entry.get('tags', [])})
     return article
 
 
