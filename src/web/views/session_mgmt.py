@@ -277,7 +277,8 @@ def oauth_callback(provider):  # pragma: no cover
         return redirect(url_for('home'))
     elif not user:
         user = ucontr.create(**{'%s_identity' % provider: social_id,
-                                'login': '%s_%s' % (provider, username),
+                                'login': '%s_%s' % (provider,
+                                                    username or social_id),
                                 'email': email})
     login_user_bundle(user)
     return redirect(url_for('home'))
