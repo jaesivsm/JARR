@@ -28,11 +28,15 @@ def _escape_title_and_desc(feed):
 
 def _browse_feedparser_feed(feed, check, default=None):
     if not feed.get('feed', {}).get('links'):
-        return default
+        yield default
+        return
+    returned = False
     for link in feed['feed']['links']:
         if check(link):
-            return link['href']
-    return default
+            returned = True
+            yield link['href']
+    if not returned:
+        yield default
 
 
 def get_parsed_feed(url):
@@ -66,9 +70,9 @@ def construct_feed_from(url=None, fp_parsed=None, feed=None):
         feed['link'] = url
     else:
         # trying to get link url from data parsed by feedparser
-        feed['link'] = _browse_feedparser_feed(fp_parsed,
+        feed['link'] = next(_browse_feedparser_feed(fp_parsed,
                 lambda link: link['type'] in FEED_MIMETYPES,
-                default=feed.get('link'))
+                default=feed.get('link')))
         if feed['link'] and feed['link'] != url:
             # trying newly got url
             fp_parsed = get_parsed_feed(feed['link'])
@@ -79,9 +83,9 @@ def construct_feed_from(url=None, fp_parsed=None, feed=None):
     if fp_parsed['feed'].get('link'):
         feed['site_link'] = fp_parsed['feed']['link']
     else:
-        site_link = _browse_feedparser_feed(fp_parsed,
+        site_link = next(_browse_feedparser_feed(fp_parsed,
                 lambda link: link['rel'] == 'alternate'
-                        and link['type'] == 'text/html')
+                        and link['type'] == 'text/html'))
         feed['site_link'] = site_link or feed.get('site_link')
         feed['site_link'] = feed['site_link'] or feed.get('link')
 
@@ -103,29 +107,17 @@ def construct_feed_from(url=None, fp_parsed=None, feed=None):
         feed['site_link'] = rebuild_url(feed['site_link'], feed_split)
         site_split = urllib.parse.urlsplit(feed['site_link'])
 
-    if feed.get('icon_url'):
-        feed['icon_url'] = try_get_icon_url(
-                feed['icon_url'], site_split, feed_split)
-        if feed['icon_url'] is None:
-            del feed['icon_url']
-
-    old_icon_url = feed.get('icon_url')
-    feed['icon_url'] = _browse_feedparser_feed(fp_parsed,
-            lambda link: 'icon' in link['rel'])
-    if feed['icon_url'] and feed['icon_url'] != old_icon_url:
-        feed['icon_url'] = try_get_icon_url(feed['icon_url'],
-                site_split, feed_split)
-
-    if not feed['icon_url'] and fp_parsed.get('feed', {}).get('icon'):
-        feed['icon_url'] = try_get_icon_url(fp_parsed['feed']['icon'],
-                site_split, feed_split)
-    if not feed['icon_url'] and fp_parsed.get('feed', {}).get('logo'):
-        feed['icon_url'] = try_get_icon_url(fp_parsed['feed']['logo'],
-                site_split, feed_split)
-    if not feed['icon_url'] and old_icon_url:
-        feed['icon_url'] = old_icon_url
-    elif not feed['icon_url']:
-        del feed['icon_url']
+    new_icon_urls = [fp_parsed.get('feed', {}).get('icon')] \
+                    + list(_browse_feedparser_feed(fp_parsed,
+                           lambda link: 'icon' in link['rel']))
+    if feed.get('icon_url') not in new_icon_urls:
+        for icon_url in new_icon_urls:
+            if not icon_url:
+                continue
+            icon_url = try_get_icon_url(icon_url, site_split, feed_split)
+            if icon_url:
+                feed['icon_url'] = icon_url
+                break
 
     nothing_to_fill = all(bool(feed.get(key))
                           for key in ('link', 'title', 'icon_url'))
