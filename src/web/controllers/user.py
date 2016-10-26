@@ -32,6 +32,7 @@ class UserController(AbstractController):
 
     def delete(self, obj_id):
         from web.controllers import ClusterController, ArticleController
-        ClusterController(self.user_id).update({}, {'main_article_id': None})
-        ArticleController(self.user_id).update({}, {'cluster_id': None})
+        fltr = {'user_id': obj_id}
+        ClusterController(self.user_id).update(fltr, {'main_article_id': None})
+        ArticleController(self.user_id).update(fltr, {'cluster_id': None})
         return super().delete(obj_id)
