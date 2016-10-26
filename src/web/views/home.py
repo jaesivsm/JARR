@@ -142,6 +142,7 @@ def get_cluster(cluster_id, parse=False, article_id=None):
             new_content = clean_urls(new_content, article['link'],
                                      fix_readability=True)
         except Exception as error:
+            error = str(error).split(conf.PLUGINS_READABILITY_KEY)[0]
             flash("Readability failed with %r" % error, "warning")
             article['readability_parsed'] = False
         else:
