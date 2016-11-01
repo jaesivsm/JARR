@@ -29,7 +29,7 @@ def feeds():
 @feed_bp.route('/bookmarklet', methods=['GET', 'POST'])
 @login_required
 def bookmarklet():
-    def check_feeds(link, site_link):
+    def check_feeds(link, site_link=None):
         filters = []
         if link:
             filters.append({'link': link})
@@ -56,9 +56,10 @@ def bookmarklet():
 
     feed = construct_feed_from(url)
 
-    existing_feed = check_feeds(feed.get('link'), feed.get('site_link'))
-    if existing_feed:
-        return redirect(url_for('home', at='f', ai=existing_feed.id))
+    if feed.get('link'):
+        existing_feed = check_feeds(feed.get('link'))
+        if existing_feed:
+            return redirect(url_for('home', at='f', ai=existing_feed.id))
 
     if not feed.get('link'):
         feed['enabled'] = False
