@@ -131,7 +131,7 @@ class ClusterController(AbstractController):
                     .where(and_(art_feed_alias.cluster_id == Cluster.id,
                                 art_feed_alias.user_id == self.user_id,
                                 art_feed_alias.feed_id == feed_id))
-                    .correlate(Cluster))
+                    .correlate(Cluster).limit(1))
             query = query.join(art_feed_alias,
                                and_(art_feed_alias.user_id == self.user_id,
                                     art_feed_alias.cluster_id == Cluster.id))\
@@ -148,7 +148,7 @@ class ClusterController(AbstractController):
                     .where(and_(art_cat_alias.cluster_id == Cluster.id,
                                 art_cat_alias.user_id == self.user_id,
                                 art_cat_alias.category_id == category_id))
-                    .correlate(Cluster))
+                    .correlate(Cluster).limit(1))
             query = query.join(art_cat_alias,
                                and_(art_cat_alias.user_id == self.user_id,
                                     art_cat_alias.cluster_id == Cluster.id))\
