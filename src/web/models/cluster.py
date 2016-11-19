@@ -1,11 +1,10 @@
-from datetime import datetime
-
-from sqlalchemy import (Boolean, Column, DateTime, ForeignKey, Index, Integer,
-                        String)
+from sqlalchemy import Boolean, Column, ForeignKey, Index, Integer, String
 from sqlalchemy.orm import relationship
 
 from bootstrap import db
+from lib.utils import utc_now
 from web.models.article import Article
+from web.models.utc_datetime_type import UTCDateTime
 from web.models.right_mixin import RightMixin
 
 
@@ -15,10 +14,10 @@ class Cluster(db.Model, RightMixin):
     cluster_type = Column(String)
     read = Column(Boolean, default=False)
     liked = Column(Boolean, default=False)
-    created_date = Column(DateTime, default=datetime.utcnow)
+    created_date = Column(UTCDateTime, default=utc_now)
 
     # denorm
-    main_date = Column(DateTime, default=datetime.utcnow)
+    main_date = Column(UTCDateTime, default=utc_now)
     main_feed_title = Column(String)
     main_title = Column(String)
     main_link = Column(String, default=None)

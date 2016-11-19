@@ -1,4 +1,7 @@
 from tests.base import BaseJarrTest
+from datetime import datetime, timedelta, timezone
+from bootstrap import conf
+from lib.utils import utc_now
 from web.controllers import (ArticleController, ClusterController,
                              FeedController, UserController)
 
@@ -67,3 +70,78 @@ class FeedControllerTest(BaseJarrTest):
         self.assertEquals('updated title', feed.title)
         for cluster in feed.clusters:
             self.assertEquals(feed.title, cluster.main_feed_title)
+
+    def assert_late_count(self, count, msg):
+        fctrl = FeedController()
+        self.assertEqual(count, len(list(fctrl.list_late())), msg)
+        self.assertEqual(count, len(fctrl.list_fetchable()), msg)
+
+    def test_fetchable(self):
+        fctrl = FeedController()
+        total = fctrl.read().count()
+        unix = datetime(1970, 1, 1).replace(tzinfo=timezone.utc)
+
+        def assert_in_range(low, val, high):
+            assert low <= val, "%s > %s" % (low.isoformat(), val.isoformat())
+            assert val <= high, "%s > %s" % (val.isoformat(), high.isoformat())
+
+        def reset_all_last_retrieved():
+            last = utc_now() - timedelta(seconds=conf.FEED_MIN_EXPIRES)
+            fctrl.update({}, {'last_retrieved': last})
+
+        count = 0
+        for fd in fctrl.list_late():
+            count += 1
+            self.assertEqual(unix, fd.last_retrieved)
+            self.assertEqual(unix, fd.expires)
+        self.assertEqual(total, count)
+
+        fetchables = fctrl.list_fetchable()
+        now = utc_now()
+        for fd in fetchables:
+            assert_in_range(now - timedelta(seconds=1), fd.last_retrieved, now)
+            self.assertEqual(unix, fd.expires)
+        self.assert_late_count(0,
+                "no late feed to report because all just fetched")
+
+        reset_all_last_retrieved()
+        self.assert_late_count(total,
+                "all last_retr and expires at unix time, all feed to fetch")
+        reset_all_last_retrieved()
+        fctrl.update({}, {'expires': utc_now() - timedelta(seconds=1)})
+        self.assert_late_count(total, "all feed just expired")
+        fctrl.update({}, {'expires': utc_now() + timedelta(seconds=1)})
+        self.assert_late_count(0,
+                "all feed will expire in a second, none are expired")
+
+        reset_all_last_retrieved()
+        fctrl.update({}, {'expires': utc_now() + timedelta(seconds=1)})
+        self.assert_late_count(0,
+                "all feed will expire in a second, none are expired")
+
+    def _test_fetching_anti_herding_mech(self, now):
+        fctrl = FeedController()
+        total = fctrl.read().count()
+        unix = datetime(1970, 1, 1, tzinfo=timezone.utc)
+
+        half = timedelta(seconds=conf.FEED_MIN_EXPIRES / 2)
+        twice = timedelta(seconds=conf.FEED_MIN_EXPIRES * 2)
+
+        fctrl.update({}, {'expires': unix, 'last_retrieved': now + half})
+        self.assert_late_count(0, "all have just been retrieved, none expired")
+        fctrl.update({}, {'expires': unix, 'last_retrieved': now - half})
+        self.assert_late_count(0, "all have just been retrieved, none expired")
+
+        fctrl.update({}, {'expires': unix, 'last_retrieved': now + twice})
+        self.assert_late_count(total,
+                "all retrieved some time ago, all expired")
+        fctrl.update({}, {'expires': unix, 'last_retrieved': now - twice})
+        self.assert_late_count(total,
+                "all retrieved some time ago, all expired")
+
+    def test_fetching_anti_herding_mech_utctimezone(self):
+        self._test_fetching_anti_herding_mech(utc_now())
+
+    def test_fetching_anti_herding_mech_utcplustwelve(self):
+        self._test_fetching_anti_herding_mech(
+                utc_now().astimezone(timezone(timedelta(hours=12))))

@@ -1,16 +1,17 @@
+from datetime import timedelta
 import logging
-from datetime import datetime, timedelta
 
 from sqlalchemy import and_
 from sqlalchemy.sql import delete, select, update
 
+from lib.utils import utc_now
 from bootstrap import SQLITE_ENGINE, conf, db
 from web.controllers.abstract import AbstractController
 from web.controllers.icon import IconController
 from web.models import Article, Cluster, Feed, User
 
 logger = logging.getLogger(__name__)
-DEFAULT_LIMIT = 5
+DEFAULT_LIMIT = 0
 
 
 class FeedController(AbstractController):
@@ -23,14 +24,13 @@ class FeedController(AbstractController):
     def get_active_feed(self, **filters):
         filters['error_count__lt'] = conf.FEED_ERROR_MAX
         query = self.read(enabled=True, **filters)
+        last_conn = utc_now() - timedelta(days=conf.FEED_STOP_FETCH)
         if conf.FEED_STOP_FETCH:
-            last_conn = datetime.utcnow() - timedelta(
-                    days=conf.FEED_STOP_FETCH)
             return query.join(User).filter(User.is_active.__eq__(True),
                                            User.last_connection >= last_conn)
         return query
 
-    def list_late(self, delta, limit=DEFAULT_LIMIT):
+    def list_late(self, limit=DEFAULT_LIMIT):
         """Will list either late feed (which have been retrieved for the last
         time sooner than now minus the delta (default to 1h)) or the feed with
         articles recentrly created (later than now minus a quarter the delta
@@ -43,24 +43,29 @@ class FeedController(AbstractController):
         Feeds of inactive (not connected for more than a month) or manually
         desactivated users are ignored.
         """
-        feed_last_retrieved = datetime.utcnow() - delta
-        query = self.get_active_feed(last_retrieved__lt=feed_last_retrieved)\
-                     .order_by(Feed.last_retrieved)
+        now = utc_now()
+        max_ex = now + timedelta(seconds=conf.FEED_MAX_EXPIRES)
+        min_delta = timedelta(seconds=conf.FEED_MIN_EXPIRES)
+        query = self.get_active_feed().filter(
+                *(self._to_filters(
+                    __or__=[{'last_retrieved__lt': now - min_delta},
+                            {'last_retrieved__gt': now + min_delta}])
+                .union(self._to_filters(
+                    __or__=[{'expires__lt': now},
+                            {'expires__gt': max_ex}])))).order_by(Feed.expires)
         if limit:
             query = query.limit(limit)
         yield from query
 
-    def list_fetchable(self, limit=DEFAULT_LIMIT,
-                       refresh_rate=conf.FEED_REFRESH_RATE):
-        now, delta = datetime.utcnow(), timedelta(minutes=refresh_rate)
-        feeds = list(self.list_late(delta, limit))
+    def list_fetchable(self, limit=DEFAULT_LIMIT):
+        now, feeds = utc_now(), list(self.list_late(limit))
         if feeds:
             self.update({'id__in': [feed.id for feed in feeds]},
                         {'last_retrieved': now})
         return feeds
 
     def get_inactives(self, nb_days):
-        today = datetime.utcnow()
+        today = utc_now()
         inactives = []
         for feed in self.read():
             try:

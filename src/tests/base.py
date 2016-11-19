@@ -11,6 +11,7 @@ from flask_login import login_user, logout_user
 from werkzeug.exceptions import NotFound
 
 from bootstrap import conf
+from lib.utils import default_handler
 from runserver import application
 from tests.fixtures.filler import populate_db, reset_db
 
@@ -69,7 +70,8 @@ class JarrFlaskCommon(BaseJarrTest):
         method = getattr(self.app, method_name)
         kwargs['headers'] = {'Content-Type': 'application/json'}
         if 'data' in kwargs and not isinstance(kwargs['data'], str):
-            kwargs['data'] = json.dumps(kwargs['data'])
+            kwargs['data'] = json.dumps(kwargs['data'],
+                                        default=default_handler)
         if 'user' in kwargs:
             hash_ = bytes('%s:%s' % (kwargs['user'], kwargs['user']), 'utf8')
             hash_ = b64encode(hash_).decode('utf8')

@@ -1,31 +1,34 @@
-from datetime import datetime
+from datetime import datetime, timezone
 
-from sqlalchemy import (Boolean, Column, DateTime, ForeignKey, Index, Integer,
+from sqlalchemy import (Boolean, Column, ForeignKey, Index, Integer,
                         PickleType, String)
 from sqlalchemy.orm import relationship, validates
 
 from bootstrap import db
+from lib.utils import utc_now
+from web.models.utc_datetime_type import UTCDateTime
 from web.models.right_mixin import RightMixin
 
 
+UNIX_START = datetime(1970, 1, 1, tzinfo=timezone.utc)
+
+
 class Feed(db.Model, RightMixin):
-    """
-    Represent a feed.
-    """
     id = Column(Integer, primary_key=True)
     title = Column(String, default="")
     description = Column(String, default="")
     link = Column(String)
     site_link = Column(String, default="")
     enabled = Column(Boolean, default=True)
-    created_date = Column(DateTime, default=datetime.utcnow)
+    created_date = Column(UTCDateTime, default=utc_now)
     filters = Column(PickleType, default=[])
     readability_auto_parse = Column(Boolean, default=False)
 
     # cache handling
     etag = Column(String, default="")
     last_modified = Column(String, default="")
-    last_retrieved = Column(DateTime, default=datetime(1970, 1, 1))
+    last_retrieved = Column(UTCDateTime, default=UNIX_START)
+    expires = Column(UTCDateTime, default=UNIX_START)
 
     # error logging
     last_error = Column(String, default="")
@@ -59,11 +62,11 @@ class Feed(db.Model, RightMixin):
 
     @staticmethod
     def _fields_base_read():
-        return {'id', 'user_id', 'icon_url', 'last_retrieved'}
+        return {'id', 'user_id', 'icon_url', 'last_retrieved', 'expires'}
 
     @staticmethod
     def _fields_api_write():
-        return {'etag', 'last_modified'}
+        return {'etag', 'last_modified', 'expires'}
 
     def __repr__(self):
         return '<Feed %r>' % (self.title)

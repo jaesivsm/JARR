@@ -1,6 +1,7 @@
 import logging
+from lib.utils import utc_now
 from collections import defaultdict
-from datetime import datetime
+from datetime import datetime, timezone
 
 import dateutil.parser
 from sqlalchemy import and_, or_
@@ -10,6 +11,13 @@ from werkzeug.exceptions import Forbidden, NotFound
 from bootstrap import db
 
 logger = logging.getLogger(__name__)
+
+
+def cast_to_utc(dt_obj):
+    dt_obj = dateutil.parser.parse(dt_obj)
+    if not dt_obj.tzinfo:
+        return dt_obj.replace(tzinfo=timezone.utc)
+    return dt_obj
 
 
 class AbstractController:
@@ -163,8 +171,8 @@ class AbstractController:
             if column not in result:
                 continue
             if issubclass(result[column]['type'], datetime):
-                result[column]['default'] = datetime.utcnow()
-                result[column]['type'] = lambda x: dateutil.parser.parse(x)
+                result[column]['default'] = utc_now()
+                result[column]['type'] = cast_to_utc
             elif db_col.default:
                 result[column]['default'] = db_col.default.arg
         result.update(cls._extra_columns(role, right))

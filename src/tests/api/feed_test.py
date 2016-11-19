@@ -1,6 +1,8 @@
-from tests.api.common import ApiCommon
 from tests.base import JarrFlaskCommon
+from tests.api.common import ApiCommon
 from web.controllers import UserController
+from lib.utils import utc_now
+from datetime import timezone, timedelta
 
 
 class FeedApiTest(JarrFlaskCommon, ApiCommon):
@@ -88,13 +90,6 @@ class FeedApiTest(JarrFlaskCommon, ApiCommon):
         resp = self._api('get', 'feeds/fetchable', user='admin')
         self.assertEquals(204, resp.status_code)
 
-        resp = self._api('get', 'feeds/fetchable', user='user1',
-                         data={'refresh_rate': 0})
-        self.assertEquals(5, len(resp.json()))
-        resp = self._api('get', 'feeds/fetchable', user='admin',
-                         data={'refresh_rate': 0})
-        self.assertEquals(5, len(resp.json()))
-
     def test_api_edit_category_id(self):
         resp = self._api('get', self.urns, data={'limit': 1}, user='user1')
         self.assertEquals(1, len(resp.json()))
@@ -107,3 +102,22 @@ class FeedApiTest(JarrFlaskCommon, ApiCommon):
         resp = self._api('put', self.urn, obj['id'],
                          data={'category_id': category['id']}, user='user1')
         self.assertEquals(400, resp.status_code)
+
+    def test_edit_time(self):
+        now = utc_now()
+        urn = '%s/1' % self.urn
+        self._api('put', urn, user='admin',
+                data={'last_retrieved': now.isoformat()})
+        json = self._api('get', urn, user='admin').json()
+        self.assertEquals(json['last_retrieved'], now.isoformat())
+
+        self._api('put', urn, user='admin',
+                data={'last_retrieved': now.replace(tzinfo=None).isoformat()})
+        json = self._api('get', urn, user='admin').json()
+        self.assertEquals(json['last_retrieved'], now.isoformat())
+
+        self._api('put', urn, user='admin',
+                data={'last_retrieved':
+                    now.astimezone(timezone(timedelta(hours=12))).isoformat()})
+        json = self._api('get', urn, user='admin').json()
+        self.assertEquals(json['last_retrieved'], now.isoformat())

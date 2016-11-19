@@ -1,5 +1,7 @@
 from tests.base import JarrFlaskCommon
-from web.controllers import ArticleController
+from web.controllers import ArticleController, FeedController
+import dateutil.parser
+from datetime import timedelta
 
 
 class ModelTest(JarrFlaskCommon):
@@ -23,3 +25,18 @@ class ModelTest(JarrFlaskCommon):
 
         self.assertInRelation(article.cluster.main_article,
                               article.cluster.articles)
+
+    def test_time(self):
+        naive = dateutil.parser.parse('2016-11-17T16:18:02.727802')
+        aware = dateutil.parser.parse('2016-11-17T16:18:02.727802+00:00')
+        aware2 = dateutil.parser.parse('2016-11-17T16:18:02.727802+12:00')
+        fctrl = FeedController()
+        self.assertRaises(Exception,
+                fctrl.update, {'id': 1}, {'last_retrieved': naive})
+        fctrl.update({'id': 1}, {'last_retrieved': aware})
+        self.assertEquals(fctrl.read(id=1).first().last_retrieved, aware)
+
+        fctrl.update({'id': 1}, {'last_retrieved': aware2})
+        self.assertEquals(fctrl.read(id=1).first().last_retrieved, aware2)
+        self.assertEquals(fctrl.read(id=1).first().last_retrieved,
+                          aware - timedelta(hours=12))

@@ -1,11 +1,12 @@
 import re
-from datetime import datetime
 
 from flask_login import UserMixin
-from sqlalchemy import Boolean, Column, DateTime, Integer, String
+from sqlalchemy import Boolean, Column, Integer, String
 from sqlalchemy.orm import relationship, validates
 
 from bootstrap import db
+from lib.utils import utc_now
+from web.models.utc_datetime_type import UTCDateTime
 from web.models.right_mixin import RightMixin
 
 
@@ -17,8 +18,8 @@ class User(db.Model, UserMixin, RightMixin):
     login = Column(String, unique=True)
     password = Column(String)
     email = Column(String(254))
-    date_created = Column(DateTime, default=datetime.utcnow)
-    last_connection = Column(DateTime, default=datetime.utcnow)
+    date_created = Column(UTCDateTime, default=utc_now)
+    last_connection = Column(UTCDateTime, default=utc_now)
     readability_key = Column(String, default='')
     renew_password_token = Column(String, default='')
 

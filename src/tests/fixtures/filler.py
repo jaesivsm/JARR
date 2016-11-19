@@ -1,5 +1,6 @@
-from datetime import datetime, timedelta
+from datetime import timedelta
 
+from lib.utils import utc_now
 from manager import db_create, db_empty
 from web.controllers import (ArticleController, CategoryController,
                              FeedController, UserController)
@@ -15,7 +16,7 @@ def populate_db():
     user1, user2 = [ucontr.create(login=name, email="%s@test.te" % name,
                                   password=name)
                     for name in ["user1", "user2"]]
-    now = datetime.now()
+    now = utc_now()
 
     for k in range(2):
         article_total = 0

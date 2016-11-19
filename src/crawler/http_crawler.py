@@ -17,7 +17,6 @@ import logging
 import time
 from concurrent.futures import ThreadPoolExecutor, wait
 from datetime import datetime, timedelta
-from time import gmtime, strftime
 
 import feedparser
 from requests_futures.sessions import FuturesSession
@@ -25,7 +24,8 @@ from requests_futures.sessions import FuturesSession
 from bootstrap import conf
 from lib.article_utils import construct_article, get_skip_and_ids
 from lib.feed_utils import construct_feed_from, is_parsing_ok
-from lib.utils import default_handler, to_hash
+from lib.utils import default_handler, utc_now
+from crawler.lib import headers_handling
 
 logger = logging.getLogger(__name__)
 logging.captureWarnings(True)
@@ -127,22 +127,23 @@ class JarrUpdater(AbstractCrawler):
         if not is_parsing_ok(self.parsed_feed):
             logger.info('%r %r - parsing failed, bumping error count',
                         self.feed['id'], self.feed['title'])
-            return self.query_jarr('put', 'feed/%d' % self.feed['id'],
-                    {'last_error': str(self.parsed_feed.get('bozo_exception')),
-                     'error_count': self.feed['error_count'] + 1})
+            up_feed = headers_handling.extract_feed_info(self.headers)
+            up_feed['last_error'] = str(self.parsed_feed.get('bozo_exception'))
+            up_feed['error_count'] = self.feed['error_count'] + 1
+            up_feed['last_retrieved'] = utc_now()
+
+            return self.query_jarr('put', 'feed/%d' % self.feed['id'], up_feed)
 
         up_feed = construct_feed_from(url=self.feed['link'],
                                       fp_parsed=self.parsed_feed,
                                       feed=self.feed)
-
-        up_feed['etag'] = self.headers.get('etag', '')
-        up_feed['last_modified'] = self.headers.get('last-modified',
-                strftime('%a, %d %b %Y %X %Z', gmtime()))
+        up_feed.update(headers_handling.extract_feed_info(self.headers))
 
         up_feed.pop('link', None)  # not updating feed url
         up_feed['user_id'] = self.feed['user_id']
         up_feed['last_error'] = None
         up_feed['error_count'] = 0
+        up_feed['last_retrieved'] = utc_now()
         if not article_created:
             logger.info('%r %r - all article matched in db, adding nothing',
                         self.feed['id'], self.feed['title'])
@@ -150,14 +151,6 @@ class JarrUpdater(AbstractCrawler):
         # updating only changed attrs
         up_feed = {key: value for key, value in up_feed.items()
                    if up_feed[key] != self.feed.get(key)}
-        if not up_feed:
-            logger.info('%r %r - nothing to update in feed attrs',
-                        self.feed['id'], self.feed['title'])
-            return  # no change in the feed, no update
-        if not article_created and set(up_feed) == {'last_modified', 'etag'}:
-            logger.info('%r %r - feed changed attrs are meaningless, ignoring',
-                        self.feed['id'], self.feed['title'])
-            return  # meaningless if no new article has been published
         logger.info('%r %r - pushing feed attrs %r',
                 self.feed['id'], self.feed['title'],
                 {key: "%r -> %r" % (self.feed.get(key), up_feed[key])
@@ -172,11 +165,15 @@ class FeedCrawler(AbstractCrawler):
         self.feed = feed
         super().__init__(auth)
 
-    def clean_feed(self):
+    def clean_feed(self, headers):
         """Will reset the errors counters on a feed that have known errors"""
-        if self.feed.get('error_count') or self.feed.get('last_error'):
-            self.query_jarr('put', 'feed/%d' % self.feed['id'],
-                            {'error_count': 0, 'last_error': None})
+        info = headers_handling.extract_feed_info(headers)
+        info.update({'error_count': 0, 'last_error': None,
+                     'last_retrieved': utc_now()})
+        info = {key: value for key, value in info.items()
+                if self.feed.get(key) != value}
+        if info:
+            self.query_jarr('put', 'feed/%d' % self.feed['id'], info)
 
     def callback(self, response):
         """will fetch the feed and interprete results (304, etag) or will
@@ -190,32 +187,20 @@ class FeedCrawler(AbstractCrawler):
                 logger.warn('%r %r - an error occured while fetching '
                             'feed; bumping error count to %r',
                             self.feed['id'], self.feed['title'], error_count)
-            future = self.query_jarr('put', 'feed/%d' % self.feed['id'],
-                                     {'error_count': error_count,
-                                      'last_error': str(error),
-                                      'user_id': self.feed['user_id']})
+            info = {'error_count': error_count, 'last_error': str(error),
+                    'user_id': self.feed['user_id'],
+                    'last_retrieved': utc_now()}
+            info.update(headers_handling.extract_feed_info({}))
+            future = self.query_jarr('put', 'feed/%d' % self.feed['id'], info)
             return
 
         if response.status_code == 304:
             logger.info("%r %r - feed responded with 304",
                         self.feed['id'], self.feed['title'])
-            self.clean_feed()
+            self.clean_feed(response.headers)
             return
-        if 'etag' not in response.headers:
-            logger.debug('%r %r - manually generating etag',
-                         self.feed['id'], self.feed['title'])
-            response.headers['etag'] = 'jarr/"%s"' % to_hash(response.text)
-        if response.headers['etag'] and self.feed['etag'] \
-                and response.headers['etag'] == self.feed['etag']:
-            if 'jarr' in self.feed['etag']:
-                logger.info("%r %r - calculated hash matches (%d)",
-                            self.feed['id'], self.feed['title'],
-                            response.status_code)
-            else:
-                logger.info("%r %r - feed responded with same etag (%d)",
-                            self.feed['id'], self.feed['title'],
-                            response.status_code)
-            self.clean_feed()
+        if headers_handling.response_match_cache(response, self.feed):
+            self.clean_feed(response.headers)
             return
         else:
             logger.debug('%r %r - etag mismatch %r != %r',
@@ -242,6 +227,7 @@ class FeedCrawler(AbstractCrawler):
             logger.debug('%r %r - nothing to add (skipped %r) %r',
                          self.feed['id'], self.feed['title'], skipped_list,
                          parsed_response)
+            self.clean_feed(response.headers)
             return
         logger.debug('%r %r - found %d entries %r',
                      self.feed['id'], self.feed['title'], len(ids), ids)
@@ -256,17 +242,6 @@ class CrawlerScheduler(AbstractCrawler):
     def __init__(self, username, password):
         self.auth = (username, password)
         super(CrawlerScheduler, self).__init__(self.auth)
-
-    def prepare_headers(self, feed):
-        """For a known feed, will construct some header dictionnary"""
-        headers = {'User-Agent': conf.CRAWLER_USER_AGENT}
-        if feed.get('last_modified'):
-            headers['If-Modified-Since'] = feed['last_modified']
-        if feed.get('etag') and 'jarr' not in feed['etag']:
-            headers['If-None-Match'] = feed['etag']
-        logger.debug('%r %r - calculated headers %r',
-                     feed['id'], feed['title'], headers)
-        return headers
 
     def callback(self, response):
         """processes feeds that need to be fetched"""
@@ -285,8 +260,8 @@ class CrawlerScheduler(AbstractCrawler):
             logger.debug('%r %r - fetching resources',
                          feed['id'], feed['title'])
             future = self.session.get(feed['link'],
-                                      timeout=conf.CRAWLER_TIMEOUT,
-                                      headers=self.prepare_headers(feed))
+                    timeout=conf.CRAWLER_TIMEOUT,
+                    headers=headers_handling.prepare_headers(feed))
             FUTURES.append(future)
 
             feed_crwlr = FeedCrawler(feed, self.auth)

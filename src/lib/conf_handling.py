@@ -102,8 +102,12 @@ SECTIONS = (
             {'key': 'ERROR_MAX', 'type': int, 'default': 6, 'edit': False},
             {'key': 'ERROR_THRESHOLD',
              'type': int, 'default': 3, 'edit': False},
-            {'key': 'REFRESH_RATE',
-             'default': 60, 'type': int, 'edit': False},
+            {'key': 'MIN_EXPIRES',
+             'default': 60 * 10, 'type': int, 'edit': False},
+            {'key': 'DEFAULT_EXPIRES',
+             'default': 60 * 60, 'type': int, 'edit': False},
+            {'key': 'MAX_EXPIRES',
+             'default': 60 * 60 * 4, 'type': int, 'edit': False},
             {'key': 'STOP_FETCH', 'default': 30, 'type': int, 'edit': False,
              'ask': "The number of days after which, if a user didn't connect "
                     "we'll stop fetching his feeds, (0 will desactivate this "

@@ -1,5 +1,4 @@
 import random
-from datetime import datetime
 
 import opml
 from flask import (Blueprint, flash, make_response, redirect, render_template,
@@ -11,6 +10,7 @@ from werkzeug.exceptions import Forbidden, NotFound
 
 from bootstrap import conf
 from lib import emails
+from lib.utils import utc_now
 from web.controllers import CategoryController, FeedController, UserController
 from web.forms import PasswordModForm, ProfileForm, RecoverPasswordForm
 from web.views.common import admin_permission, login_user_bundle
@@ -27,7 +27,7 @@ def opml_export():
             for cat in CategoryController(current_user.id).read()}
     response = make_response(render_template('opml.xml', user=user,
            categories=categories, feeds=FeedController(current_user.id).read(),
-           now=datetime.now()))
+           now=utc_now()))
     response.headers['Content-Type'] = 'application/xml'
     response.headers['Content-Disposition'] = 'attachment; filename=feeds.opml'
     return response

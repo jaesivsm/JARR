@@ -1,20 +1,27 @@
-import logging
-from datetime import datetime
+from tests.base import JarrFlaskCommon
 
+import logging
+from datetime import datetime, timezone
+
+import feedparser
 from mock import Mock, patch
 
 from bootstrap import conf
 from crawler.http_crawler import CrawlerScheduler
-from tests.base import JarrFlaskCommon
 from web.controllers import FeedController, UserController
 
 logger = logging.getLogger('web')
+UNIX_START = datetime(1970, 1, 1, tzinfo=timezone.utc)
 
 
 class CrawlerTest(JarrFlaskCommon):
 
     def setUp(self):
         super().setUp()
+        atom_file_path = 'src/tests/fixtures/example.feed.atom'
+        with open(atom_file_path) as fd:
+            self.new_entries_cnt = len(feedparser.parse(fd.read())['entries'])
+            self.new_entries_cnt *= FeedController().read().count()
         self.wait_params = {'wait_for': 1, 'max_wait': 10, 'checks': 1}
         UserController().update({'login': 'admin'}, {'is_api': True})
         self._is_secure_served \
@@ -44,7 +51,7 @@ class CrawlerTest(JarrFlaskCommon):
 
                     @property
                     def content(self):
-                        with open('src/tests/fixtures/example.feed.atom') as f:
+                        with open(atom_file_path) as f:
                             return f.read()
 
                     text = content
@@ -70,8 +77,10 @@ class CrawlerTest(JarrFlaskCommon):
         self._p_con.stop()
 
     def _reset_feeds_freshness(self, **kwargs):
+        if 'expires' not in kwargs:
+            kwargs['expires'] = UNIX_START
         if 'last_retrieved' not in kwargs:
-            kwargs['last_retrieved'] = datetime(1970, 1, 1)
+            kwargs['last_retrieved'] = UNIX_START
         if 'etag' not in kwargs:
             kwargs['etag'] = ''
         if 'last_modified' not in kwargs:
@@ -86,7 +95,7 @@ class CrawlerTest(JarrFlaskCommon):
         scheduler.run()
         scheduler.wait(**self.wait_params)
         resp = self._api('get', 'articles', data={'limit': 1000}, user='admin')
-        self.assertEquals(161, len(resp.json()))
+        self.assertEquals(36 + self.new_entries_cnt, len(resp.json()))
 
         for art in resp.json():
             self.assertFalse('srcset=' in art['content'])
@@ -96,7 +105,7 @@ class CrawlerTest(JarrFlaskCommon):
         scheduler.run()
         scheduler.wait(**self.wait_params)
         resp = self._api('get', 'articles', data={'limit': 1000}, user='admin')
-        self.assertEquals(161, len(resp.json()))
+        self.assertEquals(36 + self.new_entries_cnt, len(resp.json()))
 
     def test_no_add_on_304(self):
         scheduler = CrawlerScheduler('admin', 'admin')
@@ -161,4 +170,4 @@ class CrawlerTest(JarrFlaskCommon):
         scheduler.run()
         scheduler.wait(**self.wait_params)
         resp = self._api('get', 'articles', data={'limit': 1000}, user='admin')
-        self.assertEquals(161, len(resp.json()))
+        self.assertEquals(36 + self.new_entries_cnt, len(resp.json()))

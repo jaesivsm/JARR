@@ -1,5 +1,6 @@
 import html
 import logging
+import pytz
 import re
 from datetime import datetime, timezone
 from enum import Enum
@@ -10,7 +11,7 @@ from bs4 import BeautifulSoup, SoupStrainer
 from requests.exceptions import MissingSchema
 
 from bootstrap import conf
-from lib.utils import jarr_get
+from lib.utils import jarr_get, utc_now
 from web.lib.article_cleaner import clean_urls
 
 logger = logging.getLogger(__name__)
@@ -25,7 +26,7 @@ def extract_id(entry):
 
 def construct_article(entry, feed, fields=None, fetch=True):
     "Safe method to transorm a feedparser entry into an article"
-    now = datetime.utcnow()
+    now = utc_now()
     article = {}
 
     def push_in_article(key, value):

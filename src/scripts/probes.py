@@ -1,12 +1,13 @@
 #!/usr/bin/python3
 import sys
-from datetime import datetime, timedelta
+from datetime import timedelta
+import math
 
 from flask_script import Command, Option
 
 from bootstrap import conf
+from lib.utils import utc_now
 from web.controllers import FeedController, ArticleController
-from web.models import User
 
 DEFAULT_HEADERS = {'Content-Type': 'application/json', 'User-Agent': 'munin'}
 
@@ -43,39 +44,47 @@ class FeedProbe(AbstractMuninPlugin):
         print("graph_vlabel feeds")
         print("feeds.label Late feeds")
         print("feeds_total.label Total feeds")
-        print("feeds.warning %d" % int(total / 20))
-        print("feeds.critical %d" % int(total / 10))
+        print("feeds.warning %d" % int(total / 5))
+        print("feeds.critical %d" % int(total / 2))
         print("graph_category web")
         print("graph_scale yes")
         print("graph_args --logarithmic")
 
     def execute(self):
-        delta = timedelta(minutes=conf.FEED_REFRESH_RATE)
         fcontr = FeedController(ignore_context=True)
 
-        print("feeds.value %d" % len(list(fcontr.list_late(delta, limit=0))))
+        print("feeds.value %d" % len(list(fcontr.list_late(limit=0))))
         print("feeds_total.value %d" % self._get_total_feed())
 
 
 class FeedLatenessProbe(AbstractMuninPlugin):
-    split_number = 6
-    colours = ['05FF0B', '99FD03', 'E6FC02', 'FCC402', 'FB7601', 'F90026']
-    colour_after = '3B0B17'
-    colour_before = '2E2EFE'
-
-    def _get_feeds(self):
-        last_conn_max = datetime.utcnow() - timedelta(days=30)
-        return list(FeedController(ignore_context=True).get_active_feed())
+    split_number = 5
+    colours = 'F90026', 'FB7601', 'FCC402', 'E6FC02', '99FD03', '05FF0B'
+    colour_expired = '3B0B17'
+    colour_in_a_while = '2E2EFE'
 
     def iter_on_splits(self):
-        delta = timedelta(minutes=conf.FEED_REFRESH_RATE)
-        split_delta = delta / self.split_number
-        yield 'before', timedelta(0), None
-        for i in range(self.split_number):
-            range_start = split_delta * (i + 1)
-            range_end = split_delta * i
-            yield i, range_start, range_end
-        yield 'late', None, delta
+        offset = 2
+        min_delta = timedelta(0)
+        power = math.log(conf.FEED_MAX_EXPIRES, self.split_number + offset)
+        yield 'before', None, min_delta
+        for i in range(offset, self.split_number + offset):
+            if i != offset:
+                range_start = timedelta(seconds=pow(i, power))
+            else:
+                range_start = timedelta(0)
+            yield i - offset, range_start, timedelta(seconds=pow(i + 1, power))
+        yield 'late', timedelta(seconds=conf.FEED_MAX_EXPIRES), None
+
+    @staticmethod
+    def _to_hour(td):
+        time, total_minutes = "", td.total_seconds() / 60
+        hour, minutes = int(total_minutes / 60), total_minutes % 60
+        if hour:
+            time += "%dh" % hour
+        if minutes:
+            time += ("%02dm" if time else "%dm") % minutes
+        return time or "now"
 
     def config(self):
         print("graph_title JARR - Feeds lateness repartition")
@@ -85,39 +94,36 @@ class FeedLatenessProbe(AbstractMuninPlugin):
             print("feeds_%s.draw AREASTACK" % i)
             print("feeds_%s.min 0" % i)
             if i == 'before':
-                print("feeds_before.colour %s" % self.colour_before)
-                print("feeds_before.label %s" % 'feeds early')
-                print("feeds_before.info %s"
-                        % 'feeds with fetch date in the future')
+                print("feeds_before.colour %s" % self.colour_expired)
+                print("feeds_before.label %s" % 'feeds expired')
+                print("feeds_before.info feeds already expired (%s)"
+                      % self._to_hour(range_end))
             elif i == 'late':
-                print("feeds_late.colour %s" % self.colour_after)
-                print("feeds_late.label %s" % 'late feed')
-                print("feeds_late.info feed fetched more than %d minutes ago"
-                        % (range_end.seconds / 60))
+                print("feeds_late.colour %s" % self.colour_in_a_while)
+                print("feeds_late.label %s" % 'feeds expiring after max limit')
+                print("feeds_late.info feeds that will expire in more "
+                      "than %s" % self._to_hour(range_start))
+
             else:
                 print("feeds_%s.colour %s" % (i, next(colours)))
                 print("feeds_%s.label feeds in split %d" % (i, i))
-                print("feeds_%s.info feeds fetched between %d "
-                      "and %d minutes ago" % (i,
-                          range_end.seconds / 60, range_start.seconds / 60))
+                print("feeds_%s.info feeds expiring in between %s and %s" % (i,
+                      self._to_hour(range_start), self._to_hour(range_end)))
+
         print("graph_category web")
         print("graph_scale no")
 
     def execute(self):
-        feeds = self._get_feeds()
-        now = datetime.utcnow()
+        fctrl = FeedController(ignore_context=True)
+        now = utc_now()
         for i, range_start, range_end in self.iter_on_splits():
-            count = 0
-            for fd in feeds:
-                if range_start is None:
-                    if fd.last_retrieved <= now - range_end:
-                        count += 1
-                elif range_end is None:
-                    if now - range_start < fd.last_retrieved:
-                        count += 1
-                elif now - range_start < fd.last_retrieved <= now - range_end:
-                    count += 1
-            print("feeds_%s.value %d" % (i, count))
+            filters = {}
+            if range_start is not None:
+                filters['expires__ge'] = now + range_start
+            if range_end is not None:
+                filters['expires__lt'] = now + range_end
+            print("feeds_%s.value %d"
+                  % (i, fctrl.get_active_feed(**filters).count()))
 
 
 class ArticleProbe(AbstractMuninPlugin):
@@ -129,7 +135,6 @@ class ArticleProbe(AbstractMuninPlugin):
         print("articles.type DERIVE")
         print("articles.min 0")
         fcontr = FeedController(ignore_context=True)
-        last_conn_max = datetime.utcnow() - timedelta(days=30)
         for id_ in fcontr.get_active_feed()\
                      .with_entities(fcontr._db_cls.user_id)\
                      .distinct().order_by('feed_user_id'):

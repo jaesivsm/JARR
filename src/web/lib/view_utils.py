@@ -1,12 +1,10 @@
-from datetime import datetime
 from functools import wraps
 
-import pytz
 from babel.dates import format_datetime, format_timedelta
 from flask import Response, get_flashed_messages, make_response, request
 from flask_babel import get_locale
 
-from lib.utils import to_hash
+from lib.utils import to_hash, utc_now
 from web.views.common import jsonify
 
 ACCEPTED_LEVELS = {'success', 'info', 'warning', 'error'}
@@ -35,11 +33,11 @@ def etag_match(func):
     return wrapper
 
 
-def _iter_on_rows(rows, now, locale):
+def _iter_on_rows(rows, locale):
+    now = utc_now()
     for row in rows:
         row['selected'] = False
-        row['date'] = format_datetime(
-                pytz.utc.localize(row['main_date']), locale=locale)
+        row['date'] = format_datetime(row['main_date'], locale=locale)
         row['rel_date'] = format_timedelta(row['main_date'] - now,
                 threshold=1.1, add_direction=True, locale=locale)
         yield row
@@ -53,6 +51,5 @@ def get_notifications():
 
 @jsonify
 def clusters_to_json(clusters):
-    return {'clusters': _iter_on_rows(clusters,
-                                      datetime.utcnow(), get_locale()),
+    return {'clusters': _iter_on_rows(clusters, get_locale()),
             'notifications': get_notifications()}

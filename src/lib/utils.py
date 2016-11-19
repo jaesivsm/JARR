@@ -1,7 +1,9 @@
 import logging
+import pytz
 import re
 import types
 import urllib
+from datetime import datetime
 from hashlib import md5
 
 import requests
@@ -10,6 +12,10 @@ from flask import request, url_for
 from bootstrap import conf
 
 logger = logging.getLogger(__name__)
+
+
+def utc_now():
+    return pytz.utc.localize(datetime.utcnow())
 
 
 def default_handler(obj, role='admin'):

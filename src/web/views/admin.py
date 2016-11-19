@@ -1,12 +1,11 @@
 import logging
-from datetime import datetime
 
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_babel import format_timedelta, gettext
 from flask_login import current_user, login_required
 from sqlalchemy import desc
 
-from lib.utils import redirect_url
+from lib.utils import redirect_url, utc_now
 from web.controllers import ClusterController, FeedController, UserController
 from web.views.common import admin_permission
 
@@ -24,14 +23,14 @@ def dashboard():
         order = order[1:]
     if order not in {'login', 'email', 'last_connection', 'is_admin'}:
         order = 'id'
-    last_cons, now = {}, datetime.utcnow()
+    last_cons, now = {}, utc_now()
     users = list(UserController().read().order_by(
             desc(order) if reverse else order))
     for user in users:
         last_cons[user.id] = format_timedelta(now - user.last_connection)
-    return render_template('admin/dashboard.html', now=datetime.utcnow(),
-            order=order, reverse=reverse,
-            last_cons=last_cons, users=users, current_user=current_user)
+    return render_template('admin/dashboard.html', now=now, order=order,
+            reverse=reverse, last_cons=last_cons, users=users,
+            current_user=current_user)
 
 
 @admin_bp.route('/user/<int:user_id>', methods=['GET'])

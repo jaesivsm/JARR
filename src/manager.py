@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from flask_migrate import Migrate, MigrateCommand
 from flask_script import Manager
@@ -9,6 +9,7 @@ from flask_script import Manager
 import web.models
 
 from bootstrap import application, conf, db
+from lib.utils import utc_now
 from scripts.probes import ArticleProbe, FeedProbe, FeedLatenessProbe
 from web.controllers import FeedController, UserController
 
@@ -36,7 +37,7 @@ def db_create(login='admin', password='admin'):
 
 
 @manager.command
-def fetch(limit=100, retreive_all=False):
+def fetch(limit=0, retreive_all=False):
     "Crawl the feeds with the client crawler."
     from crawler.http_crawler import CrawlerScheduler
     scheduler = CrawlerScheduler(conf.CRAWLER_LOGIN, conf.CRAWLER_PASSWD)
@@ -46,9 +47,10 @@ def fetch(limit=100, retreive_all=False):
 
 @manager.command
 def reset_feeds():
+    """Will reschedule all active feeds to be fetched in the next two hours"""
     from web.models import User
     fcontr = FeedController(ignore_context=True)
-    now = datetime.utcnow()
+    now = utc_now()
     last_conn_max = now - timedelta(days=30)
 
     feeds = list(fcontr.read().join(User).filter(User.is_active.__eq__(True),
@@ -56,11 +58,12 @@ def reset_feeds():
                         .with_entities(fcontr._db_cls.id)
                         .distinct())
 
-    step = timedelta(seconds=3600 / len(feeds))
+    step = timedelta(seconds=conf.FEED_DEFAULT_EXPIRES / len(feeds))
     for i, feed in enumerate(feeds):
         fcontr.update({'id': feed[0]},
                 {'etag': '', 'last_modified': '',
-                 'last_retrieved': now - i * step})
+                 'last_retrieved': datetime(1970, 1, 1, tzinfo=timezone.utc),
+                 'expires': now + i * step})
 
 
 manager.add_command('probe_articles', ArticleProbe())

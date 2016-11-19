@@ -1,11 +1,10 @@
-from datetime import datetime
-
-from sqlalchemy import (Boolean, Column, DateTime, ForeignKey, Index, Integer,
-                        String)
+from sqlalchemy import Boolean, Column, ForeignKey, Index, Integer, String
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.orm import relationship
 
 from bootstrap import db
+from lib.utils import utc_now
+from web.models.utc_datetime_type import UTCDateTime
 from web.models.right_mixin import RightMixin
 
 
@@ -16,8 +15,8 @@ class Article(db.Model, RightMixin):
     link = Column(String)
     title = Column(String)
     content = Column(String)
-    date = Column(DateTime, default=datetime.utcnow)
-    retrieved_date = Column(DateTime, default=datetime.utcnow)
+    date = Column(UTCDateTime, default=utc_now)
+    retrieved_date = Column(UTCDateTime, default=utc_now)
     readability_parsed = Column(Boolean, default=False)
 
     # foreign keys

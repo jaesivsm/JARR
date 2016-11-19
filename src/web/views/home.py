@@ -1,13 +1,12 @@
 import logging
-from datetime import datetime
 
-import pytz
 from babel.dates import format_datetime, format_timedelta
 from flask import current_app, flash, render_template, request, url_for
 from flask_babel import get_locale
 from flask_login import current_user, login_required
 
 from bootstrap import conf
+from lib.utils import utc_now
 from plugins import readability
 from web.controllers import (ArticleController, CategoryController,
                              ClusterController, FeedController, UserController)
@@ -15,7 +14,6 @@ from web.lib.article_cleaner import clean_urls
 from web.lib.view_utils import clusters_to_json, etag_match, get_notifications
 from web.views.common import jsonify
 
-localize = pytz.utc.localize
 logger = logging.getLogger(__name__)
 
 
@@ -24,7 +22,7 @@ logger = logging.getLogger(__name__)
 @etag_match
 def home():
     UserController(current_user.id).update({'id': current_user.id},
-            {'last_connection': datetime.utcnow()})
+            {'last_connection': utc_now()})
     return render_template('home.html')
 
 
@@ -33,7 +31,7 @@ def home():
 @etag_match
 @jsonify
 def get_menu():
-    now, locale = datetime.now(), get_locale()
+    now, locale = utc_now(), get_locale()
     categories_order = [0]
     feeds, categories = {}, {0: {'name': 'No category', 'id': 0,
                                  'feeds': [], 'unread': 0}}
@@ -46,13 +44,13 @@ def get_menu():
         categories[cat.id]['unread'] = cnt_by_category.get(cat.id, 0)
         categories[cat.id]['feeds'] = []
     for feed in FeedController(current_user.id).read():
-        feed['created_rel'] = format_timedelta(feed.created_date - now,
-                add_direction=True, locale=locale)
-        feed['last_rel'] = format_timedelta(feed.last_retrieved - now,
-                add_direction=True, locale=locale)
-        feed['created_date'] = format_datetime(localize(feed.created_date),
+        feed['created_rel'] = format_timedelta(
+                feed.created_date - now, add_direction=True, locale=locale)
+        feed['last_rel'] = format_timedelta(
+                feed.last_retrieved - now, add_direction=True, locale=locale)
+        feed['created_date'] = format_datetime(feed.created_date,
                                                locale=locale)
-        feed['last_retrieved'] = format_datetime(localize(feed.last_retrieved),
+        feed['last_retrieved'] = format_datetime(feed.last_retrieved,
                                                  locale=locale)
         feed['category_id'] = feed.category_id or 0
         feed['unread'] = cnt_by_feed.get(feed.id, 0)
@@ -126,8 +124,7 @@ def get_cluster(cluster_id, parse=False, article_id=None):
             if feed.icon_url else None
     readability_available = bool(current_user.readability_key
                                  or conf.PLUGINS_READABILITY_KEY)
-    cluster['main_date'] = format_datetime(localize(cluster.main_date),
-                                           locale=locale)
+    cluster['main_date'] = format_datetime(cluster.main_date, locale=locale)
     if parse or (not cluster.main_article.readability_parsed
             and feed.readability_auto_parse and readability_available):
         if article_id:
@@ -152,6 +149,7 @@ def get_cluster(cluster_id, parse=False, article_id=None):
                         {'readability_parsed': True, 'content': new_content})
     for article in cluster.articles:
         article['readability_available'] = readability_available
+        article['date'] = format_datetime(article.date, locale=locale)
     cluster['notifications'] = get_notifications()
     return cluster
 
