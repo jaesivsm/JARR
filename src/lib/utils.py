@@ -50,25 +50,6 @@ def rebuild_url(url, base_split):
     return urllib.parse.urlunsplit(new_split)
 
 
-def try_get_icon_url(url, *splits):
-    for split in splits:
-        if split is None:
-            continue
-        rb_url = rebuild_url(url, split)
-        response = None
-        # if html in content-type, we assume it's a fancy 404 page
-        try:
-            response = jarr_get(rb_url)
-            content_type = response.headers.get('content-type', '')
-        except Exception:
-            pass
-        else:
-            if response is not None and response.ok \
-                    and 'html' not in content_type and response.content:
-                return response.url
-    return None
-
-
 def to_hash(text):
     return md5(text.encode('utf8') if hasattr(text, 'encode') else text)\
             .hexdigest()

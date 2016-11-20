@@ -1,16 +1,15 @@
 import html
 import logging
-import pytz
 import re
-from datetime import datetime, timezone
+from datetime import timezone
 from enum import Enum
 from urllib.parse import SplitResult, urlsplit, urlunsplit
 
 import dateutil.parser
-from bs4 import BeautifulSoup, SoupStrainer
 from requests.exceptions import MissingSchema
 
 from bootstrap import conf
+from lib.html_parsing import extract_tags, extract_title
 from lib.utils import jarr_get, utc_now
 from web.lib.article_cleaner import clean_urls
 
@@ -47,14 +46,13 @@ def construct_article(entry, feed, fields=None, fetch=True):
                 else:
                     break
     push_in_article('content', get_article_content(entry))
-    if fields is None or {'link', 'title'}.intersection(fields):
-        link, title = get_article_details(entry, fetch)
+    if fields is None or {'link', 'title', 'tags'}.intersection(fields):
+        link, title, tags = get_article_details(entry, fetch)
         push_in_article('link', link)
         push_in_article('title', title)
+        push_in_article('tags', tags)
         if 'content' in article:
             push_in_article('content', clean_urls(article['content'], link))
-    push_in_article('tags', {tag.get('term').strip()
-                             for tag in entry.get('tags', [])})
     return article
 
 
@@ -70,6 +68,8 @@ def get_article_content(entry):
 def get_article_details(entry, fetch=True):
     article_link = entry.get('link')
     article_title = html.unescape(entry.get('title', ''))
+    tags = {tag.get('term').strip() for tag in entry.get('tags', [])
+            if tag.get('term').strip()}
     if fetch and conf.CRAWLER_RESOLV and article_link or not article_title:
         try:
             # resolves URL behind proxies (like feedproxy.google.com)
@@ -87,20 +87,16 @@ def get_article_details(entry, fetch=True):
                 article_link = new_link
                 break
             if failed:
-                return article_link, article_title or 'No title'
+                return article_link, article_title or 'No title', tags
         except Exception as error:
             logger.info("Unable to get the real URL of %s. Won't fix "
                         "link or title. Error: %s", article_link, error)
-            return article_link, article_title or 'No title'
+            return article_link, article_title or 'No title', tags
         article_link = response.url
         if not article_title:
-            bs_parsed = BeautifulSoup(response.content, 'html.parser',
-                                      parse_only=SoupStrainer('head'))
-            try:
-                article_title = bs_parsed.find_all('title')[0].text
-            except IndexError:  # no title
-                pass
-    return article_link, article_title or 'No title'
+            article_title = extract_title(response, og_prop='og:title')
+        tags = tags.union(extract_tags(response))
+    return article_link, article_title or 'No title', tags
 
 
 class FiltersAction(Enum):

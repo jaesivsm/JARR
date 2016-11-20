@@ -83,6 +83,7 @@ class JarrFlaskCommon(BaseJarrTest):
         resp = method(urn, **kwargs)
         if resp.data and resp.content_type == 'application/json':
             resp.json = lambda *a, **kw: json.loads(resp.data.decode('utf8'))
+        resp.encoding = 'utf8'
         return resp
 
 

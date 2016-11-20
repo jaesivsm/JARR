@@ -4,26 +4,30 @@ import urllib
 from copy import deepcopy
 
 import feedparser
-from bs4 import BeautifulSoup, SoupStrainer
 
 from bootstrap import conf
-from lib.utils import jarr_get, rebuild_url, try_get_icon_url
+from lib.utils import jarr_get, rebuild_url
+from lib.html_parsing import (extract_title, extract_icon_url, FEED_MIMETYPES,
+                              extract_feed_link, try_get_icon_url)
 
 logger = logging.getLogger(__name__)
 logging.captureWarnings(True)
-FEED_MIMETYPES = ('application/atom+xml', 'application/rss+xml',
-                  'application/rdf+xml', 'application/xml', 'text/xml')
 
 
 def is_parsing_ok(parsed_feed):
     return parsed_feed['entries'] or not parsed_feed['bozo']
 
 
-def _escape_title_and_desc(feed):
-    for key in 'title', 'description':
-        if feed.get(key):
-            feed[key] = html.unescape(feed[key].strip())
-    return feed
+def correct_feed_values(func):
+    to_escape = {'title', 'description'}
+
+    def wrapper(*args, **kwargs):
+        feed = {k: v for k, v in func(*args, **kwargs).items() if v}
+        for key in to_escape.intersection(feed):
+            if feed.get(key):
+                feed[key] = html.unescape(feed[key].strip())
+        return feed
+    return wrapper
 
 
 def _browse_feedparser_feed(feed, check, default=None):
@@ -49,6 +53,7 @@ def get_parsed_feed(url):
     return fp_parsed
 
 
+@correct_feed_values
 def construct_feed_from(url=None, fp_parsed=None, feed=None):
     """
     Will try to construct the most complete feed dict possible.
@@ -124,56 +129,21 @@ def construct_feed_from(url=None, fp_parsed=None, feed=None):
     # here we have all we want or we do not have the main url,
     # either way we're leaving
     if not feed.get('site_link') or nothing_to_fill:
-        return _escape_title_and_desc(feed)
+        return feed
 
     # trying to parse the page of the site for some rel link in the header
     try:
         response = jarr_get(feed['site_link'])
     except Exception as error:
         logger.warn('failed to retreive %r: %r', feed['site_link'], error)
-        return _escape_title_and_desc(feed)
-    bs_parsed = BeautifulSoup(response.content, 'html.parser',
-                              parse_only=SoupStrainer('head'))
+        return feed
 
     if not feed.get('title'):
-        try:
-            feed['title'] = bs_parsed.find_all('title')[0].text
-        except Exception:
-            pass
-
-    def check_keys(**kwargs):
-        def wrapper(elem):
-            for key, vals in kwargs.items():
-                if not elem.has_attr(key):
-                    return False
-                if not all(val in elem.attrs[key] for val in vals):
-                    return False
-            return True
-        return wrapper
+        feed['title'] = extract_title(response, og_prop='og:site_name')
 
     if not feed.get('icon_url'):
-        icons = bs_parsed.find_all(check_keys(rel=['icon', 'shortcut']))
-        if not len(icons):
-            icons = bs_parsed.find_all(check_keys(rel=['icon']))
-        if len(icons) >= 1:
-            for icon in icons:
-                feed['icon_url'] = try_get_icon_url(icon.attrs['href'],
-                                                    site_split, feed_split)
-                if feed['icon_url'] is not None:
-                    break
-
-        if feed.get('icon_url') is None:
-            feed['icon_url'] = try_get_icon_url('/favicon.ico',
-                                                site_split, feed_split)
-        if 'icon_url' in feed and feed['icon_url'] is None:
-            del feed['icon_url']
+        feed['icon_url'] = extract_icon_url(response, site_split, feed_split)
 
     if not feed.get('link'):
-        for type_ in FEED_MIMETYPES:
-            alternates = bs_parsed.find_all(check_keys(
-                    rel=['alternate'], type=[type_]))
-            if len(alternates) >= 1:
-                feed['link'] = rebuild_url(alternates[0].attrs['href'],
-                                           feed_split)
-                break
-    return _escape_title_and_desc(feed)
+        feed['link'] = extract_feed_link(response, feed_split)
+    return feed

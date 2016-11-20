@@ -30,7 +30,8 @@ class ConstructFeedFromTest(unittest.TestCase):
         self.assertEquals(
                 {'description':
                     "Les joies du code, l'instant GIF des développeurs !",
-                 'icon_url': 'http://ljdchost.com/ljdc-theme/favicons/favicon.ico?v=9BK2m20LWn',
+                 'icon_url': 'http://ljdchost.com/ljdc-theme/favicons'
+                             '/favicon.ico?v=9BK2m20LWn',
                  'link': 'http://lesjoiesducode.tumblr.com/rss',
                  'site_link': 'http://lesjoiesducode.fr/',
                  'title': 'Les joies du code'},
@@ -39,7 +40,6 @@ class ConstructFeedFromTest(unittest.TestCase):
     def test_apod(self):
         self.assertEquals(
                 {'icon_url': 'http://apod.nasa.gov/favicon.ico',
-                 'link': None,
                  'site_link': 'http://apod.nasa.gov/',
                  'title': 'Astronomy Picture of the Day'},
                 construct_feed_from('http://apod.nasa.gov/'))
