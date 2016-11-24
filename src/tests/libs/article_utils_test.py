@@ -1,91 +1,80 @@
-import json
 import unittest
 
 from mock import patch
-from requests import Response
-from requests.exceptions import MissingSchema
 
-from lib.article_utils import construct_article
+from web.lib.article_cleaner import clean_urls
+
+SAMPLE = """<a href="link_to_correct.html">
+<img src="http://is_ok.com/image"/>
+</a>
+<a href="http://is_also_ok.fr/link">test</a>
+<iframe src="http://youtube.com/an_unsecure_video">
+</iframe>
+<img src="http://abs.ol/ute/buggy.img%2C%20otherbuggy.img" srcset="garbage"/>
+<img src="relative.img" />"""
 
 
-class ConstructArticleTest(unittest.TestCase):
-    response_url = '//www.pariszigzag.fr/paris-insolite-secret/'\
-                   'les-plus-belles-boulangeries-de-paris'
+class ArticleCleanerTest(unittest.TestCase):
 
     def setUp(self):
-        self._jarr_get_patch = patch('lib.article_utils.jarr_get')
-        self.jarr_get_patch = self._jarr_get_patch.start()
+        self.sample = SAMPLE.split('\n')
+        self.url = 'https://test.te'
 
-    def tearDown(self):
-        self._jarr_get_patch.stop()
+    @patch('web.lib.article_cleaner.is_secure_served')
+    def test_clean_clear(self, is_secure_served):
+        is_secure_served.return_value = False
+        result = clean_urls(SAMPLE, self.url).split('\n')
+        self.assertEqual('<a href="https://test.te/link_to_correct.html">',
+                         result[0])
+        self.assertEqual(self.sample[1], result[1])  # unchanged
+        self.assertEqual(self.sample[2], result[2])  # unchanged
+        self.assertEqual(self.sample[3], result[3])  # unchanged
+        self.assertEqual(self.sample[4], result[4])  # unchanged
+        self.assertEqual(self.sample[6], result[6])  # unchanged
+        self.assertEqual('<img src="%s/relative.img"/>' % self.url, result[7])
 
-    @property
-    def entry(self):
-        with open('src/tests/fixtures/article.json') as fd:
-            return json.load(fd)
+    @patch('web.lib.article_cleaner.is_secure_served')
+    def test_clean_https(self, is_secure_served):
+        is_secure_served.return_value = True
+        result = clean_urls(SAMPLE, self.url).split('\n')
+        self.assertEqual('<a href="https://test.te/link_to_correct.html">',
+                         result[0])
+        self.assertEqual(self.sample[1], result[1])  # unchanged
+        self.assertEqual(self.sample[2], result[2])  # unchanged
+        self.assertEqual(self.sample[3], result[3])  # unchanged
+        self.assertEqual(
+                '<iframe src="https://youtube.com/an_unsecure_video">',
+                result[4])
+        self.assertEqual(
+                '<img src="http://abs.ol/ute/buggy.img%2C%20otherbuggy.img"/>',
+                result[6])
+        self.assertEqual('<img src="%s/relative.img"/>' % self.url, result[7])
 
-    @property
-    def entry2(self):
-        with open('src/tests/fixtures/article-2.json') as fd:
-            return json.load(fd)
+    @patch('web.lib.article_cleaner.is_secure_served')
+    def test_clean_clear_fix_readability(self, is_secure_served):
+        is_secure_served.return_value = False
+        result = clean_urls(SAMPLE, self.url, True).split('\n')
+        self.assertEqual('<a href="https://test.te/link_to_correct.html">',
+                         result[0])
+        self.assertEqual(self.sample[1], result[1])  # unchanged
+        self.assertEqual(self.sample[2], result[2])  # unchanged
+        self.assertEqual(self.sample[3], result[3])  # unchanged
+        self.assertEqual(self.sample[4], result[4])  # unchanged
+        self.assertEqual('<img src="http://abs.ol/ute/buggy.img"'
+                         ' srcset="garbage"/>', result[6])
+        self.assertEqual('<img src="%s/relative.img"/>' % self.url, result[7])
 
-    @staticmethod
-    def get_response(scheme='http:'):
-        resp = Response()
-        resp.url = scheme + ConstructArticleTest.response_url
-        resp.encoding = 'utf8'
-        with open('src/tests/fixtures/article.html') as fd:
-            resp._content = fd.read()
-        return resp
-
-    @property
-    def response2(self):
-        resp = Response()
-        resp.url = 'https://www.youtube.com/watch?v=scbrjaqM3Oc'
-        resp.encoding = 'utf8'
-        with open('src/tests/fixtures/article-2.html') as fd:
-            resp._content = fd.read()
-        return resp
-
-    def test_missing_title(self):
-        self.jarr_get_patch.return_value = self.get_response('http:')
-        article = construct_article(self.entry, {'id': 1, 'user_id': 1})
-        self.assertEquals('http://www.pariszigzag.fr/?p=56413',
-                          article['entry_id'])
-        self.assertEquals('http:' + self.response_url, article['link'])
-        self.assertEquals('Les plus belles boulangeries de Paris',
-                          article['title'])
-        self.assertEquals(1, article['user_id'])
-        self.assertEquals(1, article['feed_id'])
-
-    def test_missing_scheme(self):
-        response = self.get_response('http:')
-        self.jarr_get_patch.side_effect = [
-                MissingSchema, MissingSchema, response]
-        entry = self.entry
-        entry['link'] = entry['link'][5:]
-
-        article = construct_article(entry, {'id': 1, 'user_id': 1})
-
-        self.assertEquals(3, self.jarr_get_patch.call_count)
-        self.assertEquals(response.url, self.jarr_get_patch.call_args[0][0])
-        self.assertEquals('http://www.pariszigzag.fr/?p=56413',
-                          article['entry_id'])
-        self.assertEquals(response.url, article['link'])
-        self.assertEquals('Les plus belles boulangeries de Paris',
-                          article['title'])
-        self.assertEquals(1, article['user_id'])
-        self.assertEquals(1, article['feed_id'])
-
-    def test_tags(self):
-        import bootstrap
-        bootstrap.conf.CRAWLER_RESOLV = True
-        self.jarr_get_patch.return_value = self.response2
-        article = construct_article(self.entry2, {'id': 1, 'user_id': 1})
-        self.assertEquals('yt:video:scbrjaqM3Oc', article['entry_id'])
-        self.assertEquals(self.response2.url, article['link'])
-        self.assertEquals("Ceci n'est pas Old Boy - Owlboy (suite) - "
-                          "Benzaie Live", article['title'])
-        self.assertEquals(1, article['user_id'])
-        self.assertEquals(1, article['feed_id'])
-        self.assertEquals({'twitch', 'games'}, article['tags'])
+    @patch('web.lib.article_cleaner.is_secure_served')
+    def test_clean_https_fix_readability(self, is_secure_served):
+        is_secure_served.return_value = True
+        result = clean_urls(SAMPLE, self.url, True).split('\n')
+        self.assertEqual('<a href="https://test.te/link_to_correct.html">',
+                         result[0])
+        self.assertEqual(self.sample[1], result[1])  # unchanged
+        self.assertEqual(self.sample[2], result[2])  # unchanged
+        self.assertEqual(self.sample[3], result[3])  # unchanged
+        self.assertEqual(
+                '<iframe src="https://youtube.com/an_unsecure_video">',
+                result[4])
+        self.assertEqual('<img src="http://abs.ol/ute/buggy.img"/>', result[6])
+        self.assertEqual('<img src="%s/relative.img"/>' % self.url, result[7])
