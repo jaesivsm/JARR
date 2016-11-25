@@ -4,6 +4,7 @@ from bs4 import BeautifulSoup, SoupStrainer
 
 from lib.utils import jarr_get, rebuild_url
 
+CHARSET_TAG = b'<meta charset='
 FEED_MIMETYPES = ('application/atom+xml', 'application/rss+xml',
                   'application/rdf+xml', 'application/xml', 'text/xml')
 
@@ -27,14 +28,33 @@ def try_get_icon_url(url, *splits):
     return None
 
 
+def _meta_w_charset(elem):
+    return elem.name == 'meta' and 'charset' in elem.attrs
+
+
+def _extract_charset(content, strainer):
+    parsed = BeautifulSoup(content, 'html.parser', parse_only=strainer)
+    for meta in parsed.find_all(_meta_w_charset):
+        return meta.attrs['charset']
+
+
+def _try_encodings(content, *encodings):
+    for encoding in encodings:
+        try:
+            return content.decode(encoding)
+        except Exception:
+            pass
+    return content.decode('utf8', 'ignore')
+
+
 @lru_cache(maxsize=None)
-def get_soup(content, encoding):
-    stype = 'html.parser'
-    try:
-        head_end = content.find(b'</head>')
-        return BeautifulSoup(content[:head_end].decode(encoding), stype)
-    except Exception:
-        return BeautifulSoup(content, stype, parse_only=SoupStrainer('head'))
+def get_soup(content, header_encoding='utf8'):
+    strainer = SoupStrainer('head')
+    if not isinstance(content, str):
+        encodings = [_extract_charset(content, strainer), header_encoding] \
+                if CHARSET_TAG in content else [header_encoding]
+        content = _try_encodings(content, encodings)
+    return BeautifulSoup(content, 'html.parser', parse_only=strainer)
 
 
 def extract_title(response, og_prop='og;title'):
