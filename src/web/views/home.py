@@ -1,16 +1,15 @@
 import logging
 
 from babel.dates import format_datetime, format_timedelta
-from flask import current_app, flash, render_template, request, url_for
+from flask import current_app, render_template, request, url_for
 from flask_babel import get_locale
 from flask_login import current_user, login_required
 
 from bootstrap import conf
 from lib.utils import utc_now
-from plugins import readability
-from web.controllers import (ArticleController, CategoryController,
-                             ClusterController, FeedController, UserController)
-from web.lib.article_cleaner import clean_urls
+from lib import integrations
+from web.controllers import (CategoryController, ClusterController,
+                             FeedController, UserController)
 from web.lib.view_utils import clusters_to_json, etag_match, get_notifications
 from web.views.common import jsonify
 
@@ -112,7 +111,6 @@ def get_middle_panel():
 @jsonify
 def get_cluster(cluster_id, parse=False, article_id=None):
     locale = get_locale()
-    artc = ArticleController(current_user.id)
     cluc = ClusterController(current_user.id)
     cluster = cluc.get(id=cluster_id)
     if not cluster.read:
@@ -125,28 +123,9 @@ def get_cluster(cluster_id, parse=False, article_id=None):
     readability_available = bool(current_user.readability_key
                                  or conf.PLUGINS_READABILITY_KEY)
     cluster['main_date'] = format_datetime(cluster.main_date, locale=locale)
-    if parse or (not cluster.main_article.readability_parsed
-            and feed.readability_auto_parse and readability_available):
-        if article_id:
-            article = next(article for article in cluster.articles
-                           if article.id == article_id)
-        else:
-            article = cluster.main_article
-        try:
-            new_content = readability.parse(article.link,
-                    current_user.readability_key
-                    or conf.PLUGINS_READABILITY_KEY)
-            new_content = clean_urls(new_content, article['link'],
-                                     fix_readability=True)
-        except Exception as error:
-            error = str(error).split(conf.PLUGINS_READABILITY_KEY)[0]
-            flash("Readability failed with %r" % error, "warning")
-            article['readability_parsed'] = False
-        else:
-            article['readability_parsed'] = True
-            article['content'] = new_content
-            artc.update({'id': article.id},
-                        {'readability_parsed': True, 'content': new_content})
+    integrations.dispatch('article_parsing', current_user, feed, cluster,
+                          mercury_may_parse=True,  # enabling mercury parsing
+                          mercury_parse=parse, article_id=article_id)
     for article in cluster.articles:
         article['readability_available'] = readability_available
         article['date'] = format_datetime(article.date, locale=locale)
