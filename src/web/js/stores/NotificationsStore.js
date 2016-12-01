@@ -12,12 +12,14 @@ var NotificationsStore = assign({}, EventEmitter.prototype, {
     addNotifications: function(notifications) {
         var count = this.notifs.length;
         for(var idx in notifications) {
-            this.notifs.push({
-                    key: parseInt(idx, 10) + count,
-                    read: false,
-                    level: notifications[idx].level,
-                    message: notifications[idx].message
-            });
+            if(notifications[idx].level && notifications[idx].message) {
+                this.notifs.push({
+                        key: parseInt(idx, 10) + count,
+                        read: false,
+                        level: notifications[idx].level,
+                        message: notifications[idx].message
+                });
+            }
         }
     },
     getNotifications: function() {

@@ -80,13 +80,8 @@ class ClusterController(AbstractController):
                                         cluster_read, cluster_liked)
         return self._create_from_article(article, cluster_read, cluster_liked)
 
-    def join_read(self, feed_id=None, **filters):
+    def _preprocess_per_article_filters(self, filters):
         art_filters = {}
-        filter_on_category = 'category_id' in filters
-        category_id = filters.pop('category_id', None)
-        if self.user_id:
-            filters['user_id'] = self.user_id
-
         for key in {'__or__', 'title__ilike', 'content__ilike'}\
                    .intersection(filters):
             art_filters[key] = filters.pop(key)
@@ -96,69 +91,36 @@ class ClusterController(AbstractController):
             filters['id__in'] = {line[0] for line in art_contr
                     .read(**art_filters).with_entities(Article.cluster_id)}
 
-            if not filters['id__in']:
-                return
-
-        fields = {key: getattr(Cluster, key) for key in ('main_title', 'id',
-                  'liked', 'read', 'main_article_id', 'main_feed_title',
-                  'main_date', 'main_link')}
-        sqla_fields = list(fields.values())
+    @staticmethod
+    def _get_selected(fields, art_f_alias, art_c_alias, filter_on_category):
         selected_fields = list(fields.values())
-
-        art_feed_alias, art_cat_alias = aliased(Article), aliased(Article)
         if SQLITE_ENGINE:
             selected_fields.append(func.group_concat(
-                    art_feed_alias.feed_id).label('feeds_id'))
+                    art_f_alias.feed_id).label('feeds_id'))
             if filter_on_category:
                 selected_fields.append(func.group_concat(
-                        art_cat_alias.category_id).label('categories_id'))
+                        art_c_alias.category_id).label('categories_id'))
         else:  # pragma: no cover
-            selected_fields.append(func.array_agg(art_feed_alias.feed_id,
+            selected_fields.append(func.array_agg(art_f_alias.feed_id,
                     type_=ARRAY(Integer)).label('feeds_id'))
             if filter_on_category:
                 selected_fields.append(func.array_agg(
-                        art_cat_alias.category_id,
+                        art_c_alias.category_id,
                         type_=ARRAY(Integer)).label('categories_id'))
+        return selected_fields
 
-        # DESC of what's going on below :
-        # base query with the above fields and the aggregations
-        query = db.session.query(*selected_fields)
+    def _join_on_exist(self, query, alias, attr, value):
+        val_col = getattr(alias, attr)
+        exist_query = exists(select([val_col])
+                .where(and_(alias.cluster_id == Cluster.id,
+                            alias.user_id == self.user_id, val_col == value))
+                .correlate(Cluster).limit(1))
+        return query.join(alias, and_(alias.user_id == self.user_id,
+                                      alias.cluster_id == Cluster.id))\
+                    .filter(exist_query)
 
-        # adding parent filter, but we can't just filter on one id, because
-        # we'll miss all the other parent of the cluster
-        if feed_id:
-            cluster_has_feed = exists(select([art_feed_alias.feed_id])
-                    .where(and_(art_feed_alias.cluster_id == Cluster.id,
-                                art_feed_alias.user_id == self.user_id,
-                                art_feed_alias.feed_id == feed_id))
-                    .correlate(Cluster).limit(1))
-            query = query.join(art_feed_alias,
-                               and_(art_feed_alias.user_id == self.user_id,
-                                    art_feed_alias.cluster_id == Cluster.id))\
-                         .filter(cluster_has_feed)
-        else:
-            query = query.join(art_feed_alias,
-                               and_(art_feed_alias.user_id == self.user_id,
-                                    art_feed_alias.cluster_id == Cluster.id))
-        if filter_on_category:
-            # joining only if filtering on categories to lighten the query
-            # as every article doesn't obligatorily have a category > outerjoin
-            category_filter = exists(
-                    select([art_cat_alias.category_id])
-                    .where(and_(art_cat_alias.cluster_id == Cluster.id,
-                                art_cat_alias.user_id == self.user_id,
-                                art_cat_alias.category_id == category_id))
-                    .correlate(Cluster).limit(1))
-            query = query.join(art_cat_alias,
-                               and_(art_cat_alias.user_id == self.user_id,
-                                    art_cat_alias.cluster_id == Cluster.id))\
-                         .filter(category_filter)
-
-        # applying common filter (read / liked)
-        # grouping all the fields so that agreg works on distant ids
-        query = query.group_by(*sqla_fields)\
-                    .filter(*self._to_filters(**filters))
-
+    @staticmethod
+    def _iter_on_query(query, fields, filter_on_category):
         for clu in query.order_by(Cluster.main_date.desc()).limit(1000):
             row = {}
             for key in fields:
@@ -175,6 +137,47 @@ class ClusterController(AbstractController):
                 if filter_on_category:
                     row['categories_id'] = set(clu.categories_id)
             yield row
+
+    def join_read(self, feed_id=None, **filters):
+        filter_on_cat = 'category_id' in filters
+        cat_id = filters.pop('category_id', None)
+        if self.user_id:
+            filters['user_id'] = self.user_id
+
+        self._preprocess_per_article_filters(filters)
+        if 'id__in' in filters and not filters['id__in']:
+            # filtering by article but did not found anything
+            return
+
+        fields = {key: getattr(Cluster, key) for key in ('main_title', 'id',
+                  'liked', 'read', 'main_article_id', 'main_feed_title',
+                  'main_date', 'main_link')}
+        sqla_fields = list(fields.values())
+        art_feed_alias, art_cat_alias = aliased(Article), aliased(Article)
+        # DESC of what's going on below :
+        # base query with the above fields and the aggregations
+        query = db.session.query(*self._get_selected(fields,
+                art_feed_alias, art_cat_alias, filter_on_cat))
+
+        # adding parent filter, but we can't just filter on one id, because
+        # we'll miss all the other parent of the cluster
+        if feed_id:
+            query = self._join_on_exist(query, art_feed_alias,
+                                        'feed_id', feed_id)
+        else:
+            query = query.join(art_feed_alias,
+                               and_(art_feed_alias.user_id == self.user_id,
+                                    art_feed_alias.cluster_id == Cluster.id))
+        if filter_on_cat:
+            # joining only if filtering on categories to lighten the query
+            # as every article doesn't obligatorily have a category > outerjoin
+            query = self._join_on_exist(query, art_cat_alias,
+                                        'category_id', cat_id)
+
+        # applying common filter (read / liked)
+        # grouping all the fields so that agreg works on distant ids
+        yield from self._iter_on_query(query.group_by(*sqla_fields)
+                .filter(*self._to_filters(**filters)), fields, filter_on_cat)
 
     def delete(self, obj_id):
         from web.controllers import ArticleController

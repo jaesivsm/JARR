@@ -22,6 +22,28 @@ def rfc_1123_utc(time_obj=None, delta=None):
     return time_obj.strftime(RFC_1123_FORMAT)
 
 
+def _extract_max_age(headers, feed_info, now):
+    if 'max-age' in headers.get('cache-control', ''):
+        try:
+            max_age = int(MAX_AGE_RE.search(headers['cache-control']).group(1))
+            feed_info['expires'] = now + timedelta(seconds=max_age)
+        except Exception:
+            pass
+
+
+def _extract_expires(headers, feed_info):
+    if headers.get('expires'):
+        try:
+            expires = dateutil.parser.parse(headers['expires'])
+            if expires.tzinfo:
+                expires = expires.astimezone(timezone.utc)
+            else:
+                expires = expires.replace(tzinfo=timezone.utc)
+            feed_info['expires'] = expires
+        except Exception:
+            pass
+
+
 def extract_feed_info(headers):
     """providing the headers of a feed response, will calculate the headers
     needed for basic cache control.
@@ -37,32 +59,13 @@ def extract_feed_info(headers):
 
     feed_info = {'etag': headers.get('etag', ''),
                  'last_modified': headers.get('last-modified', rfc_1123_utc())}
-    msg = "didn't found expiring mechanism, expiring at %r"
-    if 'max-age' in headers.get('cache-control', ''):
-        msg = 'found Cache-Control "max-age" header, expiring at %r'
-        try:
-            max_age = int(MAX_AGE_RE.search(headers['cache-control']).group(1))
-        except Exception:
-            pass
-        else:
-            feed_info['expires'] = now + timedelta(seconds=max_age)
-    if 'expires' not in feed_info and headers.get('expires'):
-        msg = "found Expires header, expiring at %r"
-        try:
-            expires = dateutil.parser.parse(headers['expires'])
-            if expires.tzinfo:
-                expires = expires.astimezone(timezone.utc)
-            else:
-                expires = expires.replace(tzinfo=timezone.utc)
-        except Exception:
-            pass
-        else:
-            feed_info['expires'] = expires
-
+    _extract_max_age(headers, feed_info, now)
+    if 'expires' not in feed_info:
+        _extract_expires(headers, feed_info)
     if not feed_info.get('expires'):
         feed_info['expires'] = now + timedelta(
                 seconds=conf.FEED_DEFAULT_EXPIRES)
-    logger.info(msg, feed_info['expires'].isoformat())
+
     if max_expires < feed_info['expires']:
         logger.info("expiring too late, forcing expiring at %r",
                     max_expires.isoformat())

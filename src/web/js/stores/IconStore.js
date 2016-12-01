@@ -8,7 +8,7 @@ var assign = require('object-assign');
 var IconStore = assign({}, EventEmitter.prototype, {
     icons: {},
     getIcon: function(feed_id) {
-        var feed_id = feed_id.toString();
+        feed_id = feed_id.toString();
         if(feed_id in this.icons) {
             return this.icons[feed_id];
         }
@@ -22,7 +22,7 @@ var IconStore = assign({}, EventEmitter.prototype, {
             }
             var feed_id = feeds[idx].id.toString();
             if(feeds[idx].id.toString() in this.icons
-               && feeds[idx].icon_url == this.icons[feed_id]) {
+               && feeds[idx].icon_url === this.icons[feed_id]) {
                 continue;  // icons already in
             }
             this.icons[feed_id] = feeds[idx].icon_url;

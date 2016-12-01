@@ -36,6 +36,18 @@ class AbstractController:
         except TypeError:
             self.user_id = user_id
 
+    @staticmethod
+    def _to_comparison(key, model):
+        "extract from the key the method used by sqla for comparison"
+        if '__' not in key:
+            return getattr(model, key).__eq__
+        attr, ope = key.rsplit('__', 1)
+        if ope == 'in':
+            return getattr(model, attr).in_
+        elif ope not in {'like', 'ilike'}:
+            ope = '__%s__' % ope
+        return getattr(getattr(model, attr), ope)
+
     @classmethod
     def _to_filters(cls, **filters):
         """
@@ -44,31 +56,15 @@ class AbstractController:
 
         each parameters of the function is treated as an equality unless the
         name of the parameter ends with either "__gt", "__lt", "__ge", "__le",
-        "__ne", "__in" ir "__like".
+        "__ne", "__in", "__like" or "__ilike".
         """
         db_filters = set()
         for key, value in filters.items():
             if key == '__or__':
                 db_filters.add(or_(*[and_(*cls._to_filters(**sub_filter))
                                      for sub_filter in value]))
-            elif key.endswith('__gt'):
-                db_filters.add(getattr(cls._db_cls, key[:-4]) > value)
-            elif key.endswith('__lt'):
-                db_filters.add(getattr(cls._db_cls, key[:-4]) < value)
-            elif key.endswith('__ge'):
-                db_filters.add(getattr(cls._db_cls, key[:-4]) >= value)
-            elif key.endswith('__le'):
-                db_filters.add(getattr(cls._db_cls, key[:-4]) <= value)
-            elif key.endswith('__ne'):
-                db_filters.add(getattr(cls._db_cls, key[:-4]) != value)
-            elif key.endswith('__in'):
-                db_filters.add(getattr(cls._db_cls, key[:-4]).in_(value))
-            elif key.endswith('__like'):
-                db_filters.add(getattr(cls._db_cls, key[:-6]).like(value))
-            elif key.endswith('__ilike'):
-                db_filters.add(getattr(cls._db_cls, key[:-7]).ilike(value))
             else:
-                db_filters.add(getattr(cls._db_cls, key) == value)
+                db_filters.add(cls._to_comparison(key, cls._db_cls)(value))
         return db_filters
 
     def _get(self, **filters):
@@ -141,20 +137,37 @@ class AbstractController:
         return {}
 
     @classmethod
-    def _get_attrs_desc(cls, role, right=None):
-        result = defaultdict(dict)
+    def _get_columns(cls, role, right):
         if role == 'admin':
-            columns = set(cls._db_cls.__table__.columns.keys())\
+            return set(cls._db_cls.__table__.columns.keys())\
                     .union(cls._db_cls.fields_base_read())\
                     .union(cls._db_cls.fields_base_write())\
                     .union(cls._db_cls.fields_api_read())\
                     .union(cls._db_cls.fields_api_write())
-        else:
-            assert role in {'base', 'api'}, 'unknown role %r' % role
-            assert right in {'read', 'write'}, \
-                    "right must be 'read' or 'write' with role %r" % role
-            columns = getattr(cls._db_cls, 'fields_%s_%s' % (role, right))()
-        for column in columns:
+        assert role in {'base', 'api'}, 'unknown role %r' % role
+        assert right in {'read', 'write'}, \
+                "right must be 'read' or 'write' with role %r" % role
+        return getattr(cls._db_cls, 'fields_%s_%s' % (role, right))()
+
+    @staticmethod
+    def _db_col_to_dict(db_col):
+        dict_col = {}
+        try:
+            dict_col['type'] = db_col.type.python_type
+        except NotImplementedError:
+            if db_col.default:
+                dict_col['type'] = db_col.default.arg.__class__
+        if issubclass(dict_col['type'], datetime):
+            dict_col['default'] = utc_now()
+            dict_col['type'] = cast_to_utc
+        elif db_col.default:
+            dict_col['default'] = db_col.default.arg
+        return dict_col
+
+    @classmethod
+    def _get_attrs_desc(cls, role, right=None):
+        result = {}
+        for column in cls._get_columns(role, right):
             if isinstance(getattr(cls._db_cls, column), AssociationProxy):
                 result[column] = {'type': list, 'default': list}
                 continue
@@ -162,18 +175,6 @@ class AbstractController:
                 db_col = getattr(cls._db_cls, column).property.columns[0]
             except AttributeError:
                 continue
-            result[column] = {}
-            try:
-                result[column]['type'] = db_col.type.python_type
-            except NotImplementedError:
-                if db_col.default:
-                    result[column]['type'] = db_col.default.arg.__class__
-            if column not in result:
-                continue
-            if issubclass(result[column]['type'], datetime):
-                result[column]['default'] = utc_now()
-                result[column]['type'] = cast_to_utc
-            elif db_col.default:
-                result[column]['default'] = db_col.default.arg
+            result[column] = cls._db_col_to_dict(db_col)
         result.update(cls._extra_columns(role, right))
         return result

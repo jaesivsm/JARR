@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 import os
-import imp
 from sys import stderr, path
 from subprocess import Popen, PIPE
 from argparse import ArgumentParser
@@ -8,6 +7,9 @@ root = os.path.join(os.path.dirname(globals()['__file__']), 'src/')
 path.append(root)
 
 from lib import conf_handling
+
+LOGIN_OPTION_NAME = "CRAWLER_LOGIN"
+PASSWORD_OPTION_NAME = "CRAWLER_PASSWD"
 
 
 def parse_args():
@@ -45,20 +47,25 @@ def can_npm():
     return bool(Popen(['which', 'npm'], stdout=PIPE).communicate()[0])
 
 
+def _print_line_informations(choices, default):
+    if choices:
+        print('[%s]' % '/'.join([chc.upper() if chc == default
+                                        or choices[chc] == default else chc
+                                 for chc in choices]), end=' ')
+    if default not in {'', None}:
+        if choices and default not in choices:
+            for new_default, value in choices.items():
+                if value == default:
+                    default = new_default
+                    break
+        print('(default: %r)' % default, end=' ')
+    return default
+
+
 def ask(text, choices=[], default=None, cast=None):
     while True:
         print(text, end=' ')
-        if choices:
-            print('[%s]' % '/'.join([chc.upper() if chc == default
-                                            or choices[chc] == default else chc
-                                     for chc in choices]), end=' ')
-        if default not in {'', None}:
-            if choices and default not in choices:
-                for new_default, value in choices.items():
-                    if value == default:
-                        default = new_default
-                        break
-            print('(default: %r)' % default, end=' ')
+        default = _print_line_informations(choices, default)
         print(':', end=' ')
 
         result = input()
@@ -83,9 +90,8 @@ def ask(text, choices=[], default=None, cast=None):
             return result
 
 
-def build_conf(test=False, creds={}):
+def _get_conf(test, creds):
     conf, could_import_conf = None, False
-    logins, passwords = {'CRAWLER_LOGIN'}, {'CRAWLER_PASSWD'}
     if not test:
         try:
             conf = conf_handling.ConfObject()
@@ -99,6 +105,36 @@ def build_conf(test=False, creds={}):
         else:
             creds['login'] = conf.CRAWLER_LOGIN
             creds['password'] = conf.CRAWLER_PASSWD
+    return conf, could_import_conf
+
+
+def _get_default(option, name, test, conf, could_import_conf):
+    if test and 'test' in option:
+        return option['test']
+    elif could_import_conf and hasattr(conf, name):
+        return getattr(conf, name)
+    elif name == 'BUNDLE_JS' and can_npm():
+        return 'local'
+    return option.get('default')
+
+
+def _get_value(option, name, default, edit, test, creds):
+    if (edit and not test) or (name == 'BUNDLE_JS' and not can_npm()):
+        value = ask(option['ask'], choices=option.get('choices', []),
+                    default=default)
+    else:
+        value = default
+    if 'type' in option:
+        value = option['type'](value)
+    if name == LOGIN_OPTION_NAME and creds.get('login'):
+        value = creds['login']
+    if name == PASSWORD_OPTION_NAME and creds.get('password'):
+        value = creds['password']
+    return value
+
+
+def build_conf(test=False, creds={}):
+    conf, could_import_conf = _get_conf(test, creds)
 
     for section in conf_handling.SECTIONS:
         section_edit = section.get('edit', True)
@@ -111,30 +147,9 @@ def build_conf(test=False, creds={}):
             title(prefix)
         for option in section['options']:
             edit = section_edit and option.get('edit', True)
-
             name = conf_handling.get_key(section, option)
-
-            if test and 'test' in option:
-                default = option['test']
-            elif could_import_conf and hasattr(conf, name):
-                default = getattr(conf, name)
-            elif name == 'BUNDLE_JS' and can_npm():
-                default = 'local'
-            else:
-                default = option.get('default')
-
-            if (edit and not test) \
-                    or (name == 'BUNDLE_JS' and not can_npm()):
-                value = ask(option['ask'], choices=option.get('choices', []),
-                            default=default)
-            else:
-                value = default
-            if 'type' in option:
-                value = option['type'](value)
-            if name in logins and creds.get('login'):
-                value = creds['login']
-            if name in passwords and creds.get('password'):
-                value = creds['password']
+            default = _get_default(option, name, test, conf, could_import_conf)
+            value = _get_value(option, name, default, edit, test, creds)
             yield prefix, name, value
     print()
 

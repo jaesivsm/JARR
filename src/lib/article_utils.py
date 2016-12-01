@@ -65,32 +65,31 @@ def get_article_content(entry):
     return content
 
 
+def _fetch_article(link):
+    try:
+        # resolves URL behind proxies (like feedproxy.google.com)
+        return jarr_get(link, timeout=5)
+    except MissingSchema:
+        split = urlsplit(link)
+        for scheme in 'https', 'http':
+            new_link = urlunsplit(SplitResult(scheme, *split[1:]))
+            try:
+                return jarr_get(new_link, timeout=5)
+            except Exception as error:
+                continue
+    except Exception as error:
+        logger.info("Unable to get the real URL of %s. Won't fix "
+                    "link or title. Error: %s", link, error)
+
+
 def get_article_details(entry, fetch=True):
     article_link = entry.get('link')
     article_title = html.unescape(entry.get('title', ''))
     tags = {tag.get('term').strip() for tag in entry.get('tags', [])
             if tag.get('term').strip()}
     if fetch and conf.CRAWLER_RESOLV and article_link or not article_title:
-        try:
-            # resolves URL behind proxies (like feedproxy.google.com)
-            response = jarr_get(article_link, timeout=5)
-        except MissingSchema:
-            split, failed = urlsplit(article_link), False
-            for scheme in 'https', 'http':
-                new_link = urlunsplit(SplitResult(scheme, *split[1:]))
-                try:
-                    response = jarr_get(new_link, timeout=5)
-                except Exception as error:
-                    failed = True
-                    continue
-                failed = False
-                article_link = new_link
-                break
-            if failed:
-                return article_link, article_title or 'No title', tags
-        except Exception as error:
-            logger.info("Unable to get the real URL of %s. Won't fix "
-                        "link or title. Error: %s", article_link, error)
+        response = _fetch_article(article_link)
+        if response is None:
             return article_link, article_title or 'No title', tags
         article_link = response.url
         if not article_title:
@@ -118,47 +117,53 @@ class FiltersTrigger(Enum):
     NO_MATCH = 'no match'
 
 
+def _is_filter_to_skip(filter_action, only_actions, article):
+    if filter_action not in only_actions:
+        return True
+    if filter_action in {FiltersType.REGEX, FiltersType.MATCH,
+            FiltersType.EXACT_MATCH} and 'title' not in article:
+        return True
+    if filter_action in {FiltersType.TAG_MATCH, FiltersType.TAG_CONTAINS} \
+            and 'tags' not in article:
+        return True
+    return False
+
+
+def _is_filter_matching(filter_, article):
+    pattern = filter_.get('pattern', '')
+    filter_type = FiltersType(filter_.get('type'))
+    filter_trigger = FiltersTrigger(filter_.get('action on'))
+    if filter_type is not FiltersType.REGEX:
+        pattern = pattern.lower()
+    title = article.get('title', '').lower()
+    tags = [tag.lower() for tag in article.get('tags', [])]
+    if filter_type is FiltersType.REGEX:
+        match = re.match(pattern, title)
+    elif filter_type is FiltersType.MATCH:
+        match = pattern in title
+    elif filter_type is FiltersType.EXACT_MATCH:
+        match = pattern == title
+    elif filter_type is FiltersType.TAG_MATCH:
+        match = pattern in tags
+    elif filter_type is FiltersType.TAG_CONTAINS:
+        match = any(pattern in tag for tag in tags)
+    return match and filter_trigger is FiltersTrigger.MATCH \
+            or not match and filter_trigger is FiltersTrigger.NO_MATCH
+
+
 def process_filters(filters, article, only_actions=None):
     skipped, read, liked = False, None, False
     filters = filters or []
     if only_actions is None:
         only_actions = set(FiltersAction)
     for filter_ in filters:
-        match = False
-        try:
-            pattern = filter_.get('pattern', '')
-            filter_type = FiltersType(filter_.get('type'))
-            filter_action = FiltersAction(filter_.get('action'))
-            filter_trigger = FiltersTrigger(filter_.get('action on'))
-            if filter_type is not FiltersType.REGEX:
-                pattern = pattern.lower()
-        except ValueError:
-            continue
-        if filter_action not in only_actions:
+        filter_action = FiltersAction(filter_.get('action'))
+
+        if _is_filter_to_skip(filter_action, only_actions, article):
             logger.debug('ignoring filter %r' % filter_)
             continue
-        if filter_action in {FiltersType.REGEX, FiltersType.MATCH,
-                FiltersType.EXACT_MATCH} and 'title' not in article:
-            continue
-        if filter_action in {FiltersType.TAG_MATCH, FiltersType.TAG_CONTAINS} \
-                and 'tags' not in article:
-            continue
-        title = article.get('title', '').lower()
-        tags = [tag.lower() for tag in article.get('tags', [])]
-        if filter_type is FiltersType.REGEX:
-            match = re.match(pattern, title)
-        elif filter_type is FiltersType.MATCH:
-            match = pattern in title
-        elif filter_type is FiltersType.EXACT_MATCH:
-            match = pattern == title
-        elif filter_type is FiltersType.TAG_MATCH:
-            match = pattern in tags
-        elif filter_type is FiltersType.TAG_CONTAINS:
-            match = any(pattern in tag for tag in tags)
-        take_action = match and filter_trigger is FiltersTrigger.MATCH \
-                or not match and filter_trigger is FiltersTrigger.NO_MATCH
 
-        if not take_action:
+        if not _is_filter_matching(filter_, article):
             continue
 
         if filter_action is FiltersAction.READ:

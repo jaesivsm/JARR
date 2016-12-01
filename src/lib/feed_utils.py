@@ -2,6 +2,7 @@ import html
 import logging
 import urllib
 from copy import deepcopy
+from functools import lru_cache
 
 import feedparser
 
@@ -53,24 +54,17 @@ def get_parsed_feed(url):
     return fp_parsed
 
 
-@correct_feed_values
-def construct_feed_from(url=None, fp_parsed=None, feed=None):
-    """
-    Will try to construct the most complete feed dict possible.
+@lru_cache(maxsize=None)
+def get_splits(url, site_link=None):
+    # trying to make up for missing values
+    feed_split = urllib.parse.urlsplit(url)
+    site_split = None
+    if site_link:
+        site_split = urllib.parse.urlsplit(site_link)
+    return site_split, feed_split
 
-    url: an url of a feed or a site that might be hosting a feed
-    fp_parsed: a feedparser object previously obtained
-    feed: an existing feed dict, will be updated
-    """
-    feed = deepcopy(feed) if feed else {}
-    if not url and hasattr(fp_parsed, 'get') and fp_parsed.get('href'):
-        url = fp_parsed.get('href')
 
-    # we'll try to obtain our first parsing from feedparser
-    if url and not fp_parsed:
-        fp_parsed = get_parsed_feed(url)
-    assert url is not None and fp_parsed is not None
-
+def _extract_links(url, feed, fp_parsed):
     if is_parsing_ok(fp_parsed):
         feed['link'] = url
     else:
@@ -93,25 +87,18 @@ def construct_feed_from(url=None, fp_parsed=None, feed=None):
                         and link['type'] == 'text/html'))
         feed['site_link'] = site_link or feed.get('site_link')
         feed['site_link'] = feed['site_link'] or feed.get('link')
+    return fp_parsed
 
-    if not feed.get('title'):  # not overriding user pref for title
-        if fp_parsed['feed'].get('title'):
-            feed['title'] = fp_parsed['feed'].get('title')
-        elif fp_parsed['feed'].get('title_detail', {}).get('value'):
-            feed['title'] = fp_parsed['feed']['title_detail']['value']
 
-    if fp_parsed['feed'].get('summary'):
-        feed['description'] = fp_parsed['feed']['summary']
-    elif fp_parsed['feed'].get('subtitle_detail', {}).get('value'):
-        feed['description'] = fp_parsed['feed']['subtitle_detail']['value']
+def _update_feed_w_parsed(fkey, simple_key, value_key, feed, fp_parsed):
+    if fp_parsed['feed'].get(simple_key):
+        feed[fkey] = fp_parsed['feed'].get(simple_key)
+    elif fp_parsed['feed'].get(value_key, {}).get('value'):
+        feed[fkey] = fp_parsed['feed'][value_key]['value']
 
-    # trying to make up for missing values
-    feed_split = urllib.parse.urlsplit(url)
-    site_split = None
-    if feed.get('site_link'):
-        feed['site_link'] = rebuild_url(feed['site_link'], feed_split)
-        site_split = urllib.parse.urlsplit(feed['site_link'])
 
+def _check_and_fix_icon(url, feed, fp_parsed):
+    site_split, feed_split = get_splits(url, feed.get('site_link'))
     new_icon_urls = [fp_parsed.get('feed', {}).get('icon')] \
                     + list(_browse_feedparser_feed(fp_parsed,
                            lambda link: 'icon' in link['rel']))
@@ -124,16 +111,12 @@ def construct_feed_from(url=None, fp_parsed=None, feed=None):
                 feed['icon_url'] = icon_url
                 break
 
-    nothing_to_fill = all(bool(feed.get(key))
-                          for key in ('link', 'title', 'icon_url'))
-    # here we have all we want or we do not have the main url,
-    # either way we're leaving
-    if not feed.get('site_link') or nothing_to_fill:
-        return feed
 
-    # trying to parse the page of the site for some rel link in the header
+def _fetch_url_and_enhance_feed(url, feed):
+    """trying to parse the page of the site for some rel link in the header"""
+    site_split, feed_split = get_splits(url, feed.get('site_link'))
     try:
-        response = jarr_get(feed['site_link'])
+        response = jarr_get(url)
     except Exception as error:
         logger.warn('failed to retreive %r: %r', feed['site_link'], error)
         return feed
@@ -147,3 +130,52 @@ def construct_feed_from(url=None, fp_parsed=None, feed=None):
     if not feed.get('link'):
         feed['link'] = extract_feed_link(response, feed_split)
     return feed
+
+
+def _is_processing_complete(feed, site_link_necessary=False):
+    all_filled = all(bool(feed.get(key))
+                     for key in ('link', 'title', 'icon_url'))
+    # here we have all we want or we do not have the main url,
+    # either way we're leaving
+    return (site_link_necessary and not feed.get('site_link')) or all_filled
+
+
+@correct_feed_values
+def construct_feed_from(url=None, fp_parsed=None, feed=None):
+    """
+    Will try to construct the most complete feed dict possible.
+
+    url: an url of a feed or a site that might be hosting a feed
+    fp_parsed: a feedparser object previously obtained
+    feed: an existing feed dict, will be updated
+    """
+    feed = deepcopy(feed) if feed else {}
+    if not url and hasattr(fp_parsed, 'get') and fp_parsed.get('href'):
+        url = fp_parsed.get('href')
+
+    # we'll try to obtain our first parsing from feedparser
+    if url and not fp_parsed:
+        fp_parsed = get_parsed_feed(url)
+    assert url is not None and fp_parsed is not None
+
+    fp_parsed = _extract_links(url, feed, fp_parsed)
+
+    if not feed.get('title'):  # not overriding user pref for title
+        _update_feed_w_parsed('title', 'title', 'title_detail',
+                              feed, fp_parsed)
+    _update_feed_w_parsed('description', 'summary', 'subtitle_detail',
+                          feed, fp_parsed)
+
+    if _is_processing_complete(feed):
+        return feed
+
+    if feed.get('site_link'):
+        feed['site_link'] = rebuild_url(feed['site_link'],
+                                        get_splits(url, feed['site_link'])[1])
+
+    _check_and_fix_icon(url, feed, fp_parsed)
+
+    if _is_processing_complete(feed, site_link_necessary=True):
+        return feed
+
+    return _fetch_url_and_enhance_feed(feed['site_link'], feed)
