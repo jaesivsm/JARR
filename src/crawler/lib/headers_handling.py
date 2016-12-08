@@ -78,7 +78,10 @@ def extract_feed_info(headers):
 
 def prepare_headers(feed):
     """For a known feed, will construct some header dictionnary"""
-    headers = {'User-Agent': conf.CRAWLER_USER_AGENT}
+    headers = {'User-Agent': conf.CRAWLER_USER_AGENT,
+               'Accept': 'application/atom+xml,application/rss+xml,'
+                         'application/rdf+xml;q=0.8,application/xml;q=0.5,'
+                         'text/xml;q=0.5,*/*;q=0.2'}
     if feed.get('last_modified'):
         headers['If-Modified-Since'] = feed['last_modified']
     if feed.get('etag') and 'jarr' not in feed['etag']:
