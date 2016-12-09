@@ -17,22 +17,17 @@ def assert_in_range(val, ref, sec_range=1):
 class HeadersHandlingTest(unittest.TestCase):
 
     def test_defaulting(self):
-        def default_expire():
-            return utc_now() + timedelta(seconds=conf.FEED_DEFAULT_EXPIRES)
+        self.assertEquals(None, extract_feed_info({})['expires'])
 
-        assert_in_range(extract_feed_info({})['expires'],
-                utc_now() + timedelta(seconds=conf.FEED_DEFAULT_EXPIRES))
+        self.assertEquals(None,
+        extract_feed_info({'cache-control': ''})['expires'])
+        self.assertEquals(None,
+                extract_feed_info({'cache-control': 'garbage'})['expires'])
 
-        assert_in_range(extract_feed_info({'cache-control': ''})['expires'],
-                utc_now() + timedelta(seconds=conf.FEED_DEFAULT_EXPIRES))
-        assert_in_range(
-                extract_feed_info({'cache-control': 'garbage'})['expires'],
-                utc_now() + timedelta(seconds=conf.FEED_DEFAULT_EXPIRES))
-
-        assert_in_range(extract_feed_info({'expires': ''})['expires'],
-                utc_now() + timedelta(seconds=conf.FEED_DEFAULT_EXPIRES))
-        assert_in_range(extract_feed_info({'expires': 'garbage'})['expires'],
-                utc_now() + timedelta(seconds=conf.FEED_DEFAULT_EXPIRES))
+        self.assertEquals(None,
+                extract_feed_info({'expires': ''})['expires'])
+        self.assertEquals(None,
+                extract_feed_info({'expires': 'garbage'})['expires'])
 
     def test_extract_max_age(self):
         max_age = conf.FEED_MAX_EXPIRES / 2

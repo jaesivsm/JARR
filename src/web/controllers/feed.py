@@ -12,6 +12,7 @@ from web.models import Article, Cluster, Feed, User
 
 logger = logging.getLogger(__name__)
 DEFAULT_LIMIT = 0
+DEFAULT_ART_SPAN_TIME = timedelta(seconds=conf.FEED_MAX_EXPIRES)
 
 
 class FeedController(AbstractController):
@@ -100,34 +101,53 @@ class FeedController(AbstractController):
         self.__clean_feed_fields(attrs)
         return super().create(**attrs)
 
+    def __denorm_cat_id_on_articles(self, feed, attrs):
+        if 'category_id' in attrs:
+            self.__get_art_contr().update({'feed_id': feed.id},
+                    {'category_id': attrs['category_id']})
+
+    def __denorm_title_on_clusters(self, feed, attrs):
+        if 'title' in attrs:
+            # sqlite doesn't support join on update, but they're REALLY
+            # more efficient so we'll use them anyway with postgres
+            if self.user_id:
+                where_clause = and_(Article.user_id == self.user_id,
+                                    Article.feed_id == feed.id)
+            else:
+                where_clause = Article.feed_id == feed.id
+            if SQLITE_ENGINE:
+                stmt = select([Article.id]).where(where_clause)
+                stmt = update(Cluster)\
+                        .where(Cluster.main_article_id.in_(stmt))\
+                        .values(main_feed_title=attrs['title'])
+            else:  # pragma: no cover
+                stmt = update(Cluster)\
+                        .where(and_(
+                                Article.id == Cluster.main_article_id,
+                                where_clause))\
+                        .values(dict(main_feed_title=attrs['title']))
+            db.session.execute(stmt)
+
+    def __update_default_expires(self, feed, attrs):
+        now = utc_now()
+        if 'expires' in attrs and not attrs['expires']:
+            span_time = timedelta(seconds=conf.FEED_MAX_EXPIRES)
+            art_count = self.__get_art_contr().read(feed_id=feed.id,
+                    retrieved_date__gt=now - span_time).count()
+            attrs['expires'] = now + (span_time / (art_count or 1))
+
     def update(self, filters, attrs, *args, **kwargs):
         self._ensure_icon(attrs)
         self.__clean_feed_fields(attrs)
-        if {'title', 'category_id'}.intersection(attrs):
+        stuff_to_denorm = bool({'title', 'category_id'}.intersection(attrs))
+        attrs_to_default = 'expires' in attrs and not attrs['expires']
+        if stuff_to_denorm or attrs_to_default:
             for feed in self.read(**filters):
-                if 'category_id' in attrs:
-                    self.__get_art_contr().update({'feed_id': feed.id},
-                            {'category_id': attrs['category_id']})
-                if 'title' in attrs:
-                    # sqlite doesn't support join on update, but they're REALLY
-                    # more efficient so we'll use them anyway with postgres
-                    if self.user_id:
-                        where_clause = and_(Article.user_id == self.user_id,
-                                            Article.feed_id == feed.id)
-                    else:
-                        where_clause = Article.feed_id == feed.id
-                    if SQLITE_ENGINE:
-                        stmt = select([Article.id]).where(where_clause)
-                        stmt = update(Cluster)\
-                                .where(Cluster.main_article_id.in_(stmt))\
-                                .values(main_feed_title=attrs['title'])
-                    else:  # pragma: no cover
-                        stmt = update(Cluster)\
-                                .where(and_(
-                                       Article.id == Cluster.main_article_id,
-                                       where_clause))\
-                                .values(dict(main_feed_title=attrs['title']))
-                    db.session.execute(stmt)
+                if stuff_to_denorm:
+                    self.__denorm_cat_id_on_articles(feed, attrs)
+                    self.__denorm_title_on_clusters(feed, attrs)
+                if attrs_to_default:
+                    self.__update_default_expires(feed, attrs)
         return super().update(filters, attrs, *args, **kwargs)
 
     def delete(self, obj_id):

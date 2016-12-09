@@ -58,7 +58,7 @@ def reset_feeds():
                         .with_entities(fcontr._db_cls.id)
                         .distinct())
 
-    step = timedelta(seconds=conf.FEED_DEFAULT_EXPIRES / len(feeds))
+    step = timedelta(seconds=conf.FEED_MIN_EXPIRES * 3 / len(feeds))
     for i, feed in enumerate(feeds):
         fcontr.update({'id': feed[0]},
                 {'etag': '', 'last_modified': '',

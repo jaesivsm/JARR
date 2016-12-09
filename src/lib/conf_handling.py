@@ -104,8 +104,6 @@ SECTIONS = (
              'type': int, 'default': 3, 'edit': False},
             {'key': 'MIN_EXPIRES',
              'default': 60 * 10, 'type': int, 'edit': False},
-            {'key': 'DEFAULT_EXPIRES',
-             'default': 60 * 60, 'type': int, 'edit': False},
             {'key': 'MAX_EXPIRES',
              'default': 60 * 60 * 4, 'type': int, 'edit': False},
             {'key': 'STOP_FETCH', 'default': 30, 'type': int, 'edit': False,

@@ -73,9 +73,9 @@ def extract_tags(response):
     tags = set()
     keywords = soup.find_all('meta', {'name': 'keywords'})
     if keywords:
-        tags = set(map(str.strip, sum([keyword.attrs['content'].split(',')
-                                       for keyword in keywords], [])))
-    tags = tags.union({meta.attrs['content']
+        tags = set(sum([keyword.attrs.get('content', '').split(',')
+                        for keyword in keywords], []))
+    tags = tags.union({meta.attrs.get('content', '')
                        for meta in soup.find_all('meta',
                                                  {'property': 'article:tag'})})
     return {tag.strip() for tag in tags if tag.strip()}

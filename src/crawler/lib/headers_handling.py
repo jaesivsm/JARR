@@ -62,20 +62,17 @@ def extract_feed_info(headers):
     _extract_max_age(headers, feed_info, now)
     if 'expires' not in feed_info:
         _extract_expires(headers, feed_info)
-    if not feed_info.get('expires'):
-        feed_info['expires'] = now + timedelta(
-                seconds=conf.FEED_DEFAULT_EXPIRES)
 
-    if max_expires < feed_info['expires']:
+    if not feed_info.get('expires'):
+        feed_info['expires'] = None
+    elif max_expires < feed_info['expires']:
         logger.info("expiring too late, forcing expiring at %r",
                     max_expires.isoformat())
         feed_info['expires'] = max_expires
-    if feed_info['expires'] < min_expires:
-        min_ex_plus_buffer = min_expires \
-                + timedelta(seconds=conf.FEED_MIN_EXPIRES / 2)
+    elif feed_info['expires'] < min_expires:
         logger.info("expiring too early, forcing expiring at %r",
-                    min_ex_plus_buffer.isoformat())
-        feed_info['expires'] = min_ex_plus_buffer
+                    min_expires.isoformat())
+        feed_info['expires'] = min_expires + timedelta(minutes=5)
     return feed_info
 
 
