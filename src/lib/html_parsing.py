@@ -2,11 +2,10 @@ from functools import lru_cache
 
 from bs4 import BeautifulSoup, SoupStrainer
 
+from lib.const import FEED_MIMETYPES
 from lib.utils import jarr_get, rebuild_url
 
 CHARSET_TAG = b'<meta charset='
-FEED_MIMETYPES = ('application/atom+xml', 'application/rss+xml',
-                  'application/rdf+xml', 'application/xml', 'text/xml')
 
 
 def try_get_icon_url(url, *splits):
@@ -49,6 +48,12 @@ def _try_encodings(content, *encodings):
 
 @lru_cache(maxsize=None)
 def get_soup(content, header_encoding='utf8'):
+    """For a content and an encoding will return a bs4 object which will be
+    cached so you can call on this method as often as you want.
+
+    As the encoding written in the HTML is more reliable, ```get_soup``` will
+    try this one before parsing with the one in args.
+    """
     strainer = SoupStrainer('head')
     if not isinstance(content, str):
         encodings = [_extract_charset(content, strainer), header_encoding] \
@@ -58,6 +63,7 @@ def get_soup(content, header_encoding='utf8'):
 
 
 def extract_title(response, og_prop='og;title'):
+    """From a requests.Response objects will return the title."""
     soup = get_soup(response.content, response.encoding)
     try:
         return soup.find_all('meta', property=og_prop)[0].attrs['content']
@@ -69,6 +75,8 @@ def extract_title(response, og_prop='og;title'):
 
 
 def extract_tags(response):
+    """From a requests.Response objects will return the tags
+    (keywords + open graphs ones)."""
     soup = get_soup(response.content, response.encoding)
     tags = set()
     keywords = soup.find_all('meta', {'name': 'keywords'})

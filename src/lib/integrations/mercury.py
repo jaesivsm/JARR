@@ -45,9 +45,8 @@ class MercuryIntegration(AbstractIntegration):
         article = self.get_article(cluster, **kwargs)
         url = READABILITY_PARSER + urlencode({'url': article.link})
         key = user.readability_key or conf.PLUGINS_READABILITY_KEY
-        headers = {'User-Agent': conf.CRAWLER_USER_AGENT, 'x-api-key': key}
         try:
-            response = jarr_get(url, headers=headers)
+            response = jarr_get(url, headers={'x-api-key': key})
             response.raise_for_status()
             json = response.json()
             if not json:

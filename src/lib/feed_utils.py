@@ -7,8 +7,9 @@ from functools import lru_cache
 import feedparser
 
 from bootstrap import conf
+from lib.const import FEED_ACCEPT_HEADERS, FEED_MIMETYPES
 from lib.utils import jarr_get, rebuild_url
-from lib.html_parsing import (extract_title, extract_icon_url, FEED_MIMETYPES,
+from lib.html_parsing import (extract_title, extract_icon_url,
                               extract_feed_link, try_get_icon_url)
 
 logger = logging.getLogger(__name__)
@@ -116,7 +117,7 @@ def _fetch_url_and_enhance_feed(url, feed):
     """trying to parse the page of the site for some rel link in the header"""
     site_split, feed_split = get_splits(url, feed.get('site_link'))
     try:
-        response = jarr_get(url)
+        response = jarr_get(url, headers={'Accept': FEED_ACCEPT_HEADERS})
     except Exception as error:
         logger.warn('failed to retreive %r: %r', feed['site_link'], error)
         return feed

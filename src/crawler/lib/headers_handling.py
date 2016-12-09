@@ -4,6 +4,7 @@ import logging
 import re
 
 from bootstrap import conf
+from lib.const import FEED_ACCEPT_HEADERS
 from lib.utils import to_hash, utc_now
 
 logger = logging.getLogger(__name__)
@@ -70,18 +71,17 @@ def extract_feed_info(headers):
                     max_expires.isoformat())
         feed_info['expires'] = max_expires
     elif feed_info['expires'] < min_expires:
+        min_exp_w_buffer = now + timedelta(seconds=conf.FEED_MIN_EXPIRES * 1.2)
         logger.info("expiring too early, forcing expiring at %r",
-                    min_expires.isoformat())
-        feed_info['expires'] = min_expires + timedelta(minutes=5)
+                    min_exp_w_buffer.isoformat())
+        feed_info['expires'] = min_exp_w_buffer
     return feed_info
 
 
 def prepare_headers(feed):
     """For a known feed, will construct some header dictionnary"""
     headers = {'User-Agent': conf.CRAWLER_USER_AGENT,
-               'Accept': 'application/atom+xml,application/rss+xml,'
-                         'application/rdf+xml;q=0.8,application/xml;q=0.5,'
-                         'text/xml;q=0.5,*/*;q=0.2'}
+               'Accept': FEED_ACCEPT_HEADERS}
     if feed.get('last_modified'):
         headers['If-Modified-Since'] = feed['last_modified']
     if feed.get('etag') and 'jarr' not in feed['etag']:

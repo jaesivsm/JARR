@@ -69,9 +69,11 @@ def redirect_url(default='home'):
     return request.args.get('next') or request.referrer or url_for(default)
 
 
-def jarr_get(url, **kwargs):
+def jarr_get(url, headers=None, **kwargs):
+    def_headers = {'User-Agent': conf.CRAWLER_USER_AGENT}
+    if isinstance(headers, dict):
+        def_headers.update(headers)
     request_kwargs = {'verify': False, 'allow_redirects': True,
-                      'timeout': conf.CRAWLER_TIMEOUT,
-                      'headers': {'User-Agent': conf.CRAWLER_USER_AGENT}}
+                      'timeout': conf.CRAWLER_TIMEOUT, 'headers': def_headers}
     request_kwargs.update(kwargs)
     return requests.get(url, **request_kwargs)
