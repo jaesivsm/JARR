@@ -10,7 +10,7 @@
   {% endfor %}
 
   <label for="inputEmail" class="sr-only">{{_("Email")}}</label>
-  {{form.email(class_="form-control", type="text", id="inputEmail", placeholder="Email", required=True, autofocus=True)}}
+  {{form.email(class_="form-control", type="email", id="inputEmail", placeholder="Email", required=True, autofocus=True)}}
   {% for error in form.email.errors %}
     <span style="color: red;">{{ error }}<br /></span>
   {% endfor %}
