@@ -85,8 +85,9 @@ def _fetch_article(link):
 def get_article_details(entry, fetch=True):
     article_link = entry.get('link')
     article_title = html.unescape(entry.get('title', ''))
-    tags = {tag.get('term').strip() for tag in entry.get('tags', [])
-            if tag.get('term').strip()}
+    tags = {tag.get('term', '').lower().strip()
+            for tag in entry.get('tags', [])
+            if tag.get('term', '').strip()}
     if fetch and conf.CRAWLER_RESOLV and article_link or not article_title:
         response = _fetch_article(article_link)
         if response is None:

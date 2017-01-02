@@ -86,7 +86,7 @@ def extract_tags(response):
     tags = tags.union({meta.attrs.get('content', '')
                        for meta in soup.find_all('meta',
                                                  {'property': 'article:tag'})})
-    return {tag.strip() for tag in tags if tag.strip()}
+    return {tag.lower().strip() for tag in tags if tag.strip()}
 
 
 def _check_keys(**kwargs):
