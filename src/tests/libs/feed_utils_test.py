@@ -39,14 +39,14 @@ class ConstructFeedFromTest(unittest.TestCase):
 
     def test_apod(self):
         self.assertEquals(
-                {'icon_url': 'http://apod.nasa.gov/favicon.ico',
+                {'icon_url': 'https://apod.nasa.gov/favicon.ico',
                  'site_link': 'http://apod.nasa.gov/',
                  'title': 'Astronomy Picture of the Day'},
                 construct_feed_from('http://apod.nasa.gov/'))
         self.assertEquals(
                 {'description': 'Astronomy Picture of the Day',
-                 'icon_url': 'http://apod.nasa.gov/favicon.ico',
+                 'icon_url': 'https://apod.nasa.gov/favicon.ico',
                  'link': 'http://apod.nasa.gov/apod.rss',
-                 'site_link': 'http://antwrp.gsfc.nasa.gov/',
+                 'site_link': 'https://apod.nasa.gov/',
                  'title': 'APOD'},
                 construct_feed_from('http://apod.nasa.gov/apod.rss'))

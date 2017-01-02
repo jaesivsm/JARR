@@ -1,4 +1,5 @@
-from datetime import timedelta
+from datetime import timedelta, datetime
+import dateutil.parser
 import logging
 
 from sqlalchemy import and_
@@ -130,11 +131,20 @@ class FeedController(AbstractController):
 
     def __update_default_expires(self, feed, attrs):
         now = utc_now()
-        if 'expires' in attrs and not attrs['expires']:
+        if 'expires' in attrs:
+            expires = []
+            if attrs['expires']:
+                if not isinstance(attrs['expires'], datetime):
+                    expires.append(dateutil.parser.parse(attrs['expires']))
+                else:
+                    expires.append(attrs['expires'])
+
             span_time = timedelta(seconds=conf.FEED_MAX_EXPIRES)
             art_count = self.__get_art_contr().read(feed_id=feed.id,
                     retrieved_date__gt=now - span_time).count()
-            attrs['expires'] = now + (span_time / (art_count or 1))
+            expires.append(now + (span_time / (art_count or 1)))
+
+            attrs['expires'] = min(expires)
 
     def update(self, filters, attrs, *args, **kwargs):
         self._ensure_icon(attrs)
