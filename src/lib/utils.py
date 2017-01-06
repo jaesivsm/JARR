@@ -12,10 +12,22 @@ from flask import request, url_for
 from bootstrap import conf
 
 logger = logging.getLogger(__name__)
+RFC_1123_FORMAT = '%a, %d %b %Y %X %Z'
 
 
 def utc_now():
     return pytz.utc.localize(datetime.utcnow())
+
+
+def rfc_1123_utc(time_obj=None, delta=None):
+    """return time obj or now formated in the RFC1123 style. Add time delta if
+    present.
+    """
+    if time_obj is None:
+        time_obj = utc_now()
+    if delta is not None:
+        time_obj += delta
+    return time_obj.strftime(RFC_1123_FORMAT)
 
 
 def default_handler(obj, role='admin'):
