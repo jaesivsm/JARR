@@ -55,11 +55,17 @@ def get_soup(content, header_encoding='utf8'):
     try this one before parsing with the one in args.
     """
     strainer = SoupStrainer('head')
+    decoded_content = None
     if not isinstance(content, str):
         encodings = [_extract_charset(content, strainer), header_encoding] \
                 if CHARSET_TAG in content else [header_encoding]
-        content = _try_encodings(content, encodings)
-    return BeautifulSoup(content, 'html.parser', parse_only=strainer)
+        decoded_content = _try_encodings(content, encodings)
+    for cnt in decoded_content, content:
+        if cnt:
+            try:
+                return BeautifulSoup(cnt, 'html.parser', parse_only=strainer)
+            except Exception as error:
+                logger.warn('something went wrong when parsing: %r', error)
 
 
 def extract_title(response, og_prop='og;title'):
