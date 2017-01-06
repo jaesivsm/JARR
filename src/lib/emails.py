@@ -46,5 +46,5 @@ def send(to="", bcc="", subject="", plaintext=""):
         if conf.NOTIFICATION_STARTTLS:
             smtp.starttls()
         smtp.ehlo()
-        smtp.login(conf.NOTIFICATION_USERNAME, conf.NOTIFICATION_PASSWORD)
+        smtp.login(conf.NOTIFICATION_EMAIL, conf.NOTIFICATION_PASSWORD)
         smtp.sendmail(conf.NOTIFICATION_EMAIL, [msg['To']], msg.as_string())
