@@ -48,19 +48,13 @@ def fetch(limit=0, retreive_all=False):
 @manager.command
 def reset_feeds():
     """Will reschedule all active feeds to be fetched in the next two hours"""
-    from web.models import User
     fcontr = FeedController(ignore_context=True)
     now = utc_now()
-    last_conn_max = now - timedelta(days=30)
+    feeds = [feed[0] for feed in fcontr.with_entities(fcontr._db_cls.id)]
 
-    feeds = list(fcontr.read().join(User).filter(User.is_active.__eq__(True),
-                                    User.last_connection >= last_conn_max)
-                        .with_entities(fcontr._db_cls.id)
-                        .distinct())
-
-    step = timedelta(seconds=conf.FEED_MIN_EXPIRES * 3 / len(feeds))
-    for i, feed in enumerate(feeds):
-        fcontr.update({'id': feed[0]},
+    step = timedelta(seconds=conf.FEED_MAX_EXPIRES / len(feeds))
+    for i, feed_id in enumerate(feeds):
+        fcontr.update({'id': feed_id},
                 {'etag': '', 'last_modified': '',
                  'last_retrieved': datetime(1970, 1, 1, tzinfo=timezone.utc),
                  'expires': now + i * step})

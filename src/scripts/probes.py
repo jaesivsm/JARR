@@ -58,10 +58,25 @@ class FeedProbe(AbstractMuninPlugin):
 
 
 class FeedLatenessProbe(AbstractMuninPlugin):
-    split_number = 5
-    colours = 'F90026', 'FB7601', 'FCC402', 'E6FC02', '99FD03', '05FF0B'
+    split_number = 12
     colour_expired = '3B0B17'
     colour_in_a_while = '2E2EFE'
+
+    @staticmethod
+    def colors(nb_steps):
+         red, green, blue = 255, 0, 0
+         steps = 255 * 2 / (nb_steps - 1)
+         yield '{:02X}{:02X}{:02X}'.format(red, green, blue)
+         for i in range(nb_steps):
+             if green < 255:
+                 green += steps
+                 if green > 255:
+                     red -= green - 255
+                     green = 255
+             else:
+                 red -= steps
+             yield '{:02X}{:02X}{:02X}'.format(int(red if red < 255 else 255),
+                    int(green if green > 0 else 0), int(blue))
 
     def iter_on_splits(self):
         offset = 2
@@ -89,7 +104,7 @@ class FeedLatenessProbe(AbstractMuninPlugin):
     def config(self):
         print("graph_title JARR - Feeds lateness repartition")
         print("graph_vlabel feeds counts")
-        colours = iter(self.colours)
+        colors = self.colors(self.split_number)
         for i, range_start, range_end in self.iter_on_splits():
             print("feeds_%s.draw AREASTACK" % i)
             print("feeds_%s.min 0" % i)
@@ -105,7 +120,7 @@ class FeedLatenessProbe(AbstractMuninPlugin):
                       "than %s" % self._to_hour(range_start))
 
             else:
-                print("feeds_%s.colour %s" % (i, next(colours)))
+                print("feeds_%s.colour %s" % (i, next(colors)))
                 print("feeds_%s.label feeds in split %d" % (i, i))
                 print("feeds_%s.info feeds expiring in between %s and %s" % (i,
                       self._to_hour(range_start), self._to_hour(range_end)))
