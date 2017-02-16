@@ -100,8 +100,8 @@ def _get_filters(in_dict):
 @login_required
 @etag_match
 def get_middle_panel():
-    return clusters_to_json(ClusterController(current_user.id).join_read(
-            **_get_filters(request.args)))
+    clu_contr = ClusterController(current_user.id)
+    return clusters_to_json(clu_contr.join_read(**_get_filters(request.args)))
 
 
 @current_app.route('/getclu/<int:cluster_id>')

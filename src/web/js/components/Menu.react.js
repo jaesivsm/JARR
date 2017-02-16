@@ -21,9 +21,6 @@ var FeedItem = React.createClass({
     },
     render: function() {
         var badge_unread = null;
-        console.log(this.props.title);
-        console.log(this.props.feed_id);
-        console.log(IconStore.getIcon(this.props.feed_id));
         var icon = <FeedIcon feed_id={this.props.feed_id} />;
         // handling unread badge
         if(this.props.unread){

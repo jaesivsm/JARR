@@ -135,7 +135,7 @@ class ClusterController(AbstractController):
             else:  # pragma: no cover
                 row['feeds_id'] = set(clu.feeds_id)
                 if filter_on_category:
-                    row['categories_id'] = set(clu.categories_id)
+                    row['categories_id'] = {i or 0 for i in clu.categories_id}
             yield row
 
     def join_read(self, feed_id=None, **filters):
@@ -149,10 +149,10 @@ class ClusterController(AbstractController):
             # filtering by article but did not found anything
             return
 
-        fields = {key: getattr(Cluster, key) for key in ('main_title', 'id',
-                  'liked', 'read', 'main_article_id', 'main_feed_title',
-                  'main_date', 'main_link')}
-        sqla_fields = list(fields.values())
+        returned_keys = ('main_title', 'id', 'liked', 'read',
+                'main_article_id', 'main_feed_title', 'main_date', 'main_link')
+        fields = {key: getattr(Cluster, key) for key in returned_keys}
+        sqla_fields = [getattr(Cluster, key) for key in returned_keys]
         art_feed_alias, art_cat_alias = aliased(Article), aliased(Article)
         # DESC of what's going on below :
         # base query with the above fields and the aggregations
