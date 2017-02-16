@@ -64,19 +64,19 @@ class FeedLatenessProbe(AbstractMuninPlugin):
 
     @staticmethod
     def colors(nb_steps):
-         red, green, blue = 255, 0, 0
-         steps = 255 * 2 / (nb_steps - 1)
-         yield '{:02X}{:02X}{:02X}'.format(red, green, blue)
-         for i in range(nb_steps):
-             if green < 255:
-                 green += steps
-                 if green > 255:
-                     red -= green - 255
-                     green = 255
-             else:
-                 red -= steps
-             yield '{:02X}{:02X}{:02X}'.format(int(red if red < 255 else 255),
-                    int(green if green > 0 else 0), int(blue))
+        red, green, blue = 255, 0, 0
+        steps = 255 * 2 / (nb_steps - 1)
+        yield '{:02X}{:02X}{:02X}'.format(red, green, blue)
+        for i in range(nb_steps):
+            if green < 255:
+                green += steps
+                if green > 255:
+                    red -= green - 255
+                    green = 255
+            else:
+                red -= steps
+            yield '{:02X}{:02X}{:02X}'.format(int(red if red < 255 else 255),
+                int(green if green > 0 else 0), int(blue))
 
     def iter_on_splits(self):
         offset = 2
