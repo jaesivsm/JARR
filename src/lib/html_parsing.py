@@ -84,6 +84,8 @@ def extract_tags(response):
     """From a requests.Response objects will return the tags
     (keywords + open graphs ones)."""
     soup = get_soup(response.content, response.encoding)
+    if not soup:
+        return {}
     tags = set()
     keywords = soup.find_all('meta', {'name': 'keywords'})
     if keywords:
@@ -111,6 +113,8 @@ def _check_keys(**kwargs):
 
 def extract_icon_url(response, site_split, feed_split):
     soup = get_soup(response.content, response.encoding)
+    if not soup:
+        return
     icons = soup.find_all(_check_keys(rel=['icon', 'shortcut']))
     if not len(icons):
         icons = soup.find_all(_check_keys(rel=['icon']))
