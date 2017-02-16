@@ -8,7 +8,8 @@ class ConstructFeedFromTest(unittest.TestCase):
     @property
     def jdh_feed(self):
         return {'icon_url': 'https://www.journalduhacker.net/'
-                    'assets/jdh-ico-2c6c8060958bf86c28b20d0c83f1bbc5.ico',
+                    'assets/jdh-ico-311c23d65a3a9928889718838e2626c0665d83712d'
+                    '488713c9a6c2ba2c676c0e.ico',
                 'link': 'https://www.journalduhacker.net/rss',
                 'site_link': 'https://www.journalduhacker.net/',
                 'title': 'Journal du hacker'}
