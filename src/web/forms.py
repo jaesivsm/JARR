@@ -80,16 +80,15 @@ class SigninForm(RedirectForm):
         try:
             user = ucontr.get(login=self.login.data)
         except NotFound:
-            self.login.errors.append('Wrong login')
             validated = False
         else:
             if not user.is_active:
-                self.login.errors.append('User is desactivated')
                 validated = False
             if not ucontr.check_password(user, self.password.data):
-                self.password.errors.append('Wrong password')
                 validated = False
             self.user = user
+        if not validated:
+            self.login.errors.append('Invalid credentials.')
         return validated
 
 
