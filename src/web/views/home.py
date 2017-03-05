@@ -6,6 +6,7 @@ from flask_babel import get_locale
 from flask_login import current_user, login_required
 
 from bootstrap import conf
+from lib.const import UNIX_START
 from lib.utils import utc_now
 from lib import integrations
 from web.controllers import (CategoryController, ClusterController,
@@ -45,12 +46,17 @@ def get_menu():
     for feed in FeedController(current_user.id).read():
         feed['created_rel'] = format_timedelta(
                 feed.created_date - now, add_direction=True, locale=locale)
-        feed['last_rel'] = format_timedelta(
-                feed.last_retrieved - now, add_direction=True, locale=locale)
         feed['created_date'] = format_datetime(feed.created_date,
                                                locale=locale)
-        feed['last_retrieved'] = format_datetime(feed.last_retrieved,
-                                                 locale=locale)
+        if feed.last_retrieved == UNIX_START:
+            feed['last_rel'] = 'Never fetched'
+            feed['last_retrieved'] = ''
+        else:
+            feed['last_rel'] = format_timedelta(
+                    feed.last_retrieved - now,
+                    add_direction=True, locale=locale)
+            feed['last_retrieved'] = format_datetime(feed.last_retrieved,
+                                                     locale=locale)
         feed['category_id'] = feed.category_id or 0
         feed['unread'] = cnt_by_feed.get(feed.id, 0)
         if not feed.filters:

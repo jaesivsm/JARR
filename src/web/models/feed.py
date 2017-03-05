@@ -1,4 +1,3 @@
-from datetime import datetime, timezone
 
 from sqlalchemy import (Boolean, Column, ForeignKey, Index, Integer,
                         PickleType, String)
@@ -6,11 +5,9 @@ from sqlalchemy.orm import relationship, validates
 
 from bootstrap import db
 from lib.utils import utc_now
+from lib.const import UNIX_START
 from web.models.utc_datetime_type import UTCDateTime
 from web.models.right_mixin import RightMixin
-
-
-UNIX_START = datetime(1970, 1, 1, tzinfo=timezone.utc)
 
 
 class Feed(db.Model, RightMixin):
