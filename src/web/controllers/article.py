@@ -22,7 +22,7 @@ class ArticleController(AbstractController):
     def challenge(self, ids):
         """Will return each id that wasn't found in the database."""
         for id_ in ids:
-            if self.read(**id_).first():
+            if self.read(**id_).with_entities(self._db_cls.id).first():
                 continue
             yield id_
 
