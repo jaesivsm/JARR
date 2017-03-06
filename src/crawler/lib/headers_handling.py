@@ -5,7 +5,7 @@ import re
 
 from bootstrap import conf
 from lib.const import FEED_ACCEPT_HEADERS
-from lib.utils import to_hash, utc_now, rfc_1123_utc
+from lib.utils import utc_now, rfc_1123_utc
 
 logger = logging.getLogger(__name__)
 MAX_AGE_RE = re.compile('max-age=([0-9]+)')
@@ -79,20 +79,3 @@ def prepare_headers(feed):
     logger.debug('%r %r - calculated headers %r',
                     feed['id'], feed['title'], headers)
     return headers
-
-
-def response_match_cache(response, feed):
-    if 'etag' not in response.headers:
-        logger.debug('%r %r - manually generating etag',
-                        feed['id'], feed['title'])
-        response.headers['etag'] = 'jarr/"%s"' % to_hash(response.text)
-    if response.headers['etag'] and feed['etag'] \
-            and response.headers['etag'] == feed['etag']:
-        if 'jarr' in feed['etag']:
-            logger.info("%r %r - calculated hash matches (%d)",
-                        feed['id'], feed['title'], response.status_code)
-        else:
-            logger.info("%r %r - feed responded with same etag (%d)",
-                        feed['id'], feed['title'], response.status_code)
-        return True
-    return False

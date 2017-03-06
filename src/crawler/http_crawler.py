@@ -24,7 +24,7 @@ from requests_futures.sessions import FuturesSession
 from bootstrap import conf
 from lib.article_utils import construct_article, get_skip_and_ids
 from lib.feed_utils import construct_feed_from, is_parsing_ok
-from lib.utils import default_handler, utc_now
+from lib.utils import default_handler, to_hash, utc_now
 from crawler.lib import headers_handling
 
 logger = logging.getLogger(__name__)
@@ -86,14 +86,24 @@ class AbstractCrawler:
             break
 
 
-class JarrUpdater(AbstractCrawler):
+class AbstractFeedCrawler(AbstractCrawler):
+
+    def __init__(self, feed, auth):
+        self.feed = feed
+        self.base_msg = '%r %r - ' % (self.feed['id'], self.feed['title'])
+        super().__init__(auth)
+
+    def log(self, level, message, *args, **kwargs):
+        return getattr(logger, level)(self.base_msg + message, *args, **kwargs)
+
+
+class JarrUpdater(AbstractFeedCrawler):
 
     def __init__(self, feed, entries, headers, parsed_feed, auth):
-        self.feed = feed
         self.entries = entries
         self.headers = headers
         self.parsed_feed = parsed_feed
-        super().__init__(auth)
+        super().__init__(feed, auth)
 
     def callback(self, response):
         """Will process the result from the challenge, creating missing article
@@ -109,71 +119,71 @@ class JarrUpdater(AbstractCrawler):
             return
         if response.status_code != 204:
             results = response.json()
-            logger.debug('%r %r - %d entries were not matched '
-                         'and will be created',
-                         self.feed['id'], self.feed['title'], len(results))
+            self.log('debug', "%d entries wern't matched and will be created",
+                     len(results))
             entries = []
             for id_to_create in results:
                 article_created = True
                 entry = construct_article(
                         self.entries[tuple(sorted(id_to_create.items()))],
                         self.feed)
-                logger.info('%r %r - creating %r for %r - %r', self.feed['id'],
-                            self.feed['title'], entry.get('title'),
-                            entry.get('user_id'), id_to_create)
+                self.log('info', 'creating %r for %r - %r', entry.get('title'),
+                         entry.get('user_id'), id_to_create)
                 entries.append(entry)
             self.query_jarr('post', 'articles', entries)
 
-        if not is_parsing_ok(self.parsed_feed):
-            logger.info('%r %r - parsing failed, bumping error count',
-                        self.feed['id'], self.feed['title'])
-            up_feed = headers_handling.extract_feed_info(self.headers)
-            up_feed['last_error'] = str(self.parsed_feed.get('bozo_exception'))
-            up_feed['error_count'] = self.feed['error_count'] + 1
-            up_feed['last_retrieved'] = utc_now()
-
-            return self.query_jarr('put', 'feed/%d' % self.feed['id'], up_feed)
-
-        up_feed = construct_feed_from(url=self.feed['link'],
-                                      fp_parsed=self.parsed_feed,
-                                      feed=self.feed)
-        up_feed.update(headers_handling.extract_feed_info(self.headers))
-
-        up_feed.pop('link', None)  # not updating feed url
-        up_feed['user_id'] = self.feed['user_id']
-        up_feed['last_error'] = None
-        up_feed['error_count'] = 0
-        up_feed['last_retrieved'] = utc_now()
         if not article_created:
-            logger.info('%r %r - all article matched in db, adding nothing',
-                        self.feed['id'], self.feed['title'])
-
-        # updating only changed attrs
-        up_feed = {key: value for key, value in up_feed.items()
-                   if up_feed[key] != self.feed.get(key)}
-        logger.info('%r %r - pushing feed attrs %r',
-                self.feed['id'], self.feed['title'],
-                {key: "%r -> %r" % (self.feed.get(key), up_feed[key])
-                 for key in up_feed})
-
-        self.query_jarr('put', 'feed/%d' % self.feed['id'], up_feed)
+            self.log('info', 'all article matched in db, adding nothing')
 
 
-class FeedCrawler(AbstractCrawler):
+class FeedCrawler(AbstractFeedCrawler):
 
-    def __init__(self, feed, auth):
-        self.feed = feed
-        super().__init__(auth)
-
-    def clean_feed(self, headers):
+    def clean_feed(self, response, parsed_feed=None):
         """Will reset the errors counters on a feed that have known errors"""
-        info = headers_handling.extract_feed_info(headers)
+        info = headers_handling.extract_feed_info(response.headers)
         info.update({'error_count': 0, 'last_error': None,
                      'last_retrieved': utc_now()})
+
+        if parsed_feed is not None:  # updating feed with retrieved info
+            constructed = construct_feed_from(
+                    self.feed['link'], parsed_feed, self.feed)
+            for key in 'description', 'site_link', 'icon_url':
+                if up_feed.get(key):
+                    info[key] = constructed[key]
+
         info = {key: value for key, value in info.items()
                 if self.feed.get(key) != value}
+
         if info:
             self.query_jarr('put', 'feed/%d' % self.feed['id'], info)
+
+    def set_feed_error(self, error=None, parsed_feed=None):
+        error_count = self.feed['error_count'] + 1
+        if error:
+            last_error = str(error)
+        elif parsed_feed:
+            last_error = str(parsed_feed.get('bozo_exception', ''))
+        if self.feed['error_count'] > conf.FEED_ERROR_THRESHOLD:
+            self.log('warn', 'an error occured while fetching feed; '
+                     'bumping error count to %r', error_count)
+        info = {'error_count': error_count, 'last_error': last_error,
+                'user_id': self.feed['user_id'], 'last_retrieved': utc_now()}
+        info.update(headers_handling.extract_feed_info({}))
+        future = self.query_jarr('put', 'feed/%d' % self.feed['id'], info)
+
+    def response_match_cache(self, response):
+        if 'etag' not in response.headers:
+            self.log('debug', 'manually generating etag')
+            response.headers['etag'] = 'jarr/"%s"' % to_hash(response.text)
+        if response.headers['etag'] and self.feed['etag'] \
+                and response.headers['etag'] == self.feed['etag']:
+            if 'jarr' in self.feed['etag']:
+                msg = "calculated hash matches (%d)"
+            else:
+                msg = "feed responded with same etag (%d)"
+            self.log('info', msg, response.status_code)
+            return True
+        return False
 
     def callback(self, response):
         """will fetch the feed and interprete results (304, etag) or will
@@ -182,55 +192,44 @@ class FeedCrawler(AbstractCrawler):
             response = response.result()
             response.raise_for_status()
         except Exception as error:
-            error_count = self.feed['error_count'] + 1
-            if self.feed['error_count'] > conf.FEED_ERROR_THRESHOLD:
-                logger.warn('%r %r - an error occured while fetching '
-                            'feed; bumping error count to %r',
-                            self.feed['id'], self.feed['title'], error_count)
-            info = {'error_count': error_count, 'last_error': str(error),
-                    'user_id': self.feed['user_id'],
-                    'last_retrieved': utc_now()}
-            info.update(headers_handling.extract_feed_info({}))
-            future = self.query_jarr('put', 'feed/%d' % self.feed['id'], info)
+            self.set_feed_error(error=error)
             return
 
         if response.status_code == 304:
-            logger.info("%r %r - feed responded with 304",
-                        self.feed['id'], self.feed['title'])
-            self.clean_feed(response.headers)
+            self.log('info', 'feed responded with 304')
+            self.clean_feed(response)
             return
-        if headers_handling.response_match_cache(response, self.feed):
-            self.clean_feed(response.headers)
+        if self.response_match_cache(response):
+            self.clean_feed(response)
             return
         else:
-            logger.debug('%r %r - etag mismatch %r != %r',
-                         self.feed['id'], self.feed['title'],
-                         response.headers['etag'], self.feed['etag'])
-        logger.info('%r %r - cache validation failed, challenging entries',
-                    self.feed['id'], self.feed['title'])
+            self.log('debug', 'etag mismatch %r != %r',
+                     response.headers['etag'], self.feed['etag'])
+        self.log('info', 'cache validation failed, challenging entries')
 
-        ids, entries = [], {}
         parsed_response = feedparser.parse(response.content.strip())
-        skipped_list = []
+        if is_parsing_ok(parsed_response):
+            self.clean_feed(response)
+        else:
+            self.set_feed_error(parsed_feed=self.parsed_feed)
+            return
+
+        ids, entries, skipped_list = [], {}, []
         for entry in parsed_response['entries']:
             if not entry:
                 continue
             skipped, entry_ids = get_skip_and_ids(entry, self.feed)
             if skipped:
                 skipped_list.append(entry_ids)
-                logger.debug('%r %r - skipping article',
-                             self.feed['id'], self.feed['title'])
+                self.log('debug', 'skipping article')
                 continue
             entries[tuple(sorted(entry_ids.items()))] = entry
             ids.append(entry_ids)
         if not ids and skipped_list:
-            logger.debug('%r %r - nothing to add (skipped %r) %r',
-                         self.feed['id'], self.feed['title'], skipped_list,
-                         parsed_response)
-            self.clean_feed(response.headers)
+            self.log('debug', 'nothing to add (skipped %r) %r',
+                     skipped_list, parsed_response)
             return
-        logger.debug('%r %r - found %d entries %r',
-                     self.feed['id'], self.feed['title'], len(ids), ids)
+        self.log('debug', 'found %d entries %r', len(ids), ids)
         future = self.query_jarr('get', 'articles/challenge', {'ids': ids})
         updater = JarrUpdater(self.feed, entries, response.headers,
                               parsed_response, self.auth)

@@ -9,9 +9,9 @@ from mock import Mock, patch
 from bootstrap import conf
 from crawler.http_crawler import CrawlerScheduler
 from web.controllers import FeedController, UserController
+from lib.const import UNIX_START
 
 logger = logging.getLogger('web')
-UNIX_START = datetime(1970, 1, 1, tzinfo=timezone.utc)
 
 
 class CrawlerTest(JarrFlaskCommon):
