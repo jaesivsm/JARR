@@ -407,7 +407,7 @@ var Category = React.createClass({
     isRemovable: function() {return this.isEditable();},
     obj_type: 'category',
     fields: [{'title': 'Category name', 'type': 'string', 'key': 'name'},
-             {'title': 'Allow clustering on title',
+             {'title': 'Cluster on title',
               'type': 'bool', 'key': 'cluster_on_title'},
     ],
     getTitle: function() {return this.props.obj.name;},
