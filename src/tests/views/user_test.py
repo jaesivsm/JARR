@@ -163,15 +163,15 @@ class BaseUiTest(JarrFlaskCommon):
         self.assertNotEquals(user.password, old_password)
 
     def test_profile_update(self):
-        self.app.post('/user/password_update/%d' % self.user.id,
-                data={'email': 'not an email', 'is_admin': True})
-        user = self.uctrl.get(id=self.user.id)
-        self.assertFalse(user.is_admin)
-        self.assertNotEquals(user.email, 'not an email')
+        data = {'email': 'not an email', 'is_admin': True}
+        self.app.post('/user/profile_update/%d' % self.user2.id, data=data)
+        user2 = self.uctrl.get(id=self.user2.id)
+        self.assertFalse(user2.is_admin)
+        self.assertNotEquals(user2.email, 'not an email')
 
         self.uctrl.update({'id': self.user.id}, {'is_admin': True})
-        self.app.post('/user/password_update/%d' % self.user.id,
-                data={'email': 'a.valid@email.fake', 'is_admin': True})
-        user = self.uctrl.get(id=self.user.id)
-        self.assertTrue(user.is_admin)
-        self.assertNotEquals(user.email, 'a.valid@email.fake')
+        data['email'], data['login'] = 'a.valid@email.fake', self.user2.login
+        self.app.post('/user/profile_update/%d' % self.user2.id, data=data)
+        user2 = self.uctrl.get(id=self.user2.id)
+        self.assertTrue(user2.is_admin)
+        self.assertEquals(user2.email, data['email'])
