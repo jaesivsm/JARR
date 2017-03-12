@@ -188,7 +188,7 @@ class PyAggResourceMulti(PyAggAbstractResource):
                 results.append(obj)
             except Exception as error:
                 fail_count += 1
-                results.append(str(error))
+                results.append(error)
         if fail_count == len(results):  # all failed => 500
             status = 500
         elif fail_count:  # some failed => 206
@@ -215,7 +215,7 @@ class PyAggResourceMulti(PyAggAbstractResource):
                 else:
                     results.append('nok')
             except Exception as error:
-                results.append(str(error))
+                results.append(error)
         if results.count('ok') == 0:  # all failed => 500
             status = 500
         elif results.count('ok') != len(results):  # some failed => 206

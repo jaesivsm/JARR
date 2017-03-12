@@ -8,6 +8,7 @@ from hashlib import md5
 
 import requests
 from flask import request, url_for
+from werkzeug.exceptions import HTTPException
 
 from bootstrap import conf
 
@@ -38,6 +39,8 @@ def default_handler(obj, role='admin'):
         return obj.dump(role=role)
     if isinstance(obj, (set, frozenset, filter, types.GeneratorType)):
         return list(obj)
+    if isinstance(obj, HTTPException):
+        return "%d: %s" % (obj.code, obj.name)
     if isinstance(obj, BaseException):
         return str(obj)
     raise TypeError("Object of type %s with value of %r "

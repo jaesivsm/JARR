@@ -19,6 +19,18 @@ users_bp = Blueprint('users', __name__, url_prefix='/users')
 user_bp = Blueprint('user', __name__, url_prefix='/user')
 
 
+def get_contr_and_id(user_id):
+    if user_id and admin_permission.can():
+        return user_id, UserController()
+    elif user_id and Permission(UserNeed(user_id)).can():
+        return user_id, UserController(user_id)
+    elif user_id:
+        flash(gettext('You do not have rights on this user'), 'danger')
+        raise Forbidden(gettext('You do not have rights on this user'))
+    else:
+        return current_user.id, UserController(current_user.id)
+
+
 @user_bp.route('/opml/export', methods=['GET'])
 @login_required
 def opml_export():
@@ -87,17 +99,7 @@ def opml_import():
 @user_bp.route('/profile/<int:user_id>', methods=['GET'])
 @login_required
 def profile(user_id=None):
-    ucontr = None
-    if user_id and admin_permission.can():
-        ucontr = UserController()
-    elif user_id and Permission(UserNeed(user_id)).can():
-        ucontr = UserController(user_id)
-    elif user_id:
-        flash(gettext('You do not have rights on this user'), 'danger')
-        raise Forbidden(gettext('You do not have rights on this user'))
-    else:
-        ucontr = UserController(current_user.id)
-        user_id = current_user.id
+    user_id, ucontr = get_contr_and_id(user_id)
     user = ucontr.get(id=user_id)
     profile_form, pass_form = ProfileForm(obj=user), PasswordModForm()
     return render_template('profile.html', user=user,
@@ -108,14 +110,7 @@ def profile(user_id=None):
 @user_bp.route('/password_update/<int:user_id>', methods=['POST'])
 @login_required
 def password_update(user_id):
-    ucontr = None
-    if admin_permission.can():
-        ucontr = UserController()
-    elif Permission(UserNeed(user_id)).can():
-        ucontr = UserController(user_id)
-    else:
-        flash(gettext('You do not have rights on this user'), 'danger')
-        raise Forbidden(gettext('You do not have rights on this user'))
+    user_id, ucontr = get_contr_and_id(user_id)
     user = ucontr.get(id=user_id)
     profile_form, pass_form = ProfileForm(obj=user), PasswordModForm()
     if pass_form.validate():
@@ -133,14 +128,7 @@ def password_update(user_id):
 @user_bp.route('/profile_update/<int:user_id>', methods=['POST'])
 @login_required
 def profile_update(user_id):
-    ucontr = None
-    if admin_permission.can():
-        ucontr = UserController()
-    elif Permission(UserNeed(user_id)).can():
-        ucontr = UserController(user_id)
-    else:
-        flash(gettext('You do not have rights on this user'), 'danger')
-        raise Forbidden(gettext('You do not have rights on this user'))
+    user_id, ucontr = get_contr_and_id(user_id)
     user = ucontr.get(id=user_id)
     profile_form, pass_form = ProfileForm(obj=user), PasswordModForm()
     if profile_form.validate():
@@ -164,15 +152,7 @@ def profile_update(user_id):
 @user_bp.route('/delete_account/<int:user_id>', methods=['GET'])
 @login_required
 def delete(user_id):
-    ucontr = None
-    if admin_permission.can():
-        ucontr = UserController()
-    elif Permission(UserNeed(user_id)).can():
-        ucontr = UserController(user_id)
-        logout_user()
-    else:
-        flash(gettext('You do not have rights on this user'), 'danger')
-        raise Forbidden(gettext('You do not have rights on this user'))
+    user_id, ucontr = get_contr_and_id(user_id)
     ucontr.delete(user_id)
     flash(gettext('Deletion successful'), 'success')
     if admin_permission.can():

@@ -150,3 +150,28 @@ class BaseUiTest(JarrFlaskCommon):
                                       'password': 'new_password'},
                       follow_redirects=True)
         self.assertEquals(200, self.app.get('/').status_code)
+
+    def test_password_update(self):
+        old_password = self.user.password
+        self.app.post('/user/password_update/%d' % self.user.id,
+                data={'password': 'new_pass', 'password_conf': 'no matching'})
+        user = self.uctrl.get(id=self.user.id)
+        self.assertEquals(user.password, old_password)
+        self.app.post('/user/password_update/%d' % self.user.id,
+                data={'password': 'new_pass', 'password_conf': 'new_pass'})
+        user = self.uctrl.get(id=self.user.id)
+        self.assertNotEquals(user.password, old_password)
+
+    def test_profile_update(self):
+        self.app.post('/user/password_update/%d' % self.user.id,
+                data={'email': 'not an email', 'is_admin': True})
+        user = self.uctrl.get(id=self.user.id)
+        self.assertFalse(user.is_admin)
+        self.assertNotEquals(user.email, 'not an email')
+
+        self.uctrl.update({'id': self.user.id}, {'is_admin': True})
+        self.app.post('/user/password_update/%d' % self.user.id,
+                data={'email': 'a.valid@email.fake', 'is_admin': True})
+        user = self.uctrl.get(id=self.user.id)
+        self.assertTrue(user.is_admin)
+        self.assertNotEquals(user.email, 'a.valid@email.fake')

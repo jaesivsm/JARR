@@ -148,11 +148,18 @@ class FeedCrawler(AbstractFeedCrawler):
             constructed = construct_feed_from(
                     self.feed['link'], parsed_feed, self.feed)
             for key in 'description', 'site_link', 'icon_url':
-                if up_feed.get(key):
+                if constructed.get(key):
                     info[key] = constructed[key]
 
         info = {key: value for key, value in info.items()
                 if self.feed.get(key) != value}
+
+        # updating link on permanent move /redirect
+        if response.history and self.feed['link'] != response.url and any(
+                resp.status_code in {301, 308} for resp in response.history):
+            self.log('warn', 'feed moved from %r to %r',
+                     self.feed['link'], response.url)
+            info['link'] = response.url
 
         if info:
             self.query_jarr('put', 'feed/%d' % self.feed['id'], info)

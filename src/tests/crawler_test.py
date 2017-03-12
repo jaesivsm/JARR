@@ -1,14 +1,16 @@
-from tests.base import JarrFlaskCommon
+from tests.base import BaseJarrTest, JarrFlaskCommon
 
 import logging
+import unittest
 from datetime import datetime, timezone
 
 import feedparser
 from mock import Mock, patch
 
 from bootstrap import conf
-from crawler.http_crawler import CrawlerScheduler
+from crawler.http_crawler import CrawlerScheduler, FeedCrawler
 from web.controllers import FeedController, UserController
+from lib.utils import to_hash
 from lib.const import UNIX_START
 
 logger = logging.getLogger('web')
@@ -39,23 +41,13 @@ class CrawlerTest(JarrFlaskCommon):
 
         def _api_req(method, url, **kwargs):
             if url.startswith('feed') and len(url) == 6:
-                class Proxy:
-                    status_code = self.resp_status_code
-                    headers = self.resp_headers
-
-                    @classmethod
-                    def raise_for_status(cls):
-                        if self.resp_raise is None:
-                            return
-                        raise self.resp_raise
-
-                    @property
-                    def content(self):
-                        with open(atom_file_path) as f:
-                            return f.read()
-
-                    text = content
-                return Proxy()
+                with open(atom_file_path) as f:
+                    content = f.read()
+                    resp = Mock(status_code=self.resp_status_code,
+                                headers=self.resp_headers,
+                                content=content, text=content, history=[])
+                resp.raise_for_status.return_value = self.resp_raise
+                return resp
 
             url = url.split(conf.API_ROOT)[1].strip('/')
             kwargs.pop('allow_redirects', None)
@@ -171,3 +163,89 @@ class CrawlerTest(JarrFlaskCommon):
         scheduler.wait(**self.wait_params)
         resp = self._api('get', 'articles', data={'limit': 1000}, user='admin')
         self.assertEquals(36 + self.new_entries_cnt, len(resp.json()))
+
+
+class CrawlerMethodsTest(unittest.TestCase):
+
+    def setUp(self):
+        super().setUp()
+        self.feed = {'user_id': 1, 'id': 1, 'title': 'title',
+                     'description': 'description',
+                     'etag': '', 'error_count': 5, 'link': 'link'}
+        self.resp = Mock(text='text', headers={}, status_code=304, history=[])
+        self.crawler = FeedCrawler(self.feed, Mock())
+
+    def test_etag_matching_w_constructed_etag(self):
+        self.feed['etag'] = 'jarr/"%s"' % to_hash('text')
+        self.assertTrue(self.crawler.response_match_cache(self.resp))
+
+    def test_etag_no_matching_wo_etag(self):
+        self.assertFalse(self.crawler.response_match_cache(self.resp))
+
+    def test_etag_matching(self):
+        self.resp.headers['etag'] = self.feed['etag'] = 'etag'
+        self.assertTrue(self.crawler.response_match_cache(self.resp))
+
+    def test_set_feed_error_w_error(self):
+        original_error_count = self.feed['error_count']
+        self.crawler.query_jarr = Mock()
+        self.crawler.set_feed_error(Exception('an error'))
+        call = self.crawler.query_jarr.mock_calls[0][1]
+
+        self.assertEquals('put', call[0])
+        self.assertEquals('feed/%d' % self.feed['id'], call[1])
+        self.assertEquals(original_error_count + 1, call[2]['error_count'])
+        self.assertEquals('an error', call[2]['last_error'])
+
+    def test_set_feed_error_w_parsed(self):
+        original_error_count = self.feed['error_count']
+        self.crawler.query_jarr = Mock()
+        self.crawler.set_feed_error(parsed_feed={'bozo_exception': 'an error'})
+        call = self.crawler.query_jarr.mock_calls[0][1]
+        self.assertEquals('put', call[0])
+        self.assertEquals('feed/%d' % self.feed['id'], call[1])
+        self.assertEquals(original_error_count + 1, call[2]['error_count'])
+        self.assertEquals('an error', call[2]['last_error'])
+
+    def test_clean_feed(self):
+        self.crawler.query_jarr = Mock()
+        self.crawler.clean_feed(self.resp)
+        call = self.crawler.query_jarr.mock_calls[0][1]
+
+        self.assertEquals('put', call[0])
+        self.assertEquals('feed/%d' % self.feed['id'], call[1])
+        self.assertTrue('link' not in call[2])
+        self.assertTrue('title' not in call[2])
+        self.assertTrue('description' not in call[2])
+        self.assertTrue('site_link' not in call[2])
+        self.assertTrue('icon_url' not in call[2])
+
+    def test_clean_feed_update_link(self):
+        self.crawler.query_jarr = Mock()
+        self.resp.history.append(Mock(status_code=301))
+        self.resp.url = 'new_link'
+        self.crawler.clean_feed(self.resp)
+        call = self.crawler.query_jarr.mock_calls[0][1]
+
+        self.assertEquals('put', call[0])
+        self.assertEquals('feed/%d' % self.feed['id'], call[1])
+        self.assertEquals('new_link', call[2]['link'])
+        self.assertTrue('title' not in call[2])
+        self.assertTrue('description' not in call[2])
+        self.assertTrue('site_link' not in call[2])
+        self.assertTrue('icon_url' not in call[2])
+
+    @patch('crawler.http_crawler.construct_feed_from')
+    def test_clean_feed_w_constructed(self, construct_feed_mock):
+        construct_feed_mock.return_value = {'description': 'new description'}
+        self.crawler.query_jarr = Mock()
+        self.crawler.clean_feed(self.resp, True)
+        call = self.crawler.query_jarr.mock_calls[0][1]
+
+        self.assertEquals('put', call[0])
+        self.assertEquals('feed/%d' % self.feed['id'], call[1])
+        self.assertEquals('new description', call[2]['description'])
+        self.assertTrue('link' not in call[2])
+        self.assertTrue('title' not in call[2])
+        self.assertTrue('site_link' not in call[2])
+        self.assertTrue('icon_url' not in call[2])
