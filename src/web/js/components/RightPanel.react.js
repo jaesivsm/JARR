@@ -195,9 +195,9 @@ var Article = React.createClass({
         }
         var title;
         if(this.props.obj.readability_parsed) {
-            title = "Click this to download a more readable version of this article through redability";
+            title = "Click here to fetch and parse the article's URL";
         } else {
-            title = "This article has been downloaded through redability";
+            title = "This article has been fetched and parsed";
         }
         return (<Button id="readability-reload" onClick={this.reloadParsed}
                         title={title} active={this.props.obj.readability_parsed}>

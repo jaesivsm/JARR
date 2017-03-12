@@ -52,7 +52,7 @@ SECTIONS = (
         ]},
         {'prefix': 'PLUGINS', 'options': [
             {'key': 'READABILITY_KEY', 'default': '',
-             'ask': 'Enter your readability key if you have one'},
+             'ask': 'Enter your Mercury key key if you have one'},
         ]},
         {'prefix': 'AUTH', 'options': [
             {'key': 'ALLOW_SIGNUP', 'default': True, 'type': bool,
