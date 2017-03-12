@@ -40,7 +40,7 @@ var PanelMixin = {
             if(this.isRemovable()) {
                 rem_button = (<Button onClick={this.onClickRemove}
                                       title="Delete this item">
-                                <Glyphicon glyph="remove-sign" />
+                                <Glyphicon glyph="trash" />
                               </Button>);
             }
             btn_grp = (<ButtonGroup bsSize="small">

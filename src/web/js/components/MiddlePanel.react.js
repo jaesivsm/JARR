@@ -230,7 +230,7 @@ var MiddlePanelFilter = React.createClass({
                         <Button onClick={MiddlePanelActions.markAllAsRead}
                                 title="Mark all displayed clusters as read"
                                 bsSize="small">
-                            <Glyphicon glyph="trash" />
+                            <Glyphicon glyph="remove-sign" />
                         </Button>
                     </ButtonGroup>
                 </Row>
