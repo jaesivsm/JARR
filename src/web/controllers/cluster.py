@@ -109,14 +109,15 @@ class ClusterController(AbstractController):
                         type_=ARRAY(Integer)).label('categories_id'))
         return selected_fields
 
-    def _join_on_exist(self, query, alias, attr, value):
+    def _join_on_exist(self, query, alias, attr, value, filters):
         val_col = getattr(alias, attr)
         exist_query = exists(select([val_col])
                 .where(and_(alias.cluster_id == Cluster.id,
                             alias.user_id == self.user_id, val_col == value))
                 .correlate(Cluster).limit(1))
         return query.join(alias, and_(alias.user_id == self.user_id,
-                                      alias.cluster_id == Cluster.id))\
+                                      alias.cluster_id == Cluster.id,
+                                      *filters))\
                     .filter(exist_query)
 
     @staticmethod
@@ -149,6 +150,8 @@ class ClusterController(AbstractController):
             # filtering by article but did not found anything
             return
 
+        processed_filters = self._to_filters(**filters)
+
         returned_keys = ('main_title', 'id', 'liked', 'read',
                 'main_article_id', 'main_feed_title', 'main_date', 'main_link')
         fields = {key: getattr(Cluster, key) for key in returned_keys}
@@ -163,21 +166,23 @@ class ClusterController(AbstractController):
         # we'll miss all the other parent of the cluster
         if feed_id:
             query = self._join_on_exist(query, art_feed_alias,
-                                        'feed_id', feed_id)
+                                        'feed_id', feed_id, processed_filters)
         else:
             query = query.join(art_feed_alias,
                                and_(art_feed_alias.user_id == self.user_id,
-                                    art_feed_alias.cluster_id == Cluster.id))
+                                    art_feed_alias.cluster_id == Cluster.id,
+                                    *processed_filters))
         if filter_on_cat:
             # joining only if filtering on categories to lighten the query
             # as every article doesn't obligatorily have a category > outerjoin
             query = self._join_on_exist(query, art_cat_alias,
-                                        'category_id', cat_id)
+                                        'category_id', cat_id,
+                                        processed_filters)
 
         # applying common filter (read / liked)
         # grouping all the fields so that agreg works on distant ids
         yield from self._iter_on_query(query.group_by(*sqla_fields)
-                .filter(*self._to_filters(**filters)), fields, filter_on_cat)
+                .filter(*processed_filters), fields, filter_on_cat)
 
     def delete(self, obj_id):
         from web.controllers import ArticleController

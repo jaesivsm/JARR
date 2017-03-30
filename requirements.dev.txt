@@ -1,3 +1,5 @@
 pep8
+nose
+mock
 coverage
 coveralls
