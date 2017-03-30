@@ -99,10 +99,9 @@ class AbstractFeedCrawler(AbstractCrawler):
 
 class JarrUpdater(AbstractFeedCrawler):
 
-    def __init__(self, feed, entries, headers, parsed_feed, auth):
+    def __init__(self, feed, entries, headers, auth):
         self.entries = entries
         self.headers = headers
-        self.parsed_feed = parsed_feed
         super().__init__(feed, auth)
 
     def callback(self, response):
@@ -218,7 +217,7 @@ class FeedCrawler(AbstractFeedCrawler):
         if is_parsing_ok(parsed_response):
             self.clean_feed(response)
         else:
-            self.set_feed_error(parsed_feed=self.parsed_feed)
+            self.set_feed_error(parsed_feed=parsed_response)
             return
 
         ids, entries, skipped_list = [], {}, []
@@ -238,8 +237,7 @@ class FeedCrawler(AbstractFeedCrawler):
             return
         self.log('debug', 'found %d entries %r', len(ids), ids)
         future = self.query_jarr('get', 'articles/challenge', {'ids': ids})
-        updater = JarrUpdater(self.feed, entries, response.headers,
-                              parsed_response, self.auth)
+        updater = JarrUpdater(self.feed, entries, response.headers, self.auth)
         future.add_done_callback(updater.callback)
 
 
