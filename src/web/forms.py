@@ -1,7 +1,8 @@
+import pytz
 from flask import redirect, url_for
 from flask_babel import lazy_gettext
 from flask_wtf import Form
-from flask_wtf.html5 import EmailField
+from wtforms.fields.html5 import EmailField
 from werkzeug.exceptions import NotFound
 from wtforms import (BooleanField, HiddenField, PasswordField, SelectField,
                      SubmitField, TextField, validators)
@@ -98,6 +99,8 @@ class ProfileForm(Form):
     email = EmailField(lazy_gettext("Email"),
                [validators.Length(min=6, max=35),
                 validators.Required(lazy_gettext("Please enter your email."))])
+    timezone = SelectField(lazy_gettext("Timezones"),
+            choices=[(tz, tz) for tz in pytz.all_timezones])
 
     readability_key = TextField(lazy_gettext("Readability API key"))
     is_active = BooleanField(lazy_gettext("Activated"), default=True)
@@ -122,22 +125,6 @@ class PasswordModForm(Form):
             self.password_conf.errors.append("Passwords don't match")
             validated = False
         return validated
-
-
-class AddFeedForm(Form):
-    title = TextField(lazy_gettext("Title"), [validators.Optional()])
-    link = TextField(lazy_gettext("Feed link"),
-            [validators.Required(lazy_gettext("Please enter the URL."))])
-    site_link = TextField(lazy_gettext("Site link"), [validators.Optional()])
-    enabled = BooleanField(lazy_gettext("Check for updates"), default=True)
-    submit = SubmitField(lazy_gettext("Save"))
-    category_id = SelectField(lazy_gettext("Category of the feed"),
-                              [validators.Optional()])
-
-    def set_category_choices(self, categories):
-        self.category_id.choices = [('0', 'No Category')]
-        self.category_id.choices += [(str(cat.id), cat.name)
-                                      for cat in categories]
 
 
 class CategoryForm(Form):

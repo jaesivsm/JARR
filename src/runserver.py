@@ -2,8 +2,11 @@
 # -*- coding: utf-8 -*-
 import calendar
 
+import pytz
+from babel import Locale
 from flask import request
 from flask_babel import Babel
+from flask_login import current_user
 
 from bootstrap import application, conf
 
@@ -15,16 +18,24 @@ babel = Babel(application)
 
 
 @babel.localeselector
-def get_locale():
-    return request.accept_languages.best_match(conf.LANGUAGES.keys())
+def get_flask_locale():
+    for locale_id in request.accept_languages.values():
+        try:
+            return Locale(locale_id)
+        except Exception:
+            if '-' not in locale_id:
+                continue
+            try:
+                return Locale(locale_id.replace('-', '_'))
+            except Exception:
+                continue
+    return Locale(conf.BABEL_DEFAULT_LOCALE)
 
 
 @babel.timezoneselector
-def get_timezone():
-    try:
-        return conf.TIME_ZONE[get_locale()]
-    except:
-        return conf.TIME_ZONE["en"]
+def get_flask_timezone():
+    return pytz.timezone(current_user.timezone or conf.BABEL_DEFAULT_TIMEZONE)
+
 
 # Jinja filters
 application.jinja_env.filters['month_name'] = lambda n: calendar.month_name[n]

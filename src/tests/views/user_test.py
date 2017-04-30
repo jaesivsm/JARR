@@ -132,11 +132,12 @@ class BaseUiTest(JarrFlaskCommon):
         self.assertTrue("Passwords don't match" in resp.data.decode())
 
         # true recovery
+        old_password = self.user.password
         resp = self.app.post('/user/recover/%s' % token,
                              data={'password': 'new_password',
                                    'password_conf': 'new_password'})
         self.assertEquals(302, resp.status_code)
-        self.assertNotEquals(self.user.password,
+        self.assertNotEqual(old_password,
                 self.uctrl.get(id=self.user.id).password)
         self.assertEquals('',
                 self.uctrl.get(id=self.user.id).renew_password_token)

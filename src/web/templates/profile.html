@@ -32,6 +32,12 @@
                 <dd style="color: red;">{{ error }}</dd>
             {% endfor %}
 
+            <dt>{{ form.timezone.label }}</dt>
+            <dd>{{ form.timezone(class_="form-control") }}
+            {% for error in form.timezone.errors %}
+                <dd style="color: red;">{{ error }}</dd>
+            {% endfor %}
+
             {% if admin_permission.can() %}
                 <dt>{{ form.is_active.label }}</dt>
                 <dd>{{ form.is_active(class_="form-control") }}</dd>

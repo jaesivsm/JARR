@@ -1,8 +1,6 @@
 import logging
 
-from babel.dates import format_datetime, format_timedelta
 from flask import current_app, render_template, request, url_for
-from flask_babel import get_locale
 from flask_login import current_user, login_required
 
 from bootstrap import conf
@@ -12,7 +10,7 @@ from lib import integrations
 from web.controllers import (CategoryController, ClusterController,
                              FeedController, UserController)
 from web.lib.view_utils import clusters_to_json, etag_match, get_notifications
-from web.views.common import jsonify
+from web.views.common import jsonify, fmt_datetime, fmt_timedelta
 
 logger = logging.getLogger(__name__)
 
@@ -31,7 +29,7 @@ def home():
 @etag_match
 @jsonify
 def get_menu():
-    now, locale = utc_now(), get_locale()
+    now = utc_now()
     categories_order = [0]
     feeds, categories = {}, {0: {'name': 'No category', 'id': 0,
                                  'feeds': [], 'unread': 0}}
@@ -44,19 +42,14 @@ def get_menu():
         categories[cat.id]['unread'] = cnt_by_category.get(cat.id, 0)
         categories[cat.id]['feeds'] = []
     for feed in FeedController(current_user.id).read():
-        feed['created_rel'] = format_timedelta(
-                feed.created_date - now, add_direction=True, locale=locale)
-        feed['created_date'] = format_datetime(feed.created_date,
-                                               locale=locale)
-        if feed.last_retrieved == UNIX_START:
+        feed['created_rel'] = fmt_timedelta(feed.created_date - now)
+        feed['created_date'] = fmt_datetime(feed.created_date)
+        if feed.last_retrieved <= UNIX_START:
             feed['last_rel'] = 'Never fetched'
             feed['last_retrieved'] = ''
         else:
-            feed['last_rel'] = format_timedelta(
-                    feed.last_retrieved - now,
-                    add_direction=True, locale=locale)
-            feed['last_retrieved'] = format_datetime(feed.last_retrieved,
-                                                     locale=locale)
+            feed['last_rel'] = fmt_timedelta(feed.last_retrieved - now)
+            feed['last_retrieved'] = fmt_datetime(feed.last_retrieved)
         feed['category_id'] = feed.category_id or 0
         feed['unread'] = cnt_by_feed.get(feed.id, 0)
         if not feed.filters:
@@ -76,6 +69,9 @@ def get_menu():
 
 
 def _get_filters(in_dict):
+    """Will extract filters applicable to the JARR controllers from a dict
+    either request.json or request.form depending on the use case.
+    """
     query = in_dict.get('query')
     if query:
         search_title = in_dict.get('search_title') == 'true'
@@ -116,7 +112,6 @@ def get_middle_panel():
 @login_required
 @jsonify
 def get_cluster(cluster_id, parse=False, article_id=None):
-    locale = get_locale()
     cluc = ClusterController(current_user.id)
     cluster = cluc.get(id=cluster_id)
     if not cluster.read:
@@ -128,13 +123,13 @@ def get_cluster(cluster_id, parse=False, article_id=None):
             if feed.icon_url else None
     readability_available = bool(current_user.readability_key
                                  or conf.PLUGINS_READABILITY_KEY)
-    cluster['main_date'] = format_datetime(cluster.main_date, locale=locale)
+    cluster['main_date'] = fmt_datetime(cluster.main_date)
     integrations.dispatch('article_parsing', current_user, feed, cluster,
                           mercury_may_parse=True,  # enabling mercury parsing
                           mercury_parse=parse, article_id=article_id)
     for article in cluster.articles:
         article['readability_available'] = readability_available
-        article['date'] = format_datetime(article.date, locale=locale)
+        article['date'] = fmt_datetime(article.date)
     cluster['notifications'] = get_notifications()
     return cluster
 

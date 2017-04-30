@@ -11,10 +11,9 @@ DEFAULT_LOG_LEVEL = 'warn'
 SECTIONS = (
         {'options': [
             {'key': 'API_ROOT', 'default': '/api/v2.0', 'edit': False},
-            {'key': 'LANGUAGES', 'edit': False,
-             'default': {'en': 'English', 'fr': 'French'}},
-            {'key': 'TIME_ZONE', 'edit': False,
-             'default': {'en': 'US/Eastern', 'fr': 'Europe/Paris'}},
+            {'key': 'BABEL_DEFAULT_LOCALE', 'default': 'en_GB', 'edit': False},
+            {'key': 'BABEL_DEFAULT_TIMEZONE',
+             'default': 'Europe/Paris', 'edit': 'False'},
             {'key': 'PLATFORM_URL', 'default': 'http://0.0.0.0:5000/',
              'ask': 'At what address will your installation of JARR '
                     'be available'},

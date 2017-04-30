@@ -1,7 +1,9 @@
 import json
 from functools import wraps
 
+from babel.dates import format_datetime, format_timedelta
 from flask import Response, current_app
+from flask_babel import get_timezone, get_locale
 from flask_login import login_user
 from flask_principal import (Identity, Permission, RoleNeed, identity_changed,
                              session_identity_loader)
@@ -13,6 +15,16 @@ api_role = RoleNeed('api')
 
 admin_permission = Permission(admin_role)
 api_permission = Permission(api_role)
+
+
+def fmt_datetime(datetime):
+    return format_datetime(datetime.astimezone(get_timezone()),
+                           locale=get_locale())
+
+
+def fmt_timedelta(timedelta, **kwargs):
+    return format_timedelta(timedelta,
+            add_direction=True, locale=get_locale(), **kwargs)
 
 
 def scoped_default_handler():

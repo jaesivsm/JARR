@@ -50,7 +50,8 @@ def reset_feeds():
     """Will reschedule all active feeds to be fetched in the next two hours"""
     fcontr = FeedController(ignore_context=True)
     now = utc_now()
-    feeds = [feed[0] for feed in fcontr.with_entities(fcontr._db_cls.id)]
+    feeds = [feed[0] for feed in fcontr.get_active_feed()
+                                       .with_entities(fcontr._db_cls.id)]
 
     step = timedelta(seconds=conf.FEED_MAX_EXPIRES / len(feeds))
     for i, feed_id in enumerate(feeds):

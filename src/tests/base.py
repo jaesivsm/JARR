@@ -54,8 +54,13 @@ class BaseJarrTest(unittest.TestCase):
         self.assertRaises(NotFound, self._contr_cls(user.id).delete, obj_id)
 
     def setUp(self):
+        self._ctx = application.app_context()
+        self._ctx.__enter__()
         reset_db()
         populate_db()
+
+    def tearDown(self):
+        self._ctx.__exit__(None, None, None)
 
 
 class JarrFlaskCommon(BaseJarrTest):

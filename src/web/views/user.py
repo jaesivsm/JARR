@@ -3,7 +3,7 @@ import random
 import opml
 from flask import (Blueprint, flash, make_response, redirect, render_template,
                    request, url_for)
-from flask_babel import gettext
+from flask_babel import gettext, get_locale
 from flask_login import current_user, login_required, logout_user
 from flask_principal import Permission, UserNeed
 from werkzeug.exceptions import Forbidden, NotFound
@@ -95,45 +95,45 @@ def opml_import():
     return redirect(url_for('user.profile'))
 
 
+def _get_profile_and_pass_form(user_id):
+    user_id, ucontr = get_contr_and_id(user_id)
+    usr = ucontr.get(id=user_id)
+    profile_form, pass_form = ProfileForm(obj=usr), PasswordModForm()
+    profile_form.timezone.default = usr.timezone or conf.BABEL_DEFAULT_TIMEZONE
+    return usr, ucontr, profile_form, pass_form
+
+
 @user_bp.route('/profile', methods=['GET'])
 @user_bp.route('/profile/<int:user_id>', methods=['GET'])
 @login_required
 def profile(user_id=None):
-    user_id, ucontr = get_contr_and_id(user_id)
-    user = ucontr.get(id=user_id)
-    profile_form, pass_form = ProfileForm(obj=user), PasswordModForm()
-    return render_template('profile.html', user=user,
-            admin_permission=admin_permission,
-            form=profile_form, pass_form=pass_form)
+    user, _, profile_form, pass_form = _get_profile_and_pass_form(user_id)
+    return render_template('profile.html', user=user, form=profile_form,
+            admin_permission=admin_permission, pass_form=pass_form)
 
 
 @user_bp.route('/password_update/<int:user_id>', methods=['POST'])
 @login_required
 def password_update(user_id):
-    user_id, ucontr = get_contr_and_id(user_id)
-    user = ucontr.get(id=user_id)
-    profile_form, pass_form = ProfileForm(obj=user), PasswordModForm()
+    user, ucontr, profile_form, pass_form = _get_profile_and_pass_form(user_id)
     if pass_form.validate():
         ucontr.update({'id': user_id}, {'password': pass_form.password.data})
 
         flash(gettext('Password for %(login)s successfully updated',
                       login=user.login), 'success')
         return redirect(url_for('user.profile', user_id=user.id))
-
-    return render_template('profile.html', user=user,
-            admin_permission=admin_permission,
-            form=profile_form, pass_form=pass_form)
+    return render_template('profile.html', user=user, form=profile_form,
+            admin_permission=admin_permission, pass_form=pass_form)
 
 
 @user_bp.route('/profile_update/<int:user_id>', methods=['POST'])
 @login_required
 def profile_update(user_id):
-    user_id, ucontr = get_contr_and_id(user_id)
-    user = ucontr.get(id=user_id)
-    profile_form, pass_form = ProfileForm(obj=user), PasswordModForm()
+    user, ucontr, profile_form, pass_form = _get_profile_and_pass_form(user_id)
     if profile_form.validate():
         values = {'login': profile_form.login.data,
-                  'email': profile_form.email.data}
+                  'email': profile_form.email.data,
+                  'timezone': profile_form.timezone.data}
         if admin_permission.can():
             values['is_active'] = profile_form.is_active.data
             values['is_admin'] = profile_form.is_admin.data
@@ -143,10 +143,8 @@ def profile_update(user_id):
         flash(gettext('User %(login)s successfully updated',
                       login=user.login), 'success')
         return redirect(url_for('user.profile', user_id=user.id))
-
-    return render_template('profile.html', user=user,
-            admin_permission=admin_permission,
-            form=profile_form, pass_form=pass_form)
+    return render_template('profile.html', user=user, form=profile_form,
+            admin_permission=admin_permission, pass_form=pass_form)
 
 
 @user_bp.route('/delete_account/<int:user_id>', methods=['GET'])

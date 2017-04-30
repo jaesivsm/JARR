@@ -2,7 +2,7 @@ import logging
 from datetime import timedelta
 
 from sqlalchemy import Integer, and_, func
-from sqlalchemy.dialects.postgres import ARRAY
+from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.orm import aliased
 from sqlalchemy.sql import exists, select
 from werkzeug.exceptions import NotFound

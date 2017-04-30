@@ -4,7 +4,7 @@ from flask_login import UserMixin
 from sqlalchemy import Boolean, Column, Integer, String
 from sqlalchemy.orm import relationship, validates
 
-from bootstrap import db
+from bootstrap import db, conf
 from lib.utils import utc_now
 from web.models.utc_datetime_type import UTCDateTime
 from web.models.right_mixin import RightMixin
@@ -23,6 +23,7 @@ class User(db.Model, UserMixin, RightMixin):
     readability_key = Column(String, default='')
     renew_password_token = Column(String, default='')
 
+    timezone = Column(String, default=conf.BABEL_DEFAULT_TIMEZONE)
     # user rights
     is_active = Column(Boolean, default=True)
     is_admin = Column(Boolean, default=False)
