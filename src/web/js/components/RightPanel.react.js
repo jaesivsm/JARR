@@ -75,33 +75,32 @@ var PanelMixin = {
          * registered fields of the element and on the mode
          * its currently in (edit / read) */
         var items = [];
-        var key;
+        var key, value;
         if(!this.state.edit_mode) {
             this.fields.filter(function(field) {
                         return field.type != 'ignore';
                     }).map(function(field) {
-                        if(field.type == 'list' && this.props.obj[field.key].length == 0) {
+                        value = this.props.obj[field.key];
+                        if(field.display_if_empty == false && (value == null || value.length == 0)) {
                             return;
                         }
                         key = this.getKey('dt', field.key);
                         items.push(<dt key={key}>{field.title}</dt>);
                         key = this.getKey('dd', field.key);
                         if(field.type == 'string') {
-                            items.push(<dd key={key}>{this.props.obj[field.key]}</dd>);
+                            items.push(<dd key={key}>{value}</dd>);
                         } else if(field.type == 'list') {
-                            items.push(<dd key={key}>{this.props.obj[field.key].join(', ')}</dd>);
+                            items.push(<dd key={key}>{value.join(', ')}</dd>);
                         } else if(field.type == 'bool') {
-                            if(this.props.obj[field.key]) {
+                            if(value) {
                                 items.push(<dd key={key}><Glyphicon glyph="ok" /></dd>);
                             } else {
                                 items.push(<dd key={key}><Glyphicon glyph="pause" /></dd>);
                             }
                         } else if (field.type == 'link') {
                             items.push(<dd key={key}>
-                                        <a href={this.props.obj[field.key]}>
-                                            {this.props.obj[field.key]}
-                                        </a>
-                                    </dd>);
+                                         <a href={value}>{value}</a>
+                                       </dd>);
                         }
                     }.bind(this));
         } else {
@@ -185,7 +184,10 @@ var Article = React.createClass({
     isRemovable: function() {return true;},
     fields: [{'title': 'Date', 'type': 'string', 'key': 'date'},
              {'title': 'Original link', 'type': 'link', 'key': 'link'},
-             {'title': 'Tags', 'type': 'list', 'key': 'tags'}
+             {'title': 'Comments', 'type': 'link', 'key': 'comments',
+              'display_if_empty': false},
+             {'title': 'Tags', 'type': 'list', 'key': 'tags',
+              'display_if_empty': false}
     ],
     obj_type: 'article',
     getTitle: function() {return this.props.obj.title;},

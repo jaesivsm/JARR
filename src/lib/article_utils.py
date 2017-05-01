@@ -29,6 +29,8 @@ def construct_article(entry, feed, fields=None, fetch=True):
     article = {}
 
     def push_in_article(key, value):
+        """feeding article with entry[key]
+        if 'fields' is None or if key in 'fields'"""
         if not fields or key in fields:
             article[key] = value
     push_in_article('feed_id', feed['id'])
@@ -46,6 +48,7 @@ def construct_article(entry, feed, fields=None, fetch=True):
                 else:
                     break
     push_in_article('content', get_article_content(entry))
+    push_in_article('comments', entry.get('comments'))
     if fields is None or {'link', 'title', 'tags'}.intersection(fields):
         link, title, tags = get_article_details(entry, fetch)
         push_in_article('link', link)

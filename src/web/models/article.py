@@ -15,6 +15,7 @@ class Article(db.Model, RightMixin):
     link = Column(String)
     title = Column(String)
     content = Column(String)
+    comments = Column(String)
     date = Column(UTCDateTime, default=utc_now)
     retrieved_date = Column(UTCDateTime, default=utc_now)
     readability_parsed = Column(Boolean, default=False)
@@ -56,7 +57,7 @@ class Article(db.Model, RightMixin):
     @staticmethod
     def _fields_base_read():
         return {'id', 'entry_id', 'link', 'title', 'content', 'date',
-                'retrieved_date', 'user_id', 'tags'}
+                'retrieved_date', 'user_id', 'tags', 'comments'}
 
     @staticmethod
     def _fields_api_write():
