@@ -1,7 +1,7 @@
 import pytz
 from flask import redirect, url_for
 from flask_babel import lazy_gettext
-from flask_wtf import Form
+from flask_wtf import FlaskForm
 from wtforms.fields.html5 import EmailField
 from werkzeug.exceptions import NotFound
 from wtforms import (BooleanField, HiddenField, PasswordField, SelectField,
@@ -14,7 +14,7 @@ from web.controllers import UserController
 # from flask_wtf import RecaptchaField
 
 
-class SignupForm(Form):
+class SignupForm(FlaskForm):
     """
     Sign up form (registration to jarr).
     """
@@ -46,14 +46,14 @@ class SignupForm(Form):
         return validated
 
 
-class RedirectForm(Form):
+class RedirectForm(FlaskForm):
     """
     Secure back redirects with WTForms.
     """
     next = HiddenField()
 
     def __init__(self, *args, **kwargs):
-        Form.__init__(self, *args, **kwargs)
+        FlaskForm.__init__(self, *args, **kwargs)
         if not self.next.data:
             self.next.data = utils.get_redirect_target() or ''
 
@@ -93,7 +93,7 @@ class SigninForm(RedirectForm):
         return validated
 
 
-class ProfileForm(Form):
+class ProfileForm(FlaskForm):
     login = TextField(lazy_gettext("Login"),
             [validators.Required(lazy_gettext("Please enter your login"))])
     email = EmailField(lazy_gettext("Email"),
@@ -110,7 +110,7 @@ class ProfileForm(Form):
     submit = SubmitField(lazy_gettext("Save"))
 
 
-class PasswordModForm(Form):
+class PasswordModForm(FlaskForm):
     password = PasswordField(lazy_gettext("Password"),
             [validators.Required(lazy_gettext("Please enter a password.")),
              validators.Length(min=6, max=100)])
@@ -127,12 +127,12 @@ class PasswordModForm(Form):
         return validated
 
 
-class CategoryForm(Form):
+class CategoryForm(FlaskForm):
     name = TextField(lazy_gettext("Name"))
     submit = SubmitField(lazy_gettext("Submit"))
 
 
-class RecoverPasswordForm(Form):
+class RecoverPasswordForm(FlaskForm):
     email = TextField(lazy_gettext("Email"),
             [validators.Required(lazy_gettext("Please enter your email"))])
     submit = SubmitField(lazy_gettext("Submit"))

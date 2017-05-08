@@ -20,6 +20,7 @@ class Feed(db.Model, RightMixin):
     created_date = Column(UTCDateTime, default=utc_now)
     filters = Column(PickleType, default=[])
     readability_auto_parse = Column(Boolean, default=False)
+    integration_reddit = Column(Boolean, default=False)
 
     # cache handling
     etag = Column(String, default="")
@@ -55,7 +56,7 @@ class Feed(db.Model, RightMixin):
     def _fields_base_write():
         return {'title', 'description', 'link', 'site_link', 'enabled',
                 'filters', 'readability_auto_parse', 'last_error',
-                'error_count', 'category_id'}
+                'error_count', 'category_id', 'integration_reddit'}
 
     @staticmethod
     def _fields_base_read():

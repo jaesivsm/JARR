@@ -50,7 +50,8 @@ def construct_article(entry, feed, fields=None, fetch=True):
     push_in_article('content', get_article_content(entry))
     push_in_article('comments', entry.get('comments'))
     if fields is None or {'link', 'title', 'tags'}.intersection(fields):
-        link, title, tags = get_article_details(entry, fetch)
+        link, title, tags = get_article_details(
+                article.get('link') or entry.get('link'), entry, fetch)
         push_in_article('link', link)
         push_in_article('title', title)
         push_in_article('tags', tags)
@@ -85,8 +86,7 @@ def _fetch_article(link):
                     "link or title. Error: %s", link, error)
 
 
-def get_article_details(entry, fetch=True):
-    article_link = entry.get('link')
+def get_article_details(article_link, entry, fetch=True):
     article_title = html.unescape(entry.get('title', ''))
     tags = {tag.get('term', '').lower().strip()
             for tag in entry.get('tags', [])

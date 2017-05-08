@@ -21,7 +21,10 @@ class MercuryIntegrationTest(unittest.TestCase):
         self.inte = MercuryIntegration()
 
     def test_match_feed_creation(self):
-        self.assertFalse(self.inte.match_feed_creation())
+        self.assertFalse(self.inte.match_feed_creation({}))
+
+    def test_match_entry_parsing(self):
+        self.assertFalse(self.inte.match_entry_parsing({}, {}))
 
     @property
     def base_objs(self):
@@ -64,8 +67,8 @@ class MercuryIntegrationTest(unittest.TestCase):
 
     @patch('lib.integrations.mercury.jarr_get')
     @patch('lib.integrations.mercury.flash')
-    @patch('lib.integrations.mercury.ArticleController')
-    def test_parsing(self, actrl, flash, jarr_get):
+    def test_parsing(self, flash, jarr_get):
+        self.inte._get_article_controller = Mock()
         jarr_get.return_value.json.return_value = {}
         user, feed, cluster = self.base_objs
         cluster.main_article['readability_parsed'] = False

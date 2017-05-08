@@ -22,6 +22,7 @@ import feedparser
 from requests_futures.sessions import FuturesSession
 
 from bootstrap import conf
+from lib import integrations
 from lib.article_utils import construct_article, get_skip_and_ids
 from lib.feed_utils import construct_feed_from, is_parsing_ok
 from lib.utils import default_handler, to_hash, utc_now
@@ -224,6 +225,7 @@ class FeedCrawler(AbstractFeedCrawler):
         for entry in parsed_response['entries']:
             if not entry:
                 continue
+            integrations.dispatch('entry_parsing', self.feed, entry)
             skipped, entry_ids = get_skip_and_ids(entry, self.feed)
             if skipped:
                 skipped_list.append(entry_ids)

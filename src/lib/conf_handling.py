@@ -52,6 +52,8 @@ SECTIONS = (
         {'prefix': 'PLUGINS', 'options': [
             {'key': 'READABILITY_KEY', 'default': '',
              'ask': 'Enter your Mercury key key if you have one'},
+            {'key': 'RSS_BRIDGE', 'default': '', 'ask': 'Enter the url of the '
+             'rss bridge you want to use if you do'},
         ]},
         {'prefix': 'AUTH', 'options': [
             {'key': 'ALLOW_SIGNUP', 'default': True, 'type': bool,

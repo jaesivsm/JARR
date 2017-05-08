@@ -232,8 +232,10 @@ var Feed = React.createClass({
              {'title': 'Feed link', 'type': 'link', 'key': 'link'},
              {'title': 'Site link', 'type': 'link', 'key': 'site_link'},
              {'title': 'Enabled', 'type': 'bool', 'key': 'enabled'},
-             {'title': 'Auto Readability',
+             {'title': 'Auto parsing',
               'type': 'bool', 'key': 'readability_auto_parse'},
+             {'title': 'Reddit integration',
+              'type': 'bool', 'key': 'integration_reddit'},
              {'title': 'Filters', 'type': 'ignore', 'key': 'filters'},
              {'title': 'Category', 'type': 'ignore', 'key': 'category_id'}
     ],
