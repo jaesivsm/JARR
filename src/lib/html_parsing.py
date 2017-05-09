@@ -68,7 +68,7 @@ def get_soup(content, header_encoding='utf8'):
                 logger.warn('something went wrong when parsing: %r', error)
 
 
-def extract_title(response, og_prop='og;title'):
+def extract_title(response, og_prop='og:title'):
     """From a requests.Response objects will return the title."""
     soup = get_soup(response.content, response.encoding)
     try:

@@ -37,8 +37,7 @@ class HTMLParsingTest(unittest.TestCase):
         self.assertEquals('Les plus belles boulangeries de Paris',
                           extract_title(self.article))
         self.assertEquals("Ceci n'est pas Old Boy - Owlboy (suite) "
-                          "- Benzaie Live - YouTube",
-                          extract_title(self.article2))
+                          "- Benzaie Live", extract_title(self.article2))
 
     def test_extract_feed_link(self):
         feed_split = urllib.parse.urlsplit(self.article.url)
