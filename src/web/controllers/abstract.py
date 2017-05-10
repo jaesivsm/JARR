@@ -162,6 +162,8 @@ class AbstractController:
             dict_col['type'] = cast_to_utc
         elif db_col.default:
             dict_col['default'] = db_col.default.arg
+        if callable(dict_col.get('default')):
+            dict_col['default'] = dict_col['default'](None)
         return dict_col
 
     @classmethod
@@ -169,7 +171,7 @@ class AbstractController:
         result = {}
         for column in cls._get_columns(role, right):
             if isinstance(getattr(cls._db_cls, column), AssociationProxy):
-                result[column] = {'type': list, 'default': list}
+                result[column] = {'type': list, 'default': []}
                 continue
             try:
                 db_col = getattr(cls._db_cls, column).property.columns[0]

@@ -12,31 +12,53 @@ from web.controllers.article import ArticleController
 from web.models import Article, Cluster
 
 from .abstract import AbstractController
+from lib.clustering_af.grouper import get_token_occurences_count, \
+                                      get_similarity_score
 
 logger = logging.getLogger(__name__)
 
 
 class ClusterController(AbstractController):
     _db_cls = Cluster
+    max_day_dist = timedelta(days=7)
 
     def _get_cluster_by_link(self, article):
         return self.read(user_id=article.user_id,
-                         main_date__lt=article.date + timedelta(days=7),
-                         main_date__gt=article.date - timedelta(days=7),
+                         main_date__lt=article.date + self.max_day_dist,
+                         main_date__gt=article.date - self.max_day_dist,
                          main_link=article.link).first()
 
     def _get_cluster_by_title(self, article):
-        if article.category and article.category.cluster_on_title:
-            try:
-                article = ArticleController(self.user_id).get(
-                        date__lt=article.date + timedelta(days=7),
-                        date__gt=article.date - timedelta(days=7),
-                        user_id=article.user_id,
-                        category_id=article.category_id,
-                        title__ilike=article.title)
-            except NotFound:
-                return
-            return article.cluster
+        match = ArticleController(self.user_id).read(
+                date__lt=article.date + self.max_day_dist,
+                date__gt=article.date - self.max_day_dist,
+                user_id=article.user_id,
+                category_id=article.category_id,
+                title__ilike=article.title).first()
+        if match:
+            return match.cluster
+
+    def _get_cluster_by_similarity(self, article, factor=10):
+        art_contr = ArticleController(self.user_id)
+        neighbors = [article for article in art_contr.read(
+                category_id=article.category_id, user_id=article.user_id,
+                date__lt=article.date + self.max_day_dist,
+                date__gt=article.date - self.max_day_dist,
+                valuable_tokens__ne=[])]
+
+        nb_docs = len(neighbors)
+        if nb_docs < factor:
+            logger.warn('not enough article to proceed to clustering')
+            return
+
+        occ_count = get_token_occurences_count(neighbors)
+
+        def sort_by_similarity(art2):
+            return get_similarity_score(article, art2, occ_count, nb_docs)
+        match = max(neighbors, key=sort_by_similarity)
+        score = get_similarity_score(article, match, occ_count, nb_docs)
+        if score > nb_docs / factor:
+            return match.cluster
 
     def _create_from_article(self, article,
                              cluster_read=None, cluster_liked=False):
@@ -73,8 +95,10 @@ class ClusterController(AbstractController):
         """Will add given article to a fitting cluster or create a cluster
         fitting that article."""
         cluster = self._get_cluster_by_link(article)
-        if not cluster:
+        if not cluster and getattr(article.category, 'cluster_on_title', None):
             cluster = self._get_cluster_by_title(article)
+            if not cluster:
+                cluster = self._get_cluster_by_similarity(article)
         if cluster:
             return self._enrich_cluster(cluster, article,
                                         cluster_read, cluster_liked)

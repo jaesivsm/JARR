@@ -10,7 +10,8 @@ from bootstrap import conf
 from lib.const import FEED_ACCEPT_HEADERS, FEED_MIMETYPES
 from lib.utils import jarr_get, rebuild_url
 from lib.html_parsing import (extract_title, extract_icon_url,
-                              extract_feed_link, try_get_icon_url)
+                              extract_opg_prop, extract_feed_link,
+                              try_get_icon_url)
 
 logger = logging.getLogger(__name__)
 logging.captureWarnings(True)
@@ -123,7 +124,9 @@ def _fetch_url_and_enhance_feed(url, feed):
         return feed
 
     if not feed.get('title'):
-        feed['title'] = extract_title(response, og_prop='og:site_name')
+        feed['title'] = extract_opg_prop(response, og_prop='og:site_name')
+    if not feed.get('title'):
+        feed['title'] = extract_title(response)
 
     if not feed.get('icon_url'):
         feed['icon_url'] = extract_icon_url(response, site_split, feed_split)

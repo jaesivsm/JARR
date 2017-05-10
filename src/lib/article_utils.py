@@ -9,12 +9,13 @@ import dateutil.parser
 from requests.exceptions import MissingSchema
 
 from bootstrap import conf
-from lib.html_parsing import extract_tags, extract_title
+from lib.html_parsing import extract_tags, extract_title, extract_lang
 from lib.utils import jarr_get, utc_now
 from web.lib.article_cleaner import clean_urls
 
 logger = logging.getLogger(__name__)
 PROCESSED_DATE_KEYS = {'published', 'created', 'updated'}
+FETCHABLE_DETAILS = {'link', 'title', 'tags', 'lang'}
 
 
 def extract_id(entry):
@@ -47,26 +48,38 @@ def construct_article(entry, feed, fields=None, fetch=True):
                     pass
                 else:
                     break
-    push_in_article('content', get_article_content(entry))
+    push_in_article('content', get_entry_content(entry))
     push_in_article('comments', entry.get('comments'))
-    if fields is None or {'link', 'title', 'tags'}.intersection(fields):
-        link, title, tags = get_article_details(
-                article.get('link') or entry.get('link'), entry, fetch)
-        push_in_article('link', link)
-        push_in_article('title', title)
-        push_in_article('tags', tags)
-        if 'content' in article:
-            push_in_article('content', clean_urls(article['content'], link))
+    push_in_article('lang', get_entry_lang(entry))
+    if fields is None or FETCHABLE_DETAILS.intersection(fields):
+        details = get_article_details(entry, fetch)
+        for detail, value in details.items():
+            push_in_article(detail, value)
+        if 'content' in article and details.get('link'):
+            push_in_article('content',
+                    clean_urls(article['content'], details['link']))
     return article
 
 
-def get_article_content(entry):
+def get_entry_content(entry):
     content = ''
     if entry.get('content'):
         content = entry['content'][0]['value']
     elif entry.get('summary'):
         content = entry['summary']
     return content
+
+
+def get_entry_lang(entry):
+    lang = None
+    if len(entry.get('content', [])):
+        lang = (entry['content'][0] or {}).get('language')
+        if lang:
+            return lang
+    for sub_key in 'title_detail', 'summary_detail':
+        lang = entry.get(sub_key, {}).get('language')
+        if lang:
+            return lang
 
 
 def _fetch_article(link):
@@ -86,20 +99,24 @@ def _fetch_article(link):
                     "link or title. Error: %s", link, error)
 
 
-def get_article_details(article_link, entry, fetch=True):
-    article_title = html.unescape(entry.get('title', ''))
-    tags = {tag.get('term', '').lower().strip()
-            for tag in entry.get('tags', [])
-            if tag.get('term', '').strip()}
-    if fetch and conf.CRAWLER_RESOLV and article_link or not article_title:
-        response = _fetch_article(article_link)
+def get_article_details(entry, fetch=True):
+    detail = {'title': html.unescape(entry.get('title', '')),
+              'link': entry.get('link'),
+              'tags': {tag.get('term', '').lower().strip()
+                       for tag in entry.get('tags', [])
+                       if tag.get('term', '').strip()}}
+    if fetch and conf.CRAWLER_RESOLV and detail['link'] or not detail['title']:
+        response = _fetch_article(detail['link'])
         if response is None:
-            return article_link, article_title or 'No title', tags
-        article_link = response.url
-        if not article_title:
-            article_title = extract_title(response, og_prop='og:title')
-        tags = tags.union(extract_tags(response))
-    return article_link, article_title or 'No title', tags
+            return detail
+        detail['link'] = response.url
+        if not detail['title']:
+            detail['title'] = extract_title(response)
+        detail['tags'] = detail['tags'].union(extract_tags(response))
+        lang = extract_lang(response)
+        if lang:
+            detail['lang'] = lang
+    return detail
 
 
 class FiltersAction(Enum):

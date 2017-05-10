@@ -113,6 +113,8 @@ class ArticleControllerTest(BaseJarrTest):
                 link="doesn't matter either8")
         self.assertFalse(art8.cluster.read)
         self.assertTrue(art8.cluster.liked)
+        self.assertEqual(sorted(art8.valuable_tokens),
+                         sorted(['garbage', 'garbage', 'pattern4']))
 
         art9 = ArticleController(2).create(
                 entry_id="unique9",

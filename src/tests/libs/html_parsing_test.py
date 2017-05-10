@@ -5,7 +5,7 @@ from mock import patch
 from requests import Response
 
 from lib.html_parsing import (extract_title, extract_tags, extract_icon_url,
-                              extract_feed_link)
+                              extract_feed_link, extract_lang)
 
 
 class HTMLParsingTest(unittest.TestCase):
@@ -38,6 +38,10 @@ class HTMLParsingTest(unittest.TestCase):
                           extract_title(self.article))
         self.assertEquals("Ceci n'est pas Old Boy - Owlboy (suite) "
                           "- Benzaie Live", extract_title(self.article2))
+
+    def test_extract_lang(self):
+        self.assertEquals('fr_FR', extract_lang(self.article))
+        self.assertEquals('fr', extract_lang(self.article2))
 
     def test_extract_feed_link(self):
         feed_split = urllib.parse.urlsplit(self.article.url)

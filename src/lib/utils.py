@@ -14,10 +14,23 @@ from bootstrap import conf
 
 logger = logging.getLogger(__name__)
 RFC_1123_FORMAT = '%a, %d %b %Y %X %Z'
+LANG_FORMAT = re.compile('^[a-z]{2}(_[A-Z]{2})?$')
+CORRECTABLE_LANG_FORMAT = re.compile('^[A-z]{2}(.[A-z]{2})?.*$')
 
 
 def utc_now():
     return pytz.utc.localize(datetime.utcnow())
+
+
+def clean_lang(lang):
+    if LANG_FORMAT.match(lang or ''):
+        return lang
+    if not CORRECTABLE_LANG_FORMAT.match(lang or ''):
+        return None
+    proper_lang = lang[0:2].lower()
+    if len(lang) >= 5:
+        proper_lang = "%s_%s" % (proper_lang, lang[3:5].upper())
+    return proper_lang
 
 
 def rfc_1123_utc(time_obj=None, delta=None):

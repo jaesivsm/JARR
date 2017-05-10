@@ -12,6 +12,7 @@ Flask-SQLAlchemy==2.2
 Flask-SSLify==0.1.5
 Flask-WTF==0.14.2
 lxml==3.7.3
+nltk==3.2.2
 opml==0.5
 python-dateutil==2.6.0
 python-postmark==0.4.12

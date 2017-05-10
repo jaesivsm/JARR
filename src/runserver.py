@@ -7,6 +7,7 @@ from babel import Locale
 from flask import request
 from flask_babel import Babel
 from flask_login import current_user
+from lib.utils import clean_lang
 
 from bootstrap import application, conf
 
@@ -21,14 +22,9 @@ babel = Babel(application)
 def get_flask_locale():
     for locale_id in request.accept_languages.values():
         try:
-            return Locale(locale_id)
+            return Locale(clean_lang(locale_id))
         except Exception:
-            if '-' not in locale_id:
-                continue
-            try:
-                return Locale(locale_id.replace('-', '_'))
-            except Exception:
-                continue
+            continue
     return Locale(conf.BABEL_DEFAULT_LOCALE)
 
 

@@ -1,4 +1,5 @@
-from sqlalchemy import Boolean, Column, ForeignKey, Index, Integer, String
+from sqlalchemy import (Boolean, Column, ForeignKey, Index, Integer,
+                        PickleType, String)
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.orm import relationship
 
@@ -19,6 +20,7 @@ class Article(db.Model, RightMixin):
     date = Column(UTCDateTime, default=utc_now)
     retrieved_date = Column(UTCDateTime, default=utc_now)
     readability_parsed = Column(Boolean, default=False)
+    valuable_tokens = Column(PickleType, default=list)
 
     # foreign keys
     user_id = Column(Integer, ForeignKey('user.id', ondelete='CASCADE'))
@@ -36,8 +38,7 @@ class Article(db.Model, RightMixin):
     feed = relationship('Feed', back_populates='articles',
                         foreign_keys=[feed_id])
     tag_objs = relationship('Tag', back_populates='article',
-                            cascade='all,delete-orphan',
-                            lazy=False,
+                            cascade='all,delete-orphan', lazy=False,
                             foreign_keys='[Tag.article_id]')
     tags = association_proxy('tag_objs', 'text')
 

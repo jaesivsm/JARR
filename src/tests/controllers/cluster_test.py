@@ -1,6 +1,8 @@
 from datetime import timedelta
+from mock import patch, Mock
 from random import randint
 
+from lib.utils import utc_now
 from tests.base import BaseJarrTest
 from web.controllers import (ArticleController, CategoryController,
                              ClusterController, FeedController)
@@ -88,6 +90,32 @@ class ClusterControllerTest(BaseJarrTest):
         )
         cluster = ccontr.get(id=cluster.id)
         self.assertEquals(articles_count + 1, len(cluster.articles))
+
+    @patch('web.controllers.cluster.ArticleController')
+    def test_similarity_clustering(self, acontr_cls):
+        cluster = Mock()
+        def gen_articles(factor):
+            return [Mock(valuable_tokens=['Sarkozy', 'justice'],
+                         cluster=cluster)] \
+                 + [Mock(valuable_tokens=['Sarkozy', 'vote']),
+                    Mock(valuable_tokens=['Sarkozy', 'debat']),
+                    Mock(valuable_tokens=['Sarkozy', 'blague']),
+                    Mock(valuable_tokens=['Sarkozy', 'chanson'])] * factor
+        ccontr = ClusterController()
+
+        acontr_cls.return_value.read.return_value = gen_articles(2)
+
+        matching_article = Mock(valuable_tokens=['Morano', 'justice'],
+                                date=utc_now())
+
+        self.assertIsNone(ccontr._get_cluster_by_similarity(matching_article))
+        acontr_cls.return_value.read.return_value = gen_articles(100)
+        self.assertEqual(ccontr._get_cluster_by_similarity(matching_article),
+                         cluster)
+
+        solo_article = Mock(valuable_tokens=['Sarkozy', 'fleur'],
+                            date=utc_now())
+        self.assertIsNone(ccontr._get_cluster_by_similarity(solo_article))
 
     def test_no_mixup(self):
         acontr = ArticleController()

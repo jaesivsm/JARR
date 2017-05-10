@@ -3,7 +3,7 @@ from functools import lru_cache
 from bs4 import BeautifulSoup, SoupStrainer
 
 from lib.const import FEED_MIMETYPES
-from lib.utils import jarr_get, rebuild_url
+from lib.utils import clean_lang, jarr_get, rebuild_url
 
 CHARSET_TAG = b'<meta charset='
 
@@ -68,16 +68,38 @@ def get_soup(content, header_encoding='utf8'):
                 logger.warn('something went wrong when parsing: %r', error)
 
 
-def extract_title(response, og_prop='og:title'):
-    """From a requests.Response objects will return the title."""
+def extract_opg_prop(response, og_prop):
+    "From a requests.Response objects will extract an opengraph attribute"
     soup = get_soup(response.content, response.encoding)
     try:
-        return soup.find_all('meta', property=og_prop)[0].attrs['content']
+        return soup.find('meta', {'property': og_prop}).attrs['content']
     except Exception:
-        try:
-            return soup.find_all('title')[0].text
-        except Exception:
-            pass
+        pass
+
+
+def extract_title(response):
+    soup = get_soup(response.content, response.encoding)
+    title = extract_opg_prop(response, 'og:title')
+    if title:
+        return title
+    try:
+        return soup.find('title').text
+    except Exception:
+        pass
+
+
+def extract_lang(response):
+    lang = clean_lang(response.headers.get('Content-Language'))
+    if lang:
+        return lang
+    lang = clean_lang(extract_opg_prop(response, 'og:locale'))
+    if lang:
+        return lang
+    try:
+        return clean_lang(BeautifulSoup(response.content[:200],
+                'html.parser').find('html').attrs['lang'])
+    except Exception:
+        pass
 
 
 def extract_tags(response):

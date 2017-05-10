@@ -8,6 +8,7 @@ from sqlalchemy import func
 from bootstrap import db
 from lib.utils import utc_now
 from lib.article_utils import process_filters
+from lib.clustering_af.grouper import extract_valuable_tokens
 from web.controllers import CategoryController, FeedController
 from web.models import Article, User
 
@@ -56,6 +57,8 @@ class ArticleController(AbstractController):
         skipped, read, liked = process_filters(feed.filters, attrs)
         if skipped:
             return None
+        attrs['valuable_tokens'] = extract_valuable_tokens(attrs)
+        attrs.pop('lang', None)
         article = super().create(**attrs)
         cluster_contr.clusterize(article, read, liked)
         return article
@@ -109,6 +112,7 @@ class ArticleController(AbstractController):
         still_delete_article = self.remove_from_all_clusters(obj_id)
         if still_delete_article:
             obj = self.get(id=obj_id)
+            # FIXME, do that in a single request with filtering on article_id
             for tag in obj.tag_objs:
                 db.session.delete(tag)
             db.session.delete(obj)
