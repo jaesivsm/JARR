@@ -54,10 +54,14 @@ def construct_article(entry, feed, fields=None, fetch=True):
     if fields is None or FETCHABLE_DETAILS.intersection(fields):
         details = get_article_details(entry, fetch)
         for detail, value in details.items():
-            push_in_article(detail, value)
+            if not article.get(detail):
+                push_in_article(detail, value)
+        if details.get('tags') and article.get('tags'):
+            push_in_article('tags',
+                            set(details['tags']).union(article['tags']))
         if 'content' in article and details.get('link'):
             push_in_article('content',
-                    clean_urls(article['content'], details['link']))
+                            clean_urls(article['content'], details['link']))
     return article
 
 
@@ -105,7 +109,8 @@ def get_article_details(entry, fetch=True):
               'tags': {tag.get('term', '').lower().strip()
                        for tag in entry.get('tags', [])
                        if tag.get('term', '').strip()}}
-    if fetch and conf.CRAWLER_RESOLV and detail['link'] or not detail['title']:
+    missing_elm = any(not detail.get(key) for key in ('title', 'tags', 'lang'))
+    if fetch and detail['link'] and (conf.CRAWLER_RESOLV or missing_elm):
         response = _fetch_article(detail['link'])
         if response is None:
             return detail

@@ -8,14 +8,23 @@ from collections import Counter
 
 from .word_utils import get_stemmer, get_stopwords
 
+CHARS_TO_STRIP = '.,?!:/[]-_"\'()#@*><'
+
+
+def browse_token(tokens, stopwords):
+    for token in tokens:
+        token = token.strip(CHARS_TO_STRIP)
+        if token.isalnum() and token.lower() not in stopwords:
+            yield token
+
 
 def extract_valuable_tokens(article):
     stemmer = get_stemmer(article.get('lang'))
     stopwords = get_stopwords(article.get('lang'))
-    tokens = [stemmer.stem(token) for token in article.get('title', '').split()
-              if token.isalnum() and token.lower() not in stopwords]
-    tokens.extend(tag for tag in article.get('tags', [])
-                  if tag.isalnum() and tag.lower() not in stopwords)
+    tokens = [stemmer.stem(token) for token in
+              browse_token(article.get('title', '').split(), stopwords)]
+    tokens.extend(stemmer.stem(tag)
+                  for tag in browse_token(article.get('tags', []), stopwords))
     return tokens
 
 
