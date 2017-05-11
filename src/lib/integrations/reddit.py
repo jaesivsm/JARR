@@ -24,11 +24,11 @@ class RedditIntegration(AbstractIntegration):
     def entry_parsing(self, feed, entry):
         content = BeautifulSoup(entry['content'][0]['value'], 'html.parser')
         link, comments = content.find_all('a')[-2:]
+        entry['tags'] = []  # reddit tags are irrelevant, removing them
         if link.text != '[link]' or comments.text != '[comments]':
             return False
         entry['link'] = link.attrs['href']
         entry['comments'] = comments.attrs['href']
-        entry['tags'] = []  # reddit tags are irrelevant, removing them
         if entry['link'] == entry['comments']:
             del entry['comments']
         return True
