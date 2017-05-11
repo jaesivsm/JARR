@@ -17,6 +17,7 @@ class Article(db.Model, RightMixin):
     title = Column(String)
     content = Column(String)
     comments = Column(String)
+    lang = Column(String)
     date = Column(UTCDateTime, default=utc_now)
     retrieved_date = Column(UTCDateTime, default=utc_now)
     readability_parsed = Column(Boolean, default=False)
@@ -62,7 +63,7 @@ class Article(db.Model, RightMixin):
 
     @staticmethod
     def _fields_api_write():
-        return {'tags'}
+        return {'tags', 'lang'}
 
     def __repr__(self):
         return "<Article(id=%d, entry_id=%s, title=%r, " \

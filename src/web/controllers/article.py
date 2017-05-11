@@ -58,7 +58,6 @@ class ArticleController(AbstractController):
         if skipped:
             return None
         attrs['valuable_tokens'] = extract_valuable_tokens(attrs)
-        attrs.pop('lang', None)
         article = super().create(**attrs)
         cluster_contr.clusterize(article, read, liked)
         return article
