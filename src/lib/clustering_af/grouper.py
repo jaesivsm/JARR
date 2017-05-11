@@ -11,20 +11,23 @@ from .word_utils import get_stemmer, get_stopwords
 CHARS_TO_STRIP = '.,?!:/[]-_"\'()#@*><'
 
 
-def browse_token(tokens, stopwords):
+def browse_token(tokens, stemmer, stopwords, resplit=False):
     for token in tokens:
-        token = token.strip(CHARS_TO_STRIP)
-        if token.isalnum() and token.lower() not in stopwords:
-            yield token
+        if resplit:
+            yield from browse_token(token.split(), stemmer, stopwords)
+        else:
+            token = stemmer.stem(token.strip(CHARS_TO_STRIP).lower())
+            if token.isalnum() and token not in stopwords:
+                yield token
 
 
 def extract_valuable_tokens(article):
     stemmer = get_stemmer(article.get('lang'))
     stopwords = get_stopwords(article.get('lang'))
-    tokens = [stemmer.stem(token) for token in
-              browse_token(article.get('title', '').split(), stopwords)]
-    tokens.extend(stemmer.stem(tag)
-                  for tag in browse_token(article.get('tags', []), stopwords))
+    tokens = [token for token in browse_token(article.get('title', '').split(),
+                                              stemmer, stopwords)]
+    tokens.extend(tag for tag in browse_token(article.get('tags', []),
+                                              stemmer, stopwords, True))
     return tokens
 
 
