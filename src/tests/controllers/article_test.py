@@ -104,17 +104,20 @@ class ArticleControllerTest(BaseJarrTest):
                 link="doesn't matter either7")
         self.assertTrue(art7.cluster.read)
         self.assertTrue(art7.cluster.liked)
+        self.assertEqual([], art7.valuable_tokens, "no lang no tokens")
 
         art8 = ArticleController(2).create(
                 entry_id="will be ignored",
                 feed_id=feed3['id'],
                 title="garbage pattern4 garbage",
-                content="doesn't matter4",
+                content="doesn't matter4-matter4_matter4",
+                lang='fa_ke',
                 link="doesn't matter either8")
         self.assertFalse(art8.cluster.read)
         self.assertTrue(art8.cluster.liked)
         self.assertEqual(sorted(art8.valuable_tokens),
-                         sorted(['garbage', 'garbage', 'pattern4']))
+                         sorted(['garbage', 'garbage', 'pattern4']
+                                + ['matter4'] * 3))
 
         art9 = ArticleController(2).create(
                 entry_id="unique9",

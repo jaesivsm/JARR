@@ -12,8 +12,7 @@ from web.controllers.article import ArticleController
 from web.models import Article, Cluster
 
 from .abstract import AbstractController
-from lib.clustering_af.grouper import get_token_occurences_count, \
-                                      get_similarity_score
+from lib.clustering_af.grouper import get_best_match_and_score
 
 logger = logging.getLogger(__name__)
 
@@ -38,27 +37,31 @@ class ClusterController(AbstractController):
         if match:
             return match.cluster
 
-    def _get_cluster_by_similarity(self, article, factor=10):
+    def _get_cluster_by_similarity(self, article,
+            min_sample_size=10, min_score=0.45):
+        if not article.lang:
+            return
         art_contr = ArticleController(self.user_id)
-        neighbors = [article for article in art_contr.read(
+        if '_' in article.lang:
+            lang_cond = {'lang__like': '%s%%' % article.lang.split('_')[0]}
+        else:
+            lang_cond = {'lang__like': '%s%%' % article.lang}
+
+        neighbors = list(art_contr.read(
                 category_id=article.category_id, user_id=article.user_id,
                 date__lt=article.date + self.max_day_dist,
                 date__gt=article.date - self.max_day_dist,
-                valuable_tokens__ne=[])]
+                # article isn't this one, and already in a cluster
+                cluster_id__ne=None, id__ne=article.id,
+                # article is matchable
+                valuable_tokens__ne=[], **lang_cond))
 
-        nb_docs = len(neighbors)
-        if nb_docs < factor:
-            logger.warn('not enough article to proceed to clustering')
+        if len(neighbors) < min_sample_size:
             return
 
-        occ_count = get_token_occurences_count(neighbors)
-
-        def sort_by_similarity(art2):
-            return get_similarity_score(article, art2, occ_count, nb_docs)
-        match = max(neighbors, key=sort_by_similarity)
-        score = get_similarity_score(article, match, occ_count, nb_docs)
-        if score > nb_docs / factor:
-            return match.cluster
+        best_match, score = get_best_match_and_score(article, neighbors)
+        if score > min_score:
+            return best_match.cluster
 
     def _create_from_article(self, article,
                              cluster_read=None, cluster_liked=False):

@@ -1,9 +1,13 @@
 from functools import wraps
 import logging
 
+from bs4 import BeautifulSoup
+
 from .extra_stopwords import extra_stopwords
 
 logger = logging.getLogger(__name__)
+
+CHARS_TO_STRIP = '.,?!:/[]-_"\'()#@*><'
 
 
 class FakeStemmer():
@@ -50,3 +54,39 @@ def get_stopwords(lang):
         return set(nltk_stopwords.words(lang)) | stopwords
     except Exception:
         return stopwords
+
+
+def browse_token(tokens, stemmer, stopwords, lang, resplit=False):
+    for token in tokens:
+        if resplit:
+            yield from browse_token(token.split(), stemmer, stopwords, lang)
+        else:
+            token = stemmer.stem(token.strip(CHARS_TO_STRIP).lower())
+            # special french handling for "d'" and "l'" and what not
+            if lang and lang.startswith('fr') \
+                    and len(token) > 2 and token[1] == "'":
+                token = stemmer.stem(token[2:])
+            if token.isalnum() and token not in stopwords:
+                yield token
+            elif '-' in token:
+                yield from browse_token(token.split('-'),
+                        stemmer, stopwords, lang)
+            elif '_' in token:
+                yield from browse_token(token.split('_'),
+                        stemmer, stopwords, lang)
+
+
+def extract_valuable_tokens(article):
+    lang = article.get('lang')
+    stemmer = get_stemmer(lang)
+    stopwords = get_stopwords(lang)
+    tokens = [token for token in browse_token(article.get('title', '').split(),
+                                              stemmer, stopwords, lang)]
+    if article.get('content'):
+        soup = BeautifulSoup(article['content'], 'html.parser')
+        if soup:
+            tokens.extend(browse_token(soup.text.split(),
+                                       stemmer, stopwords, lang))
+    tokens.extend(browse_token(article.get('tags', []),
+                               stemmer, stopwords, lang, True))
+    return tokens

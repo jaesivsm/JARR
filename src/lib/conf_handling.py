@@ -13,7 +13,7 @@ SECTIONS = (
             {'key': 'API_ROOT', 'default': '/api/v2.0', 'edit': False},
             {'key': 'BABEL_DEFAULT_LOCALE', 'default': 'en_GB', 'edit': False},
             {'key': 'BABEL_DEFAULT_TIMEZONE',
-             'default': 'Europe/Paris', 'edit': 'False'},
+             'default': 'Europe/Paris', 'edit': False},
             {'key': 'PLATFORM_URL', 'default': 'http://0.0.0.0:5000/',
              'ask': 'At what address will your installation of JARR '
                     'be available'},

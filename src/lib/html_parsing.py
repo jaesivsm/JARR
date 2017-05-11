@@ -1,3 +1,4 @@
+import logging
 from functools import lru_cache
 
 from bs4 import BeautifulSoup, SoupStrainer
@@ -5,6 +6,7 @@ from bs4 import BeautifulSoup, SoupStrainer
 from lib.const import FEED_MIMETYPES
 from lib.utils import clean_lang, jarr_get, rebuild_url
 
+logger = logging.getLogger(__name__)
 CHARSET_TAG = b'<meta charset='
 
 
@@ -96,7 +98,7 @@ def extract_lang(response):
     if lang:
         return lang
     try:
-        return clean_lang(BeautifulSoup(response.content[:200],
+        return clean_lang(BeautifulSoup(response.content[:1000],
                 'html.parser').find('html').attrs['lang'])
     except Exception:
         pass

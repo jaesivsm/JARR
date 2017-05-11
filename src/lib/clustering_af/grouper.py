@@ -4,59 +4,34 @@ If two articles, in the same category, have enough similar tokens, we assume
 that they talk about the same subject, and we group them in a meta-article
 """
 import json
+from math import log10, sqrt
 from collections import Counter
 
-from .word_utils import get_stemmer, get_stopwords
 
-CHARS_TO_STRIP = '.,?!:/[]-_"\'()#@*><'
-
-
-def browse_token(tokens, stemmer, stopwords, resplit=False):
-    for token in tokens:
-        if resplit:
-            yield from browse_token(token.split(), stemmer, stopwords)
-        else:
-            token = stemmer.stem(token.strip(CHARS_TO_STRIP).lower())
-            if token.isalnum() and token not in stopwords:
-                yield token
+def get_tfidf_weight(token, document, frequences, nb_docs):
+    return ((document.count(token) / len(document))  # tf
+            * log10(nb_docs / (1 + frequences.get(token, 0))))  # idf
 
 
-def extract_valuable_tokens(article):
-    stemmer = get_stemmer(article.get('lang'))
-    stopwords = get_stopwords(article.get('lang'))
-    tokens = [token for token in browse_token(article.get('title', '').split(),
-                                              stemmer, stopwords)]
-    tokens.extend(tag for tag in browse_token(article.get('tags', []),
-                                              stemmer, stopwords, True))
-    return tokens
+def get_vector(document, frequences, tokens, nb_docs):
+    return tuple(get_tfidf_weight(token, document, frequences, nb_docs)
+                 for token in tokens)
 
 
-def get_similarity_score(article_1, article_2, token_occurences, nb_docs):
+def get_norm(vector):
+    return sqrt(sum(pow(dim, 2) for dim in vector))
+
+
+def get_similarity_score(art1_vector, art1_norm,
+                         article2, frequences, tokens, nb_docs):
+    art2_vector = get_vector(article2.valuable_tokens,
+                             frequences, tokens, nb_docs)
+    scalar_product = sum(p * q for p, q in zip(art1_vector, art2_vector))
+    return scalar_product / (art1_norm * get_norm(art2_vector))
+
+
+def get_token_occurences_count(*articles):
     """
-    Similarity of two documents is the sum of the
-    inverse document frequency of all tokens that belong to
-    both feeds, divided by the length of both feeds
-
-    Parameter
-    ---------
-    article_i: model.Article objects
-    token_occurences: dictionnary {token: int}
-    nb_docs: int
-
-    Return
-    ------
-    float
-    """
-    return sum(nb_docs / token_occurences[token]
-               for token in article_1.valuable_tokens
-               if token in article_2.valuable_tokens)
-
-
-def get_token_occurences_count(articles):
-    """
-    Build token occurence count, a.k.a a dictionnary
-        token -> number of documents containing token
-
     Parameter
     ---------
     articles: models.article objects
@@ -65,8 +40,26 @@ def get_token_occurences_count(articles):
     ------
     dictionnary: {token: number of documents containing tokens}
     """
-    token_occurences = Counter()
+    frequences = Counter()
+    tokens = set()
+    art_vt_sets = []
     for article in articles:
-        for t in article.valuable_tokens:
-            token_occurences[t] += 1
-    return token_occurences
+        art_vt_sets.append(set(article.valuable_tokens))
+        tokens = tokens.union(art_vt_sets[-1])
+    for token in tokens:
+        for art_vt_set in art_vt_sets:
+            if token in art_vt_set:
+                frequences[token] = +1
+    return sorted(frequences), frequences
+
+
+def get_best_match_and_score(article, neighbors):
+    nb_docs = len(neighbors)
+    tokens, freq = get_token_occurences_count(article, *neighbors)
+    article_vector = get_vector(article.valuable_tokens,
+                                freq, tokens, nb_docs)
+    article_norm = get_norm(article_vector)
+    rank = {get_similarity_score(article_vector, article_norm,
+                                 neigh, freq, tokens, nb_docs): neigh
+            for neigh in neighbors}
+    return rank[max(rank)], max(rank)

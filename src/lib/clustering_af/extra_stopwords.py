@@ -1,7 +1,8 @@
-common_stopwords = {'youtube', 'reddit', 'reddit.com'}
+common_stopwords = {'news'}
 
 extra_stopwords = {
-    'french': {'les', 'afp', 'quand'}.union(common_stopwords),
+    'french': {'afp', 'flash', 'actual', 'actu', 'info',
+               'nouvel', 'dépech', 'brev', 'depech'}.union(common_stopwords),
     'english': common_stopwords,
     'german': common_stopwords,
     'spanish': common_stopwords,
