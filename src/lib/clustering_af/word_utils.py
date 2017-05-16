@@ -11,9 +11,7 @@ CHARS_TO_STRIP = '.,?!:/[]-_"\'()#@*><'
 
 
 class FakeStemmer():
-    """
-    If nltk is not installed, no stemming
-    """
+    "If nltk is not installed, no stemming"
     def stem(self, txt):
         return txt
 
@@ -57,6 +55,20 @@ def get_stopwords(lang):
 
 
 def browse_token(tokens, stemmer, stopwords, lang, resplit=False):
+    """For a given list of tokens, will yield every token in it stemmed.
+    If token contains '-' or '_' they're gonna be split on that.
+
+    Parameters
+    ----------
+    tokens: iterable, the tokens to browse
+    stemmer: object, a instance of a stemmer, must implement stem()
+    stopwords: an iterable, the tokens to be excluded
+    resplit: bool, set to true to split on every token
+
+    Yield
+    -----
+    str, tokens
+    """
     for token in tokens:
         if resplit:
             yield from browse_token(token.split(), stemmer, stopwords, lang)
@@ -77,6 +89,16 @@ def browse_token(tokens, stemmer, stopwords, lang, resplit=False):
 
 
 def extract_valuable_tokens(article):
+    """Return every extractable tokens from an article.
+
+    Parameters
+    ----------
+    article: models.article.Article
+
+    Return
+    ------
+    list, all the stemmed valuable tokens extractable from the article
+    """
     lang = article.get('lang')
     stemmer = get_stemmer(lang)
     stopwords = get_stopwords(lang)

@@ -57,6 +57,8 @@ class ClusterController(AbstractController):
                 valuable_tokens__ne=[], **lang_cond))
 
         if len(neighbors) < min_sample_size:
+            logger.info('only %d docs against %d required, no TFIDF for %r',
+                        len(neighbors), min_sample_size, article)
             return
 
         best_match, score = get_best_match_and_score(article, neighbors)

@@ -9,6 +9,20 @@ from lib.clustering_af.vector import TFIDFVector
 
 
 def get_cosine_similarity(v1, article2, freq, tokens, nb_docs):
+    """For a given vector and an article will return their cosine similarity
+
+    Parameter
+    ---------
+    v1: lib.clustering_ad.vector.SparseVector, the vector of the main article
+    article2: models.article.Article
+    freq: dict, with {token: number of occurence accross all docs}
+    tokens: list, tokens to browse
+    nb_docs: int, the total number of documents in the sample
+
+    Return
+    ------
+    int: the cosine similarity
+    """
     v2 = TFIDFVector(article2.valuable_tokens, freq, tokens, nb_docs)
     return (v1 * v2) / (v1.norm * v2.norm)
 
