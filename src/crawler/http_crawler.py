@@ -216,7 +216,7 @@ class FeedCrawler(AbstractFeedCrawler):
 
         parsed_response = feedparser.parse(response.content.strip())
         if is_parsing_ok(parsed_response):
-            self.clean_feed(response)
+            self.clean_feed(response, parsed_response)
         else:
             self.set_feed_error(parsed_feed=parsed_response)
             return

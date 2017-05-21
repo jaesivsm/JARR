@@ -18,6 +18,7 @@ logging.captureWarnings(True)
 
 
 def is_parsing_ok(parsed_feed):
+    "will return True if feedparser.parse succeded"
     return parsed_feed['entries'] or not parsed_feed['bozo']
 
 
