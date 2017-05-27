@@ -12,25 +12,25 @@ class ArticleApiTest(JarrFlaskCommon, ApiCommon):
         resp = self._api('get', self.urns,
                          data={'feed_id': 1, 'order_by': '-id'},
                          user='user1')
-        self.assertEquals(200, resp.status_code)
+        self.assertStatusCode(200, resp)
         self.assertEquals(3, len(resp.json()))
         self.assertTrue(resp.json()[0]['id'] > resp.json()[-1]['id'])
 
         resp = self._api('get', self.urns,
                          data={'category_id': 1}, user='user1')
-        self.assertEquals(200, resp.status_code)
+        self.assertStatusCode(200, resp)
         self.assertEquals(3, len(resp.json()))
 
         resp = self._api('get', self.urns, data={'limit': 1}, user='user1')
-        self.assertEquals(200, resp.status_code)
+        self.assertStatusCode(200, resp)
         self.assertEquals(1, len(resp.json()))
 
         resp = self._api('get', self.urns, user='admin')
-        self.assertEquals(200, resp.status_code)
+        self.assertStatusCode(200, resp)
         self.assertEquals(10, len(resp.json()))
 
         resp = self._api('get', self.urns, data={'limit': 200}, user='admin')
-        self.assertEquals(200, resp.status_code)
+        self.assertStatusCode(200, resp)
         self.assertEquals(36, len(resp.json()))
 
     def test_article_challenge_method(self):
@@ -40,18 +40,19 @@ class ArticleApiTest(JarrFlaskCommon, ApiCommon):
         # admin knows this article (he knows them all)
         resp = self._api('get', 'articles/challenge', user='admin',
                 data={'ids': [{'id': art['id']} for art in articles]})
-        self.assertEquals(204, resp.status_code)
+        self.assertStatusCode(204, resp)
         # admin knows this article (he knows them all)
         resp = self._api('get', 'articles/challenge', user='admin',
                 data={'ids': [{'id': art['id']} for art in articles]})
-        self.assertEquals(204, resp.status_code)
+        self.assertStatusCode(204, resp)
         # user2 doesn't know user1 article, will consider them as knew
         resp = self._api('get', 'articles/challenge', user='user2',
                 data={'ids': [{'id': art['id']} for art in articles]})
         self.assertEquals(10, len(resp.json()))
         # fake ids won't be recognised either and considered as new
         resp = self._api('get', 'articles/challenge', user='user2',
-                data={'ids': [{'entry_id': art['id']} for art in articles]})
+                data={'ids': [{'entry_id': str(art['id'])}
+                      for art in articles]})
         self.assertEquals(10, len(resp.json()))
 
     def test_full_add(self):
@@ -66,29 +67,29 @@ class ArticleApiTest(JarrFlaskCommon, ApiCommon):
                 'title': 'Servir et gérer des fichiers avec\xa0WebDav'}
 
         resp = self._api('post', self.urn, user='admin', data=data)
-        self.assertEquals(201, resp.status_code)
+        self.assertStatusCode(201, resp)
         self.assertEquals(data['date'], resp.json()['date'])
         self.assertEquals(retrieved_date_utc,
                           resp.json()['retrieved_date'])
 
         resp = self._api('get', '%s/%d' % (self.urn, resp.json()['id']),
                          user='admin', data=data)
-        self.assertEquals(200, resp.status_code)
+        self.assertStatusCode(200, resp)
         self.assertEquals(data['date'], resp.json()['date'])
         self.assertEquals(retrieved_date_utc,
                           resp.json()['retrieved_date'])
 
     def test_api_creation(self):
         resp = self._api('post', self.urn, user='user1', data={'feed_id': 1})
-        self.assertEquals(403, resp.status_code)
+        self.assertStatusCode(403, resp)
         UserController().update({'login': 'user1'}, {'is_api': True})
 
         resp = self._api('post', self.urn, user='user1',
                          data={'feed_id': 1,
                                'date': datetime.utcnow(),
                                'tags': ['tag1', 'tag2']})
+        self.assertStatusCode(201, resp)
         content = resp.json()
-        self.assertEquals(201, resp.status_code)
         self.assertEquals(2, content['user_id'])
         self.assertEquals(['tag1', 'tag2'], content['tags'])
 
@@ -96,17 +97,17 @@ class ArticleApiTest(JarrFlaskCommon, ApiCommon):
         self.assertEquals(['tag1', 'tag2'], resp.json()['tags'])
 
         resp = self._api('post', self.urn, user='user1', data={'feed_id': 1})
+        self.assertStatusCode(201, resp)
         self.assertEquals(2, resp.json()['user_id'])
-        self.assertEquals(201, resp.status_code)
 
         resp = self._api('post', self.urn, user='user2',
                 data={'user_id': 2, 'feed_id': 1})
-        self.assertEquals(403, resp.status_code)
+        self.assertStatusCode(403, resp)
         UserController().update({'login': 'user2'}, {'is_api': True})
 
         resp = self._api('post', self.urn, user='user2',
                 data={'user_id': 2, 'feed_id': 1})
-        self.assertEquals(404, resp.status_code)
+        self.assertStatusCode(404, resp)
 
         resp = self._api('post', self.urns, user='user1',
                 data=[{'feed_id': 1,
@@ -116,42 +117,42 @@ class ArticleApiTest(JarrFlaskCommon, ApiCommon):
                        'date': datetime.utcnow(),
                        'tags': ['tag1', 'tag2']}])
 
-        self.assertEquals(201, resp.status_code)
+        self.assertStatusCode(201, resp)
         self.assertTrue(['ok', 'ok'], resp.json())
 
         resp = self._api('post', self.urns, user='user1',
                 data=[{'feed_id': 1}, {'feed_id': 5}])
-        self.assertEquals(206, resp.status_code)
+        self.assertStatusCode(206, resp)
         self.assertTrue(isinstance(resp.json()[0], dict))
         self.assertEquals('404: Not Found', resp.json()[1])
 
         resp = self._api('post', self.urns, user='user1',
                 data=[{'user_id': 1, 'feed_id': 6}, {'feed_id': 5}])
-        self.assertEquals(500, resp.status_code)
+        self.assertStatusCode(500, resp)
         self.assertEquals(['404: Not Found', '404: Not Found'], resp.json())
 
     def test_api_edit_feed_id(self):
         resp = self._api('get', self.urns, data={'limit': 1}, user='user1')
+        self.assertStatusCode(200, resp)
         self.assertEquals(1, len(resp.json()))
-        self.assertEquals(200, resp.status_code)
         obj = resp.json()[0]
         resp = self._api('get', 'feeds', data={'limit': 1}, user='user2')
+        self.assertStatusCode(200, resp)
         self.assertEquals(1, len(resp.json()))
-        self.assertEquals(200, resp.status_code)
         feed = resp.json()[0]
         resp = self._api('put', self.urn, obj['id'], user='user1',
                          data={'feed_id': feed['id']})
-        self.assertEquals(400, resp.status_code)
+        self.assertStatusCode(400, resp)
 
     def test_api_edit_category_id(self):
         resp = self._api('get', self.urns, data={'limit': 1}, user='user1')
+        self.assertStatusCode(200, resp)
         self.assertEquals(1, len(resp.json()))
-        self.assertEquals(200, resp.status_code)
         obj = resp.json()[0]
         resp = self._api('get', 'categories', data={'limit': 1}, user='user2')
+        self.assertStatusCode(200, resp)
         self.assertEquals(1, len(resp.json()))
-        self.assertEquals(200, resp.status_code)
         category = resp.json()[0]
         resp = self._api('put', self.urn, obj['id'], user='user1',
                          data={'category_id': category['id']})
-        self.assertEquals(400, resp.status_code)
+        self.assertStatusCode(400, resp)

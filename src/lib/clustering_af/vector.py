@@ -18,7 +18,7 @@ class SparseVector:
             the vector is never gonna be on the left side of a scalar product)
         """
         self.dimensions = {i: dim for i, dim in enumerate(dimensions)
-                            if dim != 0}
+                           if dim != 0}
         self.norm = sqrt(sum(pow(v, 2) for v in self.dimensions.values()))
         if will_be_left_member:
             self._common_dims = set(self.dimensions).intersection

@@ -1,7 +1,6 @@
 from datetime import datetime
 
 import dateutil.parser
-from flask import current_app
 from flask_restful import Api
 
 from bootstrap import conf
@@ -45,10 +44,12 @@ class ArticlesChallenge(PyAggAbstractResource):
         result = list(self.controller.challenge(parsed_args['ids']))
         return result or None, 200 if result else 204
 
-api = Api(current_app, prefix=conf.API_ROOT)
 
-api.add_resource(ArticleNewAPI, '/article', endpoint='article_new.json')
-api.add_resource(ArticleAPI, '/article/<int:obj_id>', endpoint='article.json')
-api.add_resource(ArticlesAPI, '/articles', endpoint='articles.json')
-api.add_resource(ArticlesChallenge, '/articles/challenge',
-                 endpoint='articles_challenge.json')
+def load(application):
+    api = Api(application, prefix=conf.API_ROOT)
+    api.add_resource(ArticleNewAPI, '/article', endpoint='article_new.json')
+    api.add_resource(ArticleAPI, '/article/<int:obj_id>',
+                     endpoint='article.json')
+    api.add_resource(ArticlesAPI, '/articles', endpoint='articles.json')
+    api.add_resource(ArticlesChallenge, '/articles/challenge',
+                     endpoint='articles_challenge.json')

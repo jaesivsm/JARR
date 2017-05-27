@@ -15,6 +15,12 @@ from .abstract import AbstractController
 from lib.clustering_af.grouper import get_best_match_and_score
 
 logger = logging.getLogger(__name__)
+# static values for join_read
+__returned_keys = ('main_title', 'id', 'liked', 'read', 'main_article_id',
+                   'main_feed_title', 'main_date', 'main_link')
+JR_FIELDS = {key: getattr(Cluster, key) for key in __returned_keys}
+JR_SQLA_FIELDS = [getattr(Cluster, key) for key in __returned_keys]
+JR_LENGTH = 1000
 
 
 class ClusterController(AbstractController):
@@ -109,7 +115,13 @@ class ClusterController(AbstractController):
                                         cluster_read, cluster_liked)
         return self._create_from_article(article, cluster_read, cluster_liked)
 
+    #
+    # UI listing methods below
+    #
+
     def _preprocess_per_article_filters(self, filters):
+        """Removing filters aimed at articles and transform them into filters
+        for clusters"""
         art_filters = {}
         for key in {'__or__', 'title__ilike', 'content__ilike'}\
                    .intersection(filters):
@@ -122,14 +134,15 @@ class ClusterController(AbstractController):
 
     @staticmethod
     def _get_selected(fields, art_f_alias, art_c_alias, filter_on_category):
+        """Return selected fields, adapting to either postgres or sqlite"""
         selected_fields = list(fields.values())
-        if SQLITE_ENGINE:
+        if SQLITE_ENGINE:  # pragma: no cover
             selected_fields.append(func.group_concat(
                     art_f_alias.feed_id).label('feeds_id'))
             if filter_on_category:
                 selected_fields.append(func.group_concat(
                         art_c_alias.category_id).label('categories_id'))
-        else:  # pragma: no cover
+        else:
             selected_fields.append(func.array_agg(art_f_alias.feed_id,
                     type_=ARRAY(Integer)).label('feeds_id'))
             if filter_on_category:
@@ -149,24 +162,47 @@ class ClusterController(AbstractController):
                                       *filters))\
                     .filter(exist_query)
 
-    @staticmethod
-    def _iter_on_query(query, fields, filter_on_category):
-        for clu in query.order_by(Cluster.main_date.desc()).limit(1000):
+    def _iter_on_query(self, query, filter_on_category):
+        """For a given query will iter on it, transforming raw rows to proper
+        dictionnaries and handling the agreggation around feeds_id and
+        categories_id.
+        """
+        for clu in query:
             row = {}
-            for key in fields:
+            for key in JR_FIELDS:
                 row[key] = getattr(clu, key)
-            if SQLITE_ENGINE:
+            if SQLITE_ENGINE:  # pragma: no cover
                 row['feeds_id'] = set(map(int, clu.feeds_id.split(',')))
                 if filter_on_category and clu.categories_id:
                     row['categories_id'] = set(
                             map(int, clu.categories_id.split(',')))
                 elif filter_on_category:
                     row['categories_id'] = [0]
-            else:  # pragma: no cover
+            else:
                 row['feeds_id'] = set(clu.feeds_id)
                 if filter_on_category:
                     row['categories_id'] = {i or 0 for i in clu.categories_id}
             yield row
+
+    def _light_no_filter_query(self, processed_filters):
+        """If there's no filter to shorten the query (eg we're just selecting
+        all feed with no category) we make a request more adapted to the task.
+        """
+        sub_query = db.session.query(*JR_SQLA_FIELDS)\
+                              .filter(*processed_filters)\
+                              .order_by(Cluster.main_date.desc())\
+                              .limit(JR_LENGTH).cte('clu')
+
+        if SQLITE_ENGINE:  # pragma: no cover
+            aggreg = func.group_concat(Article.feed_id).label('feeds_id')
+        else:
+            aggreg = func.array_agg(Article.feed_id).label('feeds_id')
+        query = db.session.query(sub_query, aggreg)\
+                .join(Article, Article.cluster_id == sub_query.c.id)
+        if self.user_id:
+            query = query.filter(Article.user_id == self.user_id)
+        yield from self._iter_on_query(query.group_by(*sub_query.c)
+                .order_by(sub_query.c.main_date.desc()), False)
 
     def join_read(self, feed_id=None, **filters):
         filter_on_cat = 'category_id' in filters
@@ -180,15 +216,15 @@ class ClusterController(AbstractController):
             return
 
         processed_filters = self._to_filters(**filters)
+        if feed_id is None and not filter_on_cat:
+            # no filter with an interesting index to use, using another query
+            yield from self._light_no_filter_query(processed_filters)
+            return
 
-        returned_keys = ('main_title', 'id', 'liked', 'read',
-                'main_article_id', 'main_feed_title', 'main_date', 'main_link')
-        fields = {key: getattr(Cluster, key) for key in returned_keys}
-        sqla_fields = [getattr(Cluster, key) for key in returned_keys]
         art_feed_alias, art_cat_alias = aliased(Article), aliased(Article)
         # DESC of what's going on below :
         # base query with the above fields and the aggregations
-        query = db.session.query(*self._get_selected(fields,
+        query = db.session.query(*self._get_selected(JR_FIELDS,
                 art_feed_alias, art_cat_alias, filter_on_cat))
 
         # adding parent filter, but we can't just filter on one id, because
@@ -210,14 +246,22 @@ class ClusterController(AbstractController):
 
         # applying common filter (read / liked)
         # grouping all the fields so that agreg works on distant ids
-        yield from self._iter_on_query(query.group_by(*sqla_fields)
-                .filter(*processed_filters), fields, filter_on_cat)
+        yield from self._iter_on_query(
+                query.group_by(*JR_SQLA_FIELDS).filter(*processed_filters)
+                     .order_by(Cluster.main_date.desc()).limit(JR_LENGTH),
+                filter_on_cat)
 
     def delete(self, obj_id):
         from web.controllers import ArticleController
         self.update({'id': obj_id}, {'main_article_id': None}, commit=False)
-        ArticleController(self.user_id).read(cluster_id=obj_id).delete()
+        actrl = ArticleController(self.user_id)
+        for art in actrl.read(cluster_id=obj_id):
+            actrl._delete(art, commit=False)
         return super().delete(obj_id)
+
+    #
+    # Real controllers stuff here
+    #
 
     @classmethod
     def _extra_columns(cls, role, right):

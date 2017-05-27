@@ -184,7 +184,6 @@ def bootstrap_database(args, creds):
     if not args.no_database and not args.test:
         print('bootstraping databases...')
         import manager
-        manager.db_empty()
         manager.db_create(creds['login'], creds['password'])
 
 

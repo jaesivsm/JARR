@@ -1,27 +1,40 @@
 language: python
 python:
   - "3.5"
-sudo: required
+dist: trusty
+sudo: false
 
+services:
+  - postgresql
+
+before_cache:
+  - rm -f $HOME/.cache/pip/log/debug.log
 cache:
   directories:
     - $HOME/.cache/pip
-before_cache:
-  - rm -f $HOME/.cache/pip/log/debug.log
 
-before_install:
-  - sudo apt-get -qq update
-  - sudo apt-get -qq install -y git build-essential libxml2-dev libxslt1-dev libpq-dev
+addons:
+  apt:
+    packages:
+      - build-essential
+      - libxml2-dev
+      - libxslt1-dev
+      - libpq-dev
+
 install:
-  - python3 ./install.py --test
+  - python3 ./install.py --test --no-db
   - npm install
   - npm run build
 
+before_script:
+  - psql -c 'CREATE DATABASE jarr_test;' -U postgres
+  - sed -e 's|sqlite:///:memory:|postgres:///jarr_test|g' -i ~/.config/jarr.json
+  - pip install -r requirements.postgres.txt
+
 script:
-  - nosetests -v --with-coverage --cover-package=bootstrap,runserver,web,crawler,lib,plugins src/tests/
+  - nosetests -v --with-coverage --cover-package=bootstrap,web,crawler,lib,plugins src/tests/
   # ignoring aligning / line breaking non-sens
   - pep8 --ignore=E126,E127,E128,W503 src/ --exclude=src/migrations,src/tests,__pycache__
-
 
 after_success:
   - coveralls

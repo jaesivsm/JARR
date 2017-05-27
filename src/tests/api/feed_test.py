@@ -12,56 +12,56 @@ class FeedApiTest(JarrFlaskCommon, ApiCommon):
     def test_api_list(self):
         resp = self._api('get', self.urns, data={'order_by': '-id'},
                          user='user1')
-        self.assertEquals(200, resp.status_code)
+        self.assertStatusCode(200, resp)
         self.assertEquals(6, len(resp.json()))
         self.assertTrue(resp.json()[0]['id'] > resp.json()[-1]['id'])
 
         resp = self._api('get', self.urns,
                          data={'category_id': 1}, user='user1')
-        self.assertEquals(200, resp.status_code)
+        self.assertStatusCode(200, resp)
         self.assertEquals(1, len(resp.json()))
 
         resp = self._api('get', self.urns, data={'limit': 1}, user='user1')
-        self.assertEquals(200, resp.status_code)
+        self.assertStatusCode(200, resp)
         self.assertEquals(1, len(resp.json()))
 
         resp = self._api('get', self.urns, user='admin')
-        self.assertEquals(200, resp.status_code)
+        self.assertStatusCode(200, resp)
         self.assertEquals(10, len(resp.json()))
 
         resp = self._api('get', self.urns, data={'limit': 200}, user='admin')
-        self.assertEquals(200, resp.status_code)
+        self.assertStatusCode(200, resp)
         self.assertEquals(12, len(resp.json()))
 
     def test_api_update_many(self):
         resp = self._api('put', self.urns, user='user1',
                 data=[[1, {'title': 'updated title 1'}],
                       [2, {'title': 'updated title 2'}]])
-        self.assertEquals(200, resp.status_code)
+        self.assertStatusCode(200, resp)
         self.assertEquals(['ok', 'ok'], resp.json())
 
         resp = self._api('get', self.urn, 1, user='user1')
-        self.assertEquals(200, resp.status_code)
+        self.assertStatusCode(200, resp)
         self.assertEquals('updated title 1', resp.json()['title'])
 
         resp = self._api('get', self.urn, 2, user='user1')
-        self.assertEquals(200, resp.status_code)
+        self.assertStatusCode(200, resp)
         self.assertEquals('updated title 2', resp.json()['title'])
 
         resp = self._api('put', self.urns, user='user1',
                 data=[[1, {'title': 'updated title 1'}],
                       [15, {'title': 'updated title 15'}]])
-        self.assertEquals(206, resp.status_code)
+        self.assertStatusCode(206, resp)
         self.assertEquals(['ok', 'nok'], resp.json())
 
         resp = self._api('put', self.urns, user='user1',
                 data=[[16, {'title': 'updated title 16'}],
                       [17, {'title': 'updated title 17'}]])
-        self.assertEquals(500, resp.status_code)
+        self.assertStatusCode(500, resp)
         self.assertEquals(['nok', 'nok'], resp.json())
 
         resp = self._api('get', self.urn, 17, user='user1')
-        self.assertEquals(404, resp.status_code)
+        self.assertStatusCode(404, resp)
 
     def test_feed_article_deletion(self):
         feed_id = self._api('get', 'feeds', user='user1').json()[0]['id']
@@ -72,36 +72,36 @@ class FeedApiTest(JarrFlaskCommon, ApiCommon):
 
     def test_feed_list_fetchable(self):
         resp = self._api('get', 'feeds/fetchable', user='user1')
-        self.assertEquals(403, resp.status_code)
+        self.assertStatusCode(403, resp)
         UserController().update({'login__in': ['admin', 'user1']},
                                 {'is_api': True})
         resp = self._api('get', 'feeds/fetchable', user='user1',
                          data={'limit': 100})
+        self.assertStatusCode(200, resp)
         self.assertEquals(6, len(resp.json()))
-        self.assertEquals(200, resp.status_code)
 
         resp = self._api('get', 'feeds/fetchable', user='user1')
-        self.assertEquals(204, resp.status_code)
+        self.assertStatusCode(204, resp)
 
         resp = self._api('get', 'feeds/fetchable', user='admin',
                          data={'limit': 100})
+        self.assertStatusCode(200, resp)
         self.assertEquals(6, len(resp.json()))
-        self.assertEquals(200, resp.status_code)
         resp = self._api('get', 'feeds/fetchable', user='admin')
-        self.assertEquals(204, resp.status_code)
+        self.assertStatusCode(204, resp)
 
     def test_api_edit_category_id(self):
         resp = self._api('get', self.urns, data={'limit': 1}, user='user1')
+        self.assertStatusCode(200, resp)
         self.assertEquals(1, len(resp.json()))
-        self.assertEquals(200, resp.status_code)
         obj = resp.json()[0]
         resp = self._api('get', 'categories', data={'limit': 1}, user='user2')
+        self.assertStatusCode(200, resp)
         self.assertEquals(1, len(resp.json()))
-        self.assertEquals(200, resp.status_code)
         category = resp.json()[0]
         resp = self._api('put', self.urn, obj['id'],
                          data={'category_id': category['id']}, user='user1')
-        self.assertEquals(400, resp.status_code)
+        self.assertStatusCode(400, resp)
 
     def test_edit_time(self):
         now = utc_now()

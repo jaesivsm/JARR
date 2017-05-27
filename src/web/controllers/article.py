@@ -10,7 +10,7 @@ from lib.utils import utc_now
 from lib.article_utils import process_filters
 from lib.clustering_af.word_utils import extract_valuable_tokens
 from web.controllers import CategoryController, FeedController
-from web.models import Article, User
+from web.models import Article, User, Tag
 
 from .abstract import AbstractController
 
@@ -94,29 +94,35 @@ class ArticleController(AbstractController):
                 articles_counter[article.date.year] += 1
         return articles_counter, articles
 
-    def remove_from_all_clusters(self, article_id):
+    def remove_from_cluster(self, article):
         """Removes article with id == article_id from the cluster it belongs to
         If it's the only article of the cluster will delete the cluster
         Return True if the article is deleted at the end or not
         """
         from web.controllers import ClusterController
         clu_ctrl = ClusterController(self.user_id)
-        cluster = self.get(id=article_id).cluster
-        if len(cluster.articles) == 1:
+        cluster = clu_ctrl.read(id=article.cluster_id,
+                                main_article_id=article.id).first()
+        if not cluster:
+            return True
+        if len(cluster.articles) == 1:  # only on article in cluster, deleting
             clu_ctrl.delete(cluster.id)
             return False
-        clu_ctrl._enrich_cluster(cluster, cluster.articles[1])
+        clu_ctrl._enrich_cluster(cluster, cluster.articles[1],
+                                 cluster.read, cluster.liked, True)
         return True
 
+    def _delete(self, article, commit):
+        Tag.query.filter(Tag.article_id == article.id).delete()
+        db.session.delete(article)
+        if commit:
+            db.session.flush()
+            db.session.commit()
+        return article
+
     def delete(self, obj_id, commit=True):
-        still_delete_article = self.remove_from_all_clusters(obj_id)
+        article = self.get(id=obj_id)
+        still_delete_article = self.remove_from_cluster(article)
         if still_delete_article:
-            obj = self.get(id=obj_id)
-            # FIXME, do that in a single request with filtering on article_id
-            for tag in obj.tag_objs:
-                db.session.delete(tag)
-            db.session.delete(obj)
-            if commit:
-                db.session.flush()
-                db.session.commit()
-            return obj
+            return self._delete(article, commit=commit)
+        return article

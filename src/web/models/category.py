@@ -24,7 +24,7 @@ class Category(db.Model, RightMixin):
             secondary='article')
 
     # index
-    idx_category_uid = Index('user_id')
+    ix_category_uid = Index('user_id')
 
     # api whitelists
     @staticmethod

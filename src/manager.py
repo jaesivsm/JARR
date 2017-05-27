@@ -8,22 +8,16 @@ from flask_script import Manager
 
 import web.models
 
-from bootstrap import application, conf, db
+from bootstrap import conf, create_app, db
 from lib.utils import utc_now
 from scripts.probes import ArticleProbe, FeedProbe, FeedLatenessProbe
 from web.controllers import FeedController, UserController
 
+application = create_app()
 logger = logging.getLogger(__name__)
 Migrate(application, db)
 manager = Manager(application)
 manager.add_command('db', MigrateCommand)
-
-
-@manager.command
-def db_empty():
-    "Will drop every datas stocked in db."
-    with application.app_context():
-        web.models.db_empty(db)
 
 
 @manager.command

@@ -8,19 +8,27 @@ from base64 import b64encode
 from os import path
 
 from flask_login import login_user, logout_user
+from flask_testing import TestCase
 from werkzeug.exceptions import NotFound
 
-from bootstrap import conf
+from bootstrap import conf, create_app, db, load_blueprints, init_babel
 from lib.utils import default_handler
-from runserver import application
-from tests.fixtures.filler import populate_db, reset_db
+from tests.fixtures.filler import populate_db
 
 
 logger = logging.getLogger('web')
 
 
-class BaseJarrTest(unittest.TestCase):
+class BaseJarrTest(TestCase):
     _contr_cls = None
+    SQLALCHEMY_DATABASE_URI = conf.TEST_SQLALCHEMY_DATABASE_URI
+    TESTING = True
+
+    def create_app(self):
+        self._application = create_app()
+        init_babel(self._application)
+        load_blueprints(self._application)
+        return self._application
 
     def _get_from_contr(self, obj_id, user_id=None):
         return self._contr_cls(user_id).get(id=obj_id).dump()
@@ -29,7 +37,7 @@ class BaseJarrTest(unittest.TestCase):
         obj_id = obj['id']
 
         # testing with logged user
-        with application.test_request_context():
+        with self._application.test_request_context():
             login_user(user)
             self.assertEquals(obj, self._get_from_contr(obj_id))
             self.assertEquals(obj, self._get_from_contr(obj_id, user.id))
@@ -54,22 +62,27 @@ class BaseJarrTest(unittest.TestCase):
         self.assertRaises(NotFound, self._contr_cls(user.id).delete, obj_id)
 
     def setUp(self):
-        self._ctx = application.app_context()
-        self._ctx.__enter__()
-        reset_db()
-        populate_db()
+        db.drop_all()
+        db.create_all()
+        with self._application.app_context():
+            populate_db()
 
     def tearDown(self):
-        self._ctx.__exit__(None, None, None)
+        db.session.remove()
 
 
 class JarrFlaskCommon(BaseJarrTest):
 
     def setUp(self):
         super().setUp()
-        application.config['CSRF_ENABLED'] = False
-        application.config['WTF_CSRF_ENABLED'] = False
-        self.app = application.test_client()
+        self._application.config['CSRF_ENABLED'] = False
+        self._application.config['WTF_CSRF_ENABLED'] = False
+        self.app = self._application.test_client()
+
+    def assertStatusCode(self, status_code, response):
+        self.assertEquals(status_code, response.status_code,
+                "got %d when expecting %d: %r" % (response.status_code,
+                    status_code, response.data))
 
     def _api(self, method_name, *urn_parts, **kwargs):
         method = getattr(self.app, method_name)

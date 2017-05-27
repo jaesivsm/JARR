@@ -1,4 +1,3 @@
-from flask import current_app
 from flask_restful import Api
 
 from bootstrap import conf
@@ -19,8 +18,9 @@ class CategoriesAPI(PyAggResourceMulti):
     controller_cls = CategoryController
 
 
-api = Api(current_app, prefix=conf.API_ROOT)
-api.add_resource(CategoryNewAPI, '/category', endpoint='category_new.json')
-api.add_resource(CategoryAPI, '/category/<int:obj_id>',
-                 endpoint='category.json')
-api.add_resource(CategoriesAPI, '/categories', endpoint='categories.json')
+def load(application):
+    api = Api(application, prefix=conf.API_ROOT)
+    api.add_resource(CategoryNewAPI, '/category', endpoint='category_new.json')
+    api.add_resource(CategoryAPI, '/category/<int:obj_id>',
+                     endpoint='category.json')
+    api.add_resource(CategoriesAPI, '/categories', endpoint='categories.json')

@@ -59,5 +59,6 @@ def jsonify(func):
 
 def login_user_bundle(user):
     login_user(user)
-    identity_changed.send(current_app, identity=Identity(user.id))
+    identity_changed.send(current_app._get_current_object(),
+                          identity=Identity(user.id))
     session_identity_loader()

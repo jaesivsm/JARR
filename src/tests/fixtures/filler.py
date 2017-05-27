@@ -1,18 +1,23 @@
 from datetime import timedelta
+from sqlalchemy.schema import ForeignKeyConstraint
 
 from lib.utils import utc_now
-from manager import db_create, db_empty
 from web.controllers import (ArticleController, CategoryController,
                              FeedController, UserController)
+from web.models import User, Category, Feed, Cluster, Article, Tag, Icon
 
 
 def populate_db():
-    db_create()
+    Cluster.query.update({'main_article_id': None})
+    for table in Tag, Article, Cluster, Feed, Icon, Category, User:
+        table.query.delete()
     ucontr = UserController()
     ccontr = CategoryController()
     fcontr = FeedController()
     acontr = ArticleController()
     ccontr = CategoryController()
+    admin = ucontr.create(**{'is_admin': True, 'is_api': True,
+                             'login': 'admin', 'password': 'admin'})
     user1, user2 = [ucontr.create(login=name, email="%s@test.te" % name,
                                   password=name)
                     for name in ["user1", "user2"]]
@@ -50,6 +55,3 @@ def populate_db():
                             category_id=cat_id, title=entry,
                             date=now + timedelta(seconds=k),
                             content="content %d" % article_total)
-
-def reset_db():
-    db_empty()

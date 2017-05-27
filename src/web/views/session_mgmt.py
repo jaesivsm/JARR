@@ -1,13 +1,12 @@
 import json
 import logging
 
-from flask import (current_app, flash, redirect, render_template, request,
-                   session, url_for)
+from flask import (Blueprint, current_app, flash, redirect, render_template,
+                   request, session, url_for)
 from flask_babel import gettext
 from flask_login import LoginManager, current_user, login_required, logout_user
-from flask_principal import (AnonymousIdentity, Principal, UserNeed,
-                             identity_changed, identity_loaded,
-                             session_identity_loader)
+from flask_principal import (Principal, AnonymousIdentity, UserNeed,
+        identity_changed, identity_loaded, session_identity_loader)
 from rauth import OAuth1Service, OAuth2Service
 from werkzeug.exceptions import NotFound
 
@@ -16,37 +15,52 @@ from web.controllers import UserController
 from web.forms import SigninForm, SignupForm
 from web.views.common import admin_role, api_role, login_user_bundle
 
-Principal(current_app)
-# Create a permission with a single Need, in this case a RoleNeed.
-
-login_manager = LoginManager()
-login_manager.init_app(current_app)
-login_manager.login_view = 'login'
-
 logger = logging.getLogger(__name__)
+oauth_bp = Blueprint('oauth', __name__, url_prefix='/oauth')
 
 
-@identity_loaded.connect_via(current_app._get_current_object())
-def on_identity_loaded(sender, identity):
-    # Set the identity user object
-    identity.user = current_user
-
-    # Add the UserNeed to the identity
+def login():
     if current_user.is_authenticated:
-        identity.provides.add(UserNeed(current_user.id))
-        if current_user.is_admin:
-            identity.provides.add(admin_role)
-        if current_user.is_api:
-            identity.provides.add(api_role)
+        return redirect(url_for('home'))
+    form = SigninForm()
+    if form.validate_on_submit():
+        login_user_bundle(form.user)
+        return form.redirect('home')
+    return render_template('login.html', form=form)
 
 
-@login_manager.user_loader
-def load_user(user_id):
-    try:
-        return UserController(user_id, ignore_context=True).get(
-                id=user_id, is_active=True)
-    except Exception:
-        return None
+@login_required
+def logout():
+    # Remove the user information from the session
+    logout_user()
+
+    # Remove session keys set by Flask-Principal
+    for key in ('identity.name', 'identity.auth_type'):
+        session.pop(key, None)
+
+    # Tell Flask-Principal the user is anonymous
+    identity_changed.send(current_app._get_current_object(),
+                          identity=AnonymousIdentity())
+    session_identity_loader()
+
+    return redirect(url_for('login'))
+
+
+def signup():
+    if not conf.AUTH_ALLOW_SIGNUP:
+        flash(gettext("Self-registration is disabled."), 'warning')
+        return redirect(url_for('home'))
+    if current_user.is_authenticated:
+        return redirect(url_for('home'))
+
+    form = SignupForm()
+    if form.validate_on_submit():
+        user = UserController().create(login=form.login.data,
+                email=form.email.data, password=form.password.data)
+        login_user_bundle(user)
+        return redirect(url_for('home'))
+
+    return render_template('signup.html', form=form)
 
 
 # FROM http://blog.miguelgrinberg.com/post/oauth-authentication-with-flask
@@ -66,7 +80,7 @@ class OAuthSignIn:  # pragma: no cover
         pass
 
     def get_callback_url(self):
-        return url_for('oauth_callback', provider=self.provider_name,
+        return url_for('oauth.oauth_callback', provider=self.provider_name,
                        _external=True)
 
     @classmethod
@@ -207,58 +221,12 @@ class LinuxFrSignIn(OAuthSignIn):  # pragma: no cover
         return info['login'], info['login'], info['email']
 
 
-@current_app.route('/login', methods=['GET', 'POST'])
-def login():
-    if current_user.is_authenticated:
-        return redirect(url_for('home'))
-    form = SigninForm()
-    if form.validate_on_submit():
-        login_user_bundle(form.user)
-        return form.redirect('home')
-    return render_template('login.html', form=form)
-
-
-@current_app.route('/logout')
-@login_required
-def logout():
-    # Remove the user information from the session
-    logout_user()
-
-    # Remove session keys set by Flask-Principal
-    for key in ('identity.name', 'identity.auth_type'):
-        session.pop(key, None)
-
-    # Tell Flask-Principal the user is anonymous
-    identity_changed.send(current_app, identity=AnonymousIdentity())
-    session_identity_loader()
-
-    return redirect(url_for('login'))
-
-
-@current_app.route('/signup', methods=['GET', 'POST'])
-def signup():
-    if not conf.AUTH_ALLOW_SIGNUP:
-        flash(gettext("Self-registration is disabled."), 'warning')
-        return redirect(url_for('home'))
-    if current_user.is_authenticated:
-        return redirect(url_for('home'))
-
-    form = SignupForm()
-    if form.validate_on_submit():
-        user = UserController().create(login=form.login.data,
-                email=form.email.data, password=form.password.data)
-        login_user_bundle(user)
-        return redirect(url_for('home'))
-
-    return render_template('signup.html', form=form)
-
-
-@current_app.route('/oauth/authorize/<provider>')
+@oauth_bp.route('/authorize/<provider>')
 def oauth_authorize(provider):  # pragma: no cover
     return OAuthSignIn.get_provider(provider).authorize()
 
 
-@current_app.route('/oauth/callback/<provider>')
+@oauth_bp.route('/callback/<provider>')
 def oauth_callback(provider):  # pragma: no cover
     if not current_user.is_anonymous:
         return redirect(url_for('home'))
@@ -282,3 +250,35 @@ def oauth_callback(provider):  # pragma: no cover
                                 'email': email})
     login_user_bundle(user)
     return redirect(url_for('home'))
+
+
+def load(application):
+    Principal(application)
+    login_manager = LoginManager()
+    login_manager.init_app(application)
+    login_manager.login_view = 'login'
+
+    @login_manager.user_loader
+    def load_user(user_id):
+        try:
+            return UserController(user_id, ignore_context=True).get(
+                    id=user_id, is_active=True)
+        except Exception:
+            return None
+
+    @identity_loaded.connect_via(application)
+    def on_identity_loaded(sender, identity):
+        # Set the identity user object
+        identity.user = current_user
+
+        # Add the UserNeed to the identity
+        if current_user.is_authenticated:
+            identity.provides.add(UserNeed(current_user.id))
+            if current_user.is_admin:
+                identity.provides.add(admin_role)
+            if current_user.is_api:
+                identity.provides.add(api_role)
+
+    application.route('/login', methods=['GET', 'POST'])(login)
+    application.route('/logout')(logout)
+    application.route('/signup', methods=['GET', 'POST'])(signup)

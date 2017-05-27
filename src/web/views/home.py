@@ -1,6 +1,6 @@
 import logging
 
-from flask import current_app, render_template, request, url_for
+from flask import render_template, request, url_for
 from flask_login import current_user, login_required
 
 from bootstrap import conf
@@ -15,7 +15,6 @@ from web.views.common import jsonify, fmt_datetime, fmt_timedelta
 logger = logging.getLogger(__name__)
 
 
-@current_app.route('/')
 @login_required
 @etag_match
 def home():
@@ -24,7 +23,6 @@ def home():
     return render_template('home.html')
 
 
-@current_app.route('/menu')
 @login_required
 @etag_match
 @jsonify
@@ -98,7 +96,6 @@ def _get_filters(in_dict):
     return filters
 
 
-@current_app.route('/middle_panel')
 @login_required
 @etag_match
 def get_middle_panel():
@@ -106,9 +103,6 @@ def get_middle_panel():
     return clusters_to_json(clu_contr.join_read(**_get_filters(request.args)))
 
 
-@current_app.route('/getclu/<int:cluster_id>')
-@current_app.route('/getclu/<int:cluster_id>/<parse>')
-@current_app.route('/getclu/<int:cluster_id>/<parse>/<int:article_id>')
 @login_required
 @jsonify
 def get_cluster(cluster_id, parse=False, article_id=None):
@@ -134,7 +128,6 @@ def get_cluster(cluster_id, parse=False, article_id=None):
     return cluster
 
 
-@current_app.route('/mark_all_as_read', methods=['PUT'])
 @login_required
 def mark_all_as_read():
     filters = _get_filters(request.json)
@@ -144,3 +137,15 @@ def mark_all_as_read():
         clu_ctrl.update({'id__in': [clu['id'] for clu in clusters]},
                         {'read': True})
     return clusters_to_json(clusters)
+
+
+def load(application):
+    application.route('/')(home)
+    application.route('/menu')(get_menu)
+    application.route('/middle_panel')(get_middle_panel)
+
+    application.route('/getclu/<int:cluster_id>')(get_cluster)
+    application.route('/getclu/<int:cluster_id>/<parse>')(get_cluster)
+    application.route(
+            '/getclu/<int:cluster_id>/<parse>/<int:article_id>')(get_cluster)
+    application.route('/mark_all_as_read', methods=['PUT'])(mark_all_as_read)

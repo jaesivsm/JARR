@@ -23,7 +23,8 @@ class Cluster(db.Model, RightMixin):
     main_link = Column(String, default=None)
 
     # foreign keys
-    main_article_id = Column(Integer, ForeignKey('article.id'))
+    main_article_id = Column(Integer,
+            ForeignKey('article.id', name='fk_article_id', use_alter=True))
     user_id = Column(Integer, ForeignKey('user.id', ondelete='CASCADE'))
 
     # relationships
@@ -41,11 +42,11 @@ class Cluster(db.Model, RightMixin):
             foreign_keys=[Article.cluster_id, Article.category_id])
 
     # index
-    cluster_cluster_uid_date = Index('user_id', 'main_date DESC NULLS LAST')
-    cluster_cluster_liked_uid_date = Index(
-            'liked', 'user_id', 'main_date DESC NULLS LAST')
-    cluster_cluster_read_uid_date = Index(
-            'read', 'user_id', 'main_date DESC NULLS LAST')
+    ix_cluster_uid_date = Index('user_id', 'main_date DESC NULLS LAST')
+    ix_cluster_liked_uid_date = Index('liked', 'user_id',
+                                      'main_date DESC NULLS LAST')
+    ix_cluster_read_uid_date = Index('read', 'user_id',
+                                     'main_date DESC NULLS LAST')
 
     @property
     def categories_id(self):

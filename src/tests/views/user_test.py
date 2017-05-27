@@ -24,12 +24,14 @@ class BaseUiTest(JarrFlaskCommon):
         self.app.get('/logout', follow_redirects=True)
 
     def test_opml_dump_and_restore(self):
+        # downloading OPML export file
         resp = self.app.get('/user/opml/export')
-        self.assertEquals(200, resp.status_code)
+        self.assertStatusCode(200, resp)
         opml_dump = resp.data.decode()
         self.assertTrue(
                 opml_dump.startswith('<?xml version="1.0" encoding="utf-8"'))
         self.assertTrue(opml_dump.endswith('</opml>'))
+        # cleaning db
         actrl = ArticleController(self.user.id)
         for item in actrl.read():
             actrl.delete(item.id)
@@ -49,15 +51,15 @@ class BaseUiTest(JarrFlaskCommon):
             self.fctrl.delete(feed.id)
         for category in self.cctrl.read():
             self.cctrl.delete(category.id)
-
+        # re-importing OPML
         resp = self.app.post('/user/opml/import',
                 data={'opml.xml': (BytesIO(resp.data), 'opml.xml')})
-        self.assertEquals(302, resp.status_code)
+        self.assertStatusCode(302, resp)
         self._check_opml_imported(existing_feeds, no_category_feed)
 
         resp = self.app.post('/user/opml/import',
                 data={'opml.xml': (BytesIO(resp.data), 'opml.xml')})
-        self.assertEquals(302, resp.status_code)
+        self.assertStatusCode(302, resp)
 
     def _check_opml_imported(self, existing_feeds, no_category_feed):
         self.assertEquals(sum(map(len, existing_feeds.values()))
@@ -92,16 +94,16 @@ class BaseUiTest(JarrFlaskCommon):
         login_form = '<input class="form-control" id="login" '\
                      'name="login" type="text" value="%s">'
         resp = self.app.get('/user/profile')
-        self.assertEquals(200, resp.status_code)
+        self.assertStatusCode(200, resp)
         self.assertTrue((login_form % self.user.login) in resp.data.decode())
         resp = self.app.get('/user/profile/%d' % self.user.id)
-        self.assertEquals(200, resp.status_code)
+        self.assertStatusCode(200, resp)
         self.assertTrue((login_form % self.user.login) in resp.data.decode())
         resp = self.app.get('/user/profile/%d' % self.user2.id)
-        self.assertEquals(302, resp.status_code)
+        self.assertStatusCode(302, resp)
         self.uctrl.update({'id': self.user.id}, {'is_admin': True})
         resp = self.app.get('/user/profile/%d' % self.user2.id)
-        self.assertEquals(200, resp.status_code)
+        self.assertStatusCode(200, resp)
         self.assertTrue((login_form % self.user2.login) in resp.data.decode())
 
     @patch('lib.emails.send')
@@ -110,7 +112,7 @@ class BaseUiTest(JarrFlaskCommon):
         self.assertEquals('', self.user.renew_password_token)
         resp = self.app.post('/user/gen_pass_token',
                              data={'email': self.user.email})
-        self.assertEquals(200, resp.status_code)
+        self.assertStatusCode(200, resp)
         self.assertTrue(mock_emails_send.called)
         mail_content = mock_emails_send.call_args[1]['plaintext']
 
@@ -136,21 +138,21 @@ class BaseUiTest(JarrFlaskCommon):
         resp = self.app.post('/user/recover/%s' % token,
                              data={'password': 'new_password',
                                    'password_conf': 'new_password'})
-        self.assertEquals(302, resp.status_code)
+        self.assertStatusCode(302, resp)
         self.assertNotEqual(old_password,
                 self.uctrl.get(id=self.user.id).password)
         self.assertEquals('',
                 self.uctrl.get(id=self.user.id).renew_password_token)
 
         # we're logged after password change
-        self.assertEquals(200, self.app.get('/').status_code)
+        self.assertStatusCode(200, self.app.get('/'))
         self.app.get('/logout')
 
         # we can log in with the new password
         self.app.post('/login', data={'login': self.user.login,
                                       'password': 'new_password'},
                       follow_redirects=True)
-        self.assertEquals(200, self.app.get('/').status_code)
+        self.assertStatusCode(200, self.app.get('/'))
 
     def test_password_update(self):
         old_password = self.user.password

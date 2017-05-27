@@ -44,12 +44,12 @@ class Article(db.Model, RightMixin):
     tags = association_proxy('tag_objs', 'text')
 
     # index
-    article_uid_cluid = Index('user_id', 'cluster_id')
-    article_uid_fid_cluid = Index('user_id', 'feed_id', 'cluster_id')
-    article_uid_cid_cluid = Index('user_id', 'category_id', 'cluster_id')
-    article_eid_cid_uid = Index('entry_id', 'category_id', 'user_id')
-    article_link_cid_uid = Index('link', 'category_id', 'user_id')
-    article_retrdate = Index('retrieved_date')
+    ix_article_uid_cluid = Index('user_id', 'cluster_id')
+    ix_article_uid_fid_cluid = Index('user_id', 'feed_id', 'cluster_id')
+    ix_article_uid_cid_cluid = Index('user_id', 'category_id', 'cluster_id')
+    ix_article_eid_cid_uid = Index('entry_id', 'category_id', 'user_id')
+    ix_article_link_cid_uid = Index('link', 'category_id', 'user_id')
+    ix_article_retrdate = Index('retrieved_date')
 
     # api whitelists
     @staticmethod

@@ -48,8 +48,8 @@ class Feed(db.Model, RightMixin):
             secondary='article')
 
     # index
-    idx_feed_uid_cid = Index('user_id', 'category_id')
-    idx_feed_uid = Index('user_id')
+    ix_feed_uid = Index('user_id')
+    ix_feed_uid_cid = Index('user_id', 'category_id')
 
     # api whitelists
     @staticmethod

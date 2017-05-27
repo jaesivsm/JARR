@@ -24,32 +24,32 @@ class BaseUiTest(JarrFlaskCommon):
         self.assertFalse(self.user.is_admin)
         self.login(self.user)
         resp = self.app.get('/admin/dashboard')
-        self.assertEquals(302, resp.status_code)
+        self.assertStatusCode(302, resp)
         self.logout()
 
     def test_dashboard(self):
         self.login(self.admin)
         resp = self.app.get('/admin/dashboard')
-        self.assertEquals(200, resp.status_code)
+        self.assertStatusCode(200, resp)
         self.logout()
 
     def test_user_page_forbidden(self):
         self.assertFalse(self.user.is_admin)
         self.login(self.user)
         resp = self.app.get('/admin/user/%d' % self.user2.id)
-        self.assertEquals(302, resp.status_code)
+        self.assertStatusCode(302, resp)
         self.logout()
 
     def test_user_page_not_found(self):
         self.login(self.admin)
         resp = self.app.get('/admin/user/-1')
-        self.assertEquals(404, resp.status_code)
+        self.assertStatusCode(404, resp)
         self.logout()
 
     def test_user_page(self):
         self.login(self.admin)
         resp = self.app.get('/admin/user/%d' % self.user.id)
-        self.assertEquals(200, resp.status_code)
+        self.assertStatusCode(200, resp)
         self.logout()
 
     def test_toggle_user_forbidden(self):
@@ -68,7 +68,7 @@ class BaseUiTest(JarrFlaskCommon):
         self.assertTrue(self.uctrl.get(id=self.user2.id).is_active)
         self.login(self.admin)
         resp = self.app.get('/admin/toggle_user/-1')
-        self.assertEquals(404, resp.status_code)
+        self.assertStatusCode(404, resp)
         self.logout()
         self.assertTrue(self.uctrl.get(id=self.user.id).is_active)
         self.assertTrue(self.uctrl.get(id=self.user2.id).is_active)
@@ -77,6 +77,6 @@ class BaseUiTest(JarrFlaskCommon):
         self.assertTrue(self.uctrl.get(id=self.user.id).is_active)
         self.login(self.admin)
         resp = self.app.get('/admin/toggle_user/%d' % self.user.id)
-        self.assertEquals(302, resp.status_code)
+        self.assertStatusCode(302, resp)
         self.assertFalse(self.uctrl.get(id=self.user.id).is_active)
         self.logout()

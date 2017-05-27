@@ -21,14 +21,14 @@ class BaseUiTest(JarrFlaskCommon):
         if filters and not filters.startswith('?'):
             filters = '?' + filters
         resp = self.app.get('/middle_panel%s' % filters)
-        self.assertEquals(200, resp.status_code)
+        self.assertStatusCode(200, resp)
         clusters = json.loads(resp.data.decode('utf8'))['clusters']
         self.assertEquals(count, len(clusters))
         return clusters
 
     def test_menu(self):
         resp = self.app.get('/menu')
-        self.assertEquals(200, resp.status_code)
+        self.assertStatusCode(200, resp)
 
     def test_middle_panel(self):
         clusters = self.assertClusterCount(9)
@@ -38,7 +38,8 @@ class BaseUiTest(JarrFlaskCommon):
                   data={'liked': True}, user='user1')
         self.assertClusterCount(1, 'filter=liked')
         self.assertClusterCount(3, 'filter_type=feed_id&filter_id=1')
-        self.assertClusterCount(3, 'filter_type=feed_id&filter_id=1')
+        self.assertClusterCount(3, 'filter_type=feed_id&filter_id=2')
+        self.assertClusterCount(3, 'filter_type=category_id&filter_id=1')
         self.assertClusterCount(3, 'filter_type=category_id&filter_id=0')
 
     def test_search(self):
@@ -65,61 +66,63 @@ class BaseUiTest(JarrFlaskCommon):
             self.assertTrue(feed_id in cluster['feeds_id'],
                     "%d not in %r" % (feed_id, cluster['feeds_id']))
 
-    def _mark_as_read(self, filters={}):
+    def _mark_as_read(self, read_count, filters={}):
         resp = self.app.put('/mark_all_as_read', data=json.dumps(filters),
                 headers={'Content-Type': 'application/json'})
-        self.assertEquals(200, resp.status_code)
+        self.assertStatusCode(200, resp)
+        self.assertEquals(read_count,
+                len(json.loads(resp.data.decode('utf8'))['clusters']))
 
     def test_mark_all_as_read(self):
         self.assertClusterCount(9, 'filter=unread')
-        self._mark_as_read()
+        self._mark_as_read(9)
         self.assertClusterCount(0, 'filter=unread')
 
     def test_mark_all_as_read_filter(self):
         self.assertClusterCount(9, 'filter=unread')
-        self._mark_as_read({'filter': "unread",
-                            'filter_type': None, 'filter_id': None})
+        self._mark_as_read(9,
+                {'filter': "unread", 'filter_type': None, 'filter_id': None})
         self.assertClusterCount(0, 'filter=unread')
 
     def test_mark_feed_as_read(self):
         self.assertClusterCount(9, 'filter=unread')
-        self._mark_as_read({"filter": "unread",
-                            "filter_type": "feed_id", "filter_id": 1})
+        self._mark_as_read(3,
+                {"filter": "unread", "filter_type": "feed_id", "filter_id": 1})
         self.assertClusterCount(6, 'filter=unread')
 
     def test_mark_category_as_read(self):
         self.assertClusterCount(9, 'filter=unread')
-        self._mark_as_read({"filter": "unread", "filter_type": "category_id",
-                            "filter_id": 1})
+        self._mark_as_read(3, {"filter": "unread",
+                               "filter_type": "category_id", "filter_id": 1})
         self.assertClusterCount(6, 'filter=unread')
 
     def test_mark_no_category_as_read(self):
         self.assertClusterCount(9, 'filter=unread')
-        self._mark_as_read({"filter": "unread", "filter_type": "category_id",
-                            "filter_id": 0})
+        self._mark_as_read(3, {"filter": "unread",
+                               "filter_type": "category_id", "filter_id": 0})
         self.assertClusterCount(6, 'filter=unread')
 
     def test_getclu(self):
         resp = self.app.get('/getclu/1',
                 headers={'Content-Type': 'application/json'})
-        self.assertEquals(200, resp.status_code)
+        self.assertStatusCode(200, resp)
         assert 'notifications' in json.loads(resp.data.decode('utf8'))
         self.app.get('/logout')
         self.app.post('/login', data={'login': 'user2', 'password': 'user2'})
         resp = self.app.get('/getclu/1',
                 headers={'Content-Type': 'application/json'})
-        self.assertEquals(404, resp.status_code)
+        self.assertStatusCode(404, resp)
 
     def test_login_logout(self):
-        self.assertEquals(302, self.app.get('/logout').status_code)
-        self.assertEquals(302, self.app.get('/').status_code)
-        self.assertEquals(200, self.app.get('/login').status_code)
+        self.assertStatusCode(302, self.app.get('/logout'))
+        self.assertStatusCode(302, self.app.get('/'))
+        self.assertStatusCode(200, self.app.get('/login'))
         resp = self.app.post('/login',
                 data={'login': 'admin', 'password': 'admin'})
-        self.assertEquals(302, resp.status_code)
-        self.assertEquals(200, self.app.get('/').status_code)
-        self.assertEquals(302, self.app.get('/logout').status_code)
-        self.assertEquals(302, self.app.get('/').status_code)
+        self.assertStatusCode(302, resp)
+        self.assertStatusCode(200, self.app.get('/'))
+        self.assertStatusCode(302, self.app.get('/logout'))
+        self.assertStatusCode(302, self.app.get('/'))
 
     @patch('web.views.feed.construct_feed_from')
     def test_bookmarklet(self, construct_feed_from):
@@ -132,27 +135,27 @@ class BaseUiTest(JarrFlaskCommon):
 
         fctrl = FeedController(self.user.id)
         resp = self.app.get('/feed/bookmarklet')
-        self.assertEquals(400, resp.status_code)
+        self.assertStatusCode(400, resp)
 
         self.assertEquals(0, fctrl.read(link=feed['link']).count())
         self.assertEquals(0, fctrl.read(site_link=feed['site_link']).count())
 
         resp = self.app.get('/feed/bookmarklet?url=%s' % feed['link'])
-        self.assertEquals(302, resp.status_code)
+        self.assertStatusCode(302, resp)
         self.assertEquals(1, fctrl.read(link=feed['link']).count())
         self.assertEquals(1, fctrl.read(site_link=feed['site_link']).count())
 
         resp = self.app.get('/feed/bookmarklet?url=%s' % feed['link'])
-        self.assertEquals(302, resp.status_code)
+        self.assertStatusCode(302, resp)
         self.assertEquals(1, fctrl.read(link=feed['link']).count())
         self.assertEquals(1, fctrl.read(site_link=feed['site_link']).count())
 
         resp = self.app.get('/feed/bookmarklet?url=%s' % feed['site_link'])
-        self.assertEquals(302, resp.status_code)
+        self.assertStatusCode(302, resp)
         self.assertEquals(1, fctrl.read(link=feed['link']).count())
         self.assertEquals(1, fctrl.read(site_link=feed['site_link']).count())
 
         resp = self.app.get('/feed/bookmarklet?url=blabla')
-        self.assertEquals(302, resp.status_code)
+        self.assertStatusCode(302, resp)
         self.assertEquals(1, fctrl.read(link=feed['link']).count())
         self.assertEquals(1, fctrl.read(site_link=feed['site_link']).count())

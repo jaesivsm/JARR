@@ -1,4 +1,3 @@
-from flask import current_app
 from flask_restful import Api
 
 from bootstrap import conf
@@ -32,10 +31,11 @@ class FetchableFeedAPI(PyAggAbstractResource):
         return result or None, 200 if result else 204
 
 
-api = Api(current_app, prefix=conf.API_ROOT)
+def load(application):
+    api = Api(application, prefix=conf.API_ROOT)
 
-api.add_resource(FeedNewAPI, '/feed', endpoint='feed_new.json')
-api.add_resource(FeedAPI, '/feed/<int:obj_id>', endpoint='feed.json')
-api.add_resource(FeedsAPI, '/feeds', endpoint='feeds.json')
-api.add_resource(FetchableFeedAPI, '/feeds/fetchable',
-                 endpoint='fetchable_feed.json')
+    api.add_resource(FeedNewAPI, '/feed', endpoint='feed_new.json')
+    api.add_resource(FeedAPI, '/feed/<int:obj_id>', endpoint='feed.json')
+    api.add_resource(FeedsAPI, '/feeds', endpoint='feeds.json')
+    api.add_resource(FetchableFeedAPI, '/feeds/fetchable',
+                     endpoint='fetchable_feed.json')

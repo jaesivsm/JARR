@@ -116,12 +116,12 @@ class FeedController(AbstractController):
                                     Article.feed_id == feed.id)
             else:
                 where_clause = Article.feed_id == feed.id
-            if SQLITE_ENGINE:
+            if SQLITE_ENGINE:  # pragma: no cover
                 stmt = select([Article.id]).where(where_clause)
                 stmt = update(Cluster)\
                         .where(Cluster.main_article_id.in_(stmt))\
                         .values(main_feed_title=attrs['title'])
-            else:  # pragma: no cover
+            else:
                 stmt = update(Cluster)\
                         .where(and_(
                                 Article.id == Cluster.main_article_id,
