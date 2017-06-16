@@ -35,7 +35,10 @@ class ArticlesChallenge(PyAggAbstractResource):
             keys_to_ignore = []
             for key in id_dict:
                 if key not in attrs:
+                    logger.warn("got %s:%r which is gonna be ignored",
+                                key, id_dict.get(key))
                     keys_to_ignore.append(key)
+                    continue
                 if issubclass(attrs[key]['type'], datetime):
                     id_dict[key] = dateutil.parser.parse(id_dict[key])
             for key in keys_to_ignore:
