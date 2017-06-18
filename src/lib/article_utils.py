@@ -11,6 +11,7 @@ from requests.exceptions import MissingSchema
 from bootstrap import conf
 from lib.html_parsing import extract_tags, extract_title, extract_lang
 from lib.utils import jarr_get, utc_now
+from lib.clustering_af.word_utils import extract_valuable_tokens
 from web.lib.article_cleaner import clean_urls
 
 logger = logging.getLogger(__name__)
@@ -29,14 +30,20 @@ def construct_article(entry, feed, fields=None, fetch=True):
     now = utc_now()
     article = {}
 
-    def push_in_article(key, value):
+    def push_in_article(key, *args):
         """feeding article with entry[key]
-        if 'fields' is None or if key in 'fields'"""
-        if not fields or key in fields:
-            article[key] = value
+        if 'fields' is None or if key in 'fields'.
+        You can either pass on value or a callable and some args to feed it"""
+        if fields and key not in fields:
+            return
+        if len(args) == 1:
+            value = args[0]
+        else:
+            value = args[0](*args[1:])
+        article[key] = value
     push_in_article('feed_id', feed['id'])
     push_in_article('user_id', feed['user_id'])
-    push_in_article('entry_id', extract_id(entry))
+    push_in_article('entry_id', extract_id, entry)
     push_in_article('retrieved_date', now)
     if not fields or 'date' in fields:
         for date_key in PROCESSED_DATE_KEYS:
@@ -48,9 +55,9 @@ def construct_article(entry, feed, fields=None, fetch=True):
                     pass
                 else:
                     break
-    push_in_article('content', get_entry_content(entry))
-    push_in_article('comments', entry.get('comments'))
-    push_in_article('lang', get_entry_lang(entry))
+    push_in_article('content', get_entry_content, entry)
+    push_in_article('comments', entry.get, 'comments')
+    push_in_article('lang', get_entry_lang, entry)
     if fields is None or FETCHABLE_DETAILS.intersection(fields):
         details = get_article_details(entry, fetch)
         for detail, value in details.items():
@@ -58,10 +65,11 @@ def construct_article(entry, feed, fields=None, fetch=True):
                 push_in_article(detail, value)
         if details.get('tags') and article.get('tags'):
             push_in_article('tags',
-                            set(details['tags']).union(article['tags']))
+                            set(details['tags']).union, article['tags'])
         if 'content' in article and details.get('link'):
             push_in_article('content',
-                            clean_urls(article['content'], details['link']))
+                            clean_urls, article['content'], details['link'])
+    push_in_article('valuable_tokens', extract_valuable_tokens, article)
     return article
 
 

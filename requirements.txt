@@ -14,6 +14,7 @@ Flask-WTF==0.14.2
 Jinja2==2.9.6
 lxml==3.7.3
 nltk==3.2.4
+numpy==1.12.1
 opml==0.5
 python-dateutil==2.6.0
 python-postmark==0.4.12

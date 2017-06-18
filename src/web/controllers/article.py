@@ -8,7 +8,6 @@ from sqlalchemy import func
 from bootstrap import db
 from lib.utils import utc_now
 from lib.article_utils import process_filters
-from lib.clustering_af.word_utils import extract_valuable_tokens
 from web.controllers import CategoryController, FeedController
 from web.models import Article, User, Tag
 
@@ -57,8 +56,6 @@ class ArticleController(AbstractController):
         skipped, read, liked = process_filters(feed.filters, attrs)
         if skipped:
             return None
-        if attrs.get('lang'):
-            attrs['valuable_tokens'] = extract_valuable_tokens(attrs)
         article = super().create(**attrs)
         cluster_contr.clusterize(article, read, liked)
         return article

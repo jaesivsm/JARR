@@ -5,6 +5,7 @@ from mock import patch
 from requests import Response
 from requests.exceptions import MissingSchema
 
+from lib.clustering_af.word_utils import FakeStemmer
 from lib.article_utils import construct_article
 
 
@@ -77,11 +78,22 @@ class ConstructArticleTest(unittest.TestCase):
         self.assertEquals(1, article['user_id'])
         self.assertEquals(1, article['feed_id'])
 
-    def test_tags(self):
+    @patch('lib.clustering_af.word_utils.get_stemmer')
+    @patch('lib.clustering_af.word_utils.get_stopwords')
+    def test_tags(self, get_stopwords, get_stemmer):
+        get_stemmer.return_value = FakeStemmer()
+        get_stopwords.return_value = []
         import bootstrap
         bootstrap.conf.CRAWLER_RESOLV = True
         self.jarr_get_patch.return_value = self.response2
         article = construct_article(self.entry2, {'id': 1, 'user_id': 1})
+
+        print(article['valuable_tokens'])
+        self.assertEquals(sorted(['ceci', 'est', 'pas', 'old', 'boy', 'owlboy',
+                                  'suite', 'benzaie', 'live', 'watch', 'live',
+                                  'at', 'games', 'twitch']),
+                          sorted(article['valuable_tokens']))
+
         self.assertEquals('yt:video:scbrjaqM3Oc', article['entry_id'])
         self.assertEquals(self.response2.url, article['link'])
         self.assertEquals("Ceci n'est pas Old Boy - Owlboy (suite) - "

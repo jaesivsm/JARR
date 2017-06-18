@@ -171,13 +171,19 @@ def install_python_deps(args):
     install_postgres = 'postgres' in getattr(
             conf, 'SQLALCHEMY_DATABASE_URI', '')
 
-    print('installing python dependencies...')
+    print('installing python dependencies...', end='')
     base_cmd = ['install', '--quiet', '--upgrade', '-r']
     pip.main(base_cmd + ['requirements.txt'])
     if install_postgres:
+        print('postgres dependencies...', end='')
         pip.main(base_cmd + ['requirements.postgres.txt'])
     if args.test:
+        print('test dependencies...', end='')
         pip.main(base_cmd + ['requirements.dev.txt'])
+    print()
+    print('installing nltk data...')
+    import nltk
+    nltk.download('all')
 
 
 def bootstrap_database(args, creds):

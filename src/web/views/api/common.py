@@ -131,7 +131,7 @@ class PyAggResourceExisting(PyAggAbstractResource):
         """update an object, new attrs should be passed in the payload"""
         args = self.reqparse_args(right='write', default=False)
         if not args:
-            raise BadRequest()
+            raise BadRequest("got no args out of the request")
         return self.controller.update({'id': obj_id},
                                       args, return_objs=True).first(), 200
 

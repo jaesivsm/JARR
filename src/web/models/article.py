@@ -21,7 +21,7 @@ class Article(db.Model, RightMixin):
     date = Column(UTCDateTime, default=utc_now)
     retrieved_date = Column(UTCDateTime, default=utc_now)
     readability_parsed = Column(Boolean, default=False)
-    valuable_tokens = Column(PickleType, default=list)
+    valuable_tokens = Column(PickleType, default=[])
 
     # foreign keys
     user_id = Column(Integer, ForeignKey('user.id', ondelete='CASCADE'))
@@ -63,7 +63,7 @@ class Article(db.Model, RightMixin):
 
     @staticmethod
     def _fields_api_write():
-        return {'tags', 'lang'}
+        return {'tags', 'lang', 'valuable_tokens'}
 
     def __repr__(self):
         return "<Article(id=%d, entry_id=%s, title=%r, " \
