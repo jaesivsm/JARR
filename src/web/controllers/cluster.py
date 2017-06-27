@@ -21,6 +21,7 @@ __returned_keys = ('main_title', 'id', 'liked', 'read', 'main_article_id',
 JR_FIELDS = {key: getattr(Cluster, key) for key in __returned_keys}
 JR_SQLA_FIELDS = [getattr(Cluster, key) for key in __returned_keys]
 JR_LENGTH = 1000
+MIN_SIMILARITY_SCORE = 0.65
 
 
 class ClusterController(AbstractController):
@@ -43,8 +44,7 @@ class ClusterController(AbstractController):
         if match:
             return match.cluster
 
-    def _get_cluster_by_similarity(self, article,
-            min_sample_size=10, min_score=0.45):
+    def _get_cluster_by_similarity(self, article, min_sample_size=10):
         if not article.lang:
             return
         art_contr = ArticleController(self.user_id)
@@ -68,7 +68,7 @@ class ClusterController(AbstractController):
             return
 
         best_match, score = get_best_match_and_score(article, neighbors)
-        if score > min_score:
+        if score > MIN_SIMILARITY_SCORE:
             return best_match.cluster
 
     def _create_from_article(self, article,
