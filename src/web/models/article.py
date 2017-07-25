@@ -1,10 +1,11 @@
 from sqlalchemy import (Boolean, Column, ForeignKey, Index, Integer,
-                        PickleType, String)
+                        PickleType, String, Enum)
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.orm import relationship
 
 from bootstrap import db
 from lib.utils import utc_now
+from lib.reasons import ClusterReason
 from web.models.utc_datetime_type import UTCDateTime
 from web.models.right_mixin import RightMixin
 
@@ -22,6 +23,10 @@ class Article(db.Model, RightMixin):
     retrieved_date = Column(UTCDateTime, default=utc_now)
     readability_parsed = Column(Boolean, default=False)
     valuable_tokens = Column(PickleType, default=[])
+
+    # reasons
+    cluster_reason = Column(Enum(ClusterReason), default=None)
+    cluster_score = Column(Integer, default=None)
 
     # foreign keys
     user_id = Column(Integer, ForeignKey('user.id', ondelete='CASCADE'))
@@ -54,7 +59,8 @@ class Article(db.Model, RightMixin):
     # api whitelists
     @staticmethod
     def _fields_base_write():
-        return {'readability_parsed', 'feed_id', 'category_id'}
+        return {'readability_parsed', 'feed_id', 'category_id',
+                'cluster_reason', 'cluster_score'}
 
     @staticmethod
     def _fields_base_read():

@@ -3,6 +3,7 @@ import pytz
 import re
 import types
 import urllib
+from enum import Enum
 from datetime import datetime
 from hashlib import md5
 
@@ -56,6 +57,8 @@ def default_handler(obj, role='admin'):
         return "%d: %s" % (obj.code, obj.name)
     if isinstance(obj, BaseException):
         return str(obj)
+    if isinstance(obj, Enum):
+        return obj.name
     raise TypeError("Object of type %s with value of %r "
                     "is not JSON serializable" % (type(obj), obj))
 

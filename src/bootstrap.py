@@ -56,6 +56,7 @@ PARSED_PLATFORM_URL = urlparse(conf.PLATFORM_URL)
 def is_secure_served():
     return PARSED_PLATFORM_URL.scheme == 'https'
 
+
 set_logging(conf.LOG_PATH, log_level=conf.LOG_LEVEL)
 db = SQLAlchemy()
 

@@ -1,15 +1,17 @@
-from sqlalchemy import Boolean, Column, ForeignKey, Index, Integer, String
+from sqlalchemy import Boolean, Column, ForeignKey, Index, \
+                       Integer, String, Enum
 from sqlalchemy.orm import relationship
 
 from bootstrap import db
 from lib.utils import utc_now
+from lib.reasons import ReadReason
 from web.models.article import Article
 from web.models.utc_datetime_type import UTCDateTime
 from web.models.right_mixin import RightMixin
 
 
 class Cluster(db.Model, RightMixin):
-    "Represent an article from a feed."
+    "Represent a cluster of articles from one or several feeds"
     id = Column(Integer, primary_key=True)
     cluster_type = Column(String)
     read = Column(Boolean, default=False)
@@ -21,6 +23,9 @@ class Cluster(db.Model, RightMixin):
     main_feed_title = Column(String)
     main_title = Column(String)
     main_link = Column(String, default=None)
+
+    # reasons
+    read_reason = Column(Enum(ReadReason), default=None)
 
     # foreign keys
     main_article_id = Column(Integer,
@@ -68,7 +73,7 @@ class Cluster(db.Model, RightMixin):
     # api whitelists
     @staticmethod
     def _fields_base_write():
-        return {'read', 'liked'}
+        return {'read', 'liked', 'read_reason'}
 
     @staticmethod
     def _fields_base_read():

@@ -29,8 +29,7 @@ var TableLine = React.createClass({
                 feeds_id: React.PropTypes.array.isRequired
     },
     getInitialState: function() {
-        return {read: this.props.read, liked: this.props.liked,
-                selected: false};
+        return {read: this.props.read, liked: this.props.liked, selected: false};
     },
     render: function() {
         var liked = this.state.liked ? 'l' : '';
@@ -59,9 +58,13 @@ var TableLine = React.createClass({
         );
     },
     openRedirectLink: function(evnt) {
-        if(!this.state.read) {
-            this.toogleRead(evnt);
-        }
+        this.setState({read: true}, function() {
+          MiddlePanelActions.changeAttr(this.props.cluster_id, 'read', true,
+            this.props.feeds_id.map(function(feed_id) {
+              return MenuStore.feeds[feed_id].category_id}),
+            this.props.feeds_id);
+        }.bind(this));
+        evnt.stopPropagation();
     },
     toogleRead: function(evnt) {
         this.setState({read: !this.state.read}, function() {
@@ -77,8 +80,7 @@ var TableLine = React.createClass({
     },
     loadCluster: function() {
         this.setState({selected: true, read: true}, function() {
-            RightPanelActions.loadCluster(
-                    this.props.cluster_id, this.props.read);
+            RightPanelActions.loadCluster(this.props.cluster_id, this.props.read);
         }.bind(this));
     },
     stopPropagation: function(evnt) {

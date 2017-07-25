@@ -12,6 +12,7 @@ from web.controllers.article import ArticleController
 from web.models import Article, Cluster
 
 from .abstract import AbstractController
+from lib.reasons import ClusterReason, ReadReason
 from lib.clustering_af.grouper import get_best_match_and_score
 
 logger = logging.getLogger(__name__)
@@ -29,10 +30,13 @@ class ClusterController(AbstractController):
     max_day_dist = timedelta(days=7)
 
     def _get_cluster_by_link(self, article):
-        return self.read(user_id=article.user_id,
+        cluster = self.read(user_id=article.user_id,
                          main_date__lt=article.date + self.max_day_dist,
                          main_date__gt=article.date - self.max_day_dist,
                          main_link=article.link).first()
+        if cluster:
+            article.cluster_reason = ClusterReason.title
+        return cluster
 
     def _get_cluster_by_title(self, article):
         match = ArticleController(self.user_id).read(
@@ -42,6 +46,7 @@ class ClusterController(AbstractController):
                 category_id=article.category_id,
                 title__ilike=article.title).first()
         if match:
+            article.cluster_reason = ClusterReason.title
             return match.cluster
 
     def _get_cluster_by_similarity(self, article, min_sample_size=10):
@@ -69,6 +74,8 @@ class ClusterController(AbstractController):
 
         best_match, score = get_best_match_and_score(article, neighbors)
         if score > MIN_SIMILARITY_SCORE:
+            article.cluster_reason = ClusterReason.tf_idf
+            article.cluster_score = int(score * 1000)
             return best_match.cluster
 
     def _create_from_article(self, article,
@@ -82,6 +89,7 @@ class ClusterController(AbstractController):
         cluster.main_article_id = article.id
         cluster.read = bool(cluster_read)
         cluster.liked = cluster_liked
+        article.cluster_reason = ClusterReason.original
         self._enrich_cluster(cluster, article, cluster_read, cluster_liked)
 
     def _enrich_cluster(self, cluster, article,
@@ -91,6 +99,8 @@ class ClusterController(AbstractController):
         # a cluster
         if cluster_read is not None:
             cluster.read = cluster.read and cluster_read
+            if cluster.read:
+                cluster.read_reason = ReadReason.filtered
         # once one article is liked the cluster is liked
         cluster.liked = cluster.liked or cluster_liked
         if cluster.main_date > article.date or force_article_as_main:

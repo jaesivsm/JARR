@@ -74,21 +74,23 @@ var MiddlePanelActions = {
         });
     },
     changeRead: function(cluster_id, new_value){
+        var read_reason = new_value ? 'marked' : null;
         jquery.ajax({type: 'PUT',
                 contentType: 'application/json',
-                data: JSON.stringify({read: new_value}),
+                data: JSON.stringify({read: new_value, read_reason: read_reason}),
                 url: "api/v2.0/cluster/" + cluster_id,
                 success: function (payload) {
-                    JarrDispatcher.dispatch({
-                        type: ActionTypes.CHANGE_ATTR,
-                        attribute: 'read',
-                        value_bool: new_value,
-                        value_num: new_value ? -1 : 1,
-                        clusters: [{cluster_id: cluster_id,
-                                    categories_id: payload.categories_id,
-                                    feeds_id: payload.feeds_id}],
-                    });
+                    MiddlePanelActions.changeAttr(cluster_id, 'read', new_value, payload.categories_id, payload.feeds_id);
                 },
+        });
+    },
+    changeAttr: function(cluster_id, attr, new_value, categories_id, feeds_id) {
+        JarrDispatcher.dispatch({
+            type: ActionTypes.CHANGE_ATTR,
+            attribute: attr,
+            value_bool: new_value,
+            value_num: new_value ? -1 : 1,
+            clusters: [{cluster_id: cluster_id, categories_id: categories_id, feeds_id: feeds_id}],
         });
     },
     changeLike: function(cluster_id, new_value){
@@ -97,15 +99,7 @@ var MiddlePanelActions = {
                 data: JSON.stringify({liked: new_value}),
                 url: "api/v2.0/cluster/" + cluster_id,
                 success: function (payload) {
-                    JarrDispatcher.dispatch({
-                        type: ActionTypes.CHANGE_ATTR,
-                        attribute: 'liked',
-                        value_bool: new_value,
-                        value_num: new_value ? -1 : 1,
-                        clusters: [{cluster_id: cluster_id,
-                                    categories_id: payload.categories_id,
-                                    feeds_id: payload.feeds_id}],
-                    });
+                    MiddlePanelActions.changeAttr(cluster_id, 'liked', new_value, payload.categories_id, payload.feeds_id);
                 },
         });
     },

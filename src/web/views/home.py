@@ -6,7 +6,7 @@ from flask_login import current_user, login_required
 from bootstrap import conf
 from lib.const import UNIX_START
 from lib.utils import utc_now
-from lib import integrations
+from lib import integrations, reasons
 from web.controllers import (CategoryController, ClusterController,
                              FeedController, UserController)
 from web.lib.view_utils import clusters_to_json, etag_match, get_notifications
@@ -110,7 +110,8 @@ def get_cluster(cluster_id, parse=False, article_id=None):
     cluster = cluc.get(id=cluster_id)
     if not cluster.read:
         cluster['read'] = True
-        cluc.update({'id': cluster_id}, {'read': True})
+        cluc.update({'id': cluster_id},
+                    {'read': True, 'read_reason': reasons.ReadReason.read})
     cluster['categories_id'] = cluster.categories_id or []
     feed = FeedController(current_user.id).get(id__in=cluster.feeds_id)
     feed['icon_url'] = url_for('icon.icon', url=feed.icon_url) \
@@ -135,7 +136,8 @@ def mark_all_as_read():
     clusters = list(clu_ctrl.join_read(**filters))
     if clusters:
         clu_ctrl.update({'id__in': [clu['id'] for clu in clusters]},
-                        {'read': True})
+                        {'read': True,
+                         'read_reason': reasons.ReadReason.mass_marked})
     return clusters_to_json(clusters)
 
 
