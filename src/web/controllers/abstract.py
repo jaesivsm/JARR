@@ -171,7 +171,7 @@ class AbstractController:
         result = {}
         for column in cls._get_columns(role, right):
             if isinstance(getattr(cls._db_cls, column), AssociationProxy):
-                result[column] = {'type': list, 'default': []}
+                result[column] = {'default': [], 'action': 'append'}
                 continue
             try:
                 db_col = getattr(cls._db_cls, column).property.columns[0]

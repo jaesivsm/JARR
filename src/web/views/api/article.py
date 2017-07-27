@@ -1,3 +1,4 @@
+import logging
 from datetime import datetime
 
 import dateutil.parser
@@ -8,6 +9,8 @@ from web.controllers import ArticleController
 from web.views.api.common import (PyAggAbstractResource, PyAggResourceExisting,
                                   PyAggResourceMulti, PyAggResourceNew)
 from web.views.common import api_permission
+
+logger = logging.getLogger(__name__)
 
 
 class ArticleNewAPI(PyAggResourceNew):
@@ -24,7 +27,7 @@ class ArticlesAPI(PyAggResourceMulti):
 
 class ArticlesChallenge(PyAggAbstractResource):
     controller_cls = ArticleController
-    attrs = {'ids': {'type': list, 'default': []}}
+    attrs = {'ids': {'action': 'append', 'type': dict, 'default': []}}
 
     @api_permission.require(http_exception=403)
     def get(self):

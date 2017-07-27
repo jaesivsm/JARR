@@ -6,22 +6,21 @@ Flask-Babel==0.11.2
 Flask-Login==0.4.0
 Flask-Migrate==2.0.4
 Flask-Principal==0.4.0
-Flask-RESTful==0.3.5
+Flask-RESTful==0.3.6
 Flask-Script==2.0.5
 Flask-SQLAlchemy==2.2
 Flask-SSLify==0.1.5
 Flask-WTF==0.14.2
 Jinja2==2.9.6
-lxml==3.7.3
+lxml==3.8.0
 nltk==3.2.4
-numpy==1.12.1
+numpy==1.13.1
 opml==0.5
 python-dateutil==2.6.1
 python-postmark==0.4.12
 pytz==2017.2
 rauth==0.7.3
-requests==2.14.2
-requests-futures==0.9.7
+requests==2.18.2
 SQLAlchemy==1.1.12
 
 click==6.7

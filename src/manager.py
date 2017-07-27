@@ -33,10 +33,9 @@ def db_create(login='admin', password='admin'):
 @manager.command
 def fetch(limit=0, retreive_all=False):
     "Crawl the feeds with the client crawler."
-    from crawler.http_crawler import CrawlerScheduler
-    scheduler = CrawlerScheduler(conf.CRAWLER_LOGIN, conf.CRAWLER_PASSWD)
-    scheduler.run(limit=limit, retreive_all=retreive_all)
-    scheduler.wait()
+    from crawler.http_crawler import main
+    main(conf.CRAWLER_LOGIN, conf.CRAWLER_PASSWD,
+         limit=limit, retreive_all=retreive_all)
 
 
 @manager.command
