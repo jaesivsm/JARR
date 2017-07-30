@@ -25,6 +25,11 @@ class CategoryApiTest(JarrFlaskCommon, ApiCommon):
         self.assertStatusCode(200, resp)
         self.assertEquals(8, len(resp.json()))
 
+    def test_creation(self):
+        resp = self._api('post', self.urn, data={'name': 'test'}, user='user1')
+        self.assertStatusCode(201, resp)
+        self.assertEquals('test', resp.json()['name'])
+
     def test_api_update_many(self):
         resp = self._api('put', self.urns, user='user1',
                 data=[[1, {'name': 'updated name 1'}],
