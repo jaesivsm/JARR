@@ -9,11 +9,11 @@ import feedparser
 import requests
 
 from bootstrap import conf
-from lib import integrations
+from lib import integrations, reasons
 from lib.article_utils import construct_article, get_skip_and_ids
 from lib.feed_utils import construct_feed_from, is_parsing_ok
 from lib.utils import default_handler, jarr_get, to_hash, utc_now
-from crawler.lib import headers_handling
+from crawler.lib.headers_handling import prepare_headers, extract_feed_info
 
 logger = logging.getLogger(__name__)
 logging.captureWarnings(True)
@@ -41,9 +41,9 @@ def query_jarr(method_name, urn, auth, pool=None, data=None):
     return future
 
 
-def clean_feed(feed, auth, pool, response, parsed_feed=None):
+def clean_feed(feed, auth, pool, response, parsed_feed=None, **info):
     """Will reset the errors counters on a feed that have known errors"""
-    info = headers_handling.extract_feed_info(response.headers)
+    info.update(extract_feed_info(response.headers, response.text))
     info.update({'error_count': 0, 'last_error': None,
                  'last_retrieved': utc_now()})
 
@@ -78,36 +78,38 @@ def set_feed_error(feed, auth, pool, error=None, parsed_feed=None):
                     'bumping error count to %r', error_count)
     info = {'error_count': error_count, 'last_error': last_error,
             'user_id': feed['user_id'], 'last_retrieved': utc_now()}
-    info.update(headers_handling.extract_feed_info({}))
+    info.update(extract_feed_info({}))
     return query_jarr('put', 'feed/%d' % feed['id'], auth, pool, info)
 
 
-def response_match_cache(feed, resp):
-    if 'etag' not in resp.headers:
-        logger.debug('manually generating etag')
-        resp.headers['etag'] = 'jarr/"%s"' % to_hash(resp.text)
-    if resp.headers['etag'] and feed['etag'] \
-            and resp.headers['etag'] == feed['etag']:
-        if 'jarr' in feed['etag']:
-            logger.info("calculated hash matches (%d)", resp.status_code)
-        else:
+def response_etag_match(feed, resp):
+    if feed.get('etag') and resp.headers.get('etag'):
+        if feed['etag'].startswith('jarr/'):
+            return False  # it's a jarr generated etag
+        if resp.headers['etag'] == feed['etag']:
             logger.info("feed responded with same etag (%d)", resp.status_code)
+            return True
+    return False
+
+
+def response_calculated_etag_match(feed, resp):
+    if ('jarr/"%s"' % to_hash(resp.text)) == feed.get('etag'):
+        logger.info("calculated hash matches (%d)", resp.status_code)
         return True
     return False
 
 
-def challenge(feed, response, auth, no_resp_pool):
+def challenge(feed, response, auth, no_resp_pool, **kwargs):
     logger.info('cache validation failed, challenging entries')
-    parsed_response = feedparser.parse(response.content.strip())
-    if is_parsing_ok(parsed_response):
-        clean_feed(feed, auth, no_resp_pool, response, parsed_response)
+    parsed = feedparser.parse(response.content.strip())
+    if is_parsing_ok(parsed):
+        clean_feed(feed, auth, no_resp_pool, response, parsed, **kwargs)
     else:
-        set_feed_error(feed, auth, no_resp_pool,
-                        parsed_feed=parsed_response)
+        set_feed_error(feed, auth, no_resp_pool, parsed_feed=parsed)
         return
 
     ids, entries, skipped_list = [], {}, []
-    for entry in parsed_response['entries']:
+    for entry in parsed['entries']:
         if not entry:
             continue
         integrations.dispatch('entry_parsing', feed, entry)
@@ -119,8 +121,7 @@ def challenge(feed, response, auth, no_resp_pool):
         entries[tuple(sorted(entry_ids.items()))] = entry
         ids.append(entry_ids)
     if not ids and skipped_list:
-        logger.debug('nothing to add (skipped %r) %r',
-                        skipped_list, parsed_response)
+        logger.debug('nothing to add (skipped %r) %r', skipped_list, parsed)
         return
     logger.debug('found %d entries %r', len(ids), ids)
     return entries, query_jarr('get', 'articles/challenge',
@@ -171,7 +172,7 @@ async def crawl(username, password, **kwargs):
         logger.debug('%r %r - fetching resources', feed['id'], feed['title'])
         feeds_fetching_pool.append(loop.run_in_executor(None,
                 partial(jarr_get, feed['link'],
-                        headers=headers_handling.prepare_headers(feed))))
+                        headers=prepare_headers(feed))))
 
     for feed, future in zip(feeds, feeds_fetching_pool):
         try:
@@ -181,19 +182,33 @@ async def crawl(username, password, **kwargs):
             set_feed_error(feed, auth, no_resp_pool, error=error)
             continue
 
+        # checking if cache was validated
+        a_im_support = feed.get('cache_support_a_im', False)
         if resp.status_code == 304:
             logger.info('feed responded with 304')
-            clean_feed(feed, auth, no_resp_pool, resp)
+            clean_feed(feed, auth, no_resp_pool, resp,
+                       cache_type=reasons.CacheReason.status_code_304.value)
             continue
-        if response_match_cache(feed, resp):
-            clean_feed(feed, auth, no_resp_pool, resp)
+        elif resp.status_code == 226:
+            logger.info('feed responded with 226')
+            a_im_support = True
+        elif response_etag_match(feed, resp):
+            clean_feed(feed, auth, no_resp_pool, resp,
+                       cache_type=reasons.CacheReason.etag.value)
+            continue
+        elif response_calculated_etag_match(feed, resp):
+            clean_feed(feed, auth, no_resp_pool, resp,
+                       cache_type=reasons.CacheReason.etag_calculated.value)
             continue
         else:
             logger.debug('etag mismatch %r != %r',
-                         resp.headers['etag'], feed['etag'])
+                         resp.headers.get('etag'), feed.get('etag'))
 
-        all_entries, future = challenge(feed, resp, auth, no_resp_pool)
-        challenge_pool.append((future, feed, all_entries, resp.headers))
+        result = challenge(feed, resp, auth, no_resp_pool,
+                           a_im_support=a_im_support)
+        if result:
+            all_entries, future = result
+            challenge_pool.append((future, feed, all_entries, resp.headers))
 
     for future, feed, all_entries, headers in challenge_pool:
         try:

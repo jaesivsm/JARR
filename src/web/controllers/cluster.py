@@ -22,7 +22,7 @@ __returned_keys = ('main_title', 'id', 'liked', 'read', 'main_article_id',
 JR_FIELDS = {key: getattr(Cluster, key) for key in __returned_keys}
 JR_SQLA_FIELDS = [getattr(Cluster, key) for key in __returned_keys]
 JR_LENGTH = 1000
-MIN_SIMILARITY_SCORE = 0.65
+MIN_SIMILARITY_SCORE = 0.60
 
 
 class ClusterController(AbstractController):
@@ -76,6 +76,8 @@ class ClusterController(AbstractController):
         if score > MIN_SIMILARITY_SCORE:
             article.cluster_reason = ClusterReason.tf_idf
             article.cluster_score = int(score * 1000)
+            article.cluster_tfidf_neighbor_size = len(neighbors)
+            article.cluster_tfidf_with = best_match.id
             return best_match.cluster
 
     def _create_from_article(self, article,

@@ -63,6 +63,7 @@ class ArticleApiTest(JarrFlaskCommon, ApiCommon):
                 'date': '2013-12-09T20:20:00+00:00',
                 'retrieved_date': '2016-11-18T23:19:32.932015+12:00',
                 'tags': ['auto-hébergement', 'apache', 'webdav'],
+                'valuable_tokens': ['auto-hébergement', 'apache', 'webdav'],
                 'link': '//1pxsolidblack.pl/apache-webdav-file-server.html',
                 'title': 'Servir et gérer des fichiers avec\xa0WebDav'}
 
@@ -75,9 +76,12 @@ class ArticleApiTest(JarrFlaskCommon, ApiCommon):
         resp = self._api('get', '%s/%d' % (self.urn, resp.json()['id']),
                          user='admin', data=data)
         self.assertStatusCode(200, resp)
-        self.assertEquals(data['date'], resp.json()['date'])
-        self.assertEquals(retrieved_date_utc,
-                          resp.json()['retrieved_date'])
+        resp = resp.json()
+        self.assertEquals(retrieved_date_utc, resp['retrieved_date'])
+
+        for key in 'tags', 'valuable_tokens', 'link', 'content','date':
+            self.assertTrue(key in resp, '%r absent of %r' % (key, resp))
+            self.assertEquals(data[key], resp[key])
 
     def test_api_creation(self):
         resp = self._api('post', self.urn, user='user1', data={'feed_id': 1})

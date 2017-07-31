@@ -27,6 +27,8 @@ class Article(db.Model, RightMixin):
     # reasons
     cluster_reason = Column(Enum(ClusterReason), default=None)
     cluster_score = Column(Integer, default=None)
+    cluster_tfidf_neighbor_size = Column(Integer, default=None)
+    cluster_tfidf_with = Column(Integer, default=None)
 
     # foreign keys
     user_id = Column(Integer, ForeignKey('user.id', ondelete='CASCADE'))
@@ -59,8 +61,7 @@ class Article(db.Model, RightMixin):
     # api whitelists
     @staticmethod
     def _fields_base_write():
-        return {'readability_parsed', 'feed_id', 'category_id',
-                'cluster_reason', 'cluster_score'}
+        return {'readability_parsed', 'feed_id', 'category_id'}
 
     @staticmethod
     def _fields_base_read():
@@ -75,3 +76,8 @@ class Article(db.Model, RightMixin):
         return "<Article(id=%d, entry_id=%s, title=%r, " \
                "date=%r, retrieved_date=%r)>" % (self.id, self.entry_id,
                        self.title, self.date, self.retrieved_date)
+
+    custom_api_types = {
+            'valuable_tokens': {'action': 'append',
+                                'type': str, 'default': []},
+    }

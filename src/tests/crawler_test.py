@@ -9,7 +9,8 @@ import feedparser
 from mock import Mock, patch
 
 from bootstrap import conf
-from crawler.http_crawler import (main as crawler, response_match_cache,
+from crawler.http_crawler import (main as crawler, response_etag_match,
+                                  response_calculated_etag_match,
                                   set_feed_error, clean_feed)
 from web.controllers import FeedController, UserController
 from lib.utils import to_hash
@@ -27,10 +28,10 @@ class CrawlerTest(JarrFlaskCommon):
 
     def setUp(self):
         super().setUp()
-        atom_file_path = 'src/tests/fixtures/example.feed.atom'
-        with open(atom_file_path) as fd:
-            self.new_entries_cnt = len(feedparser.parse(fd.read())['entries'])
-            self.new_entries_cnt *= FeedController().read().count()
+        with open('src/tests/fixtures/example.feed.atom') as fd:
+            self._content = fd.read()
+        self.new_entries_cnt = len(feedparser.parse(self._content)['entries'])
+        self.new_entries_cnt *= FeedController().read().count()
         self.wait_params = {'wait_for': 1, 'max_wait': 10, 'checks': 1}
         UserController().update({'login': 'admin'}, {'is_api': True})
         self._is_secure_served \
@@ -48,11 +49,9 @@ class CrawlerTest(JarrFlaskCommon):
 
         def _api_req(method, url, **kwargs):
             if url.startswith('feed') and len(url) == 6:
-                with open(atom_file_path) as f:
-                    content = f.read()
-                    resp = Mock(status_code=self.resp_status_code,
-                                headers=self.resp_headers,
-                                content=content, text=content, history=[])
+                resp = Mock(status_code=self.resp_status_code,
+                            headers=self.resp_headers, history=[],
+                            content=self._content, text=self._content)
                 resp.raise_for_status.return_value = self.resp_raise
                 return resp
 
@@ -144,8 +143,8 @@ class CrawlerTest(JarrFlaskCommon):
         resp = self._api('get', 'articles', data={'limit': 1000}, user='admin')
         self.assertEquals(36, len(resp.json()))
 
-        self._reset_feeds_freshness(etag='jarr/fake etag')
-        self.resp_headers = {'etag': 'jarr/fake etag'}
+        self._reset_feeds_freshness(etag='jarr/"%s"' % to_hash(self._content))
+        self.resp_headers = {'etag': 'jarr/"%s"' % to_hash(self._content)}
 
         crawler('admin', 'admin')
         resp = self._api('get', 'articles', data={'limit': 1000}, user='admin')
@@ -171,14 +170,17 @@ class CrawlerMethodsTest(unittest.TestCase):
 
     def test_etag_matching_w_constructed_etag(self):
         self.feed['etag'] = 'jarr/"%s"' % to_hash('text')
-        self.assertTrue(response_match_cache(self.feed, self.resp))
+        self.assertFalse(response_etag_match(self.feed, self.resp))
+        self.assertTrue(response_calculated_etag_match(self.feed, self.resp))
 
     def test_etag_no_matching_wo_etag(self):
-        self.assertFalse(response_match_cache(self.feed, self.resp))
+        self.assertFalse(response_etag_match(self.feed, self.resp))
+        self.assertFalse(response_calculated_etag_match(self.feed, self.resp))
 
     def test_etag_matching(self):
         self.resp.headers['etag'] = self.feed['etag'] = 'etag'
-        self.assertTrue(response_match_cache(self.feed, self.resp))
+        self.assertTrue(response_etag_match(self.feed, self.resp))
+        self.assertFalse(response_calculated_etag_match(self.feed, self.resp))
 
     @patch('crawler.http_crawler.query_jarr')
     def test_set_feed_error_w_error(self, query_jarr):
@@ -236,8 +238,6 @@ class CrawlerMethodsTest(unittest.TestCase):
         construct_feed_mock.return_value = {'description': 'new description'}
         clean_feed(self.feed, self.auth, self.pool, self.resp, True)
         method, urn, data = get_first_call(query_jarr)
-
-        print(data)
 
         self.assertEquals('put', method)
         self.assertEquals('feed/%d' % self.feed['id'], urn)

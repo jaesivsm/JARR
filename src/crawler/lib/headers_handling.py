@@ -5,7 +5,7 @@ import re
 
 from bootstrap import conf
 from lib.const import FEED_ACCEPT_HEADERS
-from lib.utils import utc_now, rfc_1123_utc
+from lib.utils import utc_now, rfc_1123_utc, to_hash
 
 logger = logging.getLogger(__name__)
 MAX_AGE_RE = re.compile('max-age=([0-9]+)')
@@ -33,7 +33,7 @@ def _extract_expires(headers, feed_info):
             pass
 
 
-def extract_feed_info(headers):
+def extract_feed_info(headers, text=None):
     """providing the headers of a feed response, will calculate the headers
     needed for basic cache control.
 
@@ -48,6 +48,9 @@ def extract_feed_info(headers):
 
     feed_info = {'etag': headers.get('etag', ''),
                  'last_modified': headers.get('last-modified', rfc_1123_utc())}
+    if text and not feed_info['etag']:
+        feed_info['etag'] = 'jarr/"%s"' % to_hash(text)
+
     _extract_max_age(headers, feed_info, now)
     if 'expires' not in feed_info:
         _extract_expires(headers, feed_info)

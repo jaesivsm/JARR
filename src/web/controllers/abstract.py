@@ -149,14 +149,11 @@ class AbstractController:
                 "right must be 'read' or 'write' with role %r" % role
         return getattr(cls._db_cls, 'fields_%s_%s' % (role, right))()
 
-    @staticmethod
-    def _db_col_to_dict(db_col):
-        dict_col = {}
-        try:
-            dict_col['type'] = db_col.type.python_type
-        except NotImplementedError:
-            if db_col.default:
-                dict_col['type'] = db_col.default.arg.__class__
+    @classmethod
+    def _db_col_to_dict(cls, db_col):
+        if db_col.name in getattr(cls._db_cls, 'custom_api_types', {}):
+            return cls._db_cls.custom_api_types[db_col.name]
+        dict_col = {'type': db_col.type.python_type}
         if issubclass(dict_col['type'], datetime):
             dict_col['default'] = utc_now()
             dict_col['type'] = cast_to_utc

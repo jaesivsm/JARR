@@ -1,11 +1,11 @@
-
 from sqlalchemy import (Boolean, Column, ForeignKey, Index, Integer,
-                        PickleType, String)
+                        PickleType, String, Enum)
 from sqlalchemy.orm import relationship, validates
 
 from bootstrap import db
 from lib.utils import utc_now
 from lib.const import UNIX_START
+from lib.reasons import CacheReason
 from web.models.utc_datetime_type import UTCDateTime
 from web.models.right_mixin import RightMixin
 
@@ -21,6 +21,10 @@ class Feed(db.Model, RightMixin):
     filters = Column(PickleType, default=[])
     readability_auto_parse = Column(Boolean, default=False)
     integration_reddit = Column(Boolean, default=False)
+
+    # cache reasons
+    cache_type = Column(Enum(CacheReason), default=None)
+    cache_support_a_im = Column(Boolean, default=False)
 
     # cache handling
     etag = Column(String, default="")
@@ -64,7 +68,8 @@ class Feed(db.Model, RightMixin):
 
     @staticmethod
     def _fields_api_write():
-        return {'etag', 'last_modified', 'expires'}
+        return {'etag', 'last_modified', 'expires',
+                'cache_support_a_im', 'cache_type'}
 
     def __repr__(self):
         return '<Feed %r>' % (self.title)
@@ -76,3 +81,7 @@ class Feed(db.Model, RightMixin):
     @validates('description')
     def validates_description(self, key, value):
         return str(value).strip()
+
+    custom_api_types = {
+            'filters': {'action': 'append', 'type': dict, 'default': []},
+    }
