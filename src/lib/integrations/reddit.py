@@ -1,8 +1,10 @@
 import re
+import logging
 from bs4 import BeautifulSoup
 from lib.integrations.abstract import AbstractIntegration
 
 REDDIT_FEED = re.compile(r'^https?://www.reddit.com/r/\S+/.rss$')
+logger = logging.getLogger(__name__)
 
 
 class RedditIntegration(AbstractIntegration):
@@ -23,7 +25,11 @@ class RedditIntegration(AbstractIntegration):
 
     def entry_parsing(self, feed, entry):
         content = BeautifulSoup(entry['content'][0]['value'], 'html.parser')
-        link, comments = content.find_all('a')[-2:]
+        try:
+            link, comments = content.find_all('a')[-2:]
+        except Exception:
+            logger.warn('failed to parse %r', entry)
+            return False
         entry['tags'] = []  # reddit tags are irrelevant, removing them
         if link.text != '[link]' or comments.text != '[comments]':
             return False
