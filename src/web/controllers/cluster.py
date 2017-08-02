@@ -35,7 +35,7 @@ class ClusterController(AbstractController):
                          main_date__gt=article.date - self.max_day_dist,
                          main_link=article.link).first()
         if cluster:
-            article.cluster_reason = ClusterReason.title
+            article.cluster_reason = ClusterReason.link
         return cluster
 
     def _get_cluster_by_title(self, article):
