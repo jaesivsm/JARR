@@ -103,6 +103,7 @@ class ClusterControllerTest(BaseJarrTest):
                     Mock(valuable_tokens=['Sarkozy', 'garage', 'chanson'])] \
                             * factor
         ccontr = ClusterController()
+        ccontr.tfidf_min_score = 0.6
 
         acontr_cls.return_value.read.return_value = gen_articles(2)
 

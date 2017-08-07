@@ -22,12 +22,16 @@ __returned_keys = ('main_title', 'id', 'liked', 'read', 'main_article_id',
 JR_FIELDS = {key: getattr(Cluster, key) for key in __returned_keys}
 JR_SQLA_FIELDS = [getattr(Cluster, key) for key in __returned_keys]
 JR_LENGTH = 1000
-MIN_SIMILARITY_SCORE = 0.60
+MIN_SIMILARITY_SCORE = 0.75
 
 
 class ClusterController(AbstractController):
     _db_cls = Cluster
     max_day_dist = timedelta(days=7)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.tfidf_min_score = MIN_SIMILARITY_SCORE
 
     def _get_cluster_by_link(self, article):
         cluster = self.read(user_id=article.user_id,
@@ -73,7 +77,7 @@ class ClusterController(AbstractController):
             return
 
         best_match, score = get_best_match_and_score(article, neighbors)
-        if score > MIN_SIMILARITY_SCORE:
+        if score > self.tfidf_min_score:
             article.cluster_reason = ClusterReason.tf_idf
             article.cluster_score = int(score * 1000)
             article.cluster_tfidf_neighbor_size = len(neighbors)
@@ -263,12 +267,20 @@ class ClusterController(AbstractController):
                      .order_by(Cluster.main_date.desc()).limit(JR_LENGTH),
                 filter_on_cat)
 
-    def delete(self, obj_id):
+    def delete(self, obj_id, delete_articles=True):
         from web.controllers import ArticleController
         self.update({'id': obj_id}, {'main_article_id': None}, commit=False)
         actrl = ArticleController(self.user_id)
-        for art in actrl.read(cluster_id=obj_id):
-            actrl._delete(art, commit=False)
+        if delete_articles:
+            for art in actrl.read(cluster_id=obj_id):
+                actrl._delete(art, commit=False)
+        else:
+            actrl.update({'cluster_id': obj_id},
+                         {'cluster_id': None,
+                          'cluster_reason': None,
+                          'cluster_score': None,
+                          'cluster_tfidf_with': None,
+                          'cluster_tfidf_neighbor_size': None})
         return super().delete(obj_id)
 
     #

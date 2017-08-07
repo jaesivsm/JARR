@@ -97,17 +97,32 @@ class ArticleController(AbstractController):
         Return True if the article is deleted at the end or not
         """
         from web.controllers import ClusterController
+        if not article.cluster_id:
+            return
         clu_ctrl = ClusterController(self.user_id)
-        cluster = clu_ctrl.read(id=article.cluster_id,
-                                main_article_id=article.id).first()
+        cluster = clu_ctrl.read(id=article.cluster_id).first()
         if not cluster:
-            return True
-        if len(cluster.articles) == 1:  # only on article in cluster, deleting
-            clu_ctrl.delete(cluster.id)
-            return False
-        clu_ctrl._enrich_cluster(cluster, cluster.articles[1],
-                                 cluster.read, cluster.liked, True)
-        return True
+            return
+
+        try:
+            new_art = next(new_art for new_art in cluster.articles
+                           if new_art.id != article.id)
+        except StopIteration:
+            # only on article in cluster, deleting cluster
+            clu_ctrl.delete(cluster.id, delete_articles=False)
+        else:
+            if cluster.main_article_id == article.id:
+                cluster.main_article_id = None
+                clu_ctrl._enrich_cluster(cluster, new_art,
+                                         cluster.read, cluster.liked,
+                                         force_article_as_main=True)
+        self.update({'id': article.id},
+                    {'cluster_id': None,
+                     'cluster_reason': None,
+                     'cluster_score': None,
+                     'cluster_tfidf_with': None,
+                     'cluster_tfidf_neighbor_size': None})
+        return
 
     def _delete(self, article, commit):
         Tag.query.filter(Tag.article_id == article.id).delete()
@@ -119,7 +134,5 @@ class ArticleController(AbstractController):
 
     def delete(self, obj_id, commit=True):
         article = self.get(id=obj_id)
-        still_delete_article = self.remove_from_cluster(article)
-        if still_delete_article:
-            return self._delete(article, commit=commit)
-        return article
+        self.remove_from_cluster(article)
+        return self._delete(article, commit=commit)
