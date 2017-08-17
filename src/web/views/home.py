@@ -3,10 +3,10 @@ import logging
 from flask import render_template, request, url_for
 from flask_login import current_user, login_required
 
-from bootstrap import conf
+from bootstrap import conf, article_parsing
 from lib.const import UNIX_START
 from lib.utils import utc_now
-from lib import integrations, reasons
+from lib import reasons
 from web.controllers import (CategoryController, ClusterController,
                              FeedController, UserController)
 from web.lib.view_utils import clusters_to_json, etag_match, get_notifications
@@ -119,9 +119,10 @@ def get_cluster(cluster_id, parse=False, article_id=None):
     readability_available = bool(current_user.readability_key
                                  or conf.PLUGINS_READABILITY_KEY)
     cluster['main_date'] = fmt_datetime(cluster.main_date)
-    integrations.dispatch('article_parsing', current_user, feed, cluster,
-                          mercury_may_parse=True,  # enabling mercury parsing
-                          mercury_parse=parse, article_id=article_id)
+    article_parsing.send('get_cluster', user=current_user, feed=feed,
+                         cluster=cluster,
+                         mercury_may_parse=True,  # enabling mercury parsing
+                         mercury_parse=parse, article_id=article_id)
     for article in cluster.articles:
         article['readability_available'] = readability_available
         article['date'] = fmt_datetime(article.date)

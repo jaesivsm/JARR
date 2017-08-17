@@ -1,10 +1,6 @@
 import unittest
-
 from mock import patch, Mock
-
-from bootstrap import conf
-from lib.integrations.reddit import RedditIntegration
-from lib.integrations import dispatch
+from bootstrap import conf, feed_creation, entry_parsing
 
 content = """<table><tr><td>
 <a href="https://www.reddit.com/r/Map_Porn/comments/5mxq4o/\
@@ -20,29 +16,18 @@ VvMzqaYvD1V0jqmYrslDo.jpg"
 map_of_irish_clans_in_times_of_henry_viii_1294/">[comments]</a></span>
 </td></tr></table>"""
 
-class RedditIntegrationTest(unittest.TestCase):
 
-    def setUp(self):
-        self.inte = RedditIntegration()
+class RedditIntegrationTest(unittest.TestCase):
 
     def test_feed_creation(self):
         feed = {'link': 'http://www.reddit.com/r/france/.rss'}
-        self.assertTrue(dispatch('feed_creation', feed))
+        feed_creation.send('test', feed=feed)
         self.assertTrue(feed.get('integration_reddit'))
 
     def test_feed_creation_https(self):
         feed = {'link': 'https://www.reddit.com/r/france/.rss'}
-        self.assertTrue(dispatch('feed_creation', feed))
+        feed_creation.send('test', feed=feed)
         self.assertTrue(feed.get('integration_reddit'))
-
-    def test_match_entry_parsiong(self):
-        self.assertFalse(self.inte.match_entry_parsing({}, {}))
-        self.assertFalse(self.inte.match_entry_parsing(
-                {'integration_reddit': False}, {}))
-        self.assertTrue(self.inte.match_entry_parsing(
-                        {'integration_reddit': True,
-                         'link': 'https://www.reddit.com/r/france/.rss'},
-                        {'content': [{'value': 'stuff'}]}))
 
     def test_match_light_parsing_nok(self):
         feed = {'integration_reddit': True}
@@ -50,7 +35,7 @@ class RedditIntegrationTest(unittest.TestCase):
                 {'scheme': None, 'term': 'be', 'label': ''},
                 {'scheme': None, 'term': 'removed', 'label': ''}]
         entry = {'content': [{'value': content[:-40]}], 'tags': tags}
-        self.assertFalse(dispatch('entry_parsing', feed, entry))
+        entry_parsing.send('test', feed=feed, entry=entry)
         self.assertTrue('link' not in entry)
         self.assertTrue('comments' not in entry)
         self.assertEqual(entry['tags'], tags)
@@ -62,7 +47,7 @@ class RedditIntegrationTest(unittest.TestCase):
                 {'scheme': None, 'term': 'be', 'label': ''},
                 {'scheme': None, 'term': 'removed', 'label': ''}]
         entry = {'content': [{'value': content}], 'tags': tags}
-        self.assertTrue(dispatch('entry_parsing', feed, entry))
+        entry_parsing.send('test', feed=feed, entry=entry)
         self.assertEqual(entry['link'], 'https://supload.com/rJY-37gLe')
         self.assertEqual(entry['comments'], 'https://www.reddit.com/r/'
                 'Map_Porn/comments/5mxq4o/'

@@ -8,8 +8,8 @@ from functools import partial
 import feedparser
 import requests
 
-from bootstrap import conf
-from lib import integrations, reasons
+from bootstrap import conf, entry_parsing
+from lib import reasons
 from lib.article_utils import construct_article, get_skip_and_ids
 from lib.feed_utils import construct_feed_from, is_parsing_ok
 from lib.utils import default_handler, jarr_get, to_hash, utc_now
@@ -112,7 +112,7 @@ def challenge(feed, response, auth, no_resp_pool, **kwargs):
     for entry in parsed['entries']:
         if not entry:
             continue
-        integrations.dispatch('entry_parsing', feed, entry)
+        entry_parsing.send('crawler', feed=feed, entry=entry)
         skipped, entry_ids = get_skip_and_ids(entry, feed)
         if skipped:
             skipped_list.append(entry_ids)

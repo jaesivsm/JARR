@@ -1,40 +1,38 @@
 import re
 import logging
 from bs4 import BeautifulSoup
-from lib.integrations.abstract import AbstractIntegration
+
+from bootstrap import feed_creation, entry_parsing
 
 REDDIT_FEED = re.compile(r'^https?://www.reddit.com/r/\S+/.rss$')
 logger = logging.getLogger(__name__)
 
 
-class RedditIntegration(AbstractIntegration):
+@feed_creation.connect
+def reddit_integration_feed_creation(sender, feed):
+    feed['integration_reddit'] = bool(REDDIT_FEED.match(feed.get('link', '')))
 
-    def match_feed_creation(self, feed):
-        return bool(REDDIT_FEED.match(feed.get('link', '')))
 
-    def feed_creation(self, feed):
-        feed['integration_reddit'] = True
-        return True
+@entry_parsing.connect
+def reddit_integration_entry_parsing(sender, feed, entry):
+    is_reddit_feed = bool(feed.get('integration_reddit')
+                          and REDDIT_FEED.match(feed.get('link', '')))
+    has_sufficient_data = bool(len(entry.get('content', []))
+                               and entry['content'][0].get('value'))
+    if not is_reddit_feed or not has_sufficient_data:
+        return
 
-    def match_entry_parsing(self, feed, entry):
-        if not len(entry.get('content', [])):
-            return False
-        return bool(feed.get('integration_reddit')
-                    and entry['content'][0].get('value')
-                    and REDDIT_FEED.match(feed.get('link', '')))
-
-    def entry_parsing(self, feed, entry):
-        content = BeautifulSoup(entry['content'][0]['value'], 'html.parser')
-        try:
-            link, comments = content.find_all('a')[-2:]
-        except Exception:
-            logger.warn('failed to parse %r', entry)
-            return False
-        entry['tags'] = []  # reddit tags are irrelevant, removing them
-        if link.text != '[link]' or comments.text != '[comments]':
-            return False
-        entry['link'] = link.attrs['href']
-        entry['comments'] = comments.attrs['href']
-        if entry['link'] == entry['comments']:
-            del entry['comments']
-        return True
+    content = BeautifulSoup(entry['content'][0]['value'], 'html.parser')
+    try:
+        link, comments = content.find_all('a')[-2:]
+    except Exception:
+        logger.warn('failed to parse %r', entry)
+        return
+    entry['tags'] = []  # reddit tags are irrelevant, removing them
+    if link.text != '[link]' or comments.text != '[comments]':
+        return
+    entry['link'] = link.attrs['href']
+    entry['comments'] = comments.attrs['href']
+    if entry['link'] == entry['comments']:
+        del entry['comments']
+    return

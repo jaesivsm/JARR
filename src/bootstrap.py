@@ -3,6 +3,7 @@
 
 # required imports and code exection for basic functionning
 
+from blinker import signal
 import calendar
 import logging
 import os
@@ -25,6 +26,10 @@ if os.path.exists(os.path.abspath('conf.py')):
     conf.write()
     os.remove(os.path.abspath('conf.py'))
 conf.reload()
+
+feed_creation = signal('feed_creation')
+entry_parsing = signal('entry_parsing')
+article_parsing = signal('article_parsing')
 
 
 def set_logging(log_path=None, log_level=logging.INFO, modules=(),
@@ -128,3 +133,9 @@ def load_blueprints(application):
     application.jinja_env.filters['month_name'] \
             = lambda n: calendar.month_name[n]
     application.jinja_env.autoescape = False
+
+
+def init_integrations():
+    from lib import integrations
+
+init_integrations()

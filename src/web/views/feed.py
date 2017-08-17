@@ -5,7 +5,7 @@ from flask_babel import gettext
 from flask_login import current_user, login_required
 from werkzeug.exceptions import BadRequest
 
-from lib import integrations
+from bootstrap import feed_creation
 from lib.feed_utils import construct_feed_from
 from web.controllers import ClusterController, FeedController
 from web.lib.view_utils import etag_match
@@ -62,7 +62,7 @@ def bookmarklet():
         if existing_feed:
             return redirect(url_for('home', at='f', ai=existing_feed.id))
 
-    integrations.dispatch('feed_creation', feed)
+    feed_creation.send('bookmarklet', feed=feed)
     if not feed.get('link'):
         feed['enabled'] = False
         flash(gettext("Couldn't find a feed url, you'll need to find a Atom or"

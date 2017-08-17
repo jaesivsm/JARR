@@ -2,8 +2,7 @@ import unittest
 
 from mock import patch, Mock
 
-from bootstrap import conf
-from lib.integrations.mercury import MercuryIntegration
+from bootstrap import conf, article_parsing
 
 SAMPLE = """<a href="link_to_correct.html">
 <img src="http://is_ok.com/image"/>
@@ -16,15 +15,6 @@ SAMPLE = """<a href="link_to_correct.html">
 
 
 class MercuryIntegrationTest(unittest.TestCase):
-
-    def setUp(self):
-        self.inte = MercuryIntegration()
-
-    def test_match_feed_creation(self):
-        self.assertFalse(self.inte.match_feed_creation({}))
-
-    def test_match_entry_parsing(self):
-        self.assertFalse(self.inte.match_entry_parsing({}, {}))
 
     @property
     def base_objs(self):
@@ -39,53 +29,48 @@ class MercuryIntegrationTest(unittest.TestCase):
         return user, feed, cluster
 
     def test_match_article_parsing(self):
-        self.assertFalse(self.inte.match_article_parsing(
-                None, None, None, mercury_may_parse=False))
-
+        # should not raise
         user, feed, cluster = self.base_objs
+        article_parsing.send('test', user=user, feed=feed, cluster=cluster)
+        self.assertFalse('content' in cluster.main_article)
 
-        self.assertFalse(self.inte.match_article_parsing(
-                user, feed, cluster, mercury_may_parse=True))
+        article_parsing.send('test', user=user, feed=feed, cluster=cluster,
+                             mercury_may_parse=True)
+        self.assertFalse('content' in cluster.main_article)
 
-        user.readability_key = True
+        user.readability_key = 'True'
+        article_parsing.send('test', user=user, feed=feed, cluster=cluster,
+                             mercury_may_parse=True)
+        self.assertFalse('content' in cluster.main_article)
 
-        self.assertFalse(self.inte.match_article_parsing(
-                user, feed, cluster, mercury_may_parse=True))
-
-        cluster.main_article.readability_parsed = False
-
-        self.assertTrue(self.inte.match_article_parsing(
-                user, feed, cluster, mercury_may_parse=True))
-
-        feed.readability_auto_parse = False
-
-        self.assertTrue(self.inte.match_article_parsing(user, feed, cluster,
-                mercury_may_parse=True, mercury_parse=True))
-
-        self.assertFalse(self.inte.match_article_parsing(
-                user, feed, cluster, mercury_may_parse=True))
+        article_parsing.send('test', user=user, feed=feed, cluster=cluster,
+                             mercury_may_parse=True, mercury_parse=True)
+        self.assertFalse('content' in cluster.main_article)
 
     @patch('lib.integrations.mercury.jarr_get')
     @patch('lib.integrations.mercury.flash')
-    def test_parsing(self, flash, jarr_get):
-        self.inte._get_article_controller = Mock()
+    @patch('lib.integrations.mercury.ArticleController')
+    def test_parsing(self, artc, flash, jarr_get):
         jarr_get.return_value.json.return_value = {}
         user, feed, cluster = self.base_objs
+        user.readability_key = 'True'
+        cluster.main_article.readability_parsed = False
         cluster.main_article['readability_parsed'] = False
-        self.assertEqual(cluster.main_article,
-                         self.inte.article_parsing(user, feed, cluster))
+
+        article_parsing.send('test', user=user, feed=feed, cluster=cluster,
+                             mercury_may_parse=True, mercury_parse=True)
         self.assertEqual('Mercury responded with {}(1)', flash.call_args[0][0])
         self.assertFalse(cluster.main_article['readability_parsed'])
 
         jarr_get.return_value.json.return_value = {'garbage': 'garbage'}
-        self.assertEqual(cluster.main_article,
-                         self.inte.article_parsing(user, feed, cluster))
+        article_parsing.send('test', user=user, feed=feed, cluster=cluster,
+                             mercury_may_parse=True, mercury_parse=True)
         self.assertEqual('Mercury responded without content',
                          flash.call_args[0][0])
         self.assertFalse(cluster.main_article['readability_parsed'])
 
         jarr_get.return_value.json.return_value = {'content': 'content'}
-        new_article = self.inte.article_parsing(user, feed, cluster)
-        self.assertEqual('content', new_article['content'])
+        article_parsing.send('test', user=user, feed=feed, cluster=cluster,
+                             mercury_may_parse=True, mercury_parse=True)
         self.assertEqual('content', cluster.main_article['content'])
         self.assertTrue(cluster.main_article['readability_parsed'])
