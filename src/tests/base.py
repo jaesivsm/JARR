@@ -1,11 +1,11 @@
 import os
-os.environ['JARR_TESTING'] = 'true'
-
 import json
 import logging
 import unittest
 from base64 import b64encode
 from os import path
+
+os.environ['JARR_TESTING'] = 'true'
 
 from flask_login import login_user, logout_user
 from flask_testing import TestCase
@@ -39,16 +39,16 @@ class BaseJarrTest(TestCase):
         # testing with logged user
         with self._application.test_request_context():
             login_user(user)
-            self.assertEquals(obj, self._get_from_contr(obj_id))
-            self.assertEquals(obj, self._get_from_contr(obj_id, user.id))
+            self.assertEqual(obj, self._get_from_contr(obj_id))
+            self.assertEqual(obj, self._get_from_contr(obj_id, user.id))
             self.assertRaises(NotFound, self._get_from_contr, obj_id, 99)
             # fetching non existent object
             self.assertRaises(NotFound, self._get_from_contr, 99, user.id)
             logout_user()
 
         # testing with pure jarr rights management
-        self.assertEquals(obj, self._get_from_contr(obj_id))
-        self.assertEquals(obj, self._get_from_contr(obj_id, user.id))
+        self.assertEqual(obj, self._get_from_contr(obj_id))
+        self.assertEqual(obj, self._get_from_contr(obj_id, user.id))
         # fetching non existent object
         self.assertRaises(NotFound, self._get_from_contr, 99, user.id)
         # fetching object with inexistent user
@@ -57,7 +57,7 @@ class BaseJarrTest(TestCase):
         self.assertRaises(NotFound, self._get_from_contr, obj_id, user.id + 1)
         self.assertRaises(NotFound, self._contr_cls().delete, 99)
         self.assertRaises(NotFound, self._contr_cls(user.id).delete, 99)
-        self.assertEquals(obj['id'],
+        self.assertEqual(obj['id'],
                 self._contr_cls(user.id).delete(obj_id).id)
         self.assertRaises(NotFound, self._contr_cls(user.id).delete, obj_id)
 
@@ -80,7 +80,7 @@ class JarrFlaskCommon(BaseJarrTest):
         self.app = self._application.test_client()
 
     def assertStatusCode(self, status_code, response):
-        self.assertEquals(status_code, response.status_code,
+        self.assertEqual(status_code, response.status_code,
                 "got %d when expecting %d: %r" % (response.status_code,
                     status_code, response.data))
 

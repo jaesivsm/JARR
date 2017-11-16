@@ -17,16 +17,16 @@ def assert_in_range(val, ref, sec_range=1):
 class HeadersHandlingTest(unittest.TestCase):
 
     def test_defaulting(self):
-        self.assertEquals(None, extract_feed_info({})['expires'])
+        self.assertEqual(None, extract_feed_info({})['expires'])
 
-        self.assertEquals(None,
+        self.assertEqual(None,
         extract_feed_info({'cache-control': ''})['expires'])
-        self.assertEquals(None,
+        self.assertEqual(None,
                 extract_feed_info({'cache-control': 'garbage'})['expires'])
 
-        self.assertEquals(None,
+        self.assertEqual(None,
                 extract_feed_info({'expires': ''})['expires'])
-        self.assertEquals(None,
+        self.assertEqual(None,
                 extract_feed_info({'expires': 'garbage'})['expires'])
 
     def test_extract_max_age(self):

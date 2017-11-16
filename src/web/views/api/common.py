@@ -69,6 +69,7 @@ class PyAggAbstractResource(Resource):
 
     @property
     def controller(self):
+        assert self.controller_cls is not None
         if admin_permission.can():
             return self.controller_cls()
         return self.controller_cls(current_user.id)

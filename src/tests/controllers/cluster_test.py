@@ -15,13 +15,13 @@ class ClusterControllerTest(BaseJarrTest):
         clu_ctrl = ClusterController()
         for cluster in clu_ctrl.read():
             clu_ctrl.delete(cluster.id)
-        self.assertEquals(0, ClusterController(2).read().count())
-        self.assertEquals(0, ArticleController(2).read().count())
+        self.assertEqual(0, ClusterController(2).read().count())
+        self.assertEqual(0, ArticleController(2).read().count())
 
     def test_article_get_unread(self):
-        self.assertEquals({1: 3, 2: 3, 3: 3, 7: 3, 8: 3, 9: 3},
+        self.assertEqual({1: 3, 2: 3, 3: 3, 7: 3, 8: 3, 9: 3},
                 ClusterController(2).count_by_feed(read=False))
-        self.assertEquals({4: 3, 5: 3, 6: 3, 10: 3, 11: 3, 12: 3},
+        self.assertEqual({4: 3, 5: 3, 6: 3, 10: 3, 11: 3, 12: 3},
                 ClusterController(3).count_by_feed(read=False))
 
     def test_adding_to_cluster_by_link(self):
@@ -46,7 +46,7 @@ class ClusterControllerTest(BaseJarrTest):
                 retrieved_date=article.retrieved_date + timedelta(1),
         )
         cluster = ccontr.get(id=6)
-        self.assertEquals(articles_count + 1, len(cluster.articles))
+        self.assertEqual(articles_count + 1, len(cluster.articles))
         self.assertTrue(cluster.read)
 
     def test_adding_to_cluster_by_title(self):
@@ -72,7 +72,7 @@ class ClusterControllerTest(BaseJarrTest):
                 retrieved_date=article.retrieved_date,
         )
         cluster = ccontr.get(id=cluster.id)
-        self.assertEquals(articles_count, len(cluster.articles))
+        self.assertEqual(articles_count, len(cluster.articles))
 
         # testing with activated category
         CategoryController().update({'id': article.category_id},
@@ -89,7 +89,7 @@ class ClusterControllerTest(BaseJarrTest):
                 retrieved_date=article.retrieved_date,
         )
         cluster = ccontr.get(id=cluster.id)
-        self.assertEquals(articles_count + 1, len(cluster.articles))
+        self.assertEqual(articles_count + 1, len(cluster.articles))
 
     @patch('web.controllers.cluster.ArticleController')
     def test_similarity_clustering(self, acontr_cls):
@@ -127,7 +127,7 @@ class ClusterControllerTest(BaseJarrTest):
         total_clusters = len(list(ccontr.read()))
         total_articles = len(list(acontr.read()))
         for cluster in ccontr.read():
-            self.assertEquals(2, len(cluster.articles))
+            self.assertEqual(2, len(cluster.articles))
 
         for article in acontr.read():
             acontr.create(
@@ -137,12 +137,12 @@ class ClusterControllerTest(BaseJarrTest):
                     content=article.content,
                     link=article.link)
 
-        self.assertEquals(2 * total_articles, len(list(acontr.read())))
-        self.assertEquals(total_clusters, len(list(ccontr.read())))
+        self.assertEqual(2 * total_articles, len(list(acontr.read())))
+        self.assertEqual(total_clusters, len(list(ccontr.read())))
 
         for cluster in ccontr.read():
-            self.assertEquals(4, len(cluster.articles))
-            self.assertEquals(1,
+            self.assertEqual(4, len(cluster.articles))
+            self.assertEqual(1,
                     len(set([a.user_id for a in cluster.articles])))
 
         main_article = acontr.read().first()
@@ -156,5 +156,5 @@ class ClusterControllerTest(BaseJarrTest):
                     link=article.link)
 
         for cluster in ccontr.read():
-            self.assertEquals(1,
+            self.assertEqual(1,
                     len(set([a.user_id for a in cluster.articles])))

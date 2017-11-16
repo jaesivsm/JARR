@@ -23,7 +23,7 @@ class BaseUiTest(JarrFlaskCommon):
         resp = self.app.get('/middle_panel%s' % filters)
         self.assertStatusCode(200, resp)
         clusters = json.loads(resp.data.decode('utf8'))['clusters']
-        self.assertEquals(count, len(clusters))
+        self.assertEqual(count, len(clusters))
         return clusters
 
     def test_menu(self):
@@ -70,7 +70,7 @@ class BaseUiTest(JarrFlaskCommon):
         resp = self.app.put('/mark_all_as_read', data=json.dumps(filters),
                 headers={'Content-Type': 'application/json'})
         self.assertStatusCode(200, resp)
-        self.assertEquals(read_count,
+        self.assertEqual(read_count,
                 len(json.loads(resp.data.decode('utf8'))['clusters']))
 
     def test_mark_all_as_read(self):
@@ -137,25 +137,25 @@ class BaseUiTest(JarrFlaskCommon):
         resp = self.app.get('/feed/bookmarklet')
         self.assertStatusCode(400, resp)
 
-        self.assertEquals(0, fctrl.read(link=feed['link']).count())
-        self.assertEquals(0, fctrl.read(site_link=feed['site_link']).count())
+        self.assertEqual(0, fctrl.read(link=feed['link']).count())
+        self.assertEqual(0, fctrl.read(site_link=feed['site_link']).count())
 
         resp = self.app.get('/feed/bookmarklet?url=%s' % feed['link'])
         self.assertStatusCode(302, resp)
-        self.assertEquals(1, fctrl.read(link=feed['link']).count())
-        self.assertEquals(1, fctrl.read(site_link=feed['site_link']).count())
+        self.assertEqual(1, fctrl.read(link=feed['link']).count())
+        self.assertEqual(1, fctrl.read(site_link=feed['site_link']).count())
 
         resp = self.app.get('/feed/bookmarklet?url=%s' % feed['link'])
         self.assertStatusCode(302, resp)
-        self.assertEquals(1, fctrl.read(link=feed['link']).count())
-        self.assertEquals(1, fctrl.read(site_link=feed['site_link']).count())
+        self.assertEqual(1, fctrl.read(link=feed['link']).count())
+        self.assertEqual(1, fctrl.read(site_link=feed['site_link']).count())
 
         resp = self.app.get('/feed/bookmarklet?url=%s' % feed['site_link'])
         self.assertStatusCode(302, resp)
-        self.assertEquals(1, fctrl.read(link=feed['link']).count())
-        self.assertEquals(1, fctrl.read(site_link=feed['site_link']).count())
+        self.assertEqual(1, fctrl.read(link=feed['link']).count())
+        self.assertEqual(1, fctrl.read(site_link=feed['site_link']).count())
 
         resp = self.app.get('/feed/bookmarklet?url=blabla')
         self.assertStatusCode(302, resp)
-        self.assertEquals(1, fctrl.read(link=feed['link']).count())
-        self.assertEquals(1, fctrl.read(site_link=feed['site_link']).count())
+        self.assertEqual(1, fctrl.read(link=feed['link']).count())
+        self.assertEqual(1, fctrl.read(site_link=feed['site_link']).count())

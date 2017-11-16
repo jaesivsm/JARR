@@ -26,7 +26,7 @@ def reddit_integration_entry_parsing(sender, feed, entry):
     try:
         link, comments = content.find_all('a')[-2:]
     except Exception:
-        logger.warn('failed to parse %r', entry)
+        logger.warning('failed to parse %r', entry)
         return
     entry['tags'] = []  # reddit tags are irrelevant, removing them
     if link.text != '[link]' or comments.text != '[comments]':

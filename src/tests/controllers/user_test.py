@@ -9,12 +9,12 @@ class UserControllerTest(BaseJarrTest):
         passwd = 'test_password'
         ucontr = UserController()
         user = ucontr.create(login=passwd, password=passwd)
-        self.assertNotEquals(passwd, user.password)
+        self.assertNotEqual(passwd, user.password)
         self.assertTrue(ucontr.check_password(user, passwd))
         self.assertFalse(ucontr.check_password(user, passwd * 2))
         passwd *= 2
         ucontr.update({'id': user.id}, {'password': passwd})
         user = ucontr.get(id=user.id)
-        self.assertNotEquals(passwd, user.password)
+        self.assertNotEqual(passwd, user.password)
         self.assertTrue(ucontr.check_password(user, passwd))
         self.assertFalse(ucontr.check_password(user, passwd * 2))

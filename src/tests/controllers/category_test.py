@@ -19,7 +19,7 @@ class CategoryControllerTest(BaseJarrTest):
         ccontr = CategoryController(2)
         cat = ccontr.read()[0].dump()
         ccontr.delete(cat['id'])
-        self.assertEquals(0,
+        self.assertEqual(0,
                 ArticleController().read(category_id=cat['id']).count())
-        self.assertEquals(0,
+        self.assertEqual(0,
                 FeedController().read(category_id=cat['id']).count())

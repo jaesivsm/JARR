@@ -122,7 +122,7 @@ class ArticleControllerTest(BaseJarrTest):
                 content="doesn't matterç",
                 link="doesn't matter either9")
         self.assertIsNone(art9)
-        self.assertEquals(0,
+        self.assertEqual(0,
                 ArticleController(2).read(entry_id='unique9').count())
 
         art10 = ArticleController(2).create(
@@ -132,5 +132,5 @@ class ArticleControllerTest(BaseJarrTest):
                 content="doesn't matter10",
                 link="doesn't matter either10")
         self.assertIsNone(art10)
-        self.assertEquals(0,
+        self.assertEqual(0,
                 ArticleController(2).read(entry_id='unique10').count())

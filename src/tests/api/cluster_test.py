@@ -11,30 +11,30 @@ class ClusterApiTest(JarrFlaskCommon, ApiCommon):
                          data={'order_by': '-id'},
                          user='user1')
         self.assertStatusCode(200, resp)
-        self.assertEquals(9, len(resp.json()))
+        self.assertEqual(9, len(resp.json()))
         self.assertTrue(resp.json()[0]['id'] > resp.json()[-1]['id'])
 
         resp = self._api('get', self.urns, user='user1')
         self.assertStatusCode(200, resp)
-        self.assertEquals(9, len(resp.json()))
+        self.assertEqual(9, len(resp.json()))
 
         resp = self._api('get', self.urns, data={'limit': 1}, user='user1')
         self.assertStatusCode(200, resp)
-        self.assertEquals(1, len(resp.json()))
+        self.assertEqual(1, len(resp.json()))
 
         resp = self._api('get', self.urns, user='admin')
         self.assertStatusCode(200, resp)
-        self.assertEquals(10, len(resp.json()))
+        self.assertEqual(10, len(resp.json()))
 
         resp = self._api('get', self.urns, data={'limit': 200}, user='admin')
         self.assertStatusCode(200, resp)
-        self.assertEquals(18, len(resp.json()))
+        self.assertEqual(18, len(resp.json()))
 
     def test_api_update_many(self):
         resp = self._api('put', self.urns, user='user1',
                 data=[[1, {'liked': True}],
                       [2, {'read': True}]])
-        self.assertEquals(['ok', 'ok'], resp.json())
+        self.assertEqual(['ok', 'ok'], resp.json())
         self.assertStatusCode(200, resp)
         resp = self._api('get', self.urn, 1, user='user1')
         self.assertStatusCode(200, resp)
@@ -48,13 +48,13 @@ class ClusterApiTest(JarrFlaskCommon, ApiCommon):
                 data=[[1, {'liked': False}],
                       [15, {'read': True}]])
         self.assertStatusCode(206, resp)
-        self.assertEquals(['ok', 'nok'], resp.json())
+        self.assertEqual(['ok', 'nok'], resp.json())
 
         resp = self._api('put', self.urns, user='user1',
                 data=[[16, {'read': True}],
                       [17, {'read': True}]])
         self.assertStatusCode(500, resp)
-        self.assertEquals(['nok', 'nok'], resp.json())
+        self.assertEqual(['nok', 'nok'], resp.json())
 
         resp = self._api('get', self.urn, 17, user='user1')
         self.assertStatusCode(404, resp)

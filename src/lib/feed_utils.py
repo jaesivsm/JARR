@@ -52,7 +52,7 @@ def get_parsed_feed(url):
         fp_parsed = feedparser.parse(url,
                 request_headers={'User-Agent': conf.CRAWLER_USER_AGENT})
     except Exception as error:
-        logger.warn('failed to retreive that url: %r', error)
+        logger.warning('failed to retreive that url: %r', error)
         fp_parsed = {'bozo': 1, 'feed': {}, 'entries': []}
     return fp_parsed
 
@@ -121,7 +121,7 @@ def _fetch_url_and_enhance_feed(url, feed):
     try:
         response = jarr_get(url, headers={'Accept': FEED_ACCEPT_HEADERS})
     except Exception as error:
-        logger.warn('failed to retreive %r: %r', feed['site_link'], error)
+        logger.warning('failed to retreive %r: %r', feed['site_link'], error)
         return feed
 
     if not feed.get('title'):

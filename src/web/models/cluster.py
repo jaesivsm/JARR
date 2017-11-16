@@ -65,11 +65,6 @@ class Cluster(db.Model, RightMixin):
     def icons_url(self):
         return {feed.icon_url for feed in self.feeds}
 
-    @property
-    def main_article(self):
-        return [article for article in self.articles
-                if article.id == self.main_article_id][0]
-
     # api whitelists
     @staticmethod
     def _fields_base_write():

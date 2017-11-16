@@ -1,10 +1,7 @@
 import unittest
+from bootstrap import entry_parsing
 
-from mock import patch, Mock
-
-from bootstrap import conf, entry_parsing
-
-content = """<a href="https://www.koreus.com/video/molly-cavailli-mordu-requin\
+CONTENT = """<a href="https://www.koreus.com/video/molly-cavailli-mordu-requin\
 .html"><img align="left" alt="vidéo requin citron cage actrice porno femme \
 morsure sang pied" class="thumb" hspace="10" src="https://koreus.cdn.li/thumbs\
 /201705/molly-cavailli-mordu-requin.jpg" style="max-width:800px"/></a><br/>L'a\
@@ -46,7 +43,7 @@ class KoreusIntegrationTest(unittest.TestCase):
 
     def test_entry_parsing(self):
         feed = {'link': 'https://feeds.feedburner.com/Koreus-articles'}
-        entry = {'summary_detail': {'value': content}, 'link': self.comments}
+        entry = {'summary_detail': {'value': CONTENT}, 'link': self.comments}
         entry_parsing.send('test', feed=feed, entry=entry)
         self.assertEqual(entry['link'], self.link)
         self.assertEqual(entry['comments'], self.comments)

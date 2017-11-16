@@ -15,22 +15,21 @@ class ConstructFeedFromTest(unittest.TestCase):
                 'title': 'Journal du hacker'}
 
     def test_url(self):
-        self.assertEquals(self.jdh_feed,
+        self.assertEqual(self.jdh_feed,
                 construct_feed_from('https://www.journalduhacker.net/'))
 
     def test_url_non_https(self):
-        self.assertEquals(self.jdh_feed,
+        self.assertEqual(self.jdh_feed,
                 construct_feed_from('http://journalduhacker.net/'))
 
     def test_url_rss(self):
         jdh_feed = self.jdh_feed
         jdh_feed['link'] = 'http://journalduhacker.net/rss'
-        self.assertEquals(jdh_feed, construct_feed_from(jdh_feed['link']))
+        self.assertEqual(jdh_feed, construct_feed_from(jdh_feed['link']))
 
     def test_joies_du_code(self):
-        self.assertEquals(
-                {'description':
-                    "Les joies du code, l'instant GIF des développeurs !",
+        self.assertEqual(
+                {'description': "L'instant GIF des développeurs",
                  'icon_url': 'http://ljdchost.com/ljdc-theme/favicons'
                              '/favicon.ico?v=9BK2m20LWn',
                  'link': 'http://lesjoiesducode.tumblr.com/rss',
@@ -39,12 +38,12 @@ class ConstructFeedFromTest(unittest.TestCase):
                 construct_feed_from('http://lesjoiesducode.tumblr.com/rss'))
 
     def test_apod(self):
-        self.assertEquals(
+        self.assertEqual(
                 {'icon_url': 'https://apod.nasa.gov/favicon.ico',
                  'site_link': 'http://apod.nasa.gov/',
                  'title': 'Astronomy Picture of the Day'},
                 construct_feed_from('http://apod.nasa.gov/'))
-        self.assertEquals(
+        self.assertEqual(
                 {'description': 'Astronomy Picture of the Day',
                  'icon_url': 'https://apod.nasa.gov/favicon.ico',
                  'link': 'http://apod.nasa.gov/apod.rss',

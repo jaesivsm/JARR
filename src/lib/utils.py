@@ -91,9 +91,9 @@ def clear_string(data):
     Clear a string by removing HTML tags, HTML special caracters
     and consecutive white spaces (more that one).
     """
-    p = re.compile('<[^>]+>')  # HTML tags
-    q = re.compile('\s')  # consecutive white spaces
-    return p.sub('', q.sub(' ', data))
+    tag = re.compile(r'<[^>]+>')  # HTML tags
+    whitespace = re.compile(r'\s')  # consecutive white spaces
+    return tag.sub('', whitespace.sub(' ', data))
 
 
 def redirect_url(default='home'):

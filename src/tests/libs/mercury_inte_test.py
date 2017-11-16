@@ -2,7 +2,7 @@ import unittest
 
 from mock import patch, Mock
 
-from bootstrap import conf, article_parsing
+from bootstrap import article_parsing
 
 SAMPLE = """<a href="link_to_correct.html">
 <img src="http://is_ok.com/image"/>

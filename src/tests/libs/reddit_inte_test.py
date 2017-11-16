@@ -1,8 +1,7 @@
 import unittest
-from mock import patch, Mock
-from bootstrap import conf, feed_creation, entry_parsing
+from bootstrap import feed_creation, entry_parsing
 
-content = """<table><tr><td>
+CONTENT = """<table><tr><td>
 <a href="https://www.reddit.com/r/Map_Porn/comments/5mxq4o/\
 map_of_irish_clans_in_times_of_henry_viii_1294/">
 <img alt="Map of Irish clans in times of Henry VIII [1294 × 1536]"
@@ -34,7 +33,7 @@ class RedditIntegrationTest(unittest.TestCase):
         tags = [{'scheme': None, 'term': 'to', 'label': ''},
                 {'scheme': None, 'term': 'be', 'label': ''},
                 {'scheme': None, 'term': 'removed', 'label': ''}]
-        entry = {'content': [{'value': content[:-40]}], 'tags': tags}
+        entry = {'content': [{'value': CONTENT[:-40]}], 'tags': tags}
         entry_parsing.send('test', feed=feed, entry=entry)
         self.assertTrue('link' not in entry)
         self.assertTrue('comments' not in entry)
@@ -46,7 +45,7 @@ class RedditIntegrationTest(unittest.TestCase):
         tags = [{'scheme': None, 'term': 'to', 'label': ''},
                 {'scheme': None, 'term': 'be', 'label': ''},
                 {'scheme': None, 'term': 'removed', 'label': ''}]
-        entry = {'content': [{'value': content}], 'tags': tags}
+        entry = {'content': [{'value': CONTENT}], 'tags': tags}
         entry_parsing.send('test', feed=feed, entry=entry)
         self.assertEqual(entry['link'], 'https://supload.com/rJY-37gLe')
         self.assertEqual(entry['comments'], 'https://www.reddit.com/r/'

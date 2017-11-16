@@ -143,9 +143,9 @@ class ConfObject:
     def _get_fd(self, mode):
         fd = None
         if sum(os.path.exists(path) for path in self.paths) > 1:
-            logger.warn('more than one conf file available in %r, '
-                        'will use the first',
-                        [path for path in self.paths if os.path.exists(path)])
+            logger.warning('more than one conf file available in %r, '
+                           'will use the first', [path for path in self.paths
+                                                  if os.path.exists(path)])
         for path in self.paths:
             try:
                 fd = open(path, mode)
@@ -153,7 +153,7 @@ class ConfObject:
                 return fd
             except PermissionError:
                 if os.path.exists(path):
-                    logger.warn('permission denied on %s(%s)', path, mode)
+                    logger.warning('permission denied on %s(%s)', path, mode)
             except FileNotFoundError:
                 pass
 

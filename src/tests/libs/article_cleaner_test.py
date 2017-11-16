@@ -51,13 +51,13 @@ class ConstructArticleTest(unittest.TestCase):
     def test_missing_title(self):
         self.jarr_get_patch.return_value = self.get_response('http:')
         article = construct_article(self.entry, {'id': 1, 'user_id': 1})
-        self.assertEquals('http://www.pariszigzag.fr/?p=56413',
+        self.assertEqual('http://www.pariszigzag.fr/?p=56413',
                           article['entry_id'])
-        self.assertEquals('http:' + self.response_url, article['link'])
-        self.assertEquals('Les plus belles boulangeries de Paris',
+        self.assertEqual('http:' + self.response_url, article['link'])
+        self.assertEqual('Les plus belles boulangeries de Paris',
                           article['title'])
-        self.assertEquals(1, article['user_id'])
-        self.assertEquals(1, article['feed_id'])
+        self.assertEqual(1, article['user_id'])
+        self.assertEqual(1, article['feed_id'])
 
     def test_missing_scheme(self):
         response = self.get_response('http:')
@@ -68,15 +68,15 @@ class ConstructArticleTest(unittest.TestCase):
 
         article = construct_article(entry, {'id': 1, 'user_id': 1})
 
-        self.assertEquals(3, self.jarr_get_patch.call_count)
-        self.assertEquals(response.url, self.jarr_get_patch.call_args[0][0])
-        self.assertEquals('http://www.pariszigzag.fr/?p=56413',
+        self.assertEqual(3, self.jarr_get_patch.call_count)
+        self.assertEqual(response.url, self.jarr_get_patch.call_args[0][0])
+        self.assertEqual('http://www.pariszigzag.fr/?p=56413',
                           article['entry_id'])
-        self.assertEquals(response.url, article['link'])
-        self.assertEquals('Les plus belles boulangeries de Paris',
+        self.assertEqual(response.url, article['link'])
+        self.assertEqual('Les plus belles boulangeries de Paris',
                           article['title'])
-        self.assertEquals(1, article['user_id'])
-        self.assertEquals(1, article['feed_id'])
+        self.assertEqual(1, article['user_id'])
+        self.assertEqual(1, article['feed_id'])
 
     @patch('lib.clustering_af.word_utils.get_stemmer')
     @patch('lib.clustering_af.word_utils.get_stopwords')
@@ -89,15 +89,15 @@ class ConstructArticleTest(unittest.TestCase):
         article = construct_article(self.entry2, {'id': 1, 'user_id': 1})
 
         print(article['valuable_tokens'])
-        self.assertEquals(sorted(['ceci', 'est', 'pas', 'old', 'boy', 'owlboy',
+        self.assertEqual(sorted(['ceci', 'est', 'pas', 'old', 'boy', 'owlboy',
                                   'suite', 'benzaie', 'live', 'watch', 'live',
                                   'at', 'games', 'twitch']),
                           sorted(article['valuable_tokens']))
 
-        self.assertEquals('yt:video:scbrjaqM3Oc', article['entry_id'])
-        self.assertEquals(self.response2.url, article['link'])
-        self.assertEquals("Ceci n'est pas Old Boy - Owlboy (suite) - "
+        self.assertEqual('yt:video:scbrjaqM3Oc', article['entry_id'])
+        self.assertEqual(self.response2.url, article['link'])
+        self.assertEqual("Ceci n'est pas Old Boy - Owlboy (suite) - "
                           "Benzaie Live", article['title'])
-        self.assertEquals(1, article['user_id'])
-        self.assertEquals(1, article['feed_id'])
-        self.assertEquals({'twitch', 'games'}, article['tags'])
+        self.assertEqual(1, article['user_id'])
+        self.assertEqual(1, article['feed_id'])
+        self.assertEqual({'twitch', 'games'}, article['tags'])

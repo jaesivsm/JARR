@@ -1,8 +1,5 @@
 import unittest
-
-from mock import patch, Mock
-
-from bootstrap import conf, feed_creation
+from bootstrap import feed_creation
 
 FIXED_URL = 'https://www.youtube.com/feeds/videos.xml?channel_id=<channel id>'
 

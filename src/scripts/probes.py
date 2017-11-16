@@ -67,7 +67,7 @@ class FeedLatenessProbe(AbstractMuninPlugin):
         red, green, blue = 255, 0, 0
         steps = 255 * 2 / (nb_steps - 1)
         yield '{:02X}{:02X}{:02X}'.format(red, green, blue)
-        for i in range(nb_steps):
+        for _ in range(nb_steps):
             if green < 255:
                 green += steps
                 if green > 255:

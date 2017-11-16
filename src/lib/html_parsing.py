@@ -67,7 +67,7 @@ def get_soup(content, header_encoding='utf8'):
             try:
                 return BeautifulSoup(cnt, 'html.parser', parse_only=strainer)
             except Exception as error:
-                logger.warn('something went wrong when parsing: %r', error)
+                logger.warning('something went wrong when parsing: %r', error)
 
 
 def extract_opg_prop(response, og_prop):

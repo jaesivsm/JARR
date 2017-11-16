@@ -1,6 +1,6 @@
 import logging
 
-from werkzeug import check_password_hash, generate_password_hash
+from werkzeug.security import check_password_hash, generate_password_hash
 
 from web.models import User
 

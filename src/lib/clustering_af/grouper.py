@@ -3,7 +3,6 @@ Group articles that talks about the same subject.
 If two articles, in the same category, have enough similar tokens, we assume
 that they talk about the same subject, and we group them in a meta-article
 """
-import json
 from collections import Counter
 from lib.clustering_af.vector import TFIDFVector
 

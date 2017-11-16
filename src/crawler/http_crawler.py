@@ -1,8 +1,6 @@
 import asyncio
 import json
 import logging
-import time
-from datetime import datetime, timedelta
 from functools import partial
 
 import feedparser
@@ -60,7 +58,7 @@ def clean_feed(feed, auth, pool, response, parsed_feed=None, **info):
     # updating link on permanent move /redirect
     if response.history and feed['link'] != response.url and any(
             resp.status_code in {301, 308} for resp in response.history):
-        logger.warn('feed moved from %r to %r', feed['link'], response.url)
+        logger.warning('feed moved from %r to %r', feed['link'], response.url)
         info['link'] = response.url
 
     if info:
@@ -74,8 +72,8 @@ def set_feed_error(feed, auth, pool, error=None, parsed_feed=None):
     elif parsed_feed:
         last_error = str(parsed_feed.get('bozo_exception', ''))
     if feed['error_count'] > conf.FEED_ERROR_THRESHOLD:
-        logger.warn('an error occured while fetching feed; '
-                    'bumping error count to %r', error_count)
+        logger.warning('an error occured while fetching feed; '
+                       'bumping error count to %r', error_count)
     info = {'error_count': error_count, 'last_error': last_error,
             'user_id': feed['user_id'], 'last_retrieved': utc_now()}
     info.update(extract_feed_info({}))
@@ -183,7 +181,7 @@ async def crawl(username, password, **kwargs):
             continue
 
         # checking if cache was validated
-        a_im_support = feed.get('cache_support_a_im', False)
+        kwargs = {}
         if resp.status_code == 304:
             logger.info('feed responded with 304')
             clean_feed(feed, auth, no_resp_pool, resp,
@@ -191,7 +189,7 @@ async def crawl(username, password, **kwargs):
             continue
         elif resp.status_code == 226:
             logger.info('feed responded with 226')
-            a_im_support = True
+            kwargs['cache_support_a_im'] = True
         elif response_etag_match(feed, resp):
             clean_feed(feed, auth, no_resp_pool, resp,
                        cache_type=reasons.CacheReason.etag.value)
@@ -204,13 +202,12 @@ async def crawl(username, password, **kwargs):
             logger.debug('etag mismatch %r != %r',
                          resp.headers.get('etag'), feed.get('etag'))
 
-        result = challenge(feed, resp, auth, no_resp_pool,
-                           a_im_support=a_im_support)
+        result = challenge(feed, resp, auth, no_resp_pool, **kwargs)
         if result:
             all_entries, future = result
-            challenge_pool.append((future, feed, all_entries, resp.headers))
+            challenge_pool.append((future, feed, all_entries))
 
-    for future, feed, all_entries, headers in challenge_pool:
+    for future, feed, all_entries in challenge_pool:
         try:
             resp = await future
             resp.raise_for_status()

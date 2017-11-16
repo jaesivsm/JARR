@@ -22,8 +22,8 @@ class ApiCommon:
                 data=[[1, {'nonexisting': 'nonexisting'}],
                       [2, {'user_id': 'Unauthorized'}]])
         self.assertStatusCode(500, resp)
-        self.assertEquals(['attributes to update must not be empty',
-                           'attributes to update must not be empty'],
+        self.assertEqual(['attributes to update must not be empty',
+                          'attributes to update must not be empty'],
                           resp.json())
 
     def test_api_delete(self):
@@ -33,7 +33,7 @@ class ApiCommon:
     def test_api_delete_many(self):
         resp = self._api('delete', self.urns, data=[1, 30], user='user1')
         self.assertStatusCode(206, resp)
-        self.assertEquals(["ok", "404: Not Found"], resp.json())
+        self.assertEqual(["ok", "404: Not Found"], resp.json())
 
         resp = self._api('delete', self.urns, data=[2], user='user1')
         self.assertStatusCode(204, resp)
@@ -45,7 +45,7 @@ class ApiCommon:
         resp = self._api('get', self.urns, data={'limit': 1}, user='user1')
         self.assertStatusCode(200, resp)
         objs = resp.json()
-        self.assertEquals(1, len(objs))
+        self.assertEqual(1, len(objs))
         obj = objs[0]
         resp = self._api('put', self.urn, obj['id'], data={'user_id': 3})
         self.assertStatusCode(400, resp)

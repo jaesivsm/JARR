@@ -15,7 +15,7 @@ def etag_match(func):
         if isinstance(response, Response):
             etag = to_hash(response.data)
             headers = response.headers
-        elif type(response) is str:
+        elif isinstance(response, str):
             etag = to_hash(response)
             headers = {}
         else:

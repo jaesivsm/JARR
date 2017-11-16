@@ -16,7 +16,7 @@ class ModelTest(JarrFlaskCommon):
         self.assertIsNotNone(article.category)
         self.assertIsNotNone(article.feed)
         # feed parent relation
-        self.assertEquals(article.category, article.feed.category)
+        self.assertEqual(article.category, article.feed.category)
 
         self.assertInRelation(article.cluster, article.feed.clusters)
         self.assertInRelation(article.cluster, article.category.clusters)
@@ -34,9 +34,9 @@ class ModelTest(JarrFlaskCommon):
         self.assertRaises(Exception,
                 fctrl.update, {'id': 1}, {'last_retrieved': naive})
         fctrl.update({'id': 1}, {'last_retrieved': aware})
-        self.assertEquals(fctrl.read(id=1).first().last_retrieved, aware)
+        self.assertEqual(fctrl.read(id=1).first().last_retrieved, aware)
 
         fctrl.update({'id': 1}, {'last_retrieved': aware2})
-        self.assertEquals(fctrl.read(id=1).first().last_retrieved, aware2)
-        self.assertEquals(fctrl.read(id=1).first().last_retrieved,
+        self.assertEqual(fctrl.read(id=1).first().last_retrieved, aware2)
+        self.assertEqual(fctrl.read(id=1).first().last_retrieved,
                           aware - timedelta(hours=12))

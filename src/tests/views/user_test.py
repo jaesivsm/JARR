@@ -35,8 +35,8 @@ class BaseUiTest(JarrFlaskCommon):
         actrl = ArticleController(self.user.id)
         for item in actrl.read():
             actrl.delete(item.id)
-        self.assertEquals(0, ClusterController(self.user.id).read().count())
-        self.assertEquals(0, ArticleController(self.user.id).read().count())
+        self.assertEqual(0, ClusterController(self.user.id).read().count())
+        self.assertEqual(0, ArticleController(self.user.id).read().count())
         no_category_feed = []
         existing_feeds = {}
         for feed in self.fctrl.read():
@@ -62,9 +62,9 @@ class BaseUiTest(JarrFlaskCommon):
         self.assertStatusCode(302, resp)
 
     def _check_opml_imported(self, existing_feeds, no_category_feed):
-        self.assertEquals(sum(map(len, existing_feeds.values()))
+        self.assertEqual(sum(map(len, existing_feeds.values()))
                           + len(no_category_feed), self.fctrl.read().count())
-        self.assertEquals(len(existing_feeds), self.cctrl.read().count())
+        self.assertEqual(len(existing_feeds), self.cctrl.read().count())
         for feed in self.fctrl.read():
             if feed.category:
                 self.assertTrue(feed.category.name in existing_feeds,
@@ -80,15 +80,15 @@ class BaseUiTest(JarrFlaskCommon):
     def test_user_delete(self):
         # test fail delete other user
         self.app.get('/user/delete_account/%d' % self.user2.id)
-        self.assertEquals(self.user2.id, self.uctrl.get(login='user2').id)
+        self.assertEqual(self.user2.id, self.uctrl.get(login='user2').id)
         # test delete other user because admin
         self.uctrl.update({'id': self.user.id}, {'is_admin': True})
         self.app.get('/user/delete_account/%d' % self.user2.id)
-        self.assertEquals(0, self.uctrl.read(login='user2').count())
+        self.assertEqual(0, self.uctrl.read(login='user2').count())
         # test delete own user
         self.uctrl.update({'id': self.user.id}, {'is_admin': False})
         self.app.get('/user/delete_account/%d' % self.user.id)
-        self.assertEquals(0, self.uctrl.read(id=self.user.id).count())
+        self.assertEqual(0, self.uctrl.read(id=self.user.id).count())
 
     def test_user_profile(self):
         login_form = '<input class="form-control" id="login" '\
@@ -109,7 +109,7 @@ class BaseUiTest(JarrFlaskCommon):
     @patch('lib.emails.send')
     def test_password_recovery(self, mock_emails_send):
         self.app.get('/logout')
-        self.assertEquals('', self.user.renew_password_token)
+        self.assertEqual('', self.user.renew_password_token)
         resp = self.app.post('/user/gen_pass_token',
                              data={'email': self.user.email})
         self.assertStatusCode(200, resp)
@@ -119,12 +119,12 @@ class BaseUiTest(JarrFlaskCommon):
         self.assertTrue('/user/recover/' in mail_content)
         self.assertTrue('\n\nRegards,' in mail_content)
         token = mail_content.split('/user/recover/')[1].split('\n\nRegards')[0]
-        self.assertEquals(token,
+        self.assertEqual(token,
                 self.uctrl.get(id=self.user.id).renew_password_token)
 
         # recovering with wrong token
         resp = self.app.get('/user/recover/garbage')
-        self.assertEquals(
+        self.assertEqual(
                 b'Token is not valid, please regenerate one', resp.data, )
 
         # recovering with non matching passwords
@@ -141,7 +141,7 @@ class BaseUiTest(JarrFlaskCommon):
         self.assertStatusCode(302, resp)
         self.assertNotEqual(old_password,
                 self.uctrl.get(id=self.user.id).password)
-        self.assertEquals('',
+        self.assertEqual('',
                 self.uctrl.get(id=self.user.id).renew_password_token)
 
         # we're logged after password change
@@ -159,22 +159,22 @@ class BaseUiTest(JarrFlaskCommon):
         self.app.post('/user/password_update/%d' % self.user.id,
                 data={'password': 'new_pass', 'password_conf': 'no matching'})
         user = self.uctrl.get(id=self.user.id)
-        self.assertEquals(user.password, old_password)
+        self.assertEqual(user.password, old_password)
         self.app.post('/user/password_update/%d' % self.user.id,
                 data={'password': 'new_pass', 'password_conf': 'new_pass'})
         user = self.uctrl.get(id=self.user.id)
-        self.assertNotEquals(user.password, old_password)
+        self.assertNotEqual(user.password, old_password)
 
     def test_profile_update(self):
         data = {'email': 'not an email', 'is_admin': True}
         self.app.post('/user/profile_update/%d' % self.user2.id, data=data)
         user2 = self.uctrl.get(id=self.user2.id)
         self.assertFalse(user2.is_admin)
-        self.assertNotEquals(user2.email, 'not an email')
+        self.assertNotEqual(user2.email, 'not an email')
 
         self.uctrl.update({'id': self.user.id}, {'is_admin': True})
         data['email'], data['login'] = 'a.valid@email.fake', self.user2.login
         self.app.post('/user/profile_update/%d' % self.user2.id, data=data)
         user2 = self.uctrl.get(id=self.user2.id)
         self.assertTrue(user2.is_admin)
-        self.assertEquals(user2.email, data['email'])
+        self.assertEqual(user2.email, data['email'])

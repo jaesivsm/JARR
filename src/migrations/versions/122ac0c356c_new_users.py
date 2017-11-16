@@ -53,7 +53,7 @@ def upgrade():
     op.add_column('user',
             sa.Column('renew_password_token', sa.String(), nullable=True))
 
-    user, role = get_tables()
+    user, _ = get_tables()
     op.execute(user.update().values(
         {'login': user.c['email'], 'password': user.c['pwdhash'],
          'is_active': op.inline_literal(True),

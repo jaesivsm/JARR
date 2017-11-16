@@ -1,9 +1,7 @@
-from tests.base import BaseJarrTest, JarrFlaskCommon
+from tests.base import JarrFlaskCommon
 
-import asyncio
 import logging
 import unittest
-from datetime import datetime, timezone
 
 import feedparser
 from mock import Mock, patch
@@ -88,11 +86,11 @@ class CrawlerTest(JarrFlaskCommon):
 
     def test_http_crawler_add_articles(self):
         resp = self._api('get', 'articles', data={'limit': 1000}, user='admin')
-        self.assertEquals(36, len(resp.json()))
+        self.assertEqual(36, len(resp.json()))
 
         crawler('admin', 'admin')
         resp = self._api('get', 'articles', data={'limit': 1000}, user='admin')
-        self.assertEquals(36 + self.new_entries_cnt, len(resp.json()))
+        self.assertEqual(36 + self.new_entries_cnt, len(resp.json()))
 
         for art in resp.json():
             self.assertFalse('srcset=' in art['content'])
@@ -101,21 +99,21 @@ class CrawlerTest(JarrFlaskCommon):
         self.resp_status_code = 304
         crawler('admin', 'admin')
         resp = self._api('get', 'articles', data={'limit': 1000}, user='admin')
-        self.assertEquals(36 + self.new_entries_cnt, len(resp.json()))
+        self.assertEqual(36 + self.new_entries_cnt, len(resp.json()))
 
     def test_no_add_on_304(self):
         self.resp_status_code = 304
         resp = self._api('get', 'articles', data={'limit': 1000}, user='admin')
-        self.assertEquals(36, len(resp.json()))
+        self.assertEqual(36, len(resp.json()))
 
         crawler('admin', 'admin')
         resp = self._api('get', 'articles', data={'limit': 1000}, user='admin')
-        self.assertEquals(36, len(resp.json()))
+        self.assertEqual(36, len(resp.json()))
 
     def test_no_add_feed_skip(self):
         self.resp_status_code = 304
         resp = self._api('get', 'articles', data={'limit': 1000}, user='admin')
-        self.assertEquals(36, len(resp.json()))
+        self.assertEqual(36, len(resp.json()))
         FeedController().update({}, {'filters': [{"type": "tag contains",
                                                   "action on": "match",
                                                   "pattern": "pattern5",
@@ -131,31 +129,31 @@ class CrawlerTest(JarrFlaskCommon):
 
         crawler('admin', 'admin')
         resp = self._api('get', 'articles', data={'limit': 1000}, user='admin')
-        self.assertEquals(36, len(resp.json()))
+        self.assertEqual(36, len(resp.json()))
 
     def test_matching_etag(self):
         self._reset_feeds_freshness(etag='fake etag')
         self.resp_headers = {'etag': 'fake etag'}
         resp = self._api('get', 'articles', data={'limit': 1000}, user='admin')
-        self.assertEquals(36, len(resp.json()))
+        self.assertEqual(36, len(resp.json()))
 
         crawler('admin', 'admin')
         resp = self._api('get', 'articles', data={'limit': 1000}, user='admin')
-        self.assertEquals(36, len(resp.json()))
+        self.assertEqual(36, len(resp.json()))
 
         self._reset_feeds_freshness(etag='jarr/"%s"' % to_hash(self._content))
         self.resp_headers = {'etag': 'jarr/"%s"' % to_hash(self._content)}
 
         crawler('admin', 'admin')
         resp = self._api('get', 'articles', data={'limit': 1000}, user='admin')
-        self.assertEquals(36, len(resp.json()))
+        self.assertEqual(36, len(resp.json()))
 
         self._reset_feeds_freshness(etag='jarr/fake etag')
         self.resp_headers = {'etag': '########################'}
 
         crawler('admin', 'admin')
         resp = self._api('get', 'articles', data={'limit': 1000}, user='admin')
-        self.assertEquals(36 + self.new_entries_cnt, len(resp.json()))
+        self.assertEqual(36 + self.new_entries_cnt, len(resp.json()))
 
 
 class CrawlerMethodsTest(unittest.TestCase):
@@ -188,10 +186,10 @@ class CrawlerMethodsTest(unittest.TestCase):
         set_feed_error(self.feed, self.auth, self.pool, Exception('an error'))
         method, urn, data = get_first_call(query_jarr)
 
-        self.assertEquals('put', method)
-        self.assertEquals('feed/%d' % self.feed['id'], urn)
-        self.assertEquals(original_error_count + 1, data['error_count'])
-        self.assertEquals('an error', data['last_error'])
+        self.assertEqual('put', method)
+        self.assertEqual('feed/%d' % self.feed['id'], urn)
+        self.assertEqual(original_error_count + 1, data['error_count'])
+        self.assertEqual('an error', data['last_error'])
 
     @patch('crawler.http_crawler.query_jarr')
     def test_set_feed_error_w_parsed(self, query_jarr):
@@ -199,18 +197,18 @@ class CrawlerMethodsTest(unittest.TestCase):
         set_feed_error(self.feed, ('admin', 'admin'), self.pool,
                        parsed_feed={'bozo_exception': 'an error'})
         method, urn, data = get_first_call(query_jarr)
-        self.assertEquals('put', method)
-        self.assertEquals('feed/%d' % self.feed['id'], urn)
-        self.assertEquals(original_error_count + 1, data['error_count'])
-        self.assertEquals('an error', data['last_error'])
+        self.assertEqual('put', method)
+        self.assertEqual('feed/%d' % self.feed['id'], urn)
+        self.assertEqual(original_error_count + 1, data['error_count'])
+        self.assertEqual('an error', data['last_error'])
 
     @patch('crawler.http_crawler.query_jarr')
     def test_clean_feed(self, query_jarr):
         clean_feed(self.feed, self.auth, self.pool, self.resp)
         method, urn, data = get_first_call(query_jarr)
 
-        self.assertEquals('put', method)
-        self.assertEquals('feed/%d' % self.feed['id'], urn)
+        self.assertEqual('put', method)
+        self.assertEqual('feed/%d' % self.feed['id'], urn)
         self.assertTrue('link' not in data)
         self.assertTrue('title' not in data)
         self.assertTrue('description' not in data)
@@ -224,9 +222,9 @@ class CrawlerMethodsTest(unittest.TestCase):
         clean_feed(self.feed, self.auth, self.pool, self.resp)
         method, urn, data = get_first_call(query_jarr)
 
-        self.assertEquals('put', method)
-        self.assertEquals('feed/%d' % self.feed['id'], urn)
-        self.assertEquals('new_link', data['link'])
+        self.assertEqual('put', method)
+        self.assertEqual('feed/%d' % self.feed['id'], urn)
+        self.assertEqual('new_link', data['link'])
         self.assertTrue('title' not in data)
         self.assertTrue('description' not in data)
         self.assertTrue('site_link' not in data)
@@ -239,9 +237,9 @@ class CrawlerMethodsTest(unittest.TestCase):
         clean_feed(self.feed, self.auth, self.pool, self.resp, True)
         method, urn, data = get_first_call(query_jarr)
 
-        self.assertEquals('put', method)
-        self.assertEquals('feed/%d' % self.feed['id'], urn)
-        self.assertEquals('new description', data['description'])
+        self.assertEqual('put', method)
+        self.assertEqual('feed/%d' % self.feed['id'], urn)
+        self.assertEqual('new description', data['description'])
         self.assertTrue('link' not in data)
         self.assertTrue('title' not in data)
         self.assertTrue('site_link' not in data)

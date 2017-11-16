@@ -5,7 +5,6 @@ from sqlalchemy import Integer, and_, func
 from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.orm import aliased
 from sqlalchemy.sql import exists, select
-from werkzeug.exceptions import NotFound
 
 from bootstrap import SQLITE_ENGINE, db
 from web.controllers.article import ArticleController
@@ -268,7 +267,6 @@ class ClusterController(AbstractController):
                 filter_on_cat)
 
     def delete(self, obj_id, delete_articles=True):
-        from web.controllers import ArticleController
         self.update({'id': obj_id}, {'main_article_id': None}, commit=False)
         actrl = ArticleController(self.user_id)
         if delete_articles:

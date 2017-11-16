@@ -3,8 +3,8 @@ import random
 import opml
 from flask import (Blueprint, flash, make_response, redirect, render_template,
                    request, url_for)
-from flask_babel import gettext, get_locale
-from flask_login import current_user, login_required, logout_user
+from flask_babel import gettext
+from flask_login import current_user, login_required
 from flask_principal import Permission, UserNeed
 from werkzeug.exceptions import Forbidden, NotFound
 
@@ -55,7 +55,7 @@ def opml_import():
     data = request.files.get('opml.xml', None)
     try:
         subscriptions = opml.from_string(data.read())
-    except:
+    except Exception:
         flash(gettext("Couldn't parse file"), 'error')
         return redirect(request.referrer)
 
@@ -170,8 +170,8 @@ def gen_recover_token():
         changed = ucontr.update({'email': form.email.data},
                                 {'renew_password_token': token})
         if not changed:
-            flash(gettext("No user with %(email)r was found",
-                          form.email.data), "danger")
+            flash(gettext("No user with %(email)r was found"
+                          % form.email.data), "danger")
         else:
             body = gettext("""Hello,
 

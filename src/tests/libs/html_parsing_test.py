@@ -30,28 +30,28 @@ class HTMLParsingTest(unittest.TestCase):
         return resp
 
     def test_extract_tags(self):
-        self.assertEquals(set(), extract_tags(self.article))
-        self.assertEquals({'twitch', 'games'}, extract_tags(self.article2))
+        self.assertEqual(set(), extract_tags(self.article))
+        self.assertEqual({'twitch', 'games'}, extract_tags(self.article2))
 
     def test_extract_title(self):
-        self.assertEquals('Les plus belles boulangeries de Paris',
+        self.assertEqual('Les plus belles boulangeries de Paris',
                           extract_title(self.article))
-        self.assertEquals("Ceci n'est pas Old Boy - Owlboy (suite) "
+        self.assertEqual("Ceci n'est pas Old Boy - Owlboy (suite) "
                           "- Benzaie Live", extract_title(self.article2))
 
     def test_extract_lang(self):
-        self.assertEquals('fr_FR', extract_lang(self.article))
-        self.assertEquals('fr', extract_lang(self.article2))
+        self.assertEqual('fr_FR', extract_lang(self.article))
+        self.assertEqual('fr', extract_lang(self.article2))
 
     def test_extract_feed_link(self):
         feed_split = urllib.parse.urlsplit(self.article.url)
-        self.assertEquals(self.article.url + '/feed',
+        self.assertEqual(self.article.url + '/feed',
                           extract_feed_link(self.article, feed_split))
 
         yt_feed_link = 'http://www.youtube.com/oembed?url=https%3A%2F%2F'\
                        'www.youtube.com%2Fwatch%3Fv%3DscbrjaqM3Oc&format=xml'
         feed_split = urllib.parse.urlsplit(self.article2.url)
-        self.assertEquals(yt_feed_link,
+        self.assertEqual(yt_feed_link,
                           extract_feed_link(self.article2, feed_split))
 
     @patch('lib.html_parsing.try_get_icon_url')
@@ -60,9 +60,9 @@ class HTMLParsingTest(unittest.TestCase):
             return a[0]
         get_icon_patch.side_effect = return_first_val
         split = urllib.parse.urlsplit(self.article.url)
-        self.assertEquals('http://www.pariszigzag.fr/wp-content/themes'
+        self.assertEqual('http://www.pariszigzag.fr/wp-content/themes'
                           '/paris_zigzag_2016/favicon.ico',
                           extract_icon_url(self.article, split, split))
         split = urllib.parse.urlsplit(self.article2.url)
-        self.assertEquals('https://s.ytimg.com/yts/img/favicon-vflz7uhzw.ico',
+        self.assertEqual('https://s.ytimg.com/yts/img/favicon-vflz7uhzw.ico',
                           extract_icon_url(self.article2, split, split))
