@@ -30,11 +30,10 @@ class ConstructFeedFromTest(unittest.TestCase):
     def test_joies_du_code(self):
         self.assertEqual(
                 {'description': "L'instant GIF des développeurs",
-                 'icon_url': 'http://ljdchost.com/ljdc-theme/favicons'
-                             '/favicon.ico?v=9BK2m20LWn',
+                 'icon_url': 'https://ljdchost.com/theme/favicons/favicon.ico',
                  'link': 'http://lesjoiesducode.tumblr.com/rss',
-                 'site_link': 'http://lesjoiesducode.fr/',
-                 'title': 'Les joies du code'},
+                 'site_link': 'https://lesjoiesducode.tumblr.com/',
+                 'title': 'Les joies du code'}
                 construct_feed_from('http://lesjoiesducode.tumblr.com/rss'))
 
     def test_apod(self):
