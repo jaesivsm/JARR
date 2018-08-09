@@ -1,0 +1,46 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[dev-packages]
+pycodestyle = "*"
+nose = "*"
+mock = "*"
+coverage = "*"
+coveralls = "*"
+Flask-Testing = "*"
+
+[packages]
+alembic = "==0.9.6"
+"beautifulsoup4" = "==4.6.0"
+blinker = ">=1.4.0"
+feedparser = "==5.2.1"
+lxml = "==4.1.1"
+nltk = "==3.2.5"
+numpy = "==1.13.3"
+opml = "==0.5"
+python-dateutil = "==2.6.1"
+python-postmark = "==0.5.0"
+pytz = "==2017.2"
+rauth = "==0.7.3"
+requests = "==2.18.4"
+the-conf = ">=0.0.8"
+click = "==6.7"
+itsdangerous = "==0.24"
+Flask = "==0.12.2"
+Flask-Babel = "==0.11.2"
+Flask-Login = "==0.4.0"
+Flask-Migrate = "==2.1.1"
+Flask-Principal = "==0.4.0"
+Flask-RESTful = "==0.3.6"
+Flask-Script = "==2.0.6"
+Flask-SSLify = "==0.1.5"
+Flask-WTF = "==0.14.2"
+"Jinja2" = "==2.10"
+SQLAlchemy = "==1.1.15"
+Werkzeug = "==0.12.2"
+"psycopg2" = "==2.7.3.2"
+
+[requires]
+python_version = "3.6"

@@ -22,9 +22,8 @@ eproject.cfg
 venv
 build
 
-src/conf.py
 .coverage
 
 # node files
 node_modules
-src/web/static/js/bundle.min.js
+jarr/views/static/js/bundle.min.js

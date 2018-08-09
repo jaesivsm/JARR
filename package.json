@@ -1,43 +1,43 @@
 {
-  "name": "jarr",
+  "name": "JARR",
   "version": "0.0.1",
   "author": {
     "name": "François Schmidts",
-    "email": "francois.schmidts@gmail.com",
-    "url": "1pxsolidblack.pl"
+    "email": "francois@schmidts.fr",
+    "url": "https://1pxsolidblack.pl"
   },
-  "description": "jarr (Just Another RSS Reader) is a web-based news aggregator.",
+  "description": "JARR (Just Another RSS Reader) is a web-based news aggregator.",
   "repository": {
     "type": "git",
-    "url": "https://github.com/JARR-aggregator/JARR"
+    "url": "https://github.com/jaesivsm/JARR"
   },
   "license": "GNU Affero General Public License version 3",
   "engines": {
     "npm": "^3.3.12"
   },
-  "main": "src/web/js/app.js",
+  "main": "jssrc/app.js",
   "dependencies": {
     "bootstrap": "^3.3.7",
     "classnames": "^2.2.5",
     "flux": "^2.0.1",
-    "jquery": "^3.1.0",
+    "jquery": "^3.2.1",
     "keymirror": "~0.1.0",
-    "object-assign": "^4.1.0",
-    "react": "^0.14.6",
+    "object-assign": "^4.1.1",
+    "react": "^0.14.9",
     "react-bootstrap": "^0.28.0",
     "react-dom": "^0.14.6",
-    "react-notification-system": "^0.2.10"
+    "react-notification-system": "^0.2.16"
   },
   "devDependencies": {
-    "browserify": "^13.1.0",
-    "envify": "^3.4.1",
+    "browserify": "^15.0.0",
+    "envify": "^4.1.0",
     "reactify": "^1.1.1",
-    "uglify-js": "~2.7.3",
-    "watchify": "^3.7.0"
+    "uglify-js": "^3.3.4",
+    "watchify": "^3.9.0"
   },
   "scripts": {
-    "start": "watchify -o src/web/static/js/bundle.min.js -v -d src/web/js/app.js",
-    "build": "browserify . -t [envify --NODE_ENV production] | uglifyjs -cm > src/web/static/js/bundle.min.js"
+    "start": "watchify -o jarr/views/static/js/bundle.min.js -v -d jssrc/app.js",
+    "build": "browserify . -t [envify --NODE_ENV production] | uglifyjs -cm > jarr/views/static/js/bundle.min.js"
   },
   "browserify": {
     "transform": [

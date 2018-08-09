@@ -1,0 +1,56 @@
+{% extends "anon_layout.html" %}
+{% block content %}
+<form id="form-login" class="form-signin" action={{url_for("login")}} method="post">
+  {{form.hidden_tag()}}
+  <label for="inputLogin" class="sr-only">{{_("Login")}}</label>
+  {{form.login(class_="form-control", type="text", id="inputLogin", placeholder="Login", required=True, autofocus=True)}}
+  {% for error in form.login.errors %}
+    <span style="color: red;">{{ error }}<br /></span>
+  {% endfor %}
+
+  <label for="inputPassword" class="sr-only">{{_("Password")}}</label>
+  {{ form.password(class_="form-control", type="password", id="inputPassword", placeholder="Password", required=True)}}
+  {% for error in form.password.errors %}
+    <span style="color: red;">{{ error }}<br /></span>
+  {% endfor %}
+
+  {{form.submit(class_="btn btn-lg btn-primary btn-block", text=_("Sign in"))}}
+</form>
+
+{% if form.errors%}
+<form id="form-signup" class="form-signin" action={{url_for("user.gen_recover_token")}} method="get">
+  <input class="btn btn-lg btn-primary btn-block" value="Recover your account" type="submit" />
+</form>
+{% endif %}
+
+{% if jarr_conf.auth.allow_signup %}
+<form id="form-signup" class="form-signin" action={{url_for("signup")}} method="get">
+  <input class="btn btn-lg btn-primary btn-block" value="Sign up" type="submit" />
+</form>
+{% endif %}
+
+{% if jarr_conf.oauth.google_id and jarr_conf.oauth.google_secret %}
+<form class="form-oauth form-signin" action={{url_for("oauth.oauth_authorize", provider="google")}} method="get">
+  <input id="google-sign" class="btn btn-lg btn-primary btn-block" value="Log in / Sign up with Google" type="submit" />
+</form>
+{% endif %}
+
+{% if jarr_conf.oauth.twitter_id and jarr_conf.oauth.twitter_secret %}
+<form class="form-oauth form-signin" action={{url_for("oauth.oauth_authorize", provider="twitter")}} method="get">
+  <input id="twitter-sign" class="btn btn-lg btn-primary btn-block" value="Log in / Sign up with Twitter" type="submit" />
+</form>
+{% endif %}
+
+{% if jarr_conf.oauth.facebook_id and jarr_conf.oauth.facebook_secret %}
+<form class="form-oauth form-signin" action={{url_for("oauth.oauth_authorize", provider="facebook")}} method="get">
+  <input id="facebook-sign" class="btn btn-lg btn-primary btn-block" value="Log in / Sign up with Facebook" type="submit" />
+</form>
+{% endif %}
+
+{% if jarr_conf.oauth.linuxfr_id and jarr_conf.oauth.linuxfr_secret %}
+<form class="form-oauth form-signin" action={{url_for("oauth.oauth_authorize", provider="linuxfr")}} method="get">
+  <input id="linuxfr-sign" class="btn btn-lg btn-primary btn-block" value="Log in / Sign up with LinuxFr" type="submit" />
+</form>
+{% endif %}
+
+{% endblock %}

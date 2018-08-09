@@ -1,6 +1,0 @@
-pep8
-nose
-mock
-coverage
-coveralls
-Flask-Testing
