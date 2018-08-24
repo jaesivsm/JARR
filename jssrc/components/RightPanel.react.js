@@ -119,6 +119,14 @@ var PanelMixin = {
                             input = (<input type="checkbox" name={field.key}
                                             onChange={this.saveField}
                                             defaultChecked={this.props.obj[field.key]} />);
+                        } else if (field.type === 'trool') {
+                            input = (<select name={field.key} className="form-control"
+                                    onChange={this.saveField}
+                                    defaultValue={this.props.obj[field.key]}>
+                                        <option value=true>Yes</option>
+                                        <option value=null>Default</option>
+                                        <option value=false>No</option>
+                                    </select>);
                         }
                         items.push(<dd key={key}>{input}</dd>);
                     }.bind(this));
@@ -236,6 +244,16 @@ var Feed = React.createClass({
               'type': 'bool', 'key': 'readability_auto_parse'},
              {'title': 'Reddit integration',
               'type': 'bool', 'key': 'integration_reddit'},
+             {'title': 'Cluster allow clustering',
+              'type': 'trool', 'key': 'cluster_enabled'},
+             {'title': 'Cluster using TFIDF',
+              'type': 'trool', 'key': 'cluster_tfidf'},
+             {'title': 'Allow cluster with TFIDF on in same category',
+              'type': 'trool', 'key': 'cluster_tfidf_same_cat'},
+             {'title': 'Cluster two articles from the same feed',
+              'type': 'trool', 'key': 'cluster_same_feed'},
+             {'title': 'Unread cluster on clustering',
+              'type': 'bool', 'key': 'cluster_wake_up'},
              {'title': 'Filters', 'type': 'ignore', 'key': 'filters'},
              {'title': 'Category', 'type': 'ignore', 'key': 'category_id'}
     ],
@@ -411,8 +429,14 @@ var Category = React.createClass({
     isRemovable: function() {return this.isEditable();},
     obj_type: 'category',
     fields: [{'title': 'Category name', 'type': 'string', 'key': 'name'},
-             {'title': 'Cluster on title',
-              'type': 'bool', 'key': 'cluster_on_title'},
+             {'title': 'Cluster allow clustering',
+              'type': 'bool', 'key': 'cluster_enabled'},
+             {'title': 'Cluster using TFIDF',
+              'type': 'bool', 'key': 'cluster_tfidf'},
+             {'title': 'Allow cluster with TFIDF on in same category',
+              'type': 'bool', 'key': 'cluster_tfidf'},
+             {'title': 'Cluster two articles from the same feed',
+              'type': 'bool', 'key': 'cluster_cluster_same_feed'},
     ],
     getTitle: function() {return this.props.obj.name;},
     getBody: function() {

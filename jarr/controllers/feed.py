@@ -1,9 +1,9 @@
 from datetime import timedelta, datetime
 import dateutil.parser
-import logging
 
 from sqlalchemy import and_
 from sqlalchemy.sql import delete, select, update
+from werkzeug.exceptions import Forbidden
 
 from jarr_common.utils import utc_now
 
@@ -12,7 +12,6 @@ from jarr.controllers.abstract import AbstractController
 from jarr.controllers.icon import IconController
 from jarr.models import Article, Cluster, Feed, User
 
-logger = logging.getLogger(__name__)
 DEFAULT_LIMIT = 0
 DEFAULT_ART_SPAN_TIME = timedelta(seconds=conf.feed.max_expires)
 
@@ -68,36 +67,25 @@ class FeedController(AbstractController):
                         {'last_retrieved': now})
         return feeds
 
-    def get_inactives(self, nb_days):
-        today = utc_now()
-        inactives = []
-        for feed in self.read():
-            try:
-                last_post = feed.articles[0].date
-            except IndexError:
-                continue
-            elapsed = today - last_post
-            if elapsed > timedelta(days=nb_days):
-                inactives.append((feed, elapsed))
-        inactives.sort(key=lambda tup: tup[1], reverse=True)
-        return inactives
-
-    def count_by_category(self, **filters):
-        return self._count_by(Feed.category_id, filters)
-
-    def _ensure_icon(self, attrs):
+    @staticmethod
+    def _ensure_icon(attrs):
         if not attrs.get('icon_url'):
             return
         icon_contr = IconController()
-        if not icon_contr.read(url=attrs['icon_url']).count():
-            icon_contr.create(**{'url': attrs['icon_url']})
+        if not icon_contr.read(url=attrs['icon_url']).first():
+            icon_contr.create(url=attrs['icon_url'])
 
     def __clean_feed_fields(self, attrs):
         if attrs.get('category_id') == 0:
             attrs['category_id'] = None
+        if self.user_id and attrs.get('category_id'):
+            from jarr.controllers import CategoryController
+            category = CategoryController().get(id=attrs['category_id'])
+            if category.user_id != self.user_id:
+                raise Forbidden()
         if 'filters' in attrs:
             attrs['filters'] = [filter_ for filter_ in (attrs['filters'] or [])
-                                if type(filter_) is dict]
+                                if isinstance(filter_, dict)]
 
     def create(self, **attrs):
         self._ensure_icon(attrs)
@@ -152,6 +140,7 @@ class FeedController(AbstractController):
         self.__clean_feed_fields(attrs)
         stuff_to_denorm = bool({'title', 'category_id'}.intersection(attrs))
         updating_expires = 'expires' in attrs
+
         if stuff_to_denorm or updating_expires:
             for feed in self.read(**filters):
                 if stuff_to_denorm:

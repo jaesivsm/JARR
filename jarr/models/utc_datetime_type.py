@@ -8,7 +8,8 @@ class UTCDateTime(types.TypeDecorator):
 
     def process_bind_param(self, value, engine):
         if value is not None:
-            assert value.tzinfo
+            if not value.tzinfo:
+                value = value.replace(tzinfo=timezone.utc)
             return value.astimezone(timezone.utc).replace(tzinfo=None)
         return value
 

@@ -6,6 +6,7 @@ from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.orm import aliased
 from sqlalchemy.sql import exists, select
 
+from jarr_common.filter import process_filters
 from jarr_common.reasons import ClusterReason, ReadReason
 from jarr_common.clustering_af.grouper import get_best_match_and_score
 
@@ -22,62 +23,51 @@ __returned_keys = ('main_title', 'id', 'liked', 'read', 'main_article_id',
 JR_FIELDS = {key: getattr(Cluster, key) for key in __returned_keys}
 JR_SQLA_FIELDS = [getattr(Cluster, key) for key in __returned_keys]
 JR_LENGTH = 1000
-MIN_SIMILARITY_SCORE = 0.75
 
 
 class ClusterController(AbstractController):
     _db_cls = Cluster
     max_day_dist = timedelta(days=7)
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.tfidf_min_score = MIN_SIMILARITY_SCORE
-
     def _get_cluster_by_link(self, article):
-        cluster = self.read(user_id=article.user_id,
-                         main_date__lt=article.date + self.max_day_dist,
-                         main_date__gt=article.date - self.max_day_dist,
-                         main_link=article.link).first()
-        if cluster:
-            article.cluster_reason = ClusterReason.link
-        return cluster
+        filters = {'user_id': article.user_id,
+                   'main_date__lt': article.date + self.max_day_dist,
+                   'main_date__gt': article.date - self.max_day_dist,
+                   'main_link': article.link}
 
-    def _get_cluster_by_title(self, article):
-        match = ArticleController(self.user_id).read(
-                date__lt=article.date + self.max_day_dist,
-                date__gt=article.date - self.max_day_dist,
-                user_id=article.user_id,
-                category_id=article.category_id,
-                title__ilike=article.title).first()
-        if match:
-            article.cluster_reason = ClusterReason.title
-            return match.cluster
+        cluster = self.read(**filters).first()
+        if not cluster:
+            return None
+        if not article.feed.cluster_same_feed:
+            for clustered_article in cluster.articles:
+                if clustered_article.feed_id == article.feed_id:
+                    return None
+        article.cluster_reason = ClusterReason.link
+        return cluster
 
     def _get_cluster_by_similarity(self, article, min_sample_size=10):
         if not article.lang:
-            return
+            return None
         art_contr = ArticleController(self.user_id)
-        if '_' in article.lang:
-            lang_cond = {'lang__like': '%s%%' % article.lang.split('_')[0]}
-        else:
-            lang_cond = {'lang__like': '%s%%' % article.lang}
 
-        neighbors = list(art_contr.read(
-                category_id=article.category_id, user_id=article.user_id,
-                date__lt=article.date + self.max_day_dist,
-                date__gt=article.date - self.max_day_dist,
-                # article isn't this one, and already in a cluster
-                cluster_id__ne=None, id__ne=article.id,
-                # article is matchable
-                valuable_tokens__ne=[], **lang_cond))
+        filters = {'user_id': article.user_id,
+                   'date__lt': article.date + self.max_day_dist,
+                   'date__gt': article.date - self.max_day_dist,
+                   # article isn't this one, and already in a cluster
+                   'cluster_id__ne': None, 'id__ne': article.id,
+                   # article is matchable
+                   'valuable_tokens__ne': []}
+        if article.feed.cluster_tfidf_same_cat:
+            filters['category_id'] = article.category_id
 
+        neighbors = list(art_contr.read(**filters))
         if len(neighbors) < min_sample_size:
             logger.info('only %d docs against %d required, no TFIDF for %r',
                         len(neighbors), min_sample_size, article)
-            return
+            return None
 
         best_match, score = get_best_match_and_score(article, neighbors)
-        if score > self.tfidf_min_score:
+        if score > article.feed.cluster_tfidf_min_score:
             article.cluster_reason = ClusterReason.tf_idf
             article.cluster_score = int(score * 1000)
             article.cluster_tfidf_neighbor_size = len(neighbors)
@@ -97,6 +87,7 @@ class ClusterController(AbstractController):
         cluster.liked = cluster_liked
         article.cluster_reason = ClusterReason.original
         self.enrich_cluster(cluster, article, cluster_read, cluster_liked)
+        return cluster
 
     @staticmethod
     def enrich_cluster(cluster, article,
@@ -108,6 +99,8 @@ class ClusterController(AbstractController):
             cluster.read = cluster.read and cluster_read
             if cluster.read:
                 cluster.read_reason = ReadReason.filtered
+        elif article.feed.cluster_wake_up:
+            cluster.read = False
         # once one article is liked the cluster is liked
         cluster.liked = cluster.liked or cluster_liked
         if cluster.main_date > article.date or force_article_as_main:
@@ -118,19 +111,31 @@ class ClusterController(AbstractController):
         session.add(cluster)
         session.add(article)
         session.commit()
+        return cluster
 
     def clusterize(self, article, cluster_read=None, cluster_liked=False):
         """Will add given article to a fitting cluster or create a cluster
         fitting that article."""
-        cluster = self._get_cluster_by_link(article)
-        if not cluster and getattr(article.category, 'cluster_on_title', None):
-            cluster = self._get_cluster_by_title(article)
-            if not cluster:
+        if article.feed.cluster_enabled:
+            cluster = self._get_cluster_by_link(article)
+            if not cluster and article.feed.cluster_tfidf:
                 cluster = self._get_cluster_by_similarity(article)
-        if cluster:
-            return self.enrich_cluster(cluster, article,
-                                       cluster_read, cluster_liked)
+            if cluster:
+                return self.enrich_cluster(cluster, article,
+                                           cluster_read, cluster_liked)
         return self._create_from_article(article, cluster_read, cluster_liked)
+
+    @classmethod
+    def clusterize_pending_articles(cls):
+        results = []
+        for article in ArticleController().read(cluster_id=None):
+            _, read, liked = process_filters(article.feed.filters,
+                    {'tags': article.tags,
+                     'title': article.title,
+                     'link': article.link})
+            result = cls(article.user_id).clusterize(article, read, liked).id
+            results.append(result)
+        return results
 
     #
     # UI listing methods below
@@ -190,16 +195,16 @@ class ClusterController(AbstractController):
             for key in JR_FIELDS:
                 row[key] = getattr(clu, key)
             if SQLITE_ENGINE:  # pragma: no cover
-                row['feeds_id'] = set(map(int, clu.feeds_id.split(',')))
+                row['feeds_id'] = [int(fid) for fid in clu.feeds_id.split(',')]
                 if filter_on_category and clu.categories_id:
-                    row['categories_id'] = set(
-                            map(int, clu.categories_id.split(',')))
+                    row['categories_id'] = [int(cid)
+                            for cid in clu.categories_id.split(',')]
                 elif filter_on_category:
                     row['categories_id'] = [0]
             else:
-                row['feeds_id'] = set(clu.feeds_id)
+                row['feeds_id'] = clu.feeds_id
                 if filter_on_category:
-                    row['categories_id'] = {i or 0 for i in clu.categories_id}
+                    row['categories_id'] = [i or 0 for i in clu.categories_id]
             yield row
 
     def _light_no_filter_query(self, processed_filters):
@@ -287,10 +292,6 @@ class ClusterController(AbstractController):
     #
     # Real controllers stuff here
     #
-
-    @classmethod
-    def _extra_columns(cls, role, right=None):
-        return {'articles': {'type': list}}
 
     def count_by_feed(self, **filters):
         return self._count_by(Article.feed_id, **filters)

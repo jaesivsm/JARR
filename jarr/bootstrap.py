@@ -7,7 +7,6 @@ import logging
 import random
 from urllib.parse import urlparse
 
-from blinker import signal
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, scoped_session
@@ -18,9 +17,8 @@ conf = TheConf({'config_files': ['/etc/jarr.json', '~/.config/jarr.json'],
         'source_order': ['env', 'cmd', 'files'],
         'parameters': [
             {'jarr_testing': {'default': False, 'type': bool}},
-            {'api_root': {'default': '/api/v2.0'}},
-            {'babel': [{'timezone': {'default': 'Europe/Paris'}},
-                       {'locale': {'default': 'fr_FR'}}]},
+            {'cluster_tfidf_min_score': {'default': .75, 'type': float}},
+            {'timezone': {'default': 'Europe/Paris', 'type': str}},
             {'platform_url': {'default': 'http://0.0.0.0:5000/'}},
             {'sqlalchemy': [{'db_uri': {}},
                             {'test_uri': {'default': 'sqlite:///:memory:'}}]},
@@ -39,14 +37,14 @@ conf = TheConf({'config_files': ['/etc/jarr.json', '~/.config/jarr.json'],
                          {'rss_bridge': {'default': ''}}]},
             {'auth': [{'allow_signup': {'default': True, 'type': bool}}]},
             {'oauth': [{'allow_signup': {'default': False, 'type': bool}},
-                       {'twitter_id': {'default': ''}},
-                       {'twitter_secret': {'default': ''}},
-                       {'facebook_id': {'default': ''}},
-                       {'facebook_secret': {'default': ''}},
-                       {'google_id': {'default': ''}},
-                       {'google_secret': {'default': ''}},
-                       {'linuxfr_id': {'default': ''}},
-                       {'linuxfr_secret': {'default': ''}}]},
+                    {'twitter': [{'id': {'default': ''}},
+                                 {'secret': {'default': ''}}]},
+                    {'facebook': [{'id': {'default': ''}},
+                                  {'secret': {'default': ''}}]},
+                    {'google': [{'id': {'default': ''}},
+                                {'secret': {'default': ''}}]},
+                    {'linuxfr': [{'id': {'default': ''}},
+                                 {'secret': {'default': ''}}]}]},
             {'notification': [{'email': {'default': ''}},
                               {'host': {'default': ''}},
                               {'starttls': {'type': bool, 'default': True}},
@@ -106,12 +104,6 @@ def init_db(is_sqlite, echo=False):  # pragma: no cover
     return new_engine, new_session, NewBase
 
 
-def init_integrations():
-    from jarr import integrations
-    return signal('article_parsing'), signal('feed_creation'), \
-            signal('entry_parsing'), integrations
-
-
 def init_models():
     from jarr import models
     return models
@@ -121,8 +113,8 @@ SQLITE_ENGINE = 'sqlite' in (conf.sqlalchemy.test_uri
             if conf.jarr_testing else conf.sqlalchemy.db_uri)
 PARSED_PLATFORM_URL = urlparse(conf.platform_url)
 
+engine, session, Base = init_db(SQLITE_ENGINE)
+init_models()
+
 init_logging(conf.log.path, log_level=conf.log.level)
 init_logging(conf.log.path, log_level=logging.WARNING, modules=('the_conf',))
-engine, session, Base = init_db(SQLITE_ENGINE)
-article_parsing, feed_creation, entry_parsing, _ = init_integrations()
-init_models()

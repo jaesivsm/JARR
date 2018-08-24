@@ -1,5 +1,5 @@
 import unittest
-from jarr.bootstrap import entry_parsing
+from jarr_crawler.signals import entry_parsing
 
 CONTENT = """<a href="https://www.koreus.com/video/molly-cavailli-mordu-requin\
 .html"><img align="left" alt="vidéo requin citron cage actrice porno femme \

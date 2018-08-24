@@ -1,16 +1,15 @@
 from sqlalchemy import (Boolean, Column, Integer, PickleType, String, Enum,
-                        Index, ForeignKeyConstraint)
+                        FLOAT, Index, ForeignKeyConstraint)
 from sqlalchemy.orm import relationship, validates
 
 from jarr_common.utils import utc_now
 from jarr_common.const import UNIX_START
 from jarr_common.reasons import CacheReason
-from jarr.bootstrap import Base
+from jarr.bootstrap import Base, conf
 from jarr.models.utc_datetime_type import UTCDateTime
-from jarr.models.right_mixin import RightMixin
 
 
-class Feed(Base, RightMixin):
+class Feed(Base):
     __tablename__ = 'feed'
 
     id = Column(Integer, primary_key=True)
@@ -23,6 +22,15 @@ class Feed(Base, RightMixin):
     filters = Column(PickleType, default=[])
     readability_auto_parse = Column(Boolean, default=False)
     integration_reddit = Column(Boolean, default=False)
+
+    # clustering control
+    cluster_enabled = Column(Boolean, default=None)
+    cluster_tfidf = Column(Boolean, default=None)
+    cluster_tfidf_same_cat = Column(Boolean, default=None)
+    cluster_same_feed = Column(Boolean, default=None)
+    cluster_tfidf_min_score = Column(FLOAT,
+            default=conf.cluster_tfidf_min_score)
+    cluster_wake_up = Column(Boolean, default=False)
 
     # cache reasons
     cache_type = Column(Enum(CacheReason), default=None)
@@ -61,33 +69,20 @@ class Feed(Base, RightMixin):
             Index('ix_feed_uid_cid', user_id, category_id),
     )
 
-    # api whitelists
-    @staticmethod
-    def _fields_base_write():
-        return {'title', 'description', 'link', 'site_link', 'enabled',
-                'filters', 'readability_auto_parse', 'last_error',
-                'error_count', 'category_id', 'integration_reddit'}
-
-    @staticmethod
-    def _fields_base_read():
-        return {'id', 'user_id', 'icon_url', 'last_retrieved', 'expires'}
-
-    @staticmethod
-    def _fields_api_write():
-        return {'etag', 'last_modified', 'expires',
-                'cache_support_a_im', 'cache_type'}
-
     def __repr__(self):
         return '<Feed %r>' % (self.title)
 
+    @property
+    def abs_icon_url(self):
+        from flask import url_for
+        return url_for('feed_icon', url=self.icon_url, _external=True)
+
     @validates('title')
-    def validates_title(self, key, value):
+    @staticmethod
+    def validates_title(key, value):
         return str(value).strip()
 
     @validates('description')
-    def validates_description(self, key, value):
+    @staticmethod
+    def validates_description(key, value):
         return str(value).strip()
-
-    custom_api_types = {
-            'filters': {'action': 'append', 'type': dict, 'default': []},
-    }

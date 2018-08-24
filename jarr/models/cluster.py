@@ -7,10 +7,9 @@ from jarr_common.reasons import ReadReason
 from jarr.bootstrap import Base
 from jarr.models.article import Article
 from jarr.models.utc_datetime_type import UTCDateTime
-from jarr.models.right_mixin import RightMixin
 
 
-class Cluster(Base, RightMixin):
+class Cluster(Base):
     "Represent a cluster of articles from one or several feeds"
     __tablename__ = 'cluster'
 
@@ -19,6 +18,7 @@ class Cluster(Base, RightMixin):
     read = Column(Boolean, default=False)
     liked = Column(Boolean, default=False)
     created_date = Column(UTCDateTime, default=utc_now)
+    content = Column(String)
 
     # denorm
     main_date = Column(UTCDateTime, default=utc_now)
@@ -69,17 +69,6 @@ class Cluster(Base, RightMixin):
     @property
     def icons_url(self):
         return {feed.icon_url for feed in self.feeds}
-
-    # api whitelists
-    @staticmethod
-    def _fields_base_write():
-        return {'read', 'liked', 'read_reason'}
-
-    @staticmethod
-    def _fields_base_read():
-        return {'id', 'user_id', 'categories_id', 'feeds_id',
-                'main_link', 'main_title', 'main_feed_title', 'main_date',
-                'created_date', 'cluster_type', 'articles', 'main_article_id'}
 
     def __repr__(self):
         return "<Cluster(id=%d, title=%r, date=%r)>" \

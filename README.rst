@@ -52,7 +52,7 @@ And to create your database:
     ALTER USER <your user> WITH ENCRYPTED PASSWORD '<your password>';
     GRANT ALL PRIVILEGES ON DATABASE jarr TO '<your user>';
 
-You'll then have to specify as database URI ``postgres://<your user>:<your password>@127.0.0.1:5432/jarr``. Otherwise you can use the default ``sqlite`` db plug.
+You'll then have to specify as database URI ``postgresql://<your user>:<your password>@127.0.0.1:5432/jarr``. Otherwise you can use the default ``sqlite`` db plug.
 
 Once it's done, execute the script ``install.py``, it will prompt you various configuration values that you'll be able to edit later on in ``src/conf.py`` or by running that script again. If you do so, you may want to run it with the option ``--no-db`` to avoid erasing your already created database (more option are available with ``--help``).
 

@@ -1,5 +1,5 @@
-from tests.base import BaseJarrTest
 from datetime import datetime, timedelta, timezone
+from tests.base import BaseJarrTest
 from jarr_common.utils import utc_now
 from jarr.bootstrap import conf
 from jarr.controllers import (ArticleController, ClusterController,
@@ -17,11 +17,33 @@ class FeedControllerTest(BaseJarrTest):
         self.assertEqual(0, ArticleController(2).read().count())
 
     def test_delete_main_cluster_handling(self):
+        suffix = 'suffix'
         clu = ClusterController().get(id=10)
+        acontr = ArticleController(clu.user_id)
+        fcontr = FeedController(clu.user_id)
         old_title = clu.main_title
         old_feed_title, old_art_id = clu.main_feed_title, clu.main_article_id
+        for art_to_del in acontr.read(link=clu.main_article.link,
+                                      id__ne=clu.main_article.id):
+            acontr.delete(art_to_del.id)
+
+        other_feed = fcontr.read(id__ne=clu.main_article.feed_id).first()
+        fcontr.update({'id__in': [other_feed.id, clu.main_article.feed_id]},
+                      {'cluster_enabled': True})
+        acontr.create(
+                feed_id=other_feed.id,
+                entry_id=clu.main_article.entry_id + suffix,
+                link=clu.main_article.link,
+                title=clu.main_article.title + suffix,
+                content=clu.main_article.content + suffix,
+                date=clu.main_article.date + timedelta(1),
+                retrieved_date=clu.main_article.retrieved_date + timedelta(1),
+        )
+
+        ClusterController.clusterize_pending_articles()
+        clu = ClusterController().get(id=10)
         self.assertEqual(2, len(clu.articles))
-        FeedController(clu.user_id).delete(clu.main_article.feed_id)
+        fcontr.delete(clu.main_article.feed_id)
         new_cluster = ClusterController(clu.user_id).get(id=clu.id)
         self.assertEqual(1, len(new_cluster.articles))
         self.assertNotEqual(old_title, new_cluster.main_title)
@@ -32,10 +54,7 @@ class FeedControllerTest(BaseJarrTest):
         clu = ClusterController().get(id=10)
         old_title = clu.main_title
         old_feed_title, old_art_id = clu.main_feed_title, clu.main_article_id
-        self.assertEqual(2, len(clu.articles))
-        FeedController(clu.user_id).delete(  # deleting not main article
-                next(art.feed_id for art in clu.articles
-                     if art.id != clu.main_article_id))
+        self.assertEqual(1, len(clu.articles))
         new_cluster = ClusterController(clu.user_id).get(id=clu.id)
         self.assertEqual(1, len(new_cluster.articles))
         self.assertEqual(old_title, new_cluster.main_title)
@@ -43,16 +62,16 @@ class FeedControllerTest(BaseJarrTest):
         self.assertEqual(old_art_id, new_cluster.main_article_id)
 
     def test_feed_rights(self):
-        feed = FeedController(2).read()[0].dump()
+        feed = FeedController(2).read()[0]
         self.assertEqual(3,
-                ArticleController().read(feed_id=feed['id']).count())
+                ArticleController().read(feed_id=feed.id).count())
         self._test_controller_rights(feed,
-                UserController().get(id=feed['user_id']))
+                UserController().get(id=feed.user_id))
 
     def test_update_cluster_on_change_title(self):
         feed = ClusterController(2).read()[0].main_article.feed
         for cluster in feed.clusters:
-            self.assertEqual(feed['title'], cluster['main_feed_title'])
+            self.assertEqual(feed.title, cluster.main_feed_title)
         FeedController(2).update({'id': feed.id}, {'title': 'updated title'})
 
         feed = FeedController(2).get(id=feed.id)
@@ -63,7 +82,7 @@ class FeedControllerTest(BaseJarrTest):
     def test_admin_update_cluster_on_change_title(self):
         feed = ClusterController(2).read()[0].main_article.feed
         for cluster in feed.clusters:
-            self.assertEqual(feed['title'], cluster['main_feed_title'])
+            self.assertEqual(feed.title, cluster.main_feed_title)
         FeedController().update({'id': feed.id}, {'title': 'updated title'})
 
         feed = FeedController().get(id=feed.id)

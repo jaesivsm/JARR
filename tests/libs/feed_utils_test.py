@@ -33,13 +33,13 @@ class ConstructFeedFromTest(unittest.TestCase):
         self.assertEqual(jdh_feed, jh)
 
     def test_joies_du_code(self):
-        joi = construct_feed_from(
-                'http://lesjoiesducode.tumblr.com/rss', **cff_kw)
+        self.maxDiff = None
+        joi = construct_feed_from('https://lesjoiesducode.fr/feed', **cff_kw)
         self.assertEqual(
-                {'description': "L'instant GIF des développeurs",
+                {'description': "L'instant gif des développeurs !",
                  'icon_url': 'https://ljdchost.com/theme/favicons/favicon.ico',
-                 'link': 'http://lesjoiesducode.tumblr.com/rss',
-                 'site_link': 'https://lesjoiesducode.tumblr.com/',
+                 'link': 'https://lesjoiesducode.fr/feed',
+                 'site_link': 'https://lesjoiesducode.fr',
                  'title': 'Les joies du code'}, joi)
 
     def test_apod(self):

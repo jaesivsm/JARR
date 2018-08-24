@@ -1,5 +1,5 @@
 from datetime import timedelta, timezone
-import dateutil
+import dateutil.parser
 import logging
 import re
 

@@ -7,19 +7,18 @@ class CategoryControllerTest(BaseJarrTest):
     _contr_cls = CategoryController
 
     def test_feed_rights(self):
-        cat = CategoryController(2).read()[0].dump()
+        cat = CategoryController(2).read().first()
         self.assertEqual(3,
-                ArticleController().read(category_id=cat['id']).count())
+                ArticleController().read(category_id=cat.id).count())
         self.assertEqual(1,
-                FeedController().read(category_id=cat['id']).count())
+                FeedController().read(category_id=cat.id).count())
         self._test_controller_rights(cat,
-                UserController().get(id=cat['user_id']))
+                UserController().get(id=cat.user_id))
 
     def test_feed_and_article_deletion(self):
         ccontr = CategoryController(2)
-        cat = ccontr.read()[0].dump()
-        ccontr.delete(cat['id'])
+        cat = ccontr.read().first()
+        ccontr.delete(cat.id)
         self.assertEqual(0,
-                ArticleController().read(category_id=cat['id']).count())
-        self.assertEqual(0,
-                FeedController().read(category_id=cat['id']).count())
+                ArticleController().read(category_id=cat.id).count())
+        self.assertEqual(0, FeedController().read(category_id=cat.id).count())

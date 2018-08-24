@@ -25,12 +25,12 @@ install:
   - pip install --upgrade pip
   - pip install --upgrade pipenv
   - pipenv install --system --dev
-  - npm install
-  - npm run build
+#  - npm install
+#  - npm run build
 
 before_script:
   - psql -c 'CREATE DATABASE jarr_test;' -U postgres
-  - echo '{"jarr_testing":true,"crawler":{"login":"admin","passwd":"admin"},"log":{"level":10},"sqlalchemy":{"test_uri":"postgres:///jarr_test"}}' > ~/.config/jarr.test.json
+  - echo '{"jarr_testing":true,"crawler":{"login":"admin","passwd":"admin"},"log":{"level":10},"sqlalchemy":{"test_uri":"postgresql:///jarr_test"}}' > ~/.config/jarr.test.json
 
 script:
   - CONFIG_FILE=~/.config/jarr.test.json pipenv run nosetests tests/ -v --with-coverage --cover-package=jarr,jarr_common,jarr_crawler

@@ -7,7 +7,6 @@ from sqlalchemy import func
 from werkzeug.exceptions import Unauthorized, Forbidden
 
 from jarr_common.utils import utc_now
-from jarr_common.article_utils import process_filters
 
 from jarr.bootstrap import session
 from jarr.controllers import CategoryController, FeedController
@@ -44,8 +43,6 @@ class ArticleController(AbstractController):
                               .group_by(Article.user_id).all())
 
     def create(self, **attrs):
-        from jarr.controllers.cluster import ClusterController
-        cluster_contr = ClusterController(self.user_id)
         # handling special denorm for article rights
         if 'feed_id' not in attrs:
             raise Unauthorized("must provide feed_id when creating article")
@@ -55,13 +52,7 @@ class ArticleController(AbstractController):
                 feed.user_id == attrs['user_id'] or self.user_id is None):
             raise Forbidden("no right on feed %r" % feed.id)
         attrs['user_id'], attrs['category_id'] = feed.user_id, feed.category_id
-
-        skipped, read, liked = process_filters(feed.filters, attrs)
-        if skipped:
-            return None
-        article = super().create(**attrs)
-        cluster_contr.clusterize(article, read, liked)
-        return article
+        return super().create(**attrs)
 
     def update(self, filters, attrs, return_objs=False, commit=True):
         user_id = attrs.get('user_id', self.user_id)

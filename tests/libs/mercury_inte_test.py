@@ -2,7 +2,7 @@ import unittest
 
 from mock import patch, Mock
 
-from jarr.bootstrap import article_parsing
+from jarr.signals import article_parsing
 
 SAMPLE = """<a href="link_to_correct.html">
 <img src="http://is_ok.com/image"/>
@@ -41,16 +41,15 @@ class MercuryIntegrationTest(unittest.TestCase):
         user.readability_key = 'True'
         article_parsing.send('test', user=user, feed=feed, cluster=cluster,
                              mercury_may_parse=True)
-        self.assertFalse('content' in cluster.main_article)
+        self.assertNotIn('content', cluster.main_article)
 
         article_parsing.send('test', user=user, feed=feed, cluster=cluster,
                              mercury_may_parse=True, mercury_parse=True)
-        self.assertFalse('content' in cluster.main_article)
+        self.assertNotIn('content', cluster.main_article)
 
-    @patch('jarr.integrations.mercury.jarr_get')
-    @patch('jarr.integrations.mercury.flash')
-    @patch('jarr.integrations.mercury.ArticleController')
-    def test_parsing(self, artc, flash, jarr_get):
+    @patch('jarr.signals.mercury.jarr_get')
+    @patch('jarr.signals.mercury.ArticleController')
+    def test_parsing(self, artc, jarr_get):
         jarr_get.return_value.json.return_value = {}
         user, feed, cluster = self.base_objs
         user.readability_key = 'True'
@@ -59,14 +58,11 @@ class MercuryIntegrationTest(unittest.TestCase):
 
         article_parsing.send('test', user=user, feed=feed, cluster=cluster,
                              mercury_may_parse=True, mercury_parse=True)
-        self.assertEqual('Mercury responded with {}(1)', flash.call_args[0][0])
         self.assertFalse(cluster.main_article['readability_parsed'])
 
         jarr_get.return_value.json.return_value = {'garbage': 'garbage'}
         article_parsing.send('test', user=user, feed=feed, cluster=cluster,
                              mercury_may_parse=True, mercury_parse=True)
-        self.assertEqual('Mercury responded without content',
-                         flash.call_args[0][0])
         self.assertFalse(cluster.main_article['readability_parsed'])
 
         jarr_get.return_value.json.return_value = {'content': 'content'}

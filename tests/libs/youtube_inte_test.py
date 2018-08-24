@@ -1,5 +1,5 @@
 import unittest
-from jarr.bootstrap import feed_creation
+from jarr.signals import feed_creation
 
 FIXED_URL = 'https://www.youtube.com/feeds/videos.xml?channel_id=<channel id>'
 

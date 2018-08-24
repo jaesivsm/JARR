@@ -1,5 +1,6 @@
 import unittest
-from jarr.bootstrap import feed_creation, entry_parsing
+from jarr.signals import feed_creation
+from jarr_crawler.signals import entry_parsing
 
 CONTENT = """<table><tr><td>
 <a href="https://www.reddit.com/r/Map_Porn/comments/5mxq4o/\
@@ -35,8 +36,8 @@ class RedditIntegrationTest(unittest.TestCase):
                 {'scheme': None, 'term': 'removed', 'label': ''}]
         entry = {'content': [{'value': CONTENT[:-40]}], 'tags': tags}
         entry_parsing.send('test', feed=feed, entry=entry)
-        self.assertTrue('link' not in entry)
-        self.assertTrue('comments' not in entry)
+        self.assertNotIn('link', entry)
+        self.assertNotIn('comments', entry)
         self.assertEqual(entry['tags'], tags)
 
     def test_match_light_parsing_ok(self):

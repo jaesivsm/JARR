@@ -61,13 +61,6 @@ def default_handler(obj, role='admin'):
                     "is not JSON serializable" % (type(obj), obj))
 
 
-def try_keys(dico, *keys):
-    for key in keys:
-        if key in dico:
-            return dico[key]
-    return
-
-
 def rebuild_url(url, base_split):
     split = urllib.parse.urlsplit(url)
     if split.scheme and split.netloc:
@@ -82,20 +75,6 @@ def rebuild_url(url, base_split):
 def to_hash(text):
     return md5(text.encode('utf8') if hasattr(text, 'encode') else text)\
             .hexdigest()
-
-
-def clear_string(data):
-    """
-    Clear a string by removing HTML tags, HTML special caracters
-    and consecutive white spaces (more that one).
-    """
-    tag = re.compile(r'<[^>]+>')  # HTML tags
-    whitespace = re.compile(r'\s')  # consecutive white spaces
-    return tag.sub('', whitespace.sub(' ', data))
-
-
-def redirect_url(default='home'):
-    return request.args.get('next') or request.referrer or url_for(default)
 
 
 def jarr_get(url, timeout, user_agent, headers=None, **kwargs):

@@ -1,16 +1,14 @@
 import re
 
-from flask_login import UserMixin
 from sqlalchemy import Boolean, Column, Integer, String
 from sqlalchemy.orm import relationship, validates
 
 from jarr_common.utils import utc_now
 from jarr.bootstrap import Base, conf
 from jarr.models.utc_datetime_type import UTCDateTime
-from jarr.models.right_mixin import RightMixin
 
 
-class User(Base, UserMixin, RightMixin):
+class User(Base):
     __tablename__ = 'user'
 
     id = Column(Integer, primary_key=True)
@@ -22,7 +20,7 @@ class User(Base, UserMixin, RightMixin):
     readability_key = Column(String, default='')
     renew_password_token = Column(String, default='')
 
-    timezone = Column(String, default=conf.babel.timezone)
+    timezone = Column(String, default=conf.timezone)
     # user rights
     is_active = Column(Boolean, default=True)
     is_admin = Column(Boolean, default=False)
@@ -47,16 +45,6 @@ class User(Base, UserMixin, RightMixin):
     clusters = relationship('Cluster', back_populates='user',
                             cascade='all, delete-orphan',
                             foreign_keys='[Cluster.user_id]')
-
-    # api whitelists
-    @staticmethod
-    def _fields_base_write():
-        return {'login', 'password', 'email', 'readability_key',
-                'google_identity', 'twitter_identity', 'facebook_identity'}
-
-    @staticmethod
-    def _fields_base_read():
-        return {'date_created', 'last_connection'}
 
     @validates('login')
     def validates_login(self, key, value):

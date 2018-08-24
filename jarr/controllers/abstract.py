@@ -1,12 +1,10 @@
 import logging
-from datetime import datetime, timezone
+from datetime import timezone
 
 import dateutil.parser
 from sqlalchemy import and_, or_
-from sqlalchemy.ext.associationproxy import AssociationProxy
-from werkzeug.exceptions import Forbidden, NotFound
+from werkzeug.exceptions import Forbidden, NotFound, Unauthorized
 
-from jarr_common.utils import utc_now
 from jarr.bootstrap import session
 
 logger = logging.getLogger(__name__)
@@ -20,7 +18,7 @@ def cast_to_utc(dt_obj):
 
 
 class AbstractController:
-    _db_cls = None  # reference to the database class
+    _db_cls = object  # reference to the database class
     _user_id_key = 'user_id'
 
     def __init__(self, user_id=None, ignore_context=False):
@@ -43,7 +41,7 @@ class AbstractController:
         attr, ope = key.rsplit('__', 1)
         if ope == 'in':
             return getattr(model, attr).in_
-        elif ope not in {'like', 'ilike'}:
+        if ope not in {'like', 'ilike'}:
             ope = '__%s__' % ope
         return getattr(getattr(model, attr), ope)
 
@@ -132,48 +130,11 @@ class AbstractController:
         return self.user_id is None \
                 or getattr(obj, self._user_id_key, None) == self.user_id
 
-    @classmethod
-    def _extra_columns(cls, role, right=None):
-        return {}
-
-    @classmethod
-    def _get_columns(cls, role, right):
-        if role == 'admin':
-            return set(cls._db_cls.__table__.columns.keys())\
-                    .union(cls._db_cls.fields_base_read())\
-                    .union(cls._db_cls.fields_base_write())\
-                    .union(cls._db_cls.fields_api_read())\
-                    .union(cls._db_cls.fields_api_write())
-        assert role in {'base', 'api'}, 'unknown role %r' % role
-        assert right in {'read', 'write'}, \
-                "right must be 'read' or 'write' with role %r" % role
-        return getattr(cls._db_cls, 'fields_%s_%s' % (role, right))()
-
-    @classmethod
-    def _db_col_to_dict(cls, db_col):
-        if db_col.name in getattr(cls._db_cls, 'custom_api_types', {}):
-            return cls._db_cls.custom_api_types[db_col.name]
-        dict_col = {'type': db_col.type.python_type}
-        if issubclass(dict_col['type'], datetime):
-            dict_col['default'] = utc_now()
-            dict_col['type'] = cast_to_utc
-        elif db_col.default:
-            dict_col['default'] = db_col.default.arg
-        if callable(dict_col.get('default')):
-            dict_col['default'] = dict_col['default'](None)
-        return dict_col
-
-    @classmethod
-    def _get_attrs_desc(cls, role, right=None):
-        result = {}
-        for column in cls._get_columns(role, right):
-            if isinstance(getattr(cls._db_cls, column), AssociationProxy):
-                result[column] = {'default': [], 'action': 'append'}
-                continue
-            try:
-                db_col = getattr(cls._db_cls, column).property.columns[0]
-            except AttributeError:
-                continue
-            result[column] = cls._db_col_to_dict(db_col)
-        result.update(cls._extra_columns(role, right))
-        return result
+    def assert_right_ok(self, obj_id):
+        assert self.user_id
+        rows = self.__class__().read(id=obj_id).with_entities(
+                getattr(self._db_cls, self._user_id_key)).first()
+        if not rows:
+            raise NotFound()
+        if not rows[0] == self.user_id:
+            raise Forbidden()

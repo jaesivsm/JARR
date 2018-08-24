@@ -1,49 +1,26 @@
 import asyncio
-import json
 import logging
 from functools import partial
 
 import feedparser
-import requests
-from blinker import signal
 
 from jarr_common import reasons
-from jarr_common.article_utils import construct_article, get_skip_and_ids
 from jarr_common.feed_utils import construct_feed_from, is_parsing_ok
-from jarr_common.utils import default_handler, jarr_get, to_hash, utc_now
+from jarr_common.utils import jarr_get, utc_now
+from jarr_crawler.bootstrap import conf
+from jarr_crawler.signals import entry_parsing
+from jarr_crawler.requests_utils import (query_jarr, response_etag_match,
+        response_calculated_etag_match)
 from jarr_crawler.lib.headers_handling import (prepare_headers,
         extract_feed_info)
+from jarr_crawler.article import construct_article, get_skip_and_ids
 
 logger = logging.getLogger(__name__)
 logging.captureWarnings(True)
-entry_parsing = signal('entry_parsing')
 FUTURES = []
 
 
-def query_jarr(method_name, urn, conf, pool=None, data=None):
-    """A wrapper for internal call, method should be ones you can find
-    on requests (header, post, get, options, ...), urn the distant
-    resources you want to access on jarr, and data, the data you wanna
-    transmit."""
-    auth = conf.crawler.login, conf.crawler.passwd
-    loop = asyncio.get_event_loop()
-    if data is None:
-        data = {}
-    method = getattr(requests, method_name)
-    url = "/".join(str_.strip('/') for str_ in (conf.platform_url,
-                   conf.api_root.strip('/'), urn))
-
-    future = loop.run_in_executor(None,
-            partial(method, url, auth=auth, timeout=conf.crawler.timeout,
-                    data=json.dumps(data, default=default_handler),
-                    headers={'Content-Type': 'application/json',
-                             'User-Agent': conf.crawler.user_agent}))
-    if pool is not None:
-        pool.append(future)
-    return future
-
-
-def clean_feed(feed, conf, pool, response, parsed_feed=None, **info):
+def clean_feed(feed, pool, response, parsed_feed=None, **info):
     """Will reset the errors counters on a feed that have known errors"""
     info.update(extract_feed_info(response.headers, response.text))
     info.update({'error_count': 0, 'last_error': None,
@@ -67,10 +44,11 @@ def clean_feed(feed, conf, pool, response, parsed_feed=None, **info):
         info['link'] = response.url
 
     if info:
-        return query_jarr('put', 'feed/%d' % feed['id'], conf, pool, info)
+        return query_jarr('put', 'feed/%d' % feed['id'], pool, info)
+    return None
 
 
-def set_feed_error(feed, conf, pool, error=None, parsed_feed=None):
+def set_feed_error(feed, pool, error=None, parsed_feed=None):
     error_count = feed['error_count'] + 1
     if error:
         last_error = str(error)
@@ -86,34 +64,17 @@ def set_feed_error(feed, conf, pool, error=None, parsed_feed=None):
     info = {'error_count': error_count, 'last_error': last_error,
             'user_id': feed['user_id'], 'last_retrieved': utc_now()}
     info.update(extract_feed_info({}))
-    return query_jarr('put', 'feed/%d' % feed['id'], conf, pool, info)
+    return query_jarr('put', 'feed/%d' % feed['id'], pool, info)
 
 
-def response_etag_match(feed, resp):
-    if feed.get('etag') and resp.headers.get('etag'):
-        if feed['etag'].startswith('jarr/'):
-            return False  # it's a jarr generated etag
-        if resp.headers['etag'] == feed['etag']:
-            logger.info("feed responded with same etag (%d)", resp.status_code)
-            return True
-    return False
-
-
-def response_calculated_etag_match(feed, resp):
-    if ('jarr/"%s"' % to_hash(resp.text)) == feed.get('etag'):
-        logger.info("calculated hash matches (%d)", resp.status_code)
-        return True
-    return False
-
-
-def challenge(feed, response, conf, no_resp_pool, **kwargs):
+def challenge(feed, response, no_resp_pool, **kwargs):
     logger.info('cache validation failed, challenging entries')
     parsed = feedparser.parse(response.content.strip())
     if is_parsing_ok(parsed):
-        clean_feed(feed, conf, no_resp_pool, response, parsed, **kwargs)
+        clean_feed(feed, no_resp_pool, response, parsed, **kwargs)
     else:
-        set_feed_error(feed, conf, no_resp_pool, parsed_feed=parsed)
-        return
+        set_feed_error(feed, no_resp_pool, parsed_feed=parsed)
+        return None, None
 
     ids, entries, skipped_list = [], {}, []
     for entry in parsed['entries']:
@@ -131,13 +92,12 @@ def challenge(feed, response, conf, no_resp_pool, **kwargs):
         ids.append(entry_ids)
     if not ids and skipped_list:
         logger.debug('nothing to add (skipped %r) %r', skipped_list, parsed)
-        return
+        return None, None
     logger.debug('found %d entries %r', len(ids), ids)
-    return entries, query_jarr('get', 'articles/challenge',
-                               conf, data={'ids': ids})
+    return entries, query_jarr('get', 'articles/challenge', data={'ids': ids})
 
 
-def add_articles(feed, conf, all_entries, new_entries_ids, no_resp_pool):
+def add_articles(feed, all_entries, new_entries_ids, no_resp_pool):
     article_created = False
     logger.debug("%d entries wern't matched and will be created",
                  len(new_entries_ids))
@@ -150,22 +110,96 @@ def add_articles(feed, conf, all_entries, new_entries_ids, no_resp_pool):
                 resolv=conf.crawler.resolv))
         logger.info('creating %r for %r - %r', new_articles[-1].get('title'),
                     new_articles[-1].get('user_id'), id_to_create)
-    query_jarr('post', 'articles', conf, no_resp_pool, new_articles)
+    promise = query_jarr('post', 'articles', no_resp_pool, new_articles)
 
     if not article_created:
         logger.info('all article matched in db, adding nothing')
+    return promise
 
 
-async def crawl(conf, **kwargs):
+async def iter_on_feeds(feeds, feeds_fetching_pool, no_resp_pool):
+    challenge_pool = []
+    for feed, future in zip(feeds, feeds_fetching_pool):
+        try:
+            resp = await future
+            resp.raise_for_status()
+        except Exception as error:
+            set_feed_error(feed, no_resp_pool, error=error)
+            continue
+
+        # checking if cache was validated
+        kwargs = {}
+        if resp.status_code == 304:
+            logger.info('feed responded with 304')
+            clean_feed(feed, no_resp_pool, resp,
+                       cache_type=reasons.CacheReason.status_code_304.value)
+            continue
+        elif resp.status_code == 226:
+            logger.info('feed responded with 226')
+            kwargs['cache_support_a_im'] = True
+        elif response_etag_match(feed, resp):
+            clean_feed(feed, no_resp_pool, resp,
+                       cache_type=reasons.CacheReason.etag.value)
+            continue
+        elif response_calculated_etag_match(feed, resp):
+            clean_feed(feed, no_resp_pool, resp,
+                       cache_type=reasons.CacheReason.etag_calculated.value)
+            continue
+        else:
+            logger.debug('etag mismatch %r != %r',
+                         resp.headers.get('etag'), feed.get('etag'))
+
+        result = challenge(feed, resp, no_resp_pool, **kwargs)
+        if result:
+            all_entries, future = result
+            challenge_pool.append((future, feed, all_entries))
+    return challenge_pool
+
+
+async def iter_on_entries(challenge_pool, no_resp_pool):
+    pool = []
+    for future, feed, all_entries in challenge_pool:
+        try:
+            resp = await future
+            resp.raise_for_status()
+        except Exception:
+            logger.exception('error while contacting JARR (%r):', resp.content)
+            # ignore error on when contacting JARR
+            # leave it to the next iteration
+            continue
+        if resp.status_code == 204:
+            continue
+
+        new_entries_ids = resp.json()
+        pool.append(add_articles(feed, all_entries, new_entries_ids,
+                no_resp_pool))
+    return pool
+
+
+async def iter_on_cluster(article_pool, no_resp_pool):
+    for future, cluster_read, cluster_liked in article_pool:
+        try:
+            resp = await future
+            resp.raise_for_status()
+        except Exception:
+            logger.exception('error while contacting JARR (%r):', resp.content)
+            continue
+        new_article = resp.json()
+        query_jarr('post', 'cluster/clusterize', no_resp_pool,
+                data={'article_id': new_article['id'],
+                      'cluster_read': cluster_read,
+                      'cluster_liked': cluster_liked})
+
+
+async def crawl(**kwargs):
     """entry point, will retreive feeds to be fetch
     and launch the whole thing"""
     logger.debug('Crawler start - retrieving fetchable feed')
     loop = asyncio.get_event_loop()
     no_resp_pool = []
     feeds_fetching_pool = []
-    challenge_pool = []
 
-    fetchables = await query_jarr('get', 'feeds/fetchable', conf, data=kwargs)
+    fetchables = await query_jarr('get', 'feeds/fetchable', data=kwargs)
 
     # processes feeds that need to be fetched
     try:
@@ -186,55 +220,9 @@ async def crawl(conf, **kwargs):
                         user_agent=conf.crawler.user_agent,
                         headers=prepare_headers(feed))))
 
-    for feed, future in zip(feeds, feeds_fetching_pool):
-        try:
-            resp = await future
-            resp.raise_for_status()
-        except Exception as error:
-            set_feed_error(feed, conf, no_resp_pool, error=error)
-            continue
-
-        # checking if cache was validated
-        kwargs = {}
-        if resp.status_code == 304:
-            logger.info('feed responded with 304')
-            clean_feed(feed, conf, no_resp_pool, resp,
-                       cache_type=reasons.CacheReason.status_code_304.value)
-            continue
-        elif resp.status_code == 226:
-            logger.info('feed responded with 226')
-            kwargs['cache_support_a_im'] = True
-        elif response_etag_match(feed, resp):
-            clean_feed(feed, conf, no_resp_pool, resp,
-                       cache_type=reasons.CacheReason.etag.value)
-            continue
-        elif response_calculated_etag_match(feed, resp):
-            clean_feed(feed, conf, no_resp_pool, resp,
-                       cache_type=reasons.CacheReason.etag_calculated.value)
-            continue
-        else:
-            logger.debug('etag mismatch %r != %r',
-                         resp.headers.get('etag'), feed.get('etag'))
-
-        result = challenge(feed, resp, conf, no_resp_pool, **kwargs)
-        if result:
-            all_entries, future = result
-            challenge_pool.append((future, feed, all_entries))
-
-    for future, feed, all_entries in challenge_pool:
-        try:
-            resp = await future
-            resp.raise_for_status()
-        except Exception:
-            logger.exception('error while contacting JARR (%r):', resp.content)
-            # ignore error on when contacting JARR
-            # leave it to the next iteration
-            return
-        if resp.status_code == 204:
-            continue
-
-        new_entries_ids = resp.json()
-        add_articles(feed, conf, all_entries, new_entries_ids, no_resp_pool)
+    challenge_pool = iter_on_feeds(feeds, feeds_fetching_pool, no_resp_pool)
+    article_pool = iter_on_entries(challenge_pool, no_resp_pool)
+    iter_on_cluster(article_pool, no_resp_pool)
 
     logger.debug("awaiting for all future we're not waiting response from")
     for no_resp_future in no_resp_pool:
@@ -242,6 +230,6 @@ async def crawl(conf, **kwargs):
     logger.info('Crawler End')
 
 
-def main(conf, **kwargs):
+def main(**kwargs):
     loop = asyncio.get_event_loop()
-    loop.run_until_complete(crawl(conf, **kwargs))
+    loop.run_until_complete(crawl(**kwargs))

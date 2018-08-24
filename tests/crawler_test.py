@@ -3,12 +3,11 @@ import unittest
 
 import feedparser
 from mock import Mock, patch
-from the_conf import TheConf
 
 from tests.base import JarrFlaskCommon
 
 from jarr.bootstrap import conf
-from jarr.controllers import FeedController, UserController
+from jarr.controllers import FeedController, UserController, ClusterController
 from jarr_crawler.http_crawler import (main as crawler, response_etag_match,
                                        response_calculated_etag_match,
                                        set_feed_error, clean_feed)
@@ -20,7 +19,7 @@ BASE_COUNT = 36
 
 
 def get_first_call(query_jarr):
-    method, urn, _, _, data = query_jarr.mock_calls[0][1]
+    method, urn, _, data = query_jarr.mock_calls[0][1]
     return method, urn, data
 
 
@@ -36,7 +35,7 @@ class CrawlerTest(JarrFlaskCommon):
         UserController().update({'login': 'admin'}, {'is_api': True})
         self._is_secure_served \
                 = patch('jarr.lib.article_cleaner.is_secure_served')
-        self._p_req = patch('jarr_crawler.http_crawler.requests.api.request')
+        self._p_req = patch('jarr_crawler.requests_utils.requests.api.request')
         self._p_con = patch('jarr_crawler.http_crawler.construct_feed_from')
         self.is_secure_served = self._is_secure_served.start()
         self.jarr_req = self._p_req.start()
@@ -90,10 +89,12 @@ class CrawlerTest(JarrFlaskCommon):
         FeedController().update({}, kwargs)
 
     def test_http_crawler_add_articles(self):
+        ClusterController.clusterize_pending_articles()
         resp = self._api('get', 'articles', data={'limit': 1000}, user='admin')
         self.assertEqual(BASE_COUNT, len(resp.json()))
 
-        crawler(conf)
+        crawler()
+        ClusterController.clusterize_pending_articles()
         resp = self._api('get', 'articles', data={'limit': 1000}, user='admin')
         self.assertEqual(BASE_COUNT + self.new_entries_cnt, len(resp.json()))
 
@@ -102,21 +103,25 @@ class CrawlerTest(JarrFlaskCommon):
             self.assertFalse('src="/' in art['content'])
 
         self.resp_status_code = 304
-        crawler(conf)
+        crawler()
+        ClusterController.clusterize_pending_articles()
         resp = self._api('get', 'articles', data={'limit': 1000}, user='admin')
         self.assertEqual(BASE_COUNT + self.new_entries_cnt, len(resp.json()))
 
     def test_no_add_on_304(self):
         self.resp_status_code = 304
+        ClusterController.clusterize_pending_articles()
         resp = self._api('get', 'articles', data={'limit': 1000}, user='admin')
         self.assertEqual(BASE_COUNT, len(resp.json()))
 
-        crawler(conf)
+        crawler()
+        ClusterController.clusterize_pending_articles()
         resp = self._api('get', 'articles', data={'limit': 1000}, user='admin')
         self.assertEqual(BASE_COUNT, len(resp.json()))
 
     def test_no_add_feed_skip(self):
         self.resp_status_code = 304
+        ClusterController.clusterize_pending_articles()
         resp = self._api('get', 'articles', data={'limit': 1000}, user='admin')
         self.assertEqual(BASE_COUNT, len(resp.json()))
         FeedController().update({}, {'filters': [{"type": "tag contains",
@@ -132,31 +137,36 @@ class CrawlerTest(JarrFlaskCommon):
                                                   "pattern": "pattern5",
                                                   "action": "skipped"}]})
 
-        crawler(conf)
+        crawler()
+        ClusterController.clusterize_pending_articles()
         resp = self._api('get', 'articles', data={'limit': 1000}, user='admin')
         self.assertEqual(BASE_COUNT, len(resp.json()))
 
     def test_matching_etag(self):
         self._reset_feeds_freshness(etag='fake etag')
         self.resp_headers = {'etag': 'fake etag'}
+        ClusterController.clusterize_pending_articles()
         resp = self._api('get', 'articles', data={'limit': 1000}, user='admin')
         self.assertEqual(BASE_COUNT, len(resp.json()))
 
-        crawler(conf)
+        crawler()
+        ClusterController.clusterize_pending_articles()
         resp = self._api('get', 'articles', data={'limit': 1000}, user='admin')
         self.assertEqual(BASE_COUNT, len(resp.json()))
 
         self._reset_feeds_freshness(etag='jarr/"%s"' % to_hash(self._content))
         self.resp_headers = {'etag': 'jarr/"%s"' % to_hash(self._content)}
 
-        crawler(conf)
+        crawler()
+        ClusterController.clusterize_pending_articles()
         resp = self._api('get', 'articles', data={'limit': 1000}, user='admin')
         self.assertEqual(BASE_COUNT, len(resp.json()))
 
         self._reset_feeds_freshness(etag='jarr/fake etag')
         self.resp_headers = {'etag': '########################'}
 
-        crawler(conf)
+        crawler()
+        ClusterController.clusterize_pending_articles()
         resp = self._api('get', 'articles', data={'limit': 1000}, user='admin')
         self.assertEqual(BASE_COUNT + self.new_entries_cnt, len(resp.json()))
 
@@ -170,9 +180,6 @@ class CrawlerMethodsTest(unittest.TestCase):
                      'etag': '', 'error_count': 5, 'link': 'link'}
         self.resp = Mock(text='text', headers={}, status_code=304, history=[])
         self.pool = []
-
-    def tearDown(self):
-        TheConf._TheConf__instance = None
 
     def test_etag_matching_w_constructed_etag(self):
         self.feed['etag'] = 'jarr/"%s"' % to_hash('text')
@@ -191,7 +198,7 @@ class CrawlerMethodsTest(unittest.TestCase):
     @patch('jarr_crawler.http_crawler.query_jarr')
     def test_set_feed_error_w_error(self, query_jarr):
         original_error_count = self.feed['error_count']
-        set_feed_error(self.feed, conf, self.pool, Exception('an error'))
+        set_feed_error(self.feed, self.pool, Exception('an error'))
         method, urn, data = get_first_call(query_jarr)
 
         self.assertEqual('put', method)
@@ -202,7 +209,7 @@ class CrawlerMethodsTest(unittest.TestCase):
     @patch('jarr_crawler.http_crawler.query_jarr')
     def test_set_feed_error_w_parsed(self, query_jarr):
         original_error_count = self.feed['error_count']
-        set_feed_error(self.feed, conf, self.pool,
+        set_feed_error(self.feed, self.pool,
                        parsed_feed={'bozo_exception': 'an error'})
         method, urn, data = get_first_call(query_jarr)
         self.assertEqual('put', method)
@@ -212,7 +219,7 @@ class CrawlerMethodsTest(unittest.TestCase):
 
     @patch('jarr_crawler.http_crawler.query_jarr')
     def test_clean_feed(self, query_jarr):
-        clean_feed(self.feed, conf, self.pool, self.resp)
+        clean_feed(self.feed, self.pool, self.resp)
         method, urn, data = get_first_call(query_jarr)
 
         self.assertEqual('put', method)
@@ -227,7 +234,7 @@ class CrawlerMethodsTest(unittest.TestCase):
     def test_clean_feed_update_link(self, query_jarr):
         self.resp.history.append(Mock(status_code=301))
         self.resp.url = 'new_link'
-        clean_feed(self.feed, conf, self.pool, self.resp)
+        clean_feed(self.feed, self.pool, self.resp)
         method, urn, data = get_first_call(query_jarr)
 
         self.assertEqual('put', method)
@@ -242,7 +249,7 @@ class CrawlerMethodsTest(unittest.TestCase):
     @patch('jarr_crawler.http_crawler.query_jarr')
     def test_clean_feed_w_constructed(self, query_jarr, construct_feed_mock):
         construct_feed_mock.return_value = {'description': 'new description'}
-        clean_feed(self.feed, conf, self.pool, self.resp, True)
+        clean_feed(self.feed, self.pool, self.resp, True)
         method, urn, data = get_first_call(query_jarr)
 
         self.assertEqual('put', method)

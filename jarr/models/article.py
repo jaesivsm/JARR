@@ -6,10 +6,9 @@ from jarr_common.utils import utc_now
 from jarr_common.reasons import ClusterReason
 from jarr.bootstrap import Base
 from jarr.models.utc_datetime_type import UTCDateTime
-from jarr.models.right_mixin import RightMixin
 
 
-class Article(Base, RightMixin):
+class Article(Base):
     "Represent an article from a feed."
     __tablename__ = 'article'
 
@@ -62,27 +61,8 @@ class Article(Base, RightMixin):
             Index('ix_article_retrdate', retrieved_date),
     )
 
-    # api whitelists
-    @staticmethod
-    def _fields_base_write():
-        return {'readability_parsed', 'feed_id', 'category_id'}
-
-    @staticmethod
-    def _fields_base_read():
-        return {'id', 'entry_id', 'link', 'title', 'content', 'date',
-                'retrieved_date', 'user_id', 'tags', 'comments'}
-
-    @staticmethod
-    def _fields_api_write():
-        return {'tags', 'lang', 'valuable_tokens'}
-
     def __repr__(self):
-        return "<Article(id=%d, entry_id=%s, title=%r, " \
-               "date=%r, retrieved_date=%r)>" % (self.id, self.entry_id,
-                       self.title, self.date, self.retrieved_date)
-
-    custom_api_types = {
-            'valuable_tokens': {'action': 'append',
-                                'type': str, 'default': []},
-            'tags': {'action': 'append', 'type': str, 'default': []},
-    }
+        return "<Article(id=%d, entry_id=%r, title=%r, " \
+               "date=%s, retrieved_date=%s)>" % (self.id, self.entry_id,
+                       self.title, self.date.isoformat(),
+                       self.retrieved_date.isoformat())

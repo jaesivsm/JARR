@@ -1,60 +1,83 @@
 from tests.base import JarrFlaskCommon
-from tests.api.common import ApiCommon
+from jarr.controllers import (UserController, ClusterController,
+        ArticleController)
 
 
-class ClusterApiTest(JarrFlaskCommon, ApiCommon):
-    urn = 'cluster'
-    urns = 'clusters'
+class ClusterApiTest(JarrFlaskCommon):
 
-    def test_api_list(self):
-        resp = self._api('get', self.urns,
-                         data={'order_by': '-id'},
-                         user='user1')
+    def test_ClusterResource_get(self):
+        user = UserController().get(login='user1')
+        cluster = ClusterController(user.id).read().first()
+        resp = self.jarr_client('get', 'cluster', cluster.id)
+        self.assertStatusCode(401, resp)
+        resp = self.jarr_client('get', 'cluster', cluster.id, user='user2')
+        self.assertStatusCode(403, resp)
+        resp = self.jarr_client('get', 'cluster', cluster.id, user=user.login)
+        self.assertStatusCode(226, resp)
+        self.assertEqual(1, len(resp.json()['articles']))
+        resp = self.jarr_client('get', 'cluster', cluster.id, user=user.login)
         self.assertStatusCode(200, resp)
-        self.assertEqual(9, len(resp.json()))
-        self.assertTrue(resp.json()[0]['id'] > resp.json()[-1]['id'])
 
-        resp = self._api('get', self.urns, user='user1')
-        self.assertStatusCode(200, resp)
-        self.assertEqual(9, len(resp.json()))
+    def test_ClusterResource_put(self):
+        cluster = ClusterController().read().first()
+        user = UserController().get(id=cluster.user_id)
+        resp = self.jarr_client('put', 'cluster', cluster.id,
+                data={'read': True})
+        self.assertStatusCode(401, resp)
+        resp = self.jarr_client('put', 'cluster', cluster.id,
+                data={'read': True}, user='user2')
+        self.assertStatusCode(403, resp)
+        resp = self.jarr_client('put', 'cluster', cluster.id,
+                data={'read': True}, user=user.login)
+        self.assertStatusCode(204, resp)
+        cluster = ClusterController().get(id=cluster.id)
+        self.assertTrue(cluster.read)
+        self.assertFalse(cluster.liked)
+        self.assertEqual('marked', cluster.read_reason.value)
 
-        resp = self._api('get', self.urns, data={'limit': 1}, user='user1')
-        self.assertStatusCode(200, resp)
-        self.assertEqual(1, len(resp.json()))
+        resp = self.jarr_client('put', 'cluster', cluster.id,
+                data={'liked': True}, user=user.login)
+        self.assertStatusCode(204, resp)
+        self.assertTrue(ClusterController().get(id=cluster.id).read)
+        self.assertTrue(ClusterController().get(id=cluster.id).liked)
 
-        resp = self._api('get', self.urns, user='admin')
-        self.assertStatusCode(200, resp)
-        self.assertEqual(10, len(resp.json()))
+        resp = self.jarr_client('put', 'cluster', cluster.id,
+                data={'liked': False, 'read': False}, user=user.login)
+        self.assertStatusCode(204, resp)
+        self.assertFalse(ClusterController().get(id=cluster.id).read)
+        self.assertFalse(ClusterController().get(id=cluster.id).liked)
+        self.assertIsNone(ClusterController().get(id=cluster.id).read_reason)
 
-        resp = self._api('get', self.urns, data={'limit': 200}, user='admin')
-        self.assertStatusCode(200, resp)
-        self.assertEqual(18, len(resp.json()))
+    def test_ClusterResource_delete(self):
+        cluster = ClusterController().read().first()
+        user = UserController().get(id=cluster.user_id)
+        resp = self.jarr_client('delete', 'cluster', cluster.id)
+        self.assertStatusCode(401, resp)
+        resp = self.jarr_client('delete', 'cluster', cluster.id, user='user2')
+        self.assertStatusCode(403, resp)
+        resp = self.jarr_client('delete', 'cluster', cluster.id,
+                user=user.login)
+        self.assertStatusCode(204, resp)
 
-    def test_api_update_many(self):
-        resp = self._api('put', self.urns, user='user1',
-                data=[[1, {'liked': True}],
-                      [2, {'read': True}]])
-        self.assertEqual(['ok', 'ok'], resp.json())
-        self.assertStatusCode(200, resp)
-        resp = self._api('get', self.urn, 1, user='user1')
-        self.assertStatusCode(200, resp)
-        self.assertTrue(resp.json()['liked'])
+        self.assertEqual(0, ClusterController().read(id=cluster.id).count())
+        self.assertEqual(0,
+                ArticleController().read(cluster_id=cluster.id).count())
 
-        resp = self._api('get', self.urn, 2, user='user1')
+    def test_ClusterRedirectResource_get(self):
+        user = UserController().get(login='user1')
+        cluster = ClusterController(user.id).read().first()
+        resp = self.jarr_client('get', 'cluster', 'redirect', cluster.id)
+        self.assertStatusCode(401, resp)
+        resp = self.jarr_client('get', 'cluster', 'redirect',
+                cluster.id, user='user2')
+        self.assertStatusCode(403, resp)
+        resp = self.jarr_client('get', 'cluster', 'redirect', cluster.id,
+                user=user.login)
+        self.assertStatusCode(301, resp)
+        self.assertEqual(cluster.main_link, resp.headers['Location'])
+        resp = self.jarr_client('get', 'cluster', cluster.id, user=user.login)
         self.assertStatusCode(200, resp)
+
         self.assertTrue(resp.json()['read'])
-
-        resp = self._api('put', self.urns, user='user1',
-                data=[[1, {'liked': False}],
-                      [15, {'read': True}]])
-        self.assertStatusCode(206, resp)
-        self.assertEqual(['ok', 'nok'], resp.json())
-
-        resp = self._api('put', self.urns, user='user1',
-                data=[[16, {'read': True}],
-                      [17, {'read': True}]])
-        self.assertStatusCode(500, resp)
-        self.assertEqual(['nok', 'nok'], resp.json())
-
-        resp = self._api('get', self.urn, 17, user='user1')
-        self.assertStatusCode(404, resp)
+        self.assertEqual('consulted',
+                ClusterController().get(id=cluster.id).read_reason.value)

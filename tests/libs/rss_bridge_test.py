@@ -1,6 +1,7 @@
 import unittest
 from urllib.parse import urlsplit, parse_qs
-from jarr.bootstrap import conf, feed_creation
+from jarr.bootstrap import conf
+from jarr.signals import feed_creation
 
 
 class InstagramIntegrationTest(unittest.TestCase):
