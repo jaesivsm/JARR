@@ -1,6 +1,7 @@
 from sqlalchemy import (Boolean, Column, Integer, PickleType,
                         String, Enum, Index, ForeignKeyConstraint)
 from sqlalchemy.orm import relationship
+from sqlalchemy.dialects.postgresql import TSVECTOR
 
 from jarr_common.utils import utc_now
 from jarr_common.reasons import ClusterReason
@@ -22,8 +23,8 @@ class Article(Base):
     date = Column(UTCDateTime, default=utc_now)
     retrieved_date = Column(UTCDateTime, default=utc_now)
     readability_parsed = Column(Boolean, default=False)
-    valuable_tokens = Column(PickleType, default=[])
     tags = Column(PickleType, default=[])
+    vector = Column(TSVECTOR)
 
     # reasons
     cluster_reason = Column(Enum(ClusterReason), default=None)

@@ -4,7 +4,7 @@ Revision ID: 00c5cc87408d
 Revises: 256acb048a32
 Create Date: 2018-02-23 15:21:26.384595
 """
-
+from datetime import datetime
 from alembic import op
 import sqlalchemy as sa
 
@@ -16,6 +16,8 @@ depends_on = None
 
 
 def upgrade():
+    print('%s - better model description, adjustements to models'
+            % datetime.now().isoformat())
     op.alter_column('article', 'feed_id',
                existing_type=sa.INTEGER(),
                nullable=False)
