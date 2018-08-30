@@ -1,8 +1,6 @@
 import logging
-from collections import Counter
 from datetime import timedelta
 
-import sqlalchemy
 from sqlalchemy import func, cast
 from sqlalchemy.dialects.postgresql import TSVECTOR
 from werkzeug.exceptions import Unauthorized, Forbidden
@@ -99,24 +97,6 @@ class ArticleController(AbstractController):
             if not (self.user_id is None or cat.user_id == user_id):
                 raise Forbidden("no right on cat %r" % cat.id)
         return super().update(filters, attrs, return_objs, commit)
-
-    def get_history(self, year=None, month=None):
-        "Sort articles by year and month."
-        articles_counter = Counter()
-        articles = self.read()
-        if year is not None:
-            articles = articles.filter(
-                    sqlalchemy.extract('year', Article.date) == year)
-            if month is not None:
-                articles = articles.filter(
-                        sqlalchemy.extract('month', Article.date) == month)
-        articles = articles.order_by('date')
-        for article in articles.all():
-            if year is not None:
-                articles_counter[article.date.month] += 1
-            else:
-                articles_counter[article.date.year] += 1
-        return articles_counter, articles
 
     def remove_from_cluster(self, article):
         """Removes article with id == article_id from the cluster it belongs to
