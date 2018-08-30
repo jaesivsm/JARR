@@ -25,7 +25,7 @@ conf = TheConf({'config_files': ['/etc/jarr.json', '~/.config/jarr.json'],
             {'timezone': {'default': 'Europe/Paris', 'type': str}},
             {'platform_url': {'default': 'http://0.0.0.0:5000/'}},
             {'sqlalchemy': [{'db_uri': {}},
-                            {'test_uri': {'default': 'sqlite:///:memory:'}}]},
+                            {'test_uri': {'default': 'postgresql://jarr'}}]},
             {'secret_key': {'default': str(random.getrandbits(128))}},
             {'bundle_js': {'default': 'local'}},
             {'log': [{'level': {'default': logging.WARNING, 'type': int}},
@@ -93,10 +93,8 @@ def init_logging(log_path=None, log_level=logging.INFO, modules=(),
         logger.setLevel(log_level)
 
 
-def init_db(is_sqlite, echo=False):  # pragma: no cover
+def init_db(echo=False):  # pragma: no cover
     kwargs = {'echo': echo}
-    if is_sqlite:
-        kwargs['connect_args'] = {'check_same_thread': False}
     if conf.jarr_testing:
         new_engine = create_engine(conf.sqlalchemy.test_uri, **kwargs)
     else:
@@ -113,11 +111,9 @@ def init_models():
     return models
 
 
-SQLITE_ENGINE = 'sqlite' in (conf.sqlalchemy.test_uri
-            if conf.jarr_testing else conf.sqlalchemy.db_uri)
 PARSED_PLATFORM_URL = urlparse(conf.platform_url)
 
-engine, session, Base = init_db(SQLITE_ENGINE)
+engine, session, Base = init_db()
 init_models()
 
 init_logging(conf.log.path, log_level=conf.log.level)

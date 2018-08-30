@@ -20,17 +20,15 @@ down_revision = 'cde34831ea'
 
 def upgrade():
     unix_start = datetime(1970, 1, 1)
-    if 'sqlite' not in conf.sqlalchemy.db_uri:
-        op.drop_column('feed', 'last_modified')
-        op.add_column('feed', sa.Column('last_modified', sa.String(),
-                      nullable=True, default=unix_start,
-                      server_default=str(unix_start)))
+    op.drop_column('feed', 'last_modified')
+    op.add_column('feed', sa.Column('last_modified', sa.String(),
+            nullable=True, default=unix_start,
+            server_default=str(unix_start)))
 
 
 def downgrade():
     unix_start = datetime(1970, 1, 1)
-    if 'sqlite' not in conf.sqlalchemy.db_uri:
-        op.drop_column('feed', 'last_modified')
-        op.add_column('feed', sa.Column('last_modified', sa.DateTime(),
-                      nullable=True, default=unix_start,
-                      server_default=unix_start))
+    op.drop_column('feed', 'last_modified')
+    op.add_column('feed', sa.Column('last_modified', sa.DateTime(),
+            nullable=True, default=unix_start,
+            server_default=unix_start))

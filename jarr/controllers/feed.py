@@ -7,7 +7,7 @@ from werkzeug.exceptions import Forbidden
 
 from jarr_common.utils import utc_now
 
-from jarr.bootstrap import SQLITE_ENGINE, conf, session
+from jarr.bootstrap import conf, session
 from jarr.controllers.abstract import AbstractController
 from jarr.controllers.icon import IconController
 from jarr.models import Article, Cluster, Feed, User
@@ -99,24 +99,15 @@ class FeedController(AbstractController):
 
     def __denorm_title_on_clusters(self, feed, attrs):
         if 'title' in attrs:
-            # sqlite doesn't support join on update, but they're REALLY
-            # more efficient so we'll use them anyway with postgres
             if self.user_id:
                 where_clause = and_(Article.user_id == self.user_id,
                                     Article.feed_id == feed.id)
             else:
                 where_clause = Article.feed_id == feed.id
-            if SQLITE_ENGINE:  # pragma: no cover
-                stmt = select([Article.id]).where(where_clause)
-                stmt = update(Cluster)\
-                        .where(Cluster.main_article_id.in_(stmt))\
-                        .values(main_feed_title=attrs['title'])
-            else:
-                stmt = update(Cluster)\
-                        .where(and_(
-                                Article.id == Cluster.main_article_id,
+            stmt = update(Cluster)\
+                    .where(and_(Article.id == Cluster.main_article_id,
                                 where_clause))\
-                        .values(dict(main_feed_title=attrs['title']))
+                    .values(dict(main_feed_title=attrs['title']))
             session.execute(stmt)
 
     def __update_default_expires(self, feed, attrs):

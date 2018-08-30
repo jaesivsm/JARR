@@ -57,8 +57,7 @@ def upgrade():
         {'login': user.c['email'], 'password': user.c['pwdhash'],
          'is_active': op.inline_literal(True),
          'last_connection': user.c['last_seen']}))
-    is_admin_val = 1 if 'sqlite' in conf.sqlalchemy.db_uri \
-                     else op.inline_literal('t')
+    is_admin_val = op.inline_literal('t')
     op.get_bind().execute('UPDATE "user" SET is_admin=%s '
             'WHERE "user".id = (SELECT role.id FROM role '
             'WHERE role.name = %s)' % (is_admin_val,
@@ -73,12 +72,11 @@ def upgrade():
                     ['user_id', 'category_id'])
 
     op.drop_table('role')
-    if 'sqlite' not in conf.sqlalchemy.db_uri:
-        op.create_unique_constraint(None, 'user', ['login'])
-        op.drop_column('user', 'last_seen')
-        op.drop_column('user', 'activation_key')
-        op.drop_column('user', 'nickname')
-        op.drop_column('user', 'pwdhash')
+    op.create_unique_constraint(None, 'user', ['login'])
+    op.drop_column('user', 'last_seen')
+    op.drop_column('user', 'activation_key')
+    op.drop_column('user', 'nickname')
+    op.drop_column('user', 'pwdhash')
 
 
 def downgrade():
@@ -94,17 +92,16 @@ def downgrade():
     op.drop_index('idc_article_uid', 'article')
     op.drop_index('idc_article_uid_cid', 'article')
     op.drop_index('idc_article_uid_fid', 'article')
-    if 'sqlite' not in conf.sqlalchemy.db_uri:
-        op.drop_column('user', 'password')
-        op.drop_column('user', 'login')
-        op.drop_column('user', 'last_connection')
-        op.drop_column('user', 'is_api')
-        op.drop_column('user', 'is_admin')
-        op.drop_column('user', 'is_active')
-        op.drop_column('user', 'google_identity')
-        op.drop_column('user', 'facebook_identity')
-        op.drop_column('user', 'twitter_identity')
-        op.drop_column('user', 'renew_password_token')
+    op.drop_column('user', 'password')
+    op.drop_column('user', 'login')
+    op.drop_column('user', 'last_connection')
+    op.drop_column('user', 'is_api')
+    op.drop_column('user', 'is_admin')
+    op.drop_column('user', 'is_active')
+    op.drop_column('user', 'google_identity')
+    op.drop_column('user', 'facebook_identity')
+    op.drop_column('user', 'twitter_identity')
+    op.drop_column('user', 'renew_password_token')
     op.create_table('role',
             sa.Column('id', sa.INTEGER(), nullable=False),
             sa.Column('name', sa.VARCHAR(), nullable=True),

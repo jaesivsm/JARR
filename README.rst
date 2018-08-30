@@ -19,7 +19,7 @@ JARR (which stands for Just Another RSS Reader) is a web-based news aggregator a
 
 JARR is under ongoing developments and functionnalities are regularly added.
 For past and futur updates see the milestones_.
-However JARR is stable and can function as easily on a light installation with the python SimpleHTTP server and a SQLite database or on a more heavy setup with nginx or apache running against a PostGreSQL database.
+However JARR is stable and can function as easily on a light installation with the python SimpleHTTP server and a PostGreSQL database.
 
 .. _milestones: https://github.com/jaesivsm/JARR/milestones
 
@@ -52,7 +52,7 @@ And to create your database:
     ALTER USER <your user> WITH ENCRYPTED PASSWORD '<your password>';
     GRANT ALL PRIVILEGES ON DATABASE jarr TO '<your user>';
 
-You'll then have to specify as database URI ``postgresql://<your user>:<your password>@127.0.0.1:5432/jarr``. Otherwise you can use the default ``sqlite`` db plug.
+You'll then have to specify as database URI ``postgresql://<your user>:<your password>@127.0.0.1:5432/jarr``.
 
 Once it's done, execute the script ``install.py``, it will prompt you various configuration values that you'll be able to edit later on in ``src/conf.py`` or by running that script again. If you do so, you may want to run it with the option ``--no-db`` to avoid erasing your already created database (more option are available with ``--help``).
 

@@ -7,7 +7,6 @@ Create Date: 2017-07-25 12:05:47.958845
 """
 from alembic import op
 import sqlalchemy as sa
-from jarr.bootstrap import SQLITE_ENGINE
 from jarr_common.reasons import ClusterReason, ReadReason
 
 revision = 'e2d7db861709'
@@ -17,13 +16,12 @@ depends_on = None
 
 
 def upgrade():
-    if not SQLITE_ENGINE:
-        from sqlalchemy.dialects import postgresql
-        postgresql.ENUM(*[rr.value for rr in ReadReason], name='readreason')\
-                        .create(op.get_bind())
-        postgresql.ENUM(*[cr.value for cr in ClusterReason],
-                        name='clusterreason')\
-                        .create(op.get_bind())
+    from sqlalchemy.dialects import postgresql
+    postgresql.ENUM(*[rr.value for rr in ReadReason], name='readreason')\
+                    .create(op.get_bind())
+    postgresql.ENUM(*[cr.value for cr in ClusterReason],
+                    name='clusterreason')\
+                    .create(op.get_bind())
 
     op.add_column('article',
                   sa.Column('cluster_reason',

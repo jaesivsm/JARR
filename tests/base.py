@@ -6,7 +6,7 @@ import unittest
 from flask_testing import TestCase
 from werkzeug.exceptions import NotFound
 
-from jarr.bootstrap import session, Base, init_db, SQLITE_ENGINE
+from jarr.bootstrap import session, Base, init_db
 from tests.fixtures.filler import populate_db
 
 
@@ -71,7 +71,7 @@ class BaseJarrTest(TestCase):
     def setUp(self):
         from jarr.api import get_cached_user
         get_cached_user.cache_clear()
-        init_db(SQLITE_ENGINE)
+        init_db()
         self._drop_all()
         Base.metadata.create_all()
         populate_db()

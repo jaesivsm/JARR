@@ -7,7 +7,6 @@ Create Date: 2017-07-31 11:49:16.345244
 """
 from alembic import op
 import sqlalchemy as sa
-from jarr.bootstrap import SQLITE_ENGINE
 from jarr_common.reasons import CacheReason
 
 
@@ -19,10 +18,9 @@ enum_fields = [cr.value for cr in CacheReason]
 
 
 def upgrade():
-    if not SQLITE_ENGINE:
-        from sqlalchemy.dialects import postgresql
-        postgresql.ENUM(*enum_fields, name='cachereason')\
-                        .create(op.get_bind())
+    from sqlalchemy.dialects import postgresql
+    postgresql.ENUM(*enum_fields, name='cachereason')\
+                    .create(op.get_bind())
     op.add_column('feed', sa.Column('cache_support_a_im', sa.Boolean,
                                     nullable=False, server_default='FALSE'))
     op.add_column('feed', sa.Column('cache_type',

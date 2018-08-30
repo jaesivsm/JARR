@@ -24,7 +24,6 @@ def upgrade():
 
 
 def downgrade():
-    if 'sqlite' not in conf.sqlalchemy.db_uri:
-        op.drop_column('user', 'readability_key')
-        op.drop_column('feed', 'readability_auto_parse')
-        op.drop_column('article', 'readability_parsed')
+    op.drop_column('user', 'readability_key')
+    op.drop_column('feed', 'readability_auto_parse')
+    op.drop_column('article', 'readability_parsed')

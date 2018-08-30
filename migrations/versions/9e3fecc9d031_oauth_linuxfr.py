@@ -22,5 +22,4 @@ def upgrade():
 
 
 def downgrade():
-    if 'sqlite' not in conf.sqlalchemy.db_uri:
-        op.drop_column('user', 'linuxfr_identity')
+    op.drop_column('user', 'linuxfr_identity')

@@ -11,7 +11,7 @@ from jarr_common.reasons import ClusterReason, ReadReason
 from jarr_common.clustering_af.grouper import get_best_match_and_score
 
 from jarr.utils import get_cluster_pref
-from jarr.bootstrap import SQLITE_ENGINE, session
+from jarr.bootstrap import session
 from jarr.controllers.article import ArticleController
 from jarr.models import Article, Cluster, Feed, User
 
@@ -186,21 +186,14 @@ class ClusterController(AbstractController):
 
     @staticmethod
     def _get_selected(fields, art_f_alias, art_c_alias, filter_on_category):
-        """Return selected fields, adapting to either postgres or sqlite"""
+        """Return selected fields"""
         selected_fields = list(fields.values())
-        if SQLITE_ENGINE:  # pragma: no cover
-            selected_fields.append(func.group_concat(
-                    art_f_alias.feed_id).label('feeds_id'))
-            if filter_on_category:
-                selected_fields.append(func.group_concat(
-                        art_c_alias.category_id).label('categories_id'))
-        else:
-            selected_fields.append(func.array_agg(art_f_alias.feed_id,
-                    type_=ARRAY(Integer)).label('feeds_id'))
-            if filter_on_category:
-                selected_fields.append(func.array_agg(
-                        art_c_alias.category_id,
-                        type_=ARRAY(Integer)).label('categories_id'))
+        selected_fields.append(func.array_agg(art_f_alias.feed_id,
+                type_=ARRAY(Integer)).label('feeds_id'))
+        if filter_on_category:
+            selected_fields.append(func.array_agg(
+                    art_c_alias.category_id,
+                    type_=ARRAY(Integer)).label('categories_id'))
         return selected_fields
 
     def _join_on_exist(self, query, alias, attr, value, filters):
@@ -224,17 +217,9 @@ class ClusterController(AbstractController):
             row = {}
             for key in JR_FIELDS:
                 row[key] = getattr(clu, key)
-            if SQLITE_ENGINE:  # pragma: no cover
-                row['feeds_id'] = [int(fid) for fid in clu.feeds_id.split(',')]
-                if filter_on_category and clu.categories_id:
-                    row['categories_id'] = [int(cid)
-                            for cid in clu.categories_id.split(',')]
-                elif filter_on_category:
-                    row['categories_id'] = [0]
-            else:
-                row['feeds_id'] = clu.feeds_id
-                if filter_on_category:
-                    row['categories_id'] = [i or 0 for i in clu.categories_id]
+            row['feeds_id'] = clu.feeds_id
+            if filter_on_category:
+                row['categories_id'] = [i or 0 for i in clu.categories_id]
             yield row
 
     def _light_no_filter_query(self, processed_filters):
@@ -246,10 +231,7 @@ class ClusterController(AbstractController):
                            .order_by(Cluster.main_date.desc())\
                            .limit(JR_LENGTH).cte('clu')
 
-        if SQLITE_ENGINE:  # pragma: no cover
-            aggreg = func.group_concat(Article.feed_id).label('feeds_id')
-        else:
-            aggreg = func.array_agg(Article.feed_id).label('feeds_id')
+        aggreg = func.array_agg(Article.feed_id).label('feeds_id')
         query = session.query(sub_query, aggreg)\
                 .join(Article, Article.cluster_id == sub_query.c.id)
         if self.user_id:

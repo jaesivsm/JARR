@@ -21,14 +21,12 @@ def upgrade():
             sa.Column('mimetype', sa.String(), nullable=True),
             sa.PrimaryKeyConstraint('url'))
     op.add_column('feed', sa.Column('icon_url', sa.String(), nullable=True))
-    if 'sqlite' not in conf.sqlalchemy.db_uri:
-        op.create_foreign_key(None, 'feed', 'icon', ['icon_url'], ['url'])
-        op.drop_column('feed', 'icon')
+    op.create_foreign_key(None, 'feed', 'icon', ['icon_url'], ['url'])
+    op.drop_column('feed', 'icon')
 
 
 def downgrade():
     op.add_column('feed', sa.Column('icon', sa.VARCHAR(), nullable=True))
-    if 'sqlite' not in conf.sqlalchemy.db_uri:
-        op.drop_constraint(None, 'feed', type_='foreignkey')
-        op.drop_column('feed', 'icon_url')
+    op.drop_constraint(None, 'feed', type_='foreignkey')
+    op.drop_column('feed', 'icon_url')
     op.drop_table('icon')
