@@ -3,7 +3,8 @@ from collections import Counter
 from datetime import timedelta
 
 import sqlalchemy
-from sqlalchemy import func
+from sqlalchemy import func, cast
+from sqlalchemy.dialects.postgresql import TSVECTOR
 from werkzeug.exceptions import Unauthorized, Forbidden
 
 from jarr_common.utils import utc_now
@@ -16,9 +17,38 @@ from .abstract import AbstractController
 
 logger = logging.getLogger(__name__)
 
+LANG_TO_PSQL_MAPPING = {'da': 'danish',
+                        'nl': 'dutch',
+                        'du': 'dutch',
+                        'en': 'english',
+                        'uk': 'english',
+                        'us': 'english',
+                        'fi': 'finnish',
+                        'fr': 'french',
+                        'de': 'german',
+                        'ge': 'german',
+                        'hu': 'hungarian',
+                        'it': 'italian',
+                        'no': 'norwegian',
+                        'pt': 'portuguese',
+                        'po': 'portuguese',
+                        'ro': 'romanian',
+                        'ru': 'russian',
+                        'es': 'spanish',
+                        'sv': 'swedish',
+                        'sw': 'swedish',
+                        'ts': 'turkish',
+                        'tk': 'turkish',
+                        'tw': 'turkish',
+                        'tr': 'turkish'}
+
 
 class ArticleController(AbstractController):
     _db_cls = Article
+
+    @staticmethod
+    def lang_to_postgreq(lang):
+        return LANG_TO_PSQL_MAPPING.get(lang[:2].lower(), 'simple')
 
     def challenge(self, ids):
         """Will return each id that wasn't found in the database."""
@@ -52,6 +82,9 @@ class ArticleController(AbstractController):
                 feed.user_id == attrs['user_id'] or self.user_id is None):
             raise Forbidden("no right on feed %r" % feed.id)
         attrs['user_id'], attrs['category_id'] = feed.user_id, feed.category_id
+        attrs['vector'] = cast(attrs.get('title', ' ')
+                + ' ' + ' '.join(attrs.get('tags', []))
+                + ' ' + attrs.get('content', ' '), TSVECTOR)
         return super().create(**attrs)
 
     def update(self, filters, attrs, return_objs=False, commit=True):

@@ -26,6 +26,20 @@ class Article(Base):
     tags = Column(PickleType, default=[])
     vector = Column(TSVECTOR)
 
+    @property
+    def simple_vector(self):
+        if getattr(self, '_simple_vector', None) is not None:
+            return self._simple_vector
+        self._simple_vector = {}
+        for word_n_count in self.vector.split():
+            try:
+                word, count = word_n_count.split(':')
+            except Exception:  # no :count if there's only one
+                self._simple_vector[word_n_count[1:-1]] = 1
+            else:
+                self._simple_vector[word[1:-1]] = count.count(',')
+        return self._simple_vector
+
     # reasons
     cluster_reason = Column(Enum(ClusterReason), default=None)
     cluster_score = Column(Integer, default=None)

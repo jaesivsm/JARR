@@ -22,7 +22,7 @@ def get_cosine_similarity(v1, article2, freq, tokens, nb_docs):
     ------
     int: the cosine similarity
     """
-    v2 = TFIDFVector(article2.valuable_tokens, freq, tokens, nb_docs)
+    v2 = TFIDFVector(article2.simple_vector, freq, tokens, nb_docs)
     return (v1 * v2) / (v1.norm * v2.norm)
 
 
@@ -40,8 +40,8 @@ def get_token_occurences_count(*articles):
     tokens = set()
     art_vt_sets = []
     for article in articles:
-        art_vt_sets.append(set(article.valuable_tokens))
-        tokens = tokens.union(art_vt_sets[-1])
+        art_vt_sets.append(article.simple_vector)
+        tokens = tokens.union(article.simple_vector)
     for token in tokens:
         for art_vt_set in art_vt_sets:
             if token in art_vt_set:
@@ -52,7 +52,7 @@ def get_token_occurences_count(*articles):
 def get_best_match_and_score(article, neighbors):
     nb_docs = len(neighbors)
     tokens, freq = get_token_occurences_count(article, *neighbors)
-    vector = TFIDFVector(article.valuable_tokens, freq, tokens, nb_docs,
+    vector = TFIDFVector(article.simple_vector, freq, tokens, nb_docs,
                          will_be_left_member=True)
     rank = {get_cosine_similarity(vector, neigh, freq, tokens, nb_docs): neigh
             for neigh in neighbors}

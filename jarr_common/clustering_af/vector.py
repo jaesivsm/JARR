@@ -43,9 +43,8 @@ class TFIDFVector(SparseVector):
             side of a scalar product (this optimization saves on calculation if
             the vector is never gonna be on the left side of a scalar product)
         """
-        doc_set = set(doc)
         super().__init__((self.get_tfidf_weight(token, doc, freq, nb_docs)
-                          if token in doc_set else 0 for token in tokens),
+                          if token in doc else 0 for token in tokens),
                           will_be_left_member)
 
     @staticmethod
@@ -59,5 +58,5 @@ class TFIDFVector(SparseVector):
         frequences: dict, with {token: number of occurence accross all docs}
         nb_docs: int, the total number of documents in the sample
         """
-        return ((document.count(token) / len(document))  # tf
+        return ((document[token] / sum(document.values()))  # tf
                 * log10(nb_docs / (1 + frequences.get(token, 0))))  # idf

@@ -85,29 +85,30 @@ class ClusterControllerTest(BaseJarrTest):
         feed = Mock(cluster_conf=cluster_conf, user=user, category=category)
         cluster = Mock()
         def gen_articles(factor):
-            return [Mock(valuable_tokens=['Sarkozy', 'garb', 'justice'],
+            return [Mock(simple_vector={'Sarkozy': 1, 'garb': 1, 'justice': 1},
                          feed=feed, cluster=cluster)] \
                  + [Mock(feed=feed,
-                         valuable_tokens=['Sarkozy', 'garbge', 'vote']),
+                        simple_vector={'Sark': 1, 'garbge': 1, 'vote': 1}),
                     Mock(feed=feed,
-                         valuable_tokens=['Sarkozy', 'garbae', 'debat']),
+                        simple_vector={'Sark': 1, 'garbae': 1, 'debat': 1}),
                     Mock(feed=feed,
-                         valuable_tokens=['Sarkozy', 'garbag', 'blague']),
+                        simple_vector={'Sark': 1, 'garbag': 1, 'blague': 1}),
                     Mock(feed=feed,
-                         valuable_tokens=['Sarkozy', 'garage', 'chanson'])] \
+                        simple_vector={'Sark': 1, 'garage': 1, 'chans': 1})] \
                             * factor
         ccontr = ClusterController()
         ccontr._get_query_for_clustering = Mock(return_value=gen_articles(2))
 
-        matching_article = Mock(valuable_tokens=['Morano', 'garb', 'justice'],
-                                date=utc_now(), lang='fr', feed=feed)
+        matching_article = Mock(
+                simple_vector={'Morano': 1, 'garb': 1, 'justice': 1},
+                date=utc_now(), lang='fr', feed=feed)
 
         self.assertIsNone(ccontr._get_cluster_by_similarity(matching_article))
         ccontr._get_query_for_clustering = Mock(return_value=gen_articles(100))
         self.assertEqual(ccontr._get_cluster_by_similarity(matching_article),
                          cluster)
 
-        solo_article = Mock(valuable_tokens=['Sarkozy', 'fleur'],
+        solo_article = Mock(simple_vector={'Sark': 1, 'fleur': 1},
                             date=utc_now(), lang='fr', feed=feed)
         self.assertNotEqual(cluster,
                 ccontr._get_cluster_by_similarity(solo_article))

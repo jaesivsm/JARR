@@ -79,7 +79,7 @@ class ClusterController(AbstractController):
     def _get_cluster_by_similarity(self, article):
         query = self._get_query_for_clustering(article,
                 # article is matchable
-                {'valuable_tokens__ne': []},
+                {'vector__ne': None},
                 (User.cluster_tfidf_enabled.__eq__(True),
                  Feed.cluster_tfidf_enabled.__eq__(True))
                 )

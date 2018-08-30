@@ -6,7 +6,6 @@ from requests import Response
 from requests.exceptions import MissingSchema
 
 from jarr import bootstrap
-from jarr_common.clustering_af.word_utils import FakeStemmer
 from jarr_crawler.article import construct_article
 
 
@@ -79,21 +78,11 @@ class ConstructArticleTest(unittest.TestCase):
         self.assertEqual(1, article['user_id'])
         self.assertEqual(1, article['feed_id'])
 
-    @patch('jarr_common.clustering_af.word_utils.get_stemmer')
-    @patch('jarr_common.clustering_af.word_utils.get_stopwords')
-    def test_tags(self, get_stopwords, get_stemmer):
-        get_stemmer.return_value = FakeStemmer()
-        get_stopwords.return_value = []
+    def test_tags(self):
         from jarr.bootstrap import conf
         conf.crawler.resolv = True
         self.jarr_get_patch.return_value = self.response2
         article = construct_article(self.entry2, {'id': 1, 'user_id': 1}, '')
-
-        print(article['valuable_tokens'])
-        self.assertEqual(sorted(['ceci', 'est', 'pas', 'old', 'boy', 'owlboy',
-                                  'suite', 'benzaie', 'live', 'watch', 'live',
-                                  'at', 'games', 'twitch']),
-                          sorted(article['valuable_tokens']))
 
         self.assertEqual('yt:video:scbrjaqM3Oc', article['entry_id'])
         self.assertEqual(self.response2.url, article['link'])

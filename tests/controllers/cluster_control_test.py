@@ -35,7 +35,6 @@ class ClusterControllerTest(BaseJarrTest):
                 title=cluster.main_article.title + suffix,
                 content=cluster.main_article.content + suffix,
                 date=cluster.main_article.date + timedelta(1),
-                valuable_tokens=['eki', 'eki', 'patang', 'ni', 'ni', 'ni'],
                 retrieved_date=cluster.main_article.retrieved_date)
         ClusterController.clusterize_pending_articles()
         return acontr.read(id=article.id).first()
@@ -76,8 +75,6 @@ class ClusterControllerTest(BaseJarrTest):
         for art_id in art_ids:
             ArticleController().delete(art_id)
         self.assertEqual(1, ClusterController().read().count())
-        ArticleController().update({'id': cluster.main_article_id},
-                {'valuable_tokens': ['stuff', 'we', 'might', 'say']})
         self.assertEqual(1, ArticleController().read().count())
 
         feed1 = FeedController(cluster.user_id).create(
