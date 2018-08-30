@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta, timezone
 from tests.base import BaseJarrTest
+from tests.utils import update_on_all_objs
 from jarr_common.utils import utc_now
 from jarr.bootstrap import conf
 from jarr.controllers import (ArticleController, ClusterController,
@@ -28,8 +29,8 @@ class FeedControllerTest(BaseJarrTest):
             acontr.delete(art_to_del.id)
 
         other_feed = fcontr.read(id__ne=clu.main_article.feed_id).first()
-        fcontr.update({'id__in': [other_feed.id, clu.main_article.feed_id]},
-                      {'cluster_enabled': True})
+        update_on_all_objs(articles=[clu.main_article], feeds=[other_feed],
+                cluster_enabled=True)
         acontr.create(
                 feed_id=other_feed.id,
                 entry_id=clu.main_article.entry_id + suffix,

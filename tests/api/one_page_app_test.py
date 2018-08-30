@@ -1,6 +1,7 @@
 import json
 
 from tests.base import JarrFlaskCommon
+from tests.utils import update_on_all_objs
 from jarr.controllers import (UserController, ClusterController,
         FeedController, ArticleController)
 
@@ -72,9 +73,8 @@ class OnePageAppTest(JarrFlaskCommon):
 
     def test_MarkClustersAsRead_put_only_singles(self):
         feed = FeedController(self.user.id).read()[0]
-        FeedController().update({'id': feed.id}, {
-                'cluster_same_feed': True,
-                'cluster_enabled': True})
+        update_on_all_objs(feeds=[feed],
+                cluster_same_feed=True, cluster_enabled=True)
         # creating a new article that will cluster
         ArticleController(self.user.id).create(entry_id='new entry_id',
                 title='new title', content='new content',

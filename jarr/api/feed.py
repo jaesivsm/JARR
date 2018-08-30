@@ -33,21 +33,23 @@ feed_model = feed_ns.model('Feed', {
         'last_retrieved': fields.DateTime(readOnly=True,
             description='Date of the last time this feed was fetched'),
 })
+suffix = "(if your global settings " \
+        "and the article's category settings allows it)"
 set_model_n_parser(feed_model, feed_parser, 'cluster_enabled', bool,
-        description='is clustering enabled whitin this feed')
-set_model_n_parser(feed_model, feed_parser, 'cluster_tfidf', bool,
-        description='is clustering through document comparison enabled')
-set_model_n_parser(feed_model, feed_parser, 'cluster_tfidf_same_cat', bool,
-        description='is clustering through document comparison within a '
-                    'single category allowed')
+        description="will allow article in your feeds and categories to be "
+                    "clusterized" + suffix)
+set_model_n_parser(feed_model, feed_parser, 'cluster_tfidf_enabled', bool,
+        description="will allow article in your feeds and categories to be "
+                    "clusterized through document comparison" + suffix)
+set_model_n_parser(feed_model, feed_parser, 'cluster_same_category', bool,
+        description="will allow article in your feeds and categories to be "
+                    "clusterized while beloning to the same category" + suffix)
 set_model_n_parser(feed_model, feed_parser, 'cluster_same_feed', bool,
-        description='is clustering several article from the same feed allowed')
-set_model_n_parser(feed_model, feed_parser, 'cluster_tfidf_min_score', float,
-        default=conf.cluster_tfidf_min_score,
-        description='minimum score for clustering with TFIDF algorithm')
+        description="will allow article in your feeds and categories to be "
+                    "clusterized while beloning to the same feed" + suffix)
 set_model_n_parser(feed_model, feed_parser, 'cluster_wake_up', bool,
-        description='if true, on clustering if the cluster is already read, '
-                    'it will be unread')
+        description='will unread cluster when article '
+                    'from that feed are added to it')
 set_model_n_parser(feed_model, feed_parser, 'category_id', int)
 set_model_n_parser(feed_model, feed_parser, 'site_link', str)
 set_model_n_parser(feed_model, feed_parser, 'description', str)
@@ -70,7 +72,7 @@ class NewFeedResource(Resource):
     @jwt_required()
     def post(self):
         "Create an new feed"
-        attrs = feed_parser.parse_args()
+        attrs = parse_meaningful_params(feed_parser)
         return FeedController(current_identity.id).create(**attrs), 201
 
 

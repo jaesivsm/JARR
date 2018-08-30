@@ -1,5 +1,7 @@
 from tests.base import JarrFlaskCommon
 
+from jarr.controllers import FeedController
+
 
 class CategoryApiTest(JarrFlaskCommon):
 
@@ -48,40 +50,6 @@ class CategoryApiTest(JarrFlaskCommon):
         cat = next(cat for cat in self.jarr_client('get', 'categories',
                 user='user1').json() if cat['id'] == cat_id)
         self.assertEqual('changed name', cat['name'])
-
-        # testing denorm on feeds
-        resp = self.jarr_client('put', 'category', cat_id,
-                data={'cluster_enabled': False}, user='user1')
-        self.assertStatusCode(204, resp)
-        for feed in self.jarr_client('get', 'feeds', user='user1').json():
-            if feed['category_id'] == cat_id:
-                self.assertFalse(feed['cluster_enabled'])
-
-        resp = self.jarr_client('put', 'category', cat_id,
-                data={'cluster_enabled': True}, user='user1')
-        self.assertStatusCode(204, resp)
-        for feed in self.jarr_client('get', 'feeds', user='user1').json():
-            if feed['category_id'] == cat_id:
-                self.assertTrue(feed['cluster_enabled'])
-
-        resp = self.jarr_client('put', 'category', cat_id,
-                data={'cluster_enabled': False}, user='user1')
-        self.assertStatusCode(204, resp)
-        for feed in self.jarr_client('get', 'feeds', user='user1').json():
-            if feed['category_id'] == cat_id:
-                self.assertFalse(feed['cluster_enabled'])
-
-        # testing update and denorm on feeds
-        resp = self.jarr_client('put', 'category', cat_id,
-                data={'name': 'changed_again',
-                      'cluster_tfidf_min_score': .5}, user='user1')
-        self.assertStatusCode(204, resp)
-        cat = next(cat for cat in self.jarr_client('get', 'categories',
-                user='user1').json() if cat['id'] == cat_id)
-        self.assertEqual('changed_again', cat['name'])
-        for feed in self.jarr_client('get', 'feeds', user='user1').json():
-            if feed['category_id'] == cat_id:
-                self.assertEqual(.5, feed['cluster_tfidf_min_score'])
 
     def test_CategoryResource_delete(self):
         cat_id = self.jarr_client('get', 'categories',

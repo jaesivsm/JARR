@@ -1,8 +1,9 @@
 from random import randint
 from datetime import timedelta
-from mock import patch, Mock
+from mock import Mock
 
 from tests.base import BaseJarrTest
+from tests.utils import update_on_all_objs
 
 from jarr_common.utils import utc_now
 from jarr.controllers import (ArticleController,
@@ -46,8 +47,8 @@ class ClusterControllerTest(BaseJarrTest):
         ccontr.update({'id': cluster.id}, {'read': True})
         feed = fcontr.read(user_id=cluster.user_id,
                     id__ne=cluster.main_article.feed_id).first()
-        fcontr.update({'id': feed.id}, {'cluster_enabled': True,
-                                        'cluster_wake_up': True})
+        update_on_all_objs(feeds=[feed], cluster_enabled=True)
+        #fcontr.update({'id': feed.id}, {'cluster_wake_up': True})
         self._clone_article(ArticleController(), cluster.main_article, feed)
         ClusterController.clusterize_pending_articles()
         ccontr.get(id=cluster.id)
@@ -58,25 +59,31 @@ class ClusterControllerTest(BaseJarrTest):
 
         cluster = ccontr.read().first()
         ccontr.update({'id': cluster.id}, {'read': True})
+        cluster = ccontr.get(id=cluster.id)
+        self.assertTrue(cluster.read)
         article = cluster.articles[0]
         articles_count = len(cluster.articles)
 
         fcontr = FeedController(cluster.user_id)
         acontr = ArticleController(cluster.user_id)
+        fcontr.update({'id': article.feed_id}, {'cluster_wake_up': True})
         feed = fcontr.read(id__ne=article.feed_id).first()
-        fcontr.update({'id__in': [article.feed_id, feed.id]},
-                {'cluster_tfidf_same_cat': True, 'cluster_enabled': True})
+        update_on_all_objs(articles=[article], feeds=[feed],
+                cluster_enabled=True)
 
         self._clone_article(acontr, article, feed)
         ccontr.clusterize_pending_articles()
+
         cluster = ccontr.get(id=cluster.id)
-
         self.assertEqual(articles_count + 1, len(cluster.articles))
-        self.assertTrue(cluster.read)
+        self.assertFalse(cluster.read)
 
-    @patch('jarr.controllers.cluster.ArticleController')
-    def test_similarity_clustering(self, acontr_cls):
-        feed, cluster = Mock(cluster_tfidf_min_score=0.6), Mock()
+    def test_similarity_clustering(self):
+        cluster_conf = {'tfidf_min_score': 0.6, 'tfidf_min_sample_size': 10}
+        user = Mock(cluster_conf=cluster_conf)
+        category = Mock(cluster_conf=cluster_conf)
+        feed = Mock(cluster_conf=cluster_conf, user=user, category=category)
+        cluster = Mock()
         def gen_articles(factor):
             return [Mock(valuable_tokens=['Sarkozy', 'garb', 'justice'],
                          feed=feed, cluster=cluster)] \
@@ -90,13 +97,13 @@ class ClusterControllerTest(BaseJarrTest):
                          valuable_tokens=['Sarkozy', 'garage', 'chanson'])] \
                             * factor
         ccontr = ClusterController()
-        acontr_cls.return_value.read.return_value = gen_articles(2)
+        ccontr._get_query_for_clustering = Mock(return_value=gen_articles(2))
 
         matching_article = Mock(valuable_tokens=['Morano', 'garb', 'justice'],
                                 date=utc_now(), lang='fr', feed=feed)
 
         self.assertIsNone(ccontr._get_cluster_by_similarity(matching_article))
-        acontr_cls.return_value.read.return_value = gen_articles(100)
+        ccontr._get_query_for_clustering = Mock(return_value=gen_articles(100))
         self.assertEqual(ccontr._get_cluster_by_similarity(matching_article),
                          cluster)
 
@@ -128,8 +135,7 @@ class ClusterControllerTest(BaseJarrTest):
 
         for cluster in ccontr.read():
             self.assertEqual(1, len(cluster.articles))
-            self.assertEqual(1,
-                    len(set([a.user_id for a in cluster.articles])))
+            self.assertEqual(1, len({a.user_id for a in cluster.articles}))
 
         main_article = acontr.read().first()
         for article in acontr.read():
@@ -142,5 +148,4 @@ class ClusterControllerTest(BaseJarrTest):
                     link=article.link)
 
         for cluster in ccontr.read():
-            self.assertEqual(1,
-                    len(set([a.user_id for a in cluster.articles])))
+            self.assertEqual(1, len({a.user_id for a in cluster.articles}))

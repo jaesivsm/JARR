@@ -1,6 +1,6 @@
 import re
 
-from sqlalchemy import Boolean, Column, Integer, String
+from sqlalchemy import Boolean, Column, Integer, String, PickleType
 from sqlalchemy.orm import relationship, validates
 
 from jarr_common.utils import utc_now
@@ -21,6 +21,14 @@ class User(Base):
     renew_password_token = Column(String, default='')
 
     timezone = Column(String, default=conf.timezone)
+
+    # clustering control
+    cluster_enabled = Column(Boolean, default=True)
+    cluster_tfidf_enabled = Column(Boolean, default=True)
+    cluster_same_category = Column(Boolean, default=True)
+    cluster_same_feed = Column(Boolean, default=True)
+    cluster_conf = Column(PickleType, default={})
+
     # user rights
     is_active = Column(Boolean, default=True)
     is_admin = Column(Boolean, default=False)
@@ -47,5 +55,6 @@ class User(Base):
                             foreign_keys='[Cluster.user_id]')
 
     @validates('login')
-    def validates_login(self, key, value):
+    @staticmethod
+    def validates_login(key, value):
         return re.sub(r'[^a-zA-Z0-9_\.]', '', value.strip())

@@ -19,17 +19,13 @@ def to_name(user, iter_, cat=None, feed=None, art=None, arg=''):
 
 
 def populate_db():
-    feed_defaults = {'cluster_enabled': False,
-                     'cluster_tfidf': False,
-                     'cluster_tfidf_same_cat': False,
-                     'cluster_same_feed': False}
-
     fcontr = FeedController()
     ccontr = CategoryController()
     UserController().create(**{'is_admin': True, 'is_api': True,
+                     'cluster_enabled': False,
                      'login': conf.crawler.login,
                      'password': conf.crawler.passwd})
-    user1, user2 = [UserController().create(login=name,
+    user1, user2 = [UserController().create(login=name, cluster_enabled=False,
                         email="%s@test.te" % name, password=name)
                     for name in ["user1", "user2"]]
 
@@ -45,8 +41,7 @@ def populate_db():
                 feed_id = fcontr.create(
                         link="feed%d%d" % (iteration, iter_cat),
                         user_id=user.id, category_id=cat_id,
-                        title=to_name(user, iteration, iter_cat, iter_cat),
-                        **feed_defaults).id
+                        title=to_name(user, iteration, iter_cat, iter_cat)).id
                 for iter_art in range(3):
                     entry = to_name(user, iteration,
                                     iter_cat, iter_cat, iter_art)

@@ -17,7 +17,11 @@ conf = TheConf({'config_files': ['/etc/jarr.json', '~/.config/jarr.json'],
         'source_order': ['env', 'cmd', 'files'],
         'parameters': [
             {'jarr_testing': {'default': False, 'type': bool}},
-            {'cluster_tfidf_min_score': {'default': .75, 'type': float}},
+            {'cluster_default': [
+                {'time_delta': {'default': 7, 'type': int}},
+                {'tfidf_enabled': {'default': True, 'type': bool}},
+                {'tfidf_min_sample_size': {'default': 10, 'type': int}},
+                {'tfidf_min_score': {'default': .75, 'type': float}}]},
             {'timezone': {'default': 'Europe/Paris', 'type': str}},
             {'platform_url': {'default': 'http://0.0.0.0:5000/'}},
             {'sqlalchemy': [{'db_uri': {}},

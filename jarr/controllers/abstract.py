@@ -5,7 +5,7 @@ import dateutil.parser
 from sqlalchemy import and_, or_
 from werkzeug.exceptions import Forbidden, NotFound, Unauthorized
 
-from jarr.bootstrap import session
+from jarr.bootstrap import session, Base
 
 logger = logging.getLogger(__name__)
 
@@ -18,7 +18,7 @@ def cast_to_utc(dt_obj):
 
 
 class AbstractController:
-    _db_cls = object  # reference to the database class
+    _db_cls = Base  # reference to the database class, to redefine in child cls
     _user_id_key = 'user_id'
 
     def __init__(self, user_id=None, ignore_context=False):
@@ -39,6 +39,8 @@ class AbstractController:
         if '__' not in key:
             return getattr(model, key).__eq__
         attr, ope = key.rsplit('__', 1)
+        if ope == 'nin':
+            return getattr(model, attr).notin_
         if ope == 'in':
             return getattr(model, attr).in_
         if ope not in {'like', 'ilike'}:

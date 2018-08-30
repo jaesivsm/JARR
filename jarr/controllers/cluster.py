@@ -10,9 +10,10 @@ from jarr_common.filter import process_filters
 from jarr_common.reasons import ClusterReason, ReadReason
 from jarr_common.clustering_af.grouper import get_best_match_and_score
 
+from jarr.utils import get_cluster_pref
 from jarr.bootstrap import SQLITE_ENGINE, session
 from jarr.controllers.article import ArticleController
-from jarr.models import Article, Cluster
+from jarr.models import Article, Cluster, Feed, User
 
 from .abstract import AbstractController
 
@@ -25,49 +26,77 @@ JR_SQLA_FIELDS = [getattr(Cluster, key) for key in __returned_keys]
 JR_LENGTH = 1000
 
 
+def _get_parent_attr(obj, attr):
+    return (getattr(obj.user, attr) and getattr(obj.category, attr, True)
+            and getattr(obj.feed, attr))
+
+
+def is_same_ok(obj, parent):
+    return _get_parent_attr(obj, 'cluster_same_%s' % parent)
+
+
 class ClusterController(AbstractController):
     _db_cls = Cluster
-    max_day_dist = timedelta(days=7)
+
+    def _get_query_for_clustering(self, article, filters, join_filters=None):
+        time_delta = timedelta(
+                days=get_cluster_pref(article.feed, 'time_delta'))
+        date_cond = {'date__lt': article.date + time_delta,
+                     'date__gt': article.date - time_delta}
+        retr_cond = {'retrieved_date__lt': article.retrieved_date + time_delta,
+                     'retrieved_date__gt': article.retrieved_date - time_delta}
+        filters.update({'cluster_id__ne': None,
+                        'user_id': article.user_id,
+                        'id__ne': article.id,
+                        '__or__': [date_cond, retr_cond]})
+        if article.category_id and not is_same_ok(article, 'category'):
+            filters['category_id__ne'] = article.category_id
+        if not is_same_ok(article, 'feed'):
+            filters['feed_id__ne'] = article.feed_id
+
+        query = ArticleController(self.user_id).read(**filters)\
+                .join(Feed, Feed.id == Article.feed_id)\
+                .join(User, User.id == Article.user_id)\
+                .filter(User.cluster_enabled.__eq__(True),
+                        Feed.cluster_enabled.__eq__(True))
+
+        for join_filter in join_filters or []:
+            query = query.filter(join_filter)
+
+        # operations involving categories are complicated, handling in software
+        for candidate in query:
+            if candidate.category_id:
+                if not candidate.category.cluster_enabled:
+                    continue
+            yield candidate
 
     def _get_cluster_by_link(self, article):
-        filters = {'user_id': article.user_id,
-                   'main_date__lt': article.date + self.max_day_dist,
-                   'main_date__gt': article.date - self.max_day_dist,
-                   'main_link': article.link}
+        for candidate in self._get_query_for_clustering(article,
+                {'link': article.link}):
+            article.cluster_reason = ClusterReason.link
+            return candidate.cluster
 
-        cluster = self.read(**filters).first()
-        if not cluster:
-            return None
-        if not article.feed.cluster_same_feed:
-            for clustered_article in cluster.articles:
-                if clustered_article.feed_id == article.feed_id:
-                    return None
-        article.cluster_reason = ClusterReason.link
-        return cluster
+    def _get_cluster_by_similarity(self, article):
+        query = self._get_query_for_clustering(article,
+                # article is matchable
+                {'valuable_tokens__ne': []},
+                (User.cluster_tfidf_enabled.__eq__(True),
+                 Feed.cluster_tfidf_enabled.__eq__(True))
+                )
 
-    def _get_cluster_by_similarity(self, article, min_sample_size=10):
-        if not article.lang:
-            return None
-        art_contr = ArticleController(self.user_id)
+        neighbors = [neighbor for neighbor in query
+                     if not neighbor.category_id
+                        or neighbor.category.cluster_tfidf_enabled]
 
-        filters = {'user_id': article.user_id,
-                   'date__lt': article.date + self.max_day_dist,
-                   'date__gt': article.date - self.max_day_dist,
-                   # article isn't this one, and already in a cluster
-                   'cluster_id__ne': None, 'id__ne': article.id,
-                   # article is matchable
-                   'valuable_tokens__ne': []}
-        if article.feed.cluster_tfidf_same_cat:
-            filters['category_id'] = article.category_id
-
-        neighbors = list(art_contr.read(**filters))
+        min_sample_size = get_cluster_pref(article.feed,
+                'tfidf_min_sample_size')
         if len(neighbors) < min_sample_size:
             logger.info('only %d docs against %d required, no TFIDF for %r',
                         len(neighbors), min_sample_size, article)
             return None
 
         best_match, score = get_best_match_and_score(article, neighbors)
-        if score > article.feed.cluster_tfidf_min_score:
+        if score > get_cluster_pref(article.feed, 'tfidf_min_score'):
             article.cluster_reason = ClusterReason.tf_idf
             article.cluster_score = int(score * 1000)
             article.cluster_tfidf_neighbor_size = len(neighbors)
@@ -116,9 +145,10 @@ class ClusterController(AbstractController):
     def clusterize(self, article, cluster_read=None, cluster_liked=False):
         """Will add given article to a fitting cluster or create a cluster
         fitting that article."""
-        if article.feed.cluster_enabled:
+        if _get_parent_attr(article, 'cluster_enabled'):
             cluster = self._get_cluster_by_link(article)
-            if not cluster and article.feed.cluster_tfidf:
+            if not cluster \
+                    and _get_parent_attr(article, 'cluster_tfidf_enabled'):
                 cluster = self._get_cluster_by_similarity(article)
             if cluster:
                 return self.enrich_cluster(cluster, article,

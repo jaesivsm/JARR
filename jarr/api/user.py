@@ -10,6 +10,19 @@ user_parser = user_ns.parser()
 set_model_n_parser(user_model, user_parser, 'login', str)
 set_model_n_parser(user_model, user_parser, 'email', str)
 set_model_n_parser(user_model, user_parser, 'timezone', str)
+suffix = "(if the article feed's and category's settings allows it)"
+set_model_n_parser(user_model, user_parser, 'cluster_enabled', bool,
+        description="will allow article in your feeds and categories to be "
+                    "clusterized" + suffix)
+set_model_n_parser(user_model, user_parser, 'cluster_tfidf_enabled', bool,
+        description="will allow article in your feeds and categories to be "
+                    "clusterized through document comparison" + suffix)
+set_model_n_parser(user_model, user_parser, 'cluster_same_category', bool,
+        description="will allow article in your feeds and categories to be "
+                    "clusterized while beloning to the same category" + suffix)
+set_model_n_parser(user_model, user_parser, 'cluster_same_feed', bool,
+        description="will allow article in your feeds and categories to be "
+                    "clusterized while beloning to the same feed" + suffix)
 user_parser.add_argument('password', type=str)
 
 

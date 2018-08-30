@@ -1,11 +1,11 @@
 from sqlalchemy import (Boolean, Column, Integer, PickleType, String, Enum,
-                        FLOAT, Index, ForeignKeyConstraint)
+                        Index, ForeignKeyConstraint)
 from sqlalchemy.orm import relationship, validates
 
 from jarr_common.utils import utc_now
 from jarr_common.const import UNIX_START
 from jarr_common.reasons import CacheReason
-from jarr.bootstrap import Base, conf
+from jarr.bootstrap import Base
 from jarr.models.utc_datetime_type import UTCDateTime
 
 
@@ -24,13 +24,12 @@ class Feed(Base):
     integration_reddit = Column(Boolean, default=False)
 
     # clustering control
-    cluster_enabled = Column(Boolean, default=None)
-    cluster_tfidf = Column(Boolean, default=None)
-    cluster_tfidf_same_cat = Column(Boolean, default=None)
-    cluster_same_feed = Column(Boolean, default=None)
-    cluster_tfidf_min_score = Column(FLOAT,
-            default=conf.cluster_tfidf_min_score)
-    cluster_wake_up = Column(Boolean, default=False)
+    cluster_enabled = Column(Boolean, default=True)
+    cluster_tfidf_enabled = Column(Boolean, default=True)
+    cluster_same_category = Column(Boolean, default=True)
+    cluster_same_feed = Column(Boolean, default=True)
+    cluster_wake_up = Column(Boolean, default=True)
+    cluster_conf = Column(PickleType, default={})
 
     # cache reasons
     cache_type = Column(Enum(CacheReason), default=None)

@@ -6,34 +6,31 @@ from jarr.controllers import (FeedController, CategoryController,
         ClusterController)
 
 prout = {'debug': False}
-TO_DENORM = {'cluster_enabled', 'cluster_tfidf', 'cluster_same_feed',
-        'cluster_tfidf_same_cat', 'cluster_tfidf_min_score', 'cluster_wake_up'}
 category_ns = Namespace('category', path='/categor',
         description='Category related operation')
 parser = category_ns.parser()
-parser_edit = parser.copy()
-parser.add_argument('name', type=str, required=True)
 model = category_ns.model('Category', {
         'id': fields.Integer(readOnly=True),
         'unread_cnt': fields.Integer(default=0, readOnly=True),
 })
+suffix = "(if your global settings " \
+        "and the article's feed settings allows it)"
+set_model_n_parser(model, parser, 'cluster_enabled', bool,
+        description="will allow article in your feeds and categories to be "
+                    "clusterized" + suffix)
+set_model_n_parser(model, parser, 'cluster_tfidf_enabled', bool,
+        description="will allow article in your feeds and categories to be "
+                    "clusterized through document comparison" + suffix)
+set_model_n_parser(model, parser, 'cluster_same_category', bool,
+        description="will allow article in your feeds and categories to be "
+                    "clusterized while beloning to the same category" + suffix)
+set_model_n_parser(model, parser, 'cluster_same_feed', bool,
+        description="will allow article in your feeds and categories to be "
+                    "clusterized while beloning to the same feed" + suffix)
+
+parser_edit = parser.copy()
+parser.add_argument('name', type=str, required=True)
 set_model_n_parser(model, parser_edit, 'name', str)
-suffix = ' (will be denormed on all feeds below)'
-parser_edit.add_argument('cluster_enabled', type=bool,
-        help='is clustering enabled whitin this feed' + suffix)
-parser_edit.add_argument('cluster_tfidf', type=bool,
-        help='is clustering through document comparison enabled' + suffix)
-parser_edit.add_argument('cluster_tfidf_same_cat', type=bool,
-        help='is clustering through document comparison within a single '
-             'category allowed' + suffix)
-parser_edit.add_argument('cluster_same_feed', type=bool,
-        help='is clustering several article from the same feed allowed'
-             + suffix)
-parser_edit.add_argument('cluster_tfidf_min_score', type=float,
-        help='minimum score for clustering with TFIDF algorithm' + suffix)
-parser_edit.add_argument('cluster_wake_up', type=bool,
-        help='if true, on clustering if the cluster is already read, '
-             'it will be unread' + suffix)
 
 
 @category_ns.route('y')
@@ -83,16 +80,10 @@ class CategoryResource(Resource):
         "Update an existing category"
         cctrl = CategoryController(current_identity.id)
         attrs = parse_meaningful_params(parser_edit)
-        feed_attrs = {key: attrs[key] for key in TO_DENORM.intersection(attrs)}
-        attrs = {key: attrs[key] for key in attrs if key not in TO_DENORM}
-        changed = 0
-        if feed_attrs:
-            changed += FeedController(current_identity.id).update(
-                    {'category_id': category_id}, feed_attrs)
         if attrs:
-            changed += cctrl.update({'id': category_id}, attrs)
-        if not changed:
-            cctrl.assert_right_ok(category_id)
+            changed = cctrl.update({'id': category_id}, attrs)
+            if not changed:
+                cctrl.assert_right_ok(category_id)
         return None, 204
 
     @category_ns.expect(parser)
