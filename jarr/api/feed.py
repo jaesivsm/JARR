@@ -6,7 +6,7 @@ from werkzeug.exceptions import NotFound, Forbidden
 from jarr_common.feed_utils import construct_feed_from
 from jarr.bootstrap import conf
 from jarr.api.common import set_model_n_parser, parse_meaningful_params
-from jarr.controllers import FeedController, ClusterController, IconController
+from jarr.controllers import FeedController, IconController
 
 feed_ns = Namespace('feed', description='Feed related operations')
 url_parser = feed_ns.parser()
@@ -21,8 +21,6 @@ feed_build_model = feed_ns.model('FeedBuilder', {
 })
 feed_model = feed_ns.model('Feed', {
         'id': fields.Integer(readOnly=True),
-        'unread_cnt': fields.Integer(readOnly=True, default=0,
-            description='The number of unread item in this field'),
         'error_count': fields.Integer(readOnly=True, default=0,
             description='The number of consecutive error encountered while '
                         'fetching this feed'),
@@ -86,13 +84,7 @@ class ListFeedResource(Resource):
     def get(self):
         """List all available feeds with their unread counts and a relative
         URL to their icons """
-        feeds = []
-        user_id = current_identity.id
-        cnt_by_feed = ClusterController(user_id).count_by_feed(read=False)
-        for feed in FeedController(user_id).read():
-            feed.unread_cnt = cnt_by_feed.get(feed.id, 0)
-            feeds.append(feed)
-        return feeds, 200
+        return list(FeedController(current_identity.id).read())
 
 
 @feed_ns.route('/<int:feed_id>')

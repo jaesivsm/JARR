@@ -13,7 +13,7 @@ from jarr_common.clustering_af.grouper import get_best_match_and_score
 from jarr.utils import get_cluster_pref
 from jarr.bootstrap import session
 from jarr.controllers.article import ArticleController
-from jarr.models import Article, Cluster, Feed, User
+from jarr.models import Article, Cluster, Feed, Category, User
 
 from .abstract import AbstractController
 
@@ -319,3 +319,16 @@ class ClusterController(AbstractController):
                                          Article.cluster_id == Cluster.id)
                               .filter(*self._to_filters(**filters))
                               .group_by(group_on).all())
+
+    def list_feeds_w_unread_count(self):
+        fields = Feed.id, Category.id, Feed.title, Category.name
+        return session.query(*(fields + (func.count(Cluster.id),)))\
+                .outerjoin(Article, and_(Article.feed_id == Feed.id,
+                                         Article.user_id == self.user_id))\
+                .outerjoin(Cluster, and_(Article.cluster_id == Cluster.id,
+                                         Cluster.user_id == self.user_id,
+                                         Cluster.read.__eq__(False)))\
+                .outerjoin(Category, and_(Feed.category_id == Category.id,
+                                          Category.user_id == self.user_id))\
+                .filter(Feed.user_id == self.user_id)\
+                .group_by(*fields)

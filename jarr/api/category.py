@@ -11,7 +11,6 @@ category_ns = Namespace('category', path='/categor',
 parser = category_ns.parser()
 model = category_ns.model('Category', {
         'id': fields.Integer(readOnly=True),
-        'unread_cnt': fields.Integer(default=0, readOnly=True),
 })
 suffix = "(if your global settings " \
         "and the article's feed settings allows it)"
@@ -57,13 +56,7 @@ class ListCategoryResource(Resource):
     @jwt_required()
     def get(self):
         "List all categories with their unread counts"
-        cats = []
-        cnt_by_cat = ClusterController(current_identity.id)\
-                .count_by_category(read=False)
-        for cat in CategoryController(current_identity.id).read():
-            cat.unread_cnt = cnt_by_cat.get(cat.id, 0)
-            cats.append(cat)
-        return cats, 200
+        return list(CategoryController(current_identity.id).read()), 200
 
 
 @category_ns.route('y/<int:category_id>')

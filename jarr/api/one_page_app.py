@@ -2,10 +2,17 @@ from flask_restplus import Namespace, Resource, fields
 from flask_jwt import jwt_required, current_identity
 
 from jarr_common.reasons import ReadReason
-from jarr.controllers import ClusterController
+from jarr.controllers import FeedController, ClusterController
 
 ACCEPTED_LEVELS = {'success', 'info', 'warning', 'error'}
 default_ns = Namespace('default', path='/')
+left_panel_model = default_ns.model('LeftPanel', {
+        'fid': fields.Integer(),
+        'cid': fields.Integer(),
+        'ftitle': fields.String(),
+        'cname': fields.String(),
+        'unread': fields.Integer(default=0),
+})
 midle_panel_model = default_ns.model('MiddlePanel', {
         'id': fields.Integer(),
         'feeds_id': fields.List(fields.Integer()),
@@ -35,6 +42,23 @@ filter_parser.add_argument('category_id', type=int,
 mark_as_read_parser = filter_parser.copy()
 mark_as_read_parser.add_argument('only_singles', type=bool, default=False,
         help="set to true to mark as read only cluster with one article")
+
+
+@default_ns.route('/left_panel')
+class MiddlePanel(Resource):
+
+    @default_ns.response(200, 'OK', model=[midle_panel_model], as_list=True)
+    @default_ns.response(401, 'Unauthorized')
+    @default_ns.marshal_list_with(left_panel_model)
+    @jwt_required()
+    def get(self):
+        """Will list all cluster extract for the middle pannel"""
+        clu_ctrl = ClusterController(current_identity.id)
+        result = []
+        fields_name = 'fid', 'cid', 'ftitle', 'cname', 'unread'
+        for line in clu_ctrl.list_feeds_w_unread_count():
+            result.append(dict(zip(fields_name, line)))
+        return result, 200
 
 
 def _get_filters(in_dict):
