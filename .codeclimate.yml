@@ -29,6 +29,5 @@ ratings:
   - "**.py"
   - "**.rb"
 exclude_paths:
-  - "src/tests/**/*"
-  - "src/migrations/**/*"
-  - "src/web/static/js/jquery.js"
+  - "tests/**/*"
+  - "migrations/**/*"
