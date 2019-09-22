@@ -2,7 +2,7 @@ aiohttp==0.21.0
 alembic==0.8.4
 beautifulsoup4==4.4.1
 feedparser==5.2.1
-Flask==0.10.1
+Flask==1.0
 Flask-Babel==0.9
 Flask-Login==0.3.2
 Flask-Migrate==1.7.0
