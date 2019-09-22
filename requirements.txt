@@ -17,7 +17,7 @@ opml==0.5
 python-dateutil==2.4.2
 python-postmark==0.4.7
 rauth==0.7.2
-requests==2.10.0
+requests==2.20.0
 requests-futures==0.9.7
 SQLAlchemy==1.0.11
 WTForms==2.1
