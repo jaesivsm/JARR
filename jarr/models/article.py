@@ -3,8 +3,8 @@ from sqlalchemy import (Boolean, Column, Integer, PickleType,
 from sqlalchemy.orm import relationship
 from sqlalchemy.dialects.postgresql import TSVECTOR
 
-from jarr_common.utils import utc_now
-from jarr_common.reasons import ClusterReason
+from jarr.lib.utils import utc_now
+from jarr.lib.reasons import ClusterReason
 from jarr.bootstrap import Base
 from jarr.models.utc_datetime_type import UTCDateTime
 

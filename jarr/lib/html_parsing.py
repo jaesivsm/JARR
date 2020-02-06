@@ -3,8 +3,8 @@ from functools import lru_cache
 
 from bs4 import BeautifulSoup, SoupStrainer
 
-from jarr_common.const import FEED_MIMETYPES
-from jarr_common.utils import clean_lang, jarr_get, rebuild_url
+from jarr.lib.const import FEED_MIMETYPES
+from jarr.lib.utils import clean_lang, jarr_get, rebuild_url
 
 logger = logging.getLogger(__name__)
 CHARSET_TAG = b'<meta charset='

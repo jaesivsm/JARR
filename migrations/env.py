@@ -21,7 +21,7 @@ init_logging(modules=('root', 'sqlalchemy'), log_format=log_format,
             log_level=logging.WARNING)
 init_logging(modules=('alembic'), log_format=log_format)
 
-config.set_main_option('sqlalchemy.url', conf.sqlalchemy.db_uri)
+config.set_main_option('sqlalchemy.url', conf.db.pg_uri)
 target_metadata = current_app.extensions['migrate'].db.metadata
 
 

@@ -1,7 +1,7 @@
 from tests.base import JarrFlaskCommon
 from datetime import timezone, timedelta
 from mock import patch
-from jarr_common.utils import utc_now
+from jarr.lib.utils import utc_now
 from jarr.controllers import FeedController
 
 
@@ -15,11 +15,11 @@ class FeedApiTest(JarrFlaskCommon):
 
     def _get(self, id_, user):
         return next(feed for feed in self.jarr_client('get', 'feeds',
-                    user='user1').json() if feed['id'] == id_)
+                    user='user1').json if feed['id'] == id_)
 
     def test_NewFeedResource_post(self):
-        cats = self.jarr_client('get', 'categories', user='user1').json()
-        other_cats = self.jarr_client('get', 'categories', user='user2').json()
+        cats = self.jarr_client('get', 'categories', user='user1').json
+        other_cats = self.jarr_client('get', 'categories', user='user2').json
 
         resp = self.jarr_client('post', 'feed',
                 data={'title': 'my new feed'})
@@ -45,7 +45,7 @@ class FeedApiTest(JarrFlaskCommon):
                 user='user1')
         self.assertStatusCode(403, resp)
 
-        feeds = self.jarr_client('get', 'feeds', user='user1').json()
+        feeds = self.jarr_client('get', 'feeds', user='user1').json
         self.assertEqual(1, len([feed for feed in feeds
                                  if feed['title'] == 'my new feed'
                                      and feed['category_id'] is None]))
@@ -56,15 +56,15 @@ class FeedApiTest(JarrFlaskCommon):
     def test_ListFeedResource_get(self):
         resp = self.jarr_client('get', 'feeds')
         self.assertStatusCode(401, resp)
-        feeds_u1 = self.jarr_client('get', 'feeds', user='user1').json()
-        feeds_u2 = self.jarr_client('get', 'feeds', user='user2').json()
+        feeds_u1 = self.jarr_client('get', 'feeds', user='user1').json
+        feeds_u2 = self.jarr_client('get', 'feeds', user='user2').json
         feeds_u1 = [f['id'] for f in feeds_u1]
         feeds_u2 = [f['id'] for f in feeds_u2]
 
         self.assertFalse(set(feeds_u1).intersection(feeds_u2))
 
         # testing time formating
-        feed = self.jarr_client('get', 'feeds', user='user1').json()[0]
+        feed = self.jarr_client('get', 'feeds', user='user1').json[0]
         now = utc_now()
         FeedController().update({'id': feed['id']}, {'last_retrieved': now})
         json = self._get(feed['id'], 'user1')
@@ -86,10 +86,10 @@ class FeedApiTest(JarrFlaskCommon):
         self.assertStatusCode(401, resp)
         feeds_resp = self.jarr_client('get', 'feeds', user='user1')
         self.assertStatusCode(200, feeds_resp)
-        existing_feed = feeds_resp.json()[0]
+        existing_feed = feeds_resp.json[0]
         categories_resp = self.jarr_client('get', 'categories', user='user2')
         self.assertStatusCode(200, categories_resp)
-        category = categories_resp.json()[0]
+        category = categories_resp.json[0]
         resp = self.jarr_client('put', 'feed', existing_feed['id'],
                 data={'title': 'changed'})
         self.assertStatusCode(401, resp)
@@ -104,7 +104,7 @@ class FeedApiTest(JarrFlaskCommon):
         self.assertStatusCode(403, resp)
 
     def test_FeedResource_delete(self):
-        feed_id = self.jarr_client('get', 'feeds', user='user1').json()[0]['id']
+        feed_id = self.jarr_client('get', 'feeds', user='user1').json[0]['id']
         resp = self.jarr_client('delete', 'feed', feed_id)
         self.assertStatusCode(401, resp)
         resp = self.jarr_client('delete', 'feed', feed_id, user='user2')
@@ -112,7 +112,7 @@ class FeedApiTest(JarrFlaskCommon):
         resp = self.jarr_client('delete', 'feed', feed_id, user='user1')
         self.assertStatusCode(204, resp)
 
-        feeds = self.jarr_client('get', 'feeds', user='user1').json()
+        feeds = self.jarr_client('get', 'feeds', user='user1').json
         self.assertFalse(feed_id in [feed['id'] for feed in feeds])
 
     @patch('jarr.api.feed.construct_feed_from')
@@ -128,12 +128,12 @@ class FeedApiTest(JarrFlaskCommon):
         resp = self.jarr_client('get', 'feed', 'build', user='user1',
                 data={'url': "whateve', it's mocked"})
         self.assertStatusCode(200, resp)
-        self.assertEqual(resp.json(), FEED)
+        self.assertEqual(resp.json, FEED)
 
     def test_IconResource_get(self):
         resp = self.jarr_client('post', 'feed', user='user1', data=FEED)
         self.assertStatusCode(201, resp)
-        feed = resp.json()
+        feed = resp.json
         resp = self.jarr_client('get', 'feed', 'icon',
                                 data={'url': feed['icon_url']})
         self.assertStatusCode(200, resp)

@@ -3,7 +3,7 @@ from flask import Response
 from flask_restplus import Namespace, Resource, fields
 from flask_jwt import jwt_required, current_identity
 from werkzeug.exceptions import NotFound, Forbidden
-from jarr_common.feed_utils import construct_feed_from
+from jarr.lib.feed_utils import construct_feed_from
 from jarr.bootstrap import conf
 from jarr.api.common import set_model_n_parser, parse_meaningful_params
 from jarr.controllers import FeedController, IconController

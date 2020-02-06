@@ -6,7 +6,7 @@ from werkzeug.exceptions import UnprocessableEntity
 import opml
 from jarr.controllers import (FeedController, CategoryController,
         UserController)
-from jarr_common.utils import utc_now
+from jarr.lib.utils import utc_now
 
 opml_ns = Namespace('opml',
         description="Allows to export and import OPML files")

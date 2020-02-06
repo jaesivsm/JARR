@@ -2,9 +2,9 @@ from sqlalchemy import (Boolean, Column, Integer, PickleType, String, Enum,
                         Index, ForeignKeyConstraint)
 from sqlalchemy.orm import relationship, validates
 
-from jarr_common.utils import utc_now
-from jarr_common.const import UNIX_START
-from jarr_common.reasons import CacheReason
+from jarr.lib.utils import utc_now
+from jarr.lib.const import UNIX_START
+from jarr.lib.reasons import CacheReason
 from jarr.bootstrap import Base
 from jarr.models.utc_datetime_type import UTCDateTime
 

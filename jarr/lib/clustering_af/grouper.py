@@ -4,7 +4,7 @@ If two articles, in the same category, have enough similar tokens, we assume
 that they talk about the same subject, and we group them in a meta-article
 """
 from collections import Counter
-from jarr_common.clustering_af.vector import TFIDFVector
+from jarr.lib.clustering_af.vector import TFIDFVector
 
 
 def get_cosine_similarity(v1, article2, freq, tokens, nb_docs):

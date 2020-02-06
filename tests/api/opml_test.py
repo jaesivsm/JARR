@@ -50,8 +50,8 @@ class OPMLTest(JarrFlaskCommon):
                 headers=None,
                 user=self.user.login)
         self.assertStatusCode(201, import_resp)
-        self.assertEqual(0, import_resp.json()['existing'])
-        self.assertEqual(0, import_resp.json()['failed'])
+        self.assertEqual(0, import_resp.json['existing'])
+        self.assertEqual(0, import_resp.json['failed'])
         self._check_opml_imported(existing_feeds, no_category_feed)
 
         import_resp = self.jarr_client('post', 'opml', to_json=False,
@@ -59,8 +59,8 @@ class OPMLTest(JarrFlaskCommon):
                 headers=None,
                 user=self.user.login)
         self.assertStatusCode(200, import_resp)
-        self.assertEqual(0, import_resp.json()['created'])
-        self.assertEqual(0, import_resp.json()['failed'])
+        self.assertEqual(0, import_resp.json['created'])
+        self.assertEqual(0, import_resp.json['failed'])
 
     def _check_opml_imported(self, existing_feeds, no_category_feed):
         self.assertEqual(sum(map(len, existing_feeds.values()))

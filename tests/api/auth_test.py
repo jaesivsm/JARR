@@ -14,7 +14,7 @@ class AuthTest(JarrFlaskCommon):
         self.user2 = UserController().get(login='user2')
         self.uctrl = UserController()
 
-    @patch('jarr_common.emails.send')
+    @patch('jarr.lib.emails.send')
     def test_password_recovery(self, mock_emails_send):
         self.assertEqual('', self.user.renew_password_token)
         email = urllib.parse.quote_plus(self.user.email)

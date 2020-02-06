@@ -6,9 +6,9 @@ from urllib.parse import SplitResult, urlsplit, urlunsplit
 import dateutil.parser
 from requests.exceptions import MissingSchema
 
-from jarr_common.filter import process_filters, FiltersAction
-from jarr_common.html_parsing import extract_tags, extract_title, extract_lang
-from jarr_common.utils import jarr_get, utc_now
+from jarr.lib.filter import process_filters, FiltersAction
+from jarr.lib.html_parsing import extract_tags, extract_title, extract_lang
+from jarr.lib.utils import jarr_get, utc_now
 from jarr.lib.article_cleaner import clean_urls
 
 logger = logging.getLogger(__name__)
@@ -39,8 +39,8 @@ def construct_article(entry, feed, user_agent,
         else:
             value = args[0](*args[1:])
         article[key] = value
-    push_in_article('feed_id', feed['id'])
-    push_in_article('user_id', feed['user_id'])
+    push_in_article('feed_id', feed.id)
+    push_in_article('user_id', feed.user_id)
     push_in_article('entry_id', extract_id, entry)
     push_in_article('retrieved_date', now)
     if not fields or 'date' in fields:
@@ -134,7 +134,7 @@ def get_article_details(entry, user_agent, fetch=True, resolv=False):
 def get_skip_and_ids(entry, feed, user_agent, resolv=False):
     entry_ids = construct_article(entry, feed, user_agent,
                 {'entry_id', 'feed_id', 'user_id'}, fetch=False, resolv=resolv)
-    skipped, _, _ = process_filters(feed['filters'],
+    skipped, _, _ = process_filters(feed.filters,
             construct_article(entry, feed, user_agent, {'title', 'tags'},
                               fetch=False, resolv=resolv),
             {FiltersAction.SKIP})

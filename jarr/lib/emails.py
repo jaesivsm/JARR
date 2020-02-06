@@ -3,7 +3,7 @@ import logging
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-from jarr_common.utils import rfc_1123_utc
+from jarr.lib.utils import rfc_1123_utc
 
 from jarr.bootstrap import conf
 

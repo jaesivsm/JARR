@@ -1,6 +1,6 @@
 from datetime import timedelta
 
-from jarr_common.utils import utc_now
+from jarr.lib.utils import utc_now
 from jarr.bootstrap import conf, session
 from jarr.controllers import (ArticleController, CategoryController,
                               ClusterController,

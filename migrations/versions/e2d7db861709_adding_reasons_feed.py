@@ -7,7 +7,7 @@ Create Date: 2017-07-25 12:05:47.958845
 """
 from alembic import op
 import sqlalchemy as sa
-from jarr_common.reasons import ClusterReason, ReadReason
+from jarr.lib.reasons import ClusterReason, ReadReason
 
 revision = 'e2d7db861709'
 down_revision = '7d652d333758'

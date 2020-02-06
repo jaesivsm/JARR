@@ -6,9 +6,9 @@ from functools import lru_cache
 
 import feedparser
 
-from jarr_common.const import FEED_ACCEPT_HEADERS, FEED_MIMETYPES
-from jarr_common.utils import jarr_get, rebuild_url
-from jarr_common.html_parsing import (extract_title, extract_icon_url,
+from jarr.lib.const import FEED_ACCEPT_HEADERS, FEED_MIMETYPES
+from jarr.lib.utils import jarr_get, rebuild_url
+from jarr.lib.html_parsing import (extract_title, extract_icon_url,
         extract_opg_prop, extract_feed_link, try_get_icon_url)
 
 logger = logging.getLogger(__name__)

@@ -1,6 +1,6 @@
 import unittest
 
-from jarr_common.feed_utils import construct_feed_from
+from jarr.lib.feed_utils import construct_feed_from
 from jarr.bootstrap import conf
 
 cff_kw = {'timeout': conf.crawler.timeout,
@@ -36,11 +36,11 @@ class ConstructFeedFromTest(unittest.TestCase):
         self.maxDiff = None
         joi = construct_feed_from('https://lesjoiesducode.fr/feed', **cff_kw)
         self.assertEqual(
-                {'description': "L'instant gif des développeurs !",
-                 'icon_url': 'https://ljdchost.com/theme/favicons/favicon.ico',
+                {'icon_url': 'https://lesjoiesducode.fr/favicon-32x32.png',
                  'link': 'https://lesjoiesducode.fr/feed',
                  'site_link': 'https://lesjoiesducode.fr',
-                 'title': 'Les joies du code'}, joi)
+                 'title': 'Les Joies du Code – Humour de développeurs '
+                 ': gifs, memes'}, joi)
 
     def test_apod(self):
         nasa = construct_feed_from('http://apod.nasa.gov/', **cff_kw)

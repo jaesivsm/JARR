@@ -5,7 +5,7 @@ from mock import Mock
 from tests.base import BaseJarrTest
 from tests.utils import update_on_all_objs
 
-from jarr_common.utils import utc_now
+from jarr.lib.utils import utc_now
 from jarr.controllers import (ArticleController,
                               ClusterController, FeedController)
 

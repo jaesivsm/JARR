@@ -17,14 +17,14 @@ class OnePageAppTest(JarrFlaskCommon):
         resp = self.jarr_client('get', 'middle_panel',
                 data=filters, user=self.user.login)
         self.assertStatusCode(200, resp)
-        clusters = resp.json()
+        clusters = resp.json
         self.assertEqual(count, len(clusters))
         return clusters
 
     def test_left_panel(self):
         resp = self.jarr_client('get', 'left_panel', user=self.user.login)
         self.assertStatusCode(200, resp)
-        result = resp.json()
+        result = resp.json
         self.assertEqual(6, len(result))
         self.assertEqual(18, sum(line['unread'] for line in result))
 
@@ -32,7 +32,7 @@ class OnePageAppTest(JarrFlaskCommon):
 
         resp = self.jarr_client('get', 'left_panel', user=self.user.login)
         self.assertStatusCode(200, resp)
-        result = resp.json()
+        result = resp.json
         self.assertEqual(6, len(result))
         self.assertEqual(0, sum(line['unread'] for line in result))
 

@@ -6,7 +6,7 @@ import unittest
 from flask_testing import TestCase
 from werkzeug.exceptions import NotFound
 
-from jarr.bootstrap import session, Base, init_db
+from jarr.bootstrap import conf, session, Base, init_db
 from tests.fixtures.filler import populate_db
 
 
@@ -20,6 +20,7 @@ class BaseJarrTest(TestCase):
     _application = None
 
     def create_app(self):
+        assert conf.jarr_testing, "configuration not set on testing"
         from jarr.api import create_app
         self._application = create_app(testing=True)
         return self._application
@@ -69,6 +70,7 @@ class BaseJarrTest(TestCase):
             pass
 
     def setUp(self):
+        assert conf.jarr_testing, "configuration not set on testing"
         from jarr.api import get_cached_user
         get_cached_user.cache_clear()
         init_db()
@@ -86,6 +88,7 @@ class BaseJarrTest(TestCase):
 class JarrFlaskCommon(BaseJarrTest):
 
     def setUp(self):
+        assert conf.jarr_testing, "configuration not set on testing"
         super().setUp()
         self.app = self._application.test_client()
 
@@ -114,8 +117,6 @@ class JarrFlaskCommon(BaseJarrTest):
         kwargs.pop('timeout', None)  # removing timeout non supported by flask
         kwargs['headers'] = headers
         resp = method(urn, **kwargs)
-        if resp.data and resp.content_type == 'application/json':
-            resp.json = lambda *a, **kw: json.loads(resp.data.decode('utf8'))
         resp.encoding = 'utf8'
         return resp
 

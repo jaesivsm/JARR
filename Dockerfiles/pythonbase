@@ -1,0 +1,11 @@
+FROM python:3.6-slim
+
+RUN useradd jarr --create-home --shell /bin/bash --home-dir /jarr --user-group
+COPY --chown=jarr:jarr . /jarr
+WORKDIR /jarr
+RUN pip install --upgrade pip pipenv
+USER jarr
+RUN pipenv sync
+
+VOLUME /etc/jarr/
+COPY example_conf/jarr.json /etc/jarr/jarr.json

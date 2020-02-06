@@ -4,8 +4,8 @@ import logging
 import re
 
 from jarr.bootstrap import conf
-from jarr_common.const import FEED_ACCEPT_HEADERS
-from jarr_common.utils import utc_now, rfc_1123_utc, to_hash
+from jarr.lib.const import FEED_ACCEPT_HEADERS
+from jarr.lib.utils import utc_now, rfc_1123_utc, to_hash
 
 logger = logging.getLogger(__name__)
 MAX_AGE_RE = re.compile('max-age=([0-9]+)')
@@ -73,12 +73,11 @@ def prepare_headers(feed):
     """For a known feed, will construct some header dictionnary"""
     headers = {'User-Agent': conf.crawler.user_agent,
                'Accept': FEED_ACCEPT_HEADERS}
-    if feed.get('last_modified'):
-        headers['If-Modified-Since'] = feed['last_modified']
-    if feed.get('etag') and 'jarr' not in feed['etag']:
-        headers['If-None-Match'] = feed['etag']
+    if feed.last_modified:
+        headers['If-Modified-Since'] = feed.last_modified
+    if feed.etag and 'jarr' not in feed.etag:
+        headers['If-None-Match'] = feed.etag
     if 'If-Modified-Since' in headers or 'If-None-Match' in headers:
         headers['A-IM'] = 'feed'
-    logger.debug('%r %r - calculated headers %r',
-                    feed['id'], feed['title'], headers)
+    logger.debug('%r %r - calculated headers %r', feed.id, feed.title, headers)
     return headers

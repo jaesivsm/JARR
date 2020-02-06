@@ -6,7 +6,7 @@
 
 import logging
 
-from jarr_common.utils import jarr_get as common_get
+from jarr.lib.utils import jarr_get as common_get
 from jarr.bootstrap import conf
 
 logger = logging.getLogger(__name__)

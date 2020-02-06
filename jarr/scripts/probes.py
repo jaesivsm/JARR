@@ -5,7 +5,7 @@ import math
 
 from flask_script import Command, Option
 
-from jarr_common.utils import utc_now
+from jarr.lib.utils import utc_now
 from jarr.bootstrap import conf
 from jarr.controllers import FeedController, ArticleController
 

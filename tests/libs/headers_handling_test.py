@@ -1,8 +1,8 @@
 import unittest
 from datetime import datetime, timedelta
 
-from jarr_crawler.lib.headers_handling import extract_feed_info, rfc_1123_utc
-from jarr_common.utils import utc_now
+from jarr.crawler.lib.headers_handling import extract_feed_info, rfc_1123_utc
+from jarr.lib.utils import utc_now
 from jarr.bootstrap import conf
 
 

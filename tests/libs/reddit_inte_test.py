@@ -1,6 +1,6 @@
 import unittest
-from jarr.signals import feed_creation
-from jarr_crawler.signals import entry_parsing
+from jarr.signals import feed_creation, entry_parsing
+from jarr.models.feed import Feed
 
 CONTENT = """<table><tr><td>
 <a href="https://www.reddit.com/r/Map_Porn/comments/5mxq4o/\
@@ -22,15 +22,15 @@ class RedditIntegrationTest(unittest.TestCase):
     def test_feed_creation(self):
         feed = {'link': 'http://www.reddit.com/r/france/.rss'}
         feed_creation.send('test', feed=feed)
-        self.assertTrue(feed.get('integration_reddit'))
+        self.assertTrue(feed['integration_reddit'])
 
     def test_feed_creation_https(self):
         feed = {'link': 'https://www.reddit.com/r/france/.rss'}
         feed_creation.send('test', feed=feed)
-        self.assertTrue(feed.get('integration_reddit'))
+        self.assertTrue(feed['integration_reddit'])
 
     def test_match_light_parsing_nok(self):
-        feed = {'integration_reddit': True}
+        feed = Feed(integration_reddit=True, link='')
         tags = [{'scheme': None, 'term': 'to', 'label': ''},
                 {'scheme': None, 'term': 'be', 'label': ''},
                 {'scheme': None, 'term': 'removed', 'label': ''}]
@@ -41,8 +41,8 @@ class RedditIntegrationTest(unittest.TestCase):
         self.assertEqual(entry['tags'], tags)
 
     def test_match_light_parsing_ok(self):
-        feed = {'integration_reddit': True,
-                'link': 'https://www.reddit.com/r/france/.rss'}
+        feed = Feed(integration_reddit=True,
+                    link='https://www.reddit.com/r/france/.rss')
         tags = [{'scheme': None, 'term': 'to', 'label': ''},
                 {'scheme': None, 'term': 'be', 'label': ''},
                 {'scheme': None, 'term': 'removed', 'label': ''}]

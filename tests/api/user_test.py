@@ -16,12 +16,12 @@ class UserTest(JarrFlaskCommon):
         self.assertStatusCode(401, resp)
         resp = self.jarr_client('get', 'user', user=self.user.login)
         self.assertStatusCode(200, resp)
-        self.assertEqual(resp.json()['login'], self.user.login)
-        self.assertFalse('password' in resp.json())
+        self.assertEqual(resp.json['login'], self.user.login)
+        self.assertFalse('password' in resp.json)
         resp = self.jarr_client('get', 'user', user=self.user2.login)
         self.assertStatusCode(200, resp)
-        self.assertEqual(resp.json()['login'], self.user2.login)
-        self.assertFalse('password' in resp.json())
+        self.assertEqual(resp.json['login'], self.user2.login)
+        self.assertFalse('password' in resp.json)
 
     def test_UserResource_put(self):
         headers = {'Authorization': self.get_token_for(self.user2.login),

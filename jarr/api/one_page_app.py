@@ -1,7 +1,7 @@
 from flask_restplus import Namespace, Resource, fields
 from flask_jwt import jwt_required, current_identity
 
-from jarr_common.reasons import ReadReason
+from jarr.lib.reasons import ReadReason
 from jarr.controllers import FeedController, ClusterController
 
 ACCEPTED_LEVELS = {'success', 'info', 'warning', 'error'}

@@ -14,7 +14,7 @@ class ClusterApiTest(JarrFlaskCommon):
         self.assertStatusCode(403, resp)
         resp = self.jarr_client('get', 'cluster', cluster.id, user=user.login)
         self.assertStatusCode(226, resp)
-        self.assertEqual(1, len(resp.json()['articles']))
+        self.assertEqual(1, len(resp.json['articles']))
         resp = self.jarr_client('get', 'cluster', cluster.id, user=user.login)
         self.assertStatusCode(200, resp)
 
@@ -78,6 +78,6 @@ class ClusterApiTest(JarrFlaskCommon):
         resp = self.jarr_client('get', 'cluster', cluster.id, user=user.login)
         self.assertStatusCode(200, resp)
 
-        self.assertTrue(resp.json()['read'])
+        self.assertTrue(resp.json['read'])
         self.assertEqual('consulted',
                 ClusterController().get(id=cluster.id).read_reason.value)

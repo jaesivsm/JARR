@@ -1,11 +1,12 @@
+import re
 import logging
 from datetime import timedelta
-
+from bs4 import BeautifulSoup
 from sqlalchemy import func, cast
 from sqlalchemy.dialects.postgresql import TSVECTOR
 from werkzeug.exceptions import Unauthorized, Forbidden
 
-from jarr_common.utils import utc_now
+from jarr.lib.utils import utc_now
 
 from jarr.bootstrap import session
 from jarr.controllers import CategoryController, FeedController
@@ -80,9 +81,13 @@ class ArticleController(AbstractController):
                 feed.user_id == attrs['user_id'] or self.user_id is None):
             raise Forbidden("no right on feed %r" % feed.id)
         attrs['user_id'], attrs['category_id'] = feed.user_id, feed.category_id
-        attrs['vector'] = cast(attrs.get('title', ' ')
+        vector = (attrs.get('title', ' ')
                 + ' ' + ' '.join(attrs.get('tags', []))
-                + ' ' + attrs.get('content', ' '), TSVECTOR)
+                + ' ' + attrs.get('content', ' '))
+        vector = BeautifulSoup(vector, 'html.parser').text
+        vector = re.sub(r'\W', ' ', vector).strip()
+        if vector:
+            attrs['vector'] = cast(vector, TSVECTOR)
         return super().create(**attrs)
 
     def update(self, filters, attrs, return_objs=False, commit=True):

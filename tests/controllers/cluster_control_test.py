@@ -3,7 +3,7 @@ from datetime import timedelta
 from tests.base import BaseJarrTest
 from tests.utils import update_on_all_objs
 
-from jarr_common.reasons import ClusterReason
+from jarr.lib.reasons import ClusterReason
 from jarr.controllers import (ClusterController, ArticleController,
                               FeedController, CategoryController,
                               UserController)

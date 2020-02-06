@@ -1,0 +1,40 @@
+version: '3.2'
+services:
+  jarr-server:
+    build:
+      dockerfile: Dockerfiles/server
+      context: .
+    ports:
+      - 8000:8000
+    depends_on:
+      - redis
+      - postgresql
+      - rabbitmq
+  crawler:
+    build:
+      dockerfile: Dockerfiles/crawler
+      context: .
+    depends_on:
+      - redis
+      - postgresql
+      - rabbitmq
+  rabbitmq:
+    image: rabbitmq
+  redis:
+    image: redis
+    ports:
+      - 6379
+  rabbitmq:
+    image: rabbitmq
+    ports:
+      - "25672"
+      - "4369"
+      - "5671"
+      - "5672"
+  postgresql:
+    image: postgres:11
+    volumes:
+      - ./jarr-data:/var/lib/postgresql/data
+
+volumes:
+  db-data:

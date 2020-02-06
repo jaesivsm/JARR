@@ -7,7 +7,7 @@ KOREUS_FEED = re.compile(r'^https?://feeds.feedburner.com/Koreus-articles$')
 
 @entry_parsing.connect
 def koreus_integration(sender, feed, entry, **kwargs):
-    is_koreus_feed = bool(KOREUS_FEED.match(feed.get('link', '')))
+    is_koreus_feed = bool(KOREUS_FEED.match(feed.link or ''))
     has_sufficient_data = bool(entry.get('summary_detail', {}).get('value'))
     if not is_koreus_feed or not has_sufficient_data:
         return

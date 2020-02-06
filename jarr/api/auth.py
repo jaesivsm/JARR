@@ -2,7 +2,7 @@ import random
 from flask import render_template, current_app
 from flask_restplus import Namespace, Resource, fields
 from werkzeug.exceptions import BadRequest, Forbidden
-from jarr_common import emails
+from jarr.lib import emails
 from jarr.bootstrap import conf
 from jarr.controllers import UserController
 

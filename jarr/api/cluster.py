@@ -1,7 +1,7 @@
 from flask_restplus import Namespace, Resource, fields
 from flask_jwt import jwt_required, current_identity
 from werkzeug.exceptions import NotFound, Forbidden
-from jarr_common.reasons import ReadReason
+from jarr.lib.reasons import ReadReason
 from jarr.controllers import ClusterController
 from jarr.api.common import parse_meaningful_params
 

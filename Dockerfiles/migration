@@ -1,0 +1,6 @@
+FROM jarr_python-base:latest
+
+COPY example_conf/logging.ini /etc/jarr/logging.ini
+COPY example_conf/gunicorn.py /etc/jarr/gunicorn.py
+EXPOSE 8000
+CMD ["pipenv", "run", "/jarr/manager.py", "db", "upgrade"]

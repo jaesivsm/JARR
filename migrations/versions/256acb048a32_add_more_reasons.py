@@ -7,7 +7,7 @@ Create Date: 2017-07-31 11:49:16.345244
 """
 from alembic import op
 import sqlalchemy as sa
-from jarr_common.reasons import CacheReason
+from jarr.lib.reasons import CacheReason
 
 
 revision = '256acb048a32'
