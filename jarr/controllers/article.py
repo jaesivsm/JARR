@@ -1,6 +1,7 @@
 import logging
 import re
 from datetime import timedelta
+from hashlib import sha1
 
 from bs4 import BeautifulSoup
 from sqlalchemy import cast, func
@@ -88,6 +89,7 @@ class ArticleController(AbstractController):
         vector = re.sub(r'\W', ' ', vector).strip()
         if vector:
             attrs['vector'] = cast(vector, TSVECTOR)
+        attrs['link_hash'] = sha1(attrs['link'].encode('utf8')).digest()
         return super().create(**attrs)
 
     def update(self, filters, attrs, return_objs=False, commit=True):

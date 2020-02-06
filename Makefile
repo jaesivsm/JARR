@@ -34,14 +34,13 @@ start-env:
 
 run-server: export JARR_CONFIG = $(CONF_FILE)
 run-server:
-	pipenv run gunicorn -c $(GUNICORN_CONF) --log-config $(LOG_CONFIG) -b $(SERVER_ADDR):$(SERVER_PORT) wsgi:application
+	pipenv run gunicorn -c $(GUNICORN_CONF) -b $(SERVER_ADDR):$(SERVER_PORT) wsgi:application
 
 run-worker: export JARR_CONFIG = $(CONF_FILE)
 run-worker:
 	pipenv run celery worker --app ep_celery.celery_app
 
-init-env: export JARR_CONFIG = $(CONF_FILE)
-init-env:
+create-db:
 	pipenv run docker-compose \
 		--project-name jarr \
 		--file Dockerfiles/dev-env.yml \
@@ -52,6 +51,9 @@ init-env:
 		--project-name jarr \
 		--file Dockerfiles/dev-env.yml \
 		exec postgresql su postgres -c "createdb jarr --no-password"
+
+init-env: export JARR_CONFIG = $(CONF_FILE)
+init-env: create-db
 	pipenv run ./manager.py db_create
 	pipenv run ./manager.py db stamp $(DB_VER)
 

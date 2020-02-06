@@ -71,7 +71,7 @@ class ClusterController(AbstractController):
 
     def _get_cluster_by_link(self, article):
         for candidate in self._get_query_for_clustering(article,
-                {'link': article.link}):
+                {'link_hash': article.link_hash}):
             article.cluster_reason = ClusterReason.link
             return candidate.cluster
 

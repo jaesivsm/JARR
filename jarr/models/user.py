@@ -58,3 +58,6 @@ class User(Base):
     @staticmethod
     def validates_login(key, value):
         return re.sub(r'[^a-zA-Z0-9_\.]', '', value.strip())
+
+    def __repr__(self):
+        return "<User %s(%s)>" % (self.login, self.id)

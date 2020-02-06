@@ -1,5 +1,5 @@
 from sqlalchemy import (Boolean, Column, Integer, PickleType,
-                        String, Enum, Index, ForeignKeyConstraint)
+                        String, Enum, Index, ForeignKeyConstraint, Binary)
 from sqlalchemy.orm import relationship
 from sqlalchemy.dialects.postgresql import TSVECTOR
 
@@ -16,6 +16,7 @@ class Article(Base):
     id = Column(Integer, primary_key=True)
     entry_id = Column(String)
     link = Column(String)
+    link_hash = Column(Binary)
     title = Column(String)
     content = Column(String)
     comments = Column(String)
@@ -26,14 +27,14 @@ class Article(Base):
     tags = Column(PickleType, default=[])
     vector = Column(TSVECTOR)
 
-    def __init__(self, *args, **kwargs):
-        self._simple_vector = {}
-        super().__init__(*args, **kwargs)
+    _simple_vector = None
 
     @property
     def simple_vector(self):
         if self._simple_vector:
             return self._simple_vector
+        if self._simple_vector is None:
+            self._simple_vector = {}
         for word_n_count in self.vector.split():
             try:
                 word, count = word_n_count.split(':')
@@ -74,8 +75,8 @@ class Article(Base):
             Index('ix_article_uid_fid_cluid', user_id, feed_id, cluster_id),
             Index('ix_article_uid_cid_cluid',
                   user_id, category_id, cluster_id),
-            Index('ix_article_eid_cid_uid', entry_id, category_id, user_id),
-            Index('ix_article_link_cid_uid', link, category_id, user_id),
+            Index('ix_article_eid_cid_uid', user_id, category_id, entry_id),
+            Index('ix_article_uid_cid_linkh', user_id, category_id, link_hash),
             Index('ix_article_retrdate', retrieved_date),
     )
 
