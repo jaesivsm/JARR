@@ -1,5 +1,6 @@
 GUNICORN_CONF = example_conf/gunicorn.py
 LOG_CONFIG = example_conf/logging.ini
+CONF_FILE = example_conf/jarr.json
 SERVER_PORT = 8000
 SERVER_ADDR = 0.0.0.0
 DB_VER = $(shell pipenv run ./manager.py db heads | sed -e 's/ .*//g')
@@ -31,15 +32,15 @@ start-env:
 		--file Dockerfiles/dev-env.yml \
 		up -d
 
-run-server: JARR_CONFIG = example_conf/jarr.json
+run-server: export JARR_CONFIG = $(CONF_FILE)
 run-server:
 	pipenv run gunicorn -c $(GUNICORN_CONF) --log-config $(LOG_CONFIG) -b $(SERVER_ADDR):$(SERVER_PORT) wsgi:application
 
-run-worker: JARR_CONFIG = example_conf/jarr.json
+run-worker: export JARR_CONFIG = $(CONF_FILE)
 run-worker:
 	pipenv run celery worker --app ep_celery.celery_app
 
-init-env: JARR_CONFIG = example_conf/jarr.json
+init-env: export JARR_CONFIG = $(CONF_FILE)
 init-env:
 	pipenv run docker-compose \
 		--project-name jarr \
