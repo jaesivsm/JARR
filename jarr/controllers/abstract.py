@@ -5,7 +5,7 @@ import dateutil.parser
 from sqlalchemy import and_, or_
 from werkzeug.exceptions import Forbidden, NotFound, Unauthorized
 
-from jarr.bootstrap import session, Base
+from jarr.bootstrap import Base, session
 
 logger = logging.getLogger(__name__)
 

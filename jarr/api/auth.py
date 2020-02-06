@@ -1,10 +1,12 @@
 import random
-from flask import render_template, current_app
+
+from flask import current_app, render_template
 from flask_restplus import Namespace, Resource, fields
 from werkzeug.exceptions import BadRequest, Forbidden
-from jarr.lib import emails
+
 from jarr.bootstrap import conf
 from jarr.controllers import UserController
+from jarr.lib import emails
 
 auth_ns = Namespace('auth', description="Auth related operations")
 model = auth_ns.model('Login', {
@@ -23,11 +25,12 @@ login_recovery_parser.add_argument('password', type=str, required=True)
 @auth_ns.route('')
 class LoginResource(Resource):
 
+    @staticmethod
     @auth_ns.expect(login_parser)
     @auth_ns.response(200, 'OK', model=model)
     @auth_ns.response(400, 'Missing params')
     @auth_ns.response(403, 'Forbidden')
-    def post(self):
+    def post():
         "Given valid credentials, will provide a token to request the API"
         attrs = login_parser.parse_args()
         jwt = current_app.extensions['jwt']
@@ -41,9 +44,10 @@ class LoginResource(Resource):
 @auth_ns.route('_recovery/<email>')
 class InitPasswordRecovery(Resource):
 
+    @staticmethod
     @auth_ns.response(204, 'Token generated and mail sent')
     @auth_ns.response(400, 'Bad request')
-    def post(self, email):
+    def post(email):
         """Initialize password recovery by creating a uniq token and sending
         a mail with link to password recovery page"""
         token = str(random.getrandbits(128))
@@ -61,11 +65,12 @@ class InitPasswordRecovery(Resource):
 @auth_ns.route('_recovery')
 class PasswordRecovery(Resource):
 
+    @staticmethod
     @auth_ns.expect(login_recovery_parser, validate=True)
     @auth_ns.response(204, "Password updated")
     @auth_ns.response(403, "Wrong token")
     @auth_ns.response(404, "Email doesn't match any user")
-    def put(self):
+    def put():
         """Sending new password with recovery token"""
         attrs = login_recovery_parser.parse_args()
         user = UserController().get(email=attrs['email'])

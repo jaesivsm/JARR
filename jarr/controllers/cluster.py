@@ -6,14 +6,13 @@ from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.orm import aliased
 from sqlalchemy.sql import exists, select
 
-from jarr.lib.filter import process_filters
-from jarr.lib.reasons import ClusterReason, ReadReason
-from jarr.lib.clustering_af.grouper import get_best_match_and_score
-
-from jarr.utils import get_cluster_pref
 from jarr.bootstrap import session
 from jarr.controllers.article import ArticleController
-from jarr.models import Article, Cluster, Feed, Category, User
+from jarr.lib.clustering_af.grouper import get_best_match_and_score
+from jarr.lib.filter import process_filters
+from jarr.lib.reasons import ClusterReason, ReadReason
+from jarr.models import Article, Category, Cluster, Feed, User
+from jarr.utils import get_cluster_pref
 
 from .abstract import AbstractController
 

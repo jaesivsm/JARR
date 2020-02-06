@@ -1,9 +1,9 @@
+from flask_jwt import current_identity, jwt_required
 from flask_restplus import Namespace, Resource, fields
-from flask_jwt import jwt_required, current_identity
-from werkzeug.exceptions import NotFound, Forbidden
-from jarr.api.common import set_model_n_parser, parse_meaningful_params
-from jarr.controllers import (FeedController, CategoryController,
-        ClusterController)
+from werkzeug.exceptions import Forbidden, NotFound
+
+from jarr.api.common import parse_meaningful_params, set_model_n_parser
+from jarr.controllers import CategoryController
 
 prout = {'debug': False}
 category_ns = Namespace('category', path='/categor',
@@ -35,13 +35,14 @@ set_model_n_parser(model, parser_edit, 'name', str)
 @category_ns.route('y')
 class NewCategoryResource(Resource):
 
+    @staticmethod
     @category_ns.expect(parser, validate=True)
     @category_ns.response(201, 'Created')
     @category_ns.response(400, 'Validation error')
     @category_ns.response(401, 'Authorization needed')
     @category_ns.marshal_with(model, code=201, description='Created')
     @jwt_required()
-    def post(self):
+    def post():
         "Create a new category"
         attrs = parse_meaningful_params(parser)
         return CategoryController(current_identity.id).create(**attrs), 201
@@ -50,11 +51,12 @@ class NewCategoryResource(Resource):
 @category_ns.route('ies')
 class ListCategoryResource(Resource):
 
+    @staticmethod
     @category_ns.response(200, 'OK', model=[model])
     @category_ns.response(401, 'Authorization needed')
     @category_ns.marshal_list_with(model)
     @jwt_required()
-    def get(self):
+    def get():
         "List all categories with their unread counts"
         return list(CategoryController(current_identity.id).read()), 200
 
@@ -62,6 +64,7 @@ class ListCategoryResource(Resource):
 @category_ns.route('y/<int:category_id>')
 class CategoryResource(Resource):
 
+    @staticmethod
     @category_ns.expect(parser_edit, validate=True)
     @category_ns.response(204, 'Updated')
     @category_ns.response(400, 'Validation error')
@@ -69,7 +72,7 @@ class CategoryResource(Resource):
     @category_ns.response(403, 'Forbidden')
     @category_ns.response(404, 'Not found')
     @jwt_required()
-    def put(self, category_id):
+    def put(category_id):
         "Update an existing category"
         cctrl = CategoryController(current_identity.id)
         attrs = parse_meaningful_params(parser_edit)
@@ -79,6 +82,7 @@ class CategoryResource(Resource):
                 cctrl.assert_right_ok(category_id)
         return None, 204
 
+    @staticmethod
     @category_ns.expect(parser)
     @category_ns.response(204, 'Deleted')
     @category_ns.response(400, 'Validation error')
@@ -86,7 +90,7 @@ class CategoryResource(Resource):
     @category_ns.response(403, 'Forbidden')
     @category_ns.response(404, 'Not found')
     @jwt_required()
-    def delete(self, category_id):
+    def delete(category_id):
         "Delete an existing category"
         try:
             CategoryController(current_identity.id).delete(category_id)

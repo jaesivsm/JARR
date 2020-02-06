@@ -1,8 +1,8 @@
+from flask_jwt import current_identity, jwt_required
 from flask_restplus import Namespace, Resource, fields
-from flask_jwt import jwt_required, current_identity
 
+from jarr.controllers import ClusterController
 from jarr.lib.reasons import ReadReason
-from jarr.controllers import FeedController, ClusterController
 
 ACCEPTED_LEVELS = {'success', 'info', 'warning', 'error'}
 default_ns = Namespace('default', path='/')
@@ -45,13 +45,14 @@ mark_as_read_parser.add_argument('only_singles', type=bool, default=False,
 
 
 @default_ns.route('/left_panel')
-class MiddlePanel(Resource):
+class LeftPanel(Resource):
 
+    @staticmethod
     @default_ns.response(200, 'OK', model=[midle_panel_model], as_list=True)
     @default_ns.response(401, 'Unauthorized')
     @default_ns.marshal_list_with(left_panel_model)
     @jwt_required()
-    def get(self):
+    def get():
         """Will list all cluster extract for the middle pannel"""
         clu_ctrl = ClusterController(current_identity.id)
         result = []
@@ -93,12 +94,13 @@ def _get_filters(in_dict):
 @default_ns.route('/middle_panel')
 class MiddlePanel(Resource):
 
+    @staticmethod
     @default_ns.response(200, 'OK', model=[midle_panel_model], as_list=True)
     @default_ns.response(401, 'Unauthorized')
     @default_ns.marshal_list_with(midle_panel_model)
     @default_ns.expect(filter_parser, validate=True)
     @jwt_required()
-    def get(self):
+    def get():
         """Will list all cluster extract for the middle pannel"""
         attrs = filter_parser.parse_args()
         clu_ctrl = ClusterController(current_identity.id)
@@ -108,13 +110,14 @@ class MiddlePanel(Resource):
 @default_ns.route('/mark_all_as_read')
 class MarkClustersAsRead(Resource):
 
+    @staticmethod
     @default_ns.expect(mark_as_read_parser)
     @default_ns.response(401, 'Unauthorized')
     @default_ns.response(200, 'Clusters in filter marked as read',
-            model=[midle_panel_model], as_list=True)
+                         model=[midle_panel_model], as_list=True)
     @default_ns.marshal_list_with(midle_panel_model)
     @jwt_required()
-    def put(self):
+    def put():
         """Will mark all clusters selected by the filter as read"""
         attrs = mark_as_read_parser.parse_args()
         filters = _get_filters(attrs)

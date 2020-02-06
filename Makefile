@@ -11,12 +11,12 @@ pep8:
 	pipenv run pycodestyle --ignore=E126,E127,E128,W503 jarr/ --exclude=jarr/migrations
 
 pylint:
-	pipenv run pylint -d I0011,R0901,R0902,R0801,C0111,C0103,C0411,C0330,R0903,R0913,R0914,R0915,R1710,W0613,W0703 jarr
+	pipenv run pylint -d I0011,R0901,R0902,R0801,C0111,C0103,C0411,C0415,C0330,R0903,R0913,R0914,R0915,R1710,W0613,W0703 jarr
 
 mypy:
 	pipenv run mypy jarr --ignore-missing-imports
 
-lint: pep8 pylint mypy
+lint: pep8 mypy pylint
 
 test: export JARR_CONFIG = example_conf/jarr.test.json
 test:

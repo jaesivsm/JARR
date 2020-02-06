@@ -26,11 +26,14 @@ class Article(Base):
     tags = Column(PickleType, default=[])
     vector = Column(TSVECTOR)
 
+    def __init__(self, *args, **kwargs):
+        self._simple_vector = {}
+        super().__init__(*args, **kwargs)
+
     @property
     def simple_vector(self):
-        if getattr(self, '_simple_vector', None) is not None:
+        if self._simple_vector:
             return self._simple_vector
-        self._simple_vector = {}
         for word_n_count in self.vector.split():
             try:
                 word, count = word_n_count.split(':')
@@ -77,7 +80,7 @@ class Article(Base):
     )
 
     def __repr__(self):
-        return "<Article(id=%d, entry_id=%r, title=%r, " \
+        return "<Article(id=%s, entry_id=%r, title=%r, " \
                "date=%s, retrieved_date=%s)>" % (self.id, self.entry_id,
                        self.title, self.date.isoformat(),
                        self.retrieved_date.isoformat())

@@ -1,14 +1,13 @@
 import logging
-import pytz
 import re
 import types
 import urllib
-from enum import Enum
 from datetime import datetime
+from enum import Enum
 from hashlib import md5
 
+import pytz
 import requests
-from flask import request, url_for
 from werkzeug.exceptions import HTTPException
 
 logger = logging.getLogger(__name__)

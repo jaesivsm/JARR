@@ -71,5 +71,5 @@ class Cluster(Base):
         return {feed.icon_url for feed in self.feeds}
 
     def __repr__(self):
-        return "<Cluster(id=%d, title=%r, date=%r)>" \
+        return "<Cluster(id=%s, title=%r, date=%r)>" \
                 % (self.id, self.main_title, self.main_date)

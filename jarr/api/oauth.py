@@ -18,10 +18,10 @@ oauth1_callback_parser.add_argument('oauth_verifier',
 
 # FROM http://blog.miguelgrinberg.com/post/oauth-authentication-with-flask
 class OAuthSignInMixin(Resource):  # pragma: no cover
-    provider = None
-    base_url = None
-    access_token_url = None
-    authorize_url = None
+    provider = None  # type: str
+    base_url = None  # type: str
+    access_token_url = None  # type: str
+    authorize_url = None  # type: str
 
     @property
     def service(self):

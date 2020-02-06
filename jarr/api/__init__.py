@@ -5,7 +5,8 @@ from flask import Flask
 from flask_jwt import JWT, JWTError
 from flask_restplus import Api
 from sqlalchemy.exc import IntegrityError
-from jarr.bootstrap import conf, session, PARSED_PLATFORM_URL
+
+from jarr.bootstrap import PARSED_PLATFORM_URL, conf, session
 from jarr.controllers import UserController
 
 
@@ -61,7 +62,7 @@ def setup_api(application):
               authorizations=authorizations)
 
     from jarr.api import (feed, cluster, category, one_page_app, opml,
-            user, auth, oauth)
+                          user, auth, oauth)
 
     api.add_namespace(one_page_app.default_ns)
     api.add_namespace(feed.feed_ns)

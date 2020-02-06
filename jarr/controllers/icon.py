@@ -9,7 +9,7 @@ from .abstract import AbstractController
 
 class IconController(AbstractController):
     _db_cls = Icon
-    _user_id_key = None
+    _user_id_key = None  # type: str
 
     @staticmethod
     def _build_from_url(attrs):

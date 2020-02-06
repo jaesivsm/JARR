@@ -1,15 +1,14 @@
-from datetime import timedelta, datetime
-import dateutil.parser
+from datetime import datetime, timedelta
 
+import dateutil.parser
 from sqlalchemy import and_
 from sqlalchemy.sql import delete, select, update
 from werkzeug.exceptions import Forbidden
 
-from jarr.lib.utils import utc_now
-
 from jarr.bootstrap import conf, session
 from jarr.controllers.abstract import AbstractController
 from jarr.controllers.icon import IconController
+from jarr.lib.utils import utc_now
 from jarr.models import Article, Cluster, Feed, User
 
 DEFAULT_LIMIT = 0
@@ -128,7 +127,7 @@ class FeedController(AbstractController):
 
         attrs['expires'] = min(expires)
 
-    def update(self, filters, attrs, *args, **kwargs):
+    def update(self, filters, attrs, return_objs=False, commit=True):
         self._ensure_icon(attrs)
         self.__clean_feed_fields(attrs)
         stuff_to_denorm = bool({'title', 'category_id'}.intersection(attrs))
@@ -141,9 +140,9 @@ class FeedController(AbstractController):
                     self.__denorm_title_on_clusters(feed, attrs)
                 if updating_expires:
                     self.__update_default_expires(feed, attrs)
-        return super().update(filters, attrs, *args, **kwargs)
+        return super().update(filters, attrs, return_objs, commit)
 
-    def delete(self, obj_id):
+    def delete(self, obj_id, commit=True):
         from jarr.controllers.cluster import ClusterController
         feed = self.get(id=obj_id)
         clu_ctrl = ClusterController(self.user_id)

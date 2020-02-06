@@ -25,7 +25,7 @@ from flask_restplus import fields
 logger = logging.getLogger(__name__)
 
 MODEL_PARSER_MAPPING = {bool: fields.Boolean, float: fields.Float,
-        str: fields.String, int: fields.Integer}
+                        str: fields.String, int: fields.Integer}
 
 
 def set_model_n_parser(model, parser, name, type_, **kwargs):

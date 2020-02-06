@@ -1,12 +1,14 @@
 import base64
+
 from flask import Response
+from flask_jwt import current_identity, jwt_required
 from flask_restplus import Namespace, Resource, fields
-from flask_jwt import jwt_required, current_identity
-from werkzeug.exceptions import NotFound, Forbidden
-from jarr.lib.feed_utils import construct_feed_from
+from werkzeug.exceptions import Forbidden, NotFound
+
+from jarr.api.common import parse_meaningful_params, set_model_n_parser
 from jarr.bootstrap import conf
-from jarr.api.common import set_model_n_parser, parse_meaningful_params
 from jarr.controllers import FeedController, IconController
+from jarr.lib.feed_utils import construct_feed_from
 
 feed_ns = Namespace('feed', description='Feed related operations')
 url_parser = feed_ns.parser()
@@ -62,13 +64,14 @@ feed_parser.add_argument('icon_url', type=str)
 @feed_ns.route('')
 class NewFeedResource(Resource):
 
+    @staticmethod
     @feed_ns.expect(feed_parser, validate=True)
     @feed_ns.response(201, 'Created', model=feed_model)
     @feed_ns.response(400, 'Validation error')
     @feed_ns.response(401, 'Authorization needed')
     @feed_ns.marshal_with(feed_model, code=201, description='Created')
     @jwt_required()
-    def post(self):
+    def post():
         "Create an new feed"
         attrs = parse_meaningful_params(feed_parser)
         return FeedController(current_identity.id).create(**attrs), 201
@@ -77,11 +80,12 @@ class NewFeedResource(Resource):
 @feed_ns.route('s')
 class ListFeedResource(Resource):
 
+    @staticmethod
     @feed_ns.response(200, 'OK', model=[feed_model])
     @feed_ns.response(401, 'Authorization needed')
     @feed_ns.marshal_list_with(feed_model)
     @jwt_required()
-    def get(self):
+    def get():
         """List all available feeds with their unread counts and a relative
         URL to their icons """
         return list(FeedController(current_identity.id).read())
@@ -90,6 +94,7 @@ class ListFeedResource(Resource):
 @feed_ns.route('/<int:feed_id>')
 class FeedResource(Resource):
 
+    @staticmethod
     @feed_ns.expect(feed_parser_edit)
     @feed_ns.response(204, 'Updated')
     @feed_ns.response(400, 'Validation error')
@@ -97,7 +102,7 @@ class FeedResource(Resource):
     @feed_ns.response(403, 'Forbidden')
     @feed_ns.response(404, 'Not found')
     @jwt_required()
-    def put(self, feed_id):
+    def put(feed_id):
         "Update an existing feed"
         fctrl = FeedController(current_identity.id)
         attrs = parse_meaningful_params(feed_parser_edit)
@@ -106,13 +111,14 @@ class FeedResource(Resource):
             fctrl.assert_right_ok(feed_id)
         return None, 204
 
+    @staticmethod
     @feed_ns.response(204, 'Deleted')
     @feed_ns.response(400, 'Validation error')
     @feed_ns.response(401, 'Authorization needed')
     @feed_ns.response(403, 'Forbidden')
     @feed_ns.response(404, 'Not found')
     @jwt_required()
-    def delete(self, feed_id):
+    def delete(feed_id):
         "delete an existing feed"
         try:
             FeedController(current_identity.id).delete(feed_id)
@@ -126,11 +132,12 @@ class FeedResource(Resource):
 @feed_ns.route('/build')
 class FeedBuilder(Resource):
 
+    @staticmethod
     @feed_ns.expect(url_parser, validate=True)
     @feed_ns.response(200, "Pseudo feed constructed", model=feed_build_model)
     @feed_ns.response(406, "Pseudo feed missing link", model=feed_build_model)
     @jwt_required()
-    def get(self):
+    def get():
         """Construct a feed from (any) url and send back that field for later
         creation"""
         feed = construct_feed_from(url_parser.parse_args()['url'],
@@ -142,12 +149,13 @@ class FeedBuilder(Resource):
 @feed_ns.route('/icon')
 class Icon(Resource):
 
+    @staticmethod
     @feed_ns.expect(url_parser, validate=True)
     @feed_ns.response(200, 'OK',
-            headers={'Cache-Control': 'max-age=86400',
-                     'Content-Type': 'image/*'})
+                      headers={'Cache-Control': 'max-age=86400',
+                               'Content-Type': 'image/*'})
     @feed_ns.response(404, 'Not found')
-    def get(self):
+    def get():
         url = url_parser.parse_args()['url']
         ctr = IconController()
         icon = ctr.get(url=url)

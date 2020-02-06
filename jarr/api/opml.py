@@ -1,11 +1,11 @@
 from flask import make_response, render_template, request
+from flask_jwt import current_identity, jwt_required
 from flask_restplus import Namespace, Resource, fields
-from flask_jwt import jwt_required, current_identity
 from werkzeug.datastructures import FileStorage
 from werkzeug.exceptions import UnprocessableEntity
+
 import opml
-from jarr.controllers import (FeedController, CategoryController,
-        UserController)
+from jarr.controllers import CategoryController, FeedController, UserController
 from jarr.lib.utils import utc_now
 
 opml_ns = Namespace('opml',
@@ -25,9 +25,10 @@ OK_GET_HEADERS = {'Content-Type': 'application/xml',
 @opml_ns.route('')
 class OPMLResource(Resource):
 
+    @staticmethod
     @opml_ns.response(200, 'OK', headers=OK_GET_HEADERS)
     @jwt_required()
-    def get(self):
+    def get():
         user_id = current_identity.id
         user = UserController(user_id).get(id=user_id)
         categories = {cat.id: cat
@@ -39,13 +40,14 @@ class OPMLResource(Resource):
             response.headers[key] = value
         return response
 
+    @staticmethod
     @opml_ns.expect(parser, validate=True)
     @opml_ns.response(201, 'Feed were created from OPML file', model=model)
     @opml_ns.response(200, 'No error and no feed created', model=model)
     @opml_ns.response(400, "Exception while creating fields", model=model)
     @opml_ns.response(422, "Couldn't parse OPML file")
     @jwt_required()
-    def post(self):
+    def post():
         opml_file = request.files['opml_file']
 
         try:

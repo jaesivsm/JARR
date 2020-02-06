@@ -6,15 +6,21 @@ class UTCDateTime(types.TypeDecorator):
     impl = types.DateTime
     python_type = datetime
 
-    def process_bind_param(self, value, engine):
+    @staticmethod
+    def process_bind_param(value, dialect):
         if value is not None:
             if not value.tzinfo:
                 value = value.replace(tzinfo=timezone.utc)
             return value.astimezone(timezone.utc).replace(tzinfo=None)
         return value
 
-    def process_result_value(self, value, engine):
+    @staticmethod
+    def process_result_value(value, dialect):
         if value is not None:
             assert not value.tzinfo
             return value.replace(tzinfo=timezone.utc)
         return value
+
+    @staticmethod
+    def process_literal_param(value, dialect):
+        raise NotImplementedError("can't process %r for %r" % (value, dialect))
