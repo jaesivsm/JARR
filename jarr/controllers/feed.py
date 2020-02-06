@@ -148,7 +148,8 @@ class FeedController(AbstractController):
         clu_ctrl = ClusterController(self.user_id)
 
         # removing back ref from cluster to article
-        clu_ctrl.update({'main_article_id__in': self.__actrl.read(
+        clu_ctrl.update({'user_id': feed.user_id,
+                         'main_article_id__in': self.__actrl.read(
                             feed_id=obj_id).with_entities('id')},
                         {'main_article_id': None})
 
@@ -163,7 +164,7 @@ class FeedController(AbstractController):
                      Article.user_id == feed.user_id)))
 
         # reclustering
-        clu_ctrl.update({'main_article_id': None},
+        clu_ctrl.update({'user_id': feed.user_id, 'main_article_id': None},
                 {'main_title': select_art(Article.title),
                  'main_article_id': select_art(Article.id),
                  'main_feed_title': select([Feed.title])

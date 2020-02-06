@@ -56,6 +56,7 @@ class Cluster(Base):
                   liked, user_id, main_date.desc().nullslast()),
             Index('ix_cluster_read_uid_date',
                   read, user_id, main_date.desc().nullslast()),
+            Index('ix_cluster_martid', user_id, main_article_id.nullsfirst()),
     )
 
     @property

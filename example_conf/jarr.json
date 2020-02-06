@@ -1,11 +1,11 @@
 {
-    "jarr_testing":false,
+    "jarr_testing": false,
     "crawler": {
         "login": "admin",
         "passwd": "admin"
     },
     "log": {
-        "level":10
+        "level": 10
     },
     "db": {
         "pg_uri": "postgresql://jarr@0.0.0.0:5432/jarr",

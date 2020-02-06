@@ -1,11 +1,12 @@
-from sqlalchemy import (Boolean, Column, Integer, PickleType, String, Enum,
-                        Index, ForeignKeyConstraint)
+from flask import url_for
+from sqlalchemy import (Boolean, Column, Enum, ForeignKeyConstraint, Index,
+                        Integer, PickleType, String)
 from sqlalchemy.orm import relationship, validates
 
-from jarr.lib.utils import utc_now
+from jarr.bootstrap import Base
 from jarr.lib.const import UNIX_START
 from jarr.lib.reasons import CacheReason
-from jarr.bootstrap import Base
+from jarr.lib.utils import utc_now
 from jarr.models.utc_datetime_type import UTCDateTime
 
 
@@ -73,7 +74,6 @@ class Feed(Base):
 
     @property
     def abs_icon_url(self):
-        from flask import url_for
         return url_for('feed_icon', url=self.icon_url, _external=True)
 
     @validates('title')

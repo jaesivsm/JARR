@@ -5,7 +5,7 @@
         "passwd": "admin"
     },
     "log": {
-        "level":10
+        "level": 0
     },
     "db": {
         "pg_uri": "postgresql://jarr@0.0.0.0:5432/jarr",
