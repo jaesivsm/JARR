@@ -1,4 +1,5 @@
 import logging
+from datetime import timedelta
 from functools import lru_cache
 
 from flask import Flask
@@ -34,7 +35,10 @@ def setup_sqla_binding(application):
 
 def setup_jwt(application, api):
     application.config['JWT_AUTH_USERNAME_KEY'] = 'login'
-    application.config['SECRET_KEY'] = conf.secret_key
+    application.config['JWT_EXPIRATION_DELTA'] \
+            = timedelta(seconds=conf.auth.expiration_sec)
+    application.config['JWT_AUTH_HEADER_PREFIX'] = conf.auth.jwt_header_prefix
+    application.config['SECRET_KEY'] = conf.auth.secret_key
     jwt = JWT(application, __authenticate, __identity)
 
     @api.errorhandler(JWTError)

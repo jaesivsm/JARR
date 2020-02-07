@@ -13,5 +13,6 @@
     },
     "celery": {"broker": "amqp://0.0.0.0//",
                "backend": "redis://0.0.0.0:6379/0",
-               "BROKER_URL": "amqp://0.0.0.0//"}
+               "BROKER_URL": "amqp://0.0.0.0//"},
+    "auth": {"secret_key": "my not so secret key"}
 }

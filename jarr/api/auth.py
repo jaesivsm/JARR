@@ -11,7 +11,7 @@ from jarr.lib import emails
 auth_ns = Namespace('auth', description="Auth related operations")
 model = auth_ns.model('Login', {
     'access_token': fields.String(description="The token that must be place "
-            "in the 'Authorization' header precedeed with 'JWT '"),
+                                              "in the 'Authorization' header"),
 })
 login_parser = auth_ns.parser()
 login_parser.add_argument('login', type=str, required=True)
@@ -38,7 +38,8 @@ class LoginResource(Resource):
         if not user:
             raise Forbidden()
         access_token = jwt.jwt_encode_callback(user)
-        return {'access_token': access_token.decode('utf8')}, 200
+        return {'access_token': '%s %s' % (conf.auth.jwt_header_prefix,
+                                           access_token.decode('utf8'))}, 200
 
 
 @auth_ns.route('_recovery/<email>')
