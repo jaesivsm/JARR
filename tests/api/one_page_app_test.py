@@ -14,15 +14,19 @@ class OnePageAppTest(JarrFlaskCommon):
 
     def assertClusterCount(self, count, filters=None):
         filters = filters or {}
-        resp = self.jarr_client('get', 'middle_panel',
+        resp = self.jarr_client('get', 'clusters',
                 data=filters, user=self.user.login)
         self.assertStatusCode(200, resp)
         clusters = resp.json
         self.assertEqual(count, len(clusters))
         return clusters
 
-    def test_left_panel(self):
-        resp = self.jarr_client('get', 'left_panel', user=self.user.login)
+    def test_list_feeds(self):
+        resp = self.jarr_client('get', 'list-feeds', user=self.user.login)
+        self.assertEqual(6, len(resp.json))
+
+    def test_unreads(self):
+        resp = self.jarr_client('get', 'unreads', user=self.user.login)
         self.assertStatusCode(200, resp)
         result = resp.json
         self.assertEqual(6, len(result))
@@ -30,13 +34,12 @@ class OnePageAppTest(JarrFlaskCommon):
 
         self._mark_as_read(18, {'filter': 'unread'})
 
-        resp = self.jarr_client('get', 'left_panel', user=self.user.login)
+        resp = self.jarr_client('get', 'unreads', user=self.user.login)
         self.assertStatusCode(200, resp)
         result = resp.json
-        self.assertEqual(6, len(result))
-        self.assertEqual(0, sum(line['unread'] for line in result))
+        self.assertEqual(0, len(result))
 
-    def test_middle_panel(self):
+    def test_cluster_listing(self):
         clusters = self.assertClusterCount(18)
         self.assertClusterCount(18, {'filter': 'unread'})
         self.assertClusterCount(0, {'filter': 'liked'})
@@ -74,8 +77,8 @@ class OnePageAppTest(JarrFlaskCommon):
 
     def _mark_as_read(self, read_count, filters=None):
         filters = filters or {}
-        resp = self.jarr_client('put', 'mark_all_as_read', data=filters,
-                user=self.user.login)
+        resp = self.jarr_client('put', 'mark-all-as-read', data=filters,
+                                user=self.user.login)
         self.assertStatusCode(200, resp)
         self.assertEqual(read_count, len(json.loads(resp.data.decode('utf8'))))
 

@@ -9,7 +9,7 @@ from jarr.bootstrap import conf, session
 from jarr.controllers.abstract import AbstractController
 from jarr.controllers.icon import IconController
 from jarr.lib.utils import utc_now
-from jarr.models import Article, Cluster, Feed, User
+from jarr.models import Article, Category, Cluster, Feed, User
 
 DEFAULT_LIMIT = 0
 DEFAULT_ART_SPAN_TIME = timedelta(seconds=conf.feed.max_expires)
@@ -22,6 +22,14 @@ class FeedController(AbstractController):
     def __actrl(self):
         from .article import ArticleController
         return ArticleController(self.user_id)
+
+    def list_w_categ(self):
+        fields = Feed.id, Category.id, Feed.title, Category.name
+        return session.query(*fields)\
+                .outerjoin(Category, and_(Feed.category_id == Category.id,
+                                          Category.user_id == self.user_id))\
+                .filter(Feed.user_id == self.user_id)\
+                .order_by(Category.name, Feed.title)
 
     def get_active_feed(self, **filters):
         filters['error_count__lt'] = conf.feed.error_max
@@ -150,7 +158,7 @@ class FeedController(AbstractController):
         # removing back ref from cluster to article
         clu_ctrl.update({'user_id': feed.user_id,
                          'main_article_id__in': self.__actrl.read(
-                            feed_id=obj_id).with_entities('id')},
+                                feed_id=obj_id).with_entities('id')},
                         {'main_article_id': None})
 
         def select_art(col):

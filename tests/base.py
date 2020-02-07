@@ -101,7 +101,7 @@ class JarrFlaskCommon(BaseJarrTest):
         auth_res = self.app.post('/auth', data=json.dumps(
                 {'login': user, 'password': user}),
                 headers=DEFAULT_HEADERS)
-        return 'JWT %s' % auth_res.json['access_token']
+        return auth_res.json['access_token']
 
     def jarr_client(self, method_name, *urn_parts, **kwargs):
         method = getattr(self.app, method_name)

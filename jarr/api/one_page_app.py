@@ -1,16 +1,19 @@
 from flask_jwt import current_identity, jwt_required
 from flask_restplus import Namespace, Resource, fields
 
-from jarr.controllers import ClusterController
+from jarr.controllers import ClusterController, FeedController
 from jarr.lib.reasons import ReadReason
 
 ACCEPTED_LEVELS = {'success', 'info', 'warning', 'error'}
 default_ns = Namespace('default', path='/')
-left_panel_model = default_ns.model('LeftPanel', {
+list_feeds_model = default_ns.model('ListFeeds', {
         'fid': fields.Integer(),
         'cid': fields.Integer(),
         'ftitle': fields.String(),
         'cname': fields.String(),
+})
+unreads_model = default_ns.model('Unreads', {
+        'fid': fields.Integer(),
         'unread': fields.Integer(default=0),
 })
 midle_panel_model = default_ns.model('MiddlePanel', {
@@ -44,20 +47,38 @@ mark_as_read_parser.add_argument('only_singles', type=bool, default=False,
         help="set to true to mark as read only cluster with one article")
 
 
-@default_ns.route('/left_panel')
-class LeftPanel(Resource):
+@default_ns.route('/list-feeds')
+class ListFeeds(Resource):
 
     @staticmethod
     @default_ns.response(200, 'OK', model=[midle_panel_model], as_list=True)
     @default_ns.response(401, 'Unauthorized')
-    @default_ns.marshal_list_with(left_panel_model)
+    @default_ns.marshal_list_with(list_feeds_model)
     @jwt_required()
     def get():
-        """Will list all cluster extract for the middle pannel"""
-        clu_ctrl = ClusterController(current_identity.id)
+        """Will list feeds with their category and respective id"""
+        ctrl = FeedController(current_identity.id)
         result = []
-        fields_name = 'fid', 'cid', 'ftitle', 'cname', 'unread'
-        for line in clu_ctrl.list_feeds_w_unread_count():
+        fields_name = 'fid', 'cid', 'ftitle', 'cname'
+        for line in ctrl.list_w_categ():
+            result.append(dict(zip(fields_name, line)))
+        return result, 200
+
+
+@default_ns.route('/unreads')
+class Unreads(Resource):
+
+    @staticmethod
+    @default_ns.response(200, 'OK', model=[midle_panel_model], as_list=True)
+    @default_ns.response(401, 'Unauthorized')
+    @default_ns.marshal_list_with(unreads_model)
+    @jwt_required()
+    def get():
+        """Will result list of dict with the unread count for feeds with unread
+        clusters"""
+        result = []
+        fields_name = 'fid', 'unread'
+        for line in ClusterController(current_identity.id).get_unreads():
             result.append(dict(zip(fields_name, line)))
         return result, 200
 
@@ -91,8 +112,8 @@ def _get_filters(in_dict):
     return filters
 
 
-@default_ns.route('/middle_panel')
-class MiddlePanel(Resource):
+@default_ns.route('/clusters')
+class Clusters(Resource):
 
     @staticmethod
     @default_ns.response(200, 'OK', model=[midle_panel_model], as_list=True)
@@ -107,7 +128,7 @@ class MiddlePanel(Resource):
         return list(clu_ctrl.join_read(**_get_filters(attrs)))
 
 
-@default_ns.route('/mark_all_as_read')
+@default_ns.route('/mark-all-as-read')
 class MarkClustersAsRead(Resource):
 
     @staticmethod
