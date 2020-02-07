@@ -31,7 +31,7 @@ def upgrade():
         op.execute("""UPDATE article SET vector=
         setweight(to_tsvector(%r, coalesce(title, '')), 'A') ||
         setweight(to_tsvector(%r, coalesce(content, '')), 'B')
-        WHERE lang like '%s%%';""" % (pg_language, pg_language, code))
+        WHERE lang ilike '%s%%';""" % (pg_language, pg_language, code))
 
 def downgrade():
     op.drop_column('cluster', 'content')

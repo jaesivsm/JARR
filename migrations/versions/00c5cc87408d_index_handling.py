@@ -31,8 +31,9 @@ def upgrade():
     print('%s - creating article indexes' % datetime.now().isoformat())
     op.create_index('ix_article_eid_cid_uid', 'article',
                     ['user_id', 'category_id', 'entry_id'], unique=False)
-    op.create_index('ix_article_hlink_cid_uid', 'article',
+    op.create_index('ix_article_uid_cid_linkh', 'article',
                     ['user_id', 'category_id', 'link_hash'], unique=False)
+    op.drop_index('article_uid_fid', table_name='article')
     op.create_index('ix_article_retrdate', 'article',
                     ['retrieved_date'], unique=False)
     op.create_index('ix_article_uid_cid_cluid', 'article',
@@ -140,3 +141,4 @@ def downgrade():
     op.alter_column('article', 'feed_id',
                existing_type=sa.INTEGER(),
                nullable=True)
+    op.drop_index('ix_article_uid_cid_linkh', table_name='article')
