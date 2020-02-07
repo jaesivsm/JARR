@@ -33,7 +33,7 @@ class ClassicCrawler:
         else:
             level = logging.DEBUG
         logger.log(level, 'an error occured while fetching feed; '
-                'bumping error count to %r', error_count)
+                   'bumping error count to %r', error_count)
         logger.debug("last error details %r", last_error)
         info = {'error_count': error_count, 'last_error': last_error,
                 'user_id': self.feed.user_id, 'last_retrieved': utc_now()}
@@ -44,12 +44,14 @@ class ClassicCrawler:
         """Will reset the errors counters on a feed that have known errors"""
         info.update(extract_feed_info(response.headers, response.text))
         info.update({'error_count': 0, 'last_error': None,
-                    'last_retrieved': utc_now()})
+                     'last_retrieved': utc_now()})
 
         if parsed_feed is not None:  # updating feed with retrieved info
-            constructed = construct_feed_from(self.feed.link, parsed_feed, self.feed,
-                    timeout=conf.crawler.timeout,
-                    user_agent=conf.crawler.user_agent)
+            user_agent = conf.crawler.user_agent
+            constructed = construct_feed_from(self.feed.link, parsed_feed,
+                                              self.feed,
+                                              timeout=conf.crawler.timeout,
+                                              user_agent=user_agent)
             for key in 'description', 'site_link', 'icon_url':
                 if constructed.get(key):
                     info[key] = constructed[key]
@@ -63,15 +65,22 @@ class ClassicCrawler:
             logger.warning('feed moved from %r to %r',
                            self.feed.link, response.url)
             info['link'] = response.url
-
         if info:
             return FeedController(self.feed.user_id).update(
                     {'id': self.feed.id}, info)
         return None
 
+    @staticmethod
+    def _parse_feed_response(response):
+        return feedparser.parse(response.content.strip())
+
+    @staticmethod
+    def _parse_entry(entry):
+        return entry
+
     def create_missing_article(self, response, **kwargs):
         logger.info('cache validation failed, challenging entries')
-        parsed = feedparser.parse(response.content.strip())
+        parsed = self._parse_feed_response(response)
         if is_parsing_ok(parsed):
             self.clean_feed(response, parsed, **kwargs)
         else:
@@ -93,7 +102,8 @@ class ClassicCrawler:
             entries[tuple(sorted(entry_ids.items()))] = entry
             ids.append(entry_ids)
         if not ids and skipped_list:
-            logger.debug('nothing to add (skipped %r) %r', skipped_list, parsed)
+            logger.debug('nothing to add (skipped %r) %r',
+                         skipped_list, parsed)
             return
         logger.debug('found %d entries %r', len(ids), ids)
 
@@ -115,14 +125,17 @@ class ClassicCrawler:
         if not article_created:
             logger.info('all article matched in db, adding nothing')
 
+    def _fetch_feed_url(self):
+        return jarr_get(self.feed.link,
+                        timeout=conf.crawler.timeout,
+                        user_agent=conf.crawler.user_agent,
+                        headers=prepare_headers(self.feed))
+
     def fetch(self):
         logger.debug('%r %r - fetching resources',
                      self.feed.id, self.feed.title)
         try:
-            resp = jarr_get(self.feed.link,
-                            timeout=conf.crawler.timeout,
-                            user_agent=conf.crawler.user_agent,
-                            headers=prepare_headers(self.feed))
+            resp = self._fetch_feed_url()
             resp.raise_for_status()
         except Exception as error:
             self.set_feed_error(error=error)
