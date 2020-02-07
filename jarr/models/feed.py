@@ -5,6 +5,7 @@ from sqlalchemy.orm import relationship, validates
 
 from jarr.bootstrap import Base
 from jarr.lib.const import UNIX_START
+from jarr.lib.jarr_types import FeedType
 from jarr.lib.reasons import CacheReason
 from jarr.lib.utils import utc_now
 from jarr.models.utc_datetime_type import UTCDateTime
@@ -21,8 +22,9 @@ class Feed(Base):
     enabled = Column(Boolean, default=True)
     created_date = Column(UTCDateTime, default=utc_now)
     filters = Column(PickleType, default=[])
-    readability_auto_parse = Column(Boolean, default=False)
-    integration_reddit = Column(Boolean, default=False)
+
+    # integration control
+    feed_type = Column(Enum(FeedType), default=FeedType.classic)
 
     # clustering control
     cluster_enabled = Column(Boolean, default=True)
