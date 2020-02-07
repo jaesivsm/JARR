@@ -4,7 +4,6 @@ from enum import Enum
 class FeedType(Enum):
     classic = 'classic'
     json = 'json'
-    reddit = 'reddit'
     tumblr = 'tumblr'
     instagram = 'instagram'
     soundcloud = 'soundcloud'
