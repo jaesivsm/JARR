@@ -53,7 +53,7 @@ conf = TheConf({'config_files': ['/etc/jarr/jarr.json', '~/.config/jarr.json'],
                          {'passwd': {'default': 'admin'}},
                          {'resolv': {'type': bool, 'default': False}},
                          {'user_agent': {
-                             'default': 'https://github.com/jaesivsm/JARR'}},
+                             'default': 'Mozilla/5.0 (compatible; jarr.info)'}},
                          {'timeout': {'default': 30, 'type': int}}]},
             {'plugins': [{'readability_key': {'default': ''}},
                          {'rss_bridge': {'default': ''}}]},
