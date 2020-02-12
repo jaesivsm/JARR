@@ -10,8 +10,8 @@ logger = logging.getLogger(__name__)
 class RedditArticleBuilder(ClassicArticleBuilder):
 
     def __init__(self, *args, **kwargs):
-        super().__init__(self, *args, **kwargs)
         self._article_bs = None
+        super().__init__(*args, **kwargs)
 
     def _parse_reddit_content(self, entry):
         if not self._article_bs:
@@ -28,14 +28,12 @@ class RedditArticleBuilder(ClassicArticleBuilder):
 
     def extract_link(self, entry):
         try:
-            link, _ = self._parse_reddit_content(entry)
+            return self._parse_reddit_content(entry)[0]
         except Exception:
             return super().extract_link(entry)
-        return link
 
     def extract_comments(self, entry):
         try:
-            _, comments = self._parse_reddit_content(entry)
+            return self._parse_reddit_content(entry)[1]
         except Exception:
             return super().extract_comments(entry)
-        return comments
