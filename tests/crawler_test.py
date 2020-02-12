@@ -3,16 +3,16 @@ import unittest
 
 from mock import Mock, patch
 
-from tests.base import JarrFlaskCommon
-
 from jarr.bootstrap import conf
-from jarr.models.feed import Feed
 from jarr.controllers import ArticleController, FeedController
-from jarr.crawler.main import (clusterizer, process_feed,
-        response_etag_match, response_calculated_etag_match,
-        set_feed_error, clean_feed)
-from jarr.lib.utils import to_hash
+from jarr.crawler.main import clusterizer, process_feed
+from jarr.crawler.crawlers.classic import ClassicCrawler
+from jarr.crawler.requests_utils import (response_calculated_etag_match,
+                                         response_etag_match)
 from jarr.lib.const import UNIX_START
+from jarr.lib.utils import to_hash
+from jarr.models.feed import Feed
+from tests.base import JarrFlaskCommon
 
 logger = logging.getLogger('jarr')
 BASE_COUNT = 36
@@ -32,8 +32,10 @@ class CrawlerTest(JarrFlaskCommon):
             self._content = fd.read()
         self._is_secure_served \
                 = patch('jarr.lib.article_cleaner.is_secure_served')
-        self._p_req = patch('jarr.crawler.main.jarr_get')
-        self._p_con = patch('jarr.crawler.main.construct_feed_from')
+        self._p_req = patch('jarr.crawler.crawlers.classic'
+                            '.ClassicCrawler.request')
+        self._p_con = patch('jarr.crawler.crawlers.abstract.FeedBuilderControl'
+                            'ler.construct_from_xml_feed_content')
         self.is_secure_served = self._is_secure_served.start()
         self.jarr_req = self._p_req.start()
         self.jarr_con = self._p_con.start()
@@ -174,7 +176,7 @@ class CrawlerMethodsTest(unittest.TestCase):
     @patch('jarr.crawler.main.FeedController.update')
     def test_set_feed_error_w_error(self, fctrl_update):
         original_error_count = self.feed.error_count
-        set_feed_error(self.feed, Exception('an error'))
+        ClassicCrawler(self.feed).set_feed_error(Exception('an error'))
 
         fctrl_update.assert_called_once()
         filters, data = fctrl_update.mock_calls[0][1]
@@ -185,8 +187,8 @@ class CrawlerMethodsTest(unittest.TestCase):
     @patch('jarr.crawler.main.FeedController.update')
     def test_set_feed_error_w_parsed(self, fctrl_update):
         original_error_count = self.feed.error_count
-        set_feed_error(self.feed,
-                       parsed_feed={'bozo_exception': 'an error'})
+        ClassicCrawler(self.feed).set_feed_error(
+                parsed_feed={'bozo_exception': 'an error'})
 
         fctrl_update.assert_called_once()
         filters, data = fctrl_update.mock_calls[0][1]
@@ -196,7 +198,7 @@ class CrawlerMethodsTest(unittest.TestCase):
 
     @patch('jarr.crawler.main.FeedController.update')
     def test_clean_feed(self, fctrl_update):
-        clean_feed(self.feed, self.resp)
+        ClassicCrawler(self.feed).clean_feed(self.resp)
         fctrl_update.assert_called_once()
         filters, data = fctrl_update.mock_calls[0][1]
 
@@ -211,7 +213,7 @@ class CrawlerMethodsTest(unittest.TestCase):
     def test_clean_feed_update_link(self, fctrl_update):
         self.resp.history.append(Mock(status_code=301))
         self.resp.url = 'new_link'
-        clean_feed(self.feed, self.resp)
+        ClassicCrawler(self.feed).clean_feed(self.resp)
 
         fctrl_update.assert_called_once()
         filters, data = fctrl_update.mock_calls[0][1]
@@ -222,11 +224,12 @@ class CrawlerMethodsTest(unittest.TestCase):
         self.assertTrue('site_link' not in data)
         self.assertTrue('icon_url' not in data)
 
-    @patch('jarr.crawler.main.construct_feed_from')
+    @patch('jarr.crawler.crawlers.abstract'
+           '.FeedBuilderController.construct_from_xml_feed_content')
     @patch('jarr.crawler.main.FeedController.update')
     def test_clean_feed_w_constructed(self, fctrl_update, construct_feed_mock):
         construct_feed_mock.return_value = {'description': 'new description'}
-        clean_feed(self.feed, self.resp, True)
+        ClassicCrawler(self.feed).clean_feed(self.resp, True)
 
         fctrl_update.assert_called_once()
         filters, data = fctrl_update.mock_calls[0][1]
