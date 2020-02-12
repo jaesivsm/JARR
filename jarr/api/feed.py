@@ -6,9 +6,9 @@ from flask_restplus import Namespace, Resource, fields
 from werkzeug.exceptions import Forbidden, NotFound
 
 from jarr.api.common import parse_meaningful_params, set_model_n_parser
-from jarr.bootstrap import conf
-from jarr.controllers import FeedController, IconController
-from jarr.lib.feed_utils import construct_feed_from
+from jarr.controllers import (FeedBuilderController, FeedController,
+                              IconController)
+from jarr.lib.jarr_types import FeedType
 
 feed_ns = Namespace('feed', description='Feed related operations')
 url_parser = feed_ns.parser()
@@ -16,7 +16,9 @@ url_parser.add_argument('url', type=str, required=True)
 feed_parser = feed_ns.parser()
 feed_build_model = feed_ns.model('FeedBuilder', {
         'link': fields.String(),
+        'links': fields.List(fields.String()),
         'site_link': fields.String(),
+        'feed_type': fields.String(enum=[ft.value for ft in FeedType]),
         'icon_url': fields.String(),
         'title': fields.String(),
         'description': fields.String(),
@@ -140,9 +142,8 @@ class FeedBuilder(Resource):
     def get():
         """Construct a feed from (any) url and send back that field for later
         creation"""
-        feed = construct_feed_from(url_parser.parse_args()['url'],
-                timeout=conf.crawler.timeout,
-                user_agent=conf.crawler.user_agent)
+        url = url_parser.parse_args()['url']
+        feed = FeedBuilderController(url).construct()
         return feed, 200 if feed.get('link') else 406
 
 

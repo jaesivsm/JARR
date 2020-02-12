@@ -95,7 +95,6 @@ class FeedController(AbstractController):
                                 if isinstance(filter_, dict)]
 
     def create(self, **attrs):
-        from jarr.signals import feed_creation
         self._ensure_icon(attrs)
         self.__clean_feed_fields(attrs)
         return super().create(**attrs)

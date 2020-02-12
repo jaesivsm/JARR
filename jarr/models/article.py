@@ -4,7 +4,7 @@ from sqlalchemy.dialects.postgresql import TSVECTOR
 from sqlalchemy.orm import relationship
 
 from jarr.bootstrap import Base
-from jarr.lib.jarr_types import ArticleDisplayType, ArticleType
+from jarr.lib.jarr_types import ArticleType
 from jarr.lib.reasons import ClusterReason
 from jarr.lib.utils import utc_now
 from jarr.models.utc_datetime_type import UTCDateTime
@@ -25,10 +25,9 @@ class Article(Base):
     date = Column(UTCDateTime, default=utc_now)
     retrieved_date = Column(UTCDateTime, default=utc_now)
     readability_parsed = Column(Boolean, default=False)
+
     # integration control
-    display_type = Column(Enum(ArticleDisplayType),
-                          default=ArticleDisplayType.text)
-    article_type = Column(Enum(ArticleType), default=ArticleType.classic)
+    article_type = Column(Enum(ArticleType), default=ArticleType.text)
 
     # parsing
     tags = Column(PickleType, default=[])

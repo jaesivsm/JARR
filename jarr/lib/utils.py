@@ -42,20 +42,12 @@ def rfc_1123_utc(time_obj=None, delta=None):
     return time_obj.strftime(RFC_1123_FORMAT)
 
 
-def default_handler(obj, role='admin'):
+def default_handler(obj):
     """JSON handler for default query formatting"""
-    if hasattr(obj, 'isoformat'):
-        return obj.isoformat()
-    if hasattr(obj, 'dump'):
-        return obj.dump(role=role)
     if isinstance(obj, (set, frozenset, filter, types.GeneratorType)):
         return list(obj)
-    if isinstance(obj, HTTPException):
-        return "%d: %s" % (obj.code, obj.name)
-    if isinstance(obj, BaseException):
-        return str(obj)
     if isinstance(obj, Enum):
-        return obj.name
+        return obj.value
     raise TypeError("Object of type %s with value of %r "
                     "is not JSON serializable" % (type(obj), obj))
 

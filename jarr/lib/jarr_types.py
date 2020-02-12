@@ -9,16 +9,10 @@ class FeedType(Enum):
     soundcloud = 'soundcloud'
     reddit = 'reddit'
     fetch = 'fetch'
-
-
-class ArticleDisplayType(Enum):
-    text = 'text'
-    image = 'image'
-    video = 'video'
+    koreus = 'koreus'
 
 
 class ArticleType(Enum):
-    classic = 'classic'
-    youtube = 'youtube'
-    koreus = 'koreus'
-    reddit = 'reddit'
+    text = 'text'
+    image = 'image'
+    video = 'video'
