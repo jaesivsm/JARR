@@ -69,10 +69,6 @@ class AbstractCrawler:
     def parse_feed_response(self, response):
         raise NotImplementedError()
 
-    @staticmethod
-    def parse_entry(entry):
-        return entry
-
     def create_missing_article(self, response):
         logger.info('cache validation failed, challenging entries')
         parsed = self.parse_feed_response(response)
@@ -83,7 +79,6 @@ class AbstractCrawler:
         for entry in parsed['entries']:
             if not entry:
                 continue
-            entry = self.parse_entry(entry)
             builder = self.article_builder(self.feed, entry)
             if builder.do_skip_creation:
                 skipped_list.append(builder.entry_ids)
