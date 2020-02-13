@@ -130,9 +130,8 @@ class AbstractCrawler:
                      response.headers.get('etag'), self.feed.etag)
         return False
 
-    def fetch(self):
-        logger.debug('%r %r - fetching resources',
-                     self.feed.id, self.feed.title)
+    def crawl(self):
+        logger.debug('%r - crawling resources', self.feed)
         try:
             response = self.request()
             response.raise_for_status()

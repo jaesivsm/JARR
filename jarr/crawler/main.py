@@ -1,7 +1,6 @@
 import logging
 
 from ep_celery import celery_app
-from jarr.crawler.crawlers.classic import ClassicCrawler
 from jarr.bootstrap import conf
 from jarr.controllers import FeedController, ClusterController
 
@@ -11,7 +10,7 @@ logger = logging.getLogger(__name__)
 
 @celery_app.task(name='crawler.process_feed')
 def process_feed(feed_id):
-    ClassicCrawler(FeedController().get(id=feed_id)).fetch()
+    FeedController().get(id=feed_id).crawler.crawl()
 
 
 @celery_app.task(name='crawler.clusterizer')
