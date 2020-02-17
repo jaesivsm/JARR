@@ -8,7 +8,6 @@ from hashlib import md5
 
 import pytz
 import requests
-from werkzeug.exceptions import HTTPException
 
 logger = logging.getLogger(__name__)
 RFC_1123_FORMAT = '%a, %d %b %Y %X %Z'

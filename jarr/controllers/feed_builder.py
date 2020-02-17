@@ -6,7 +6,7 @@ import urllib
 from feedparser import FeedParserDict
 from feedparser import parse as fp_parse
 
-from jarr.lib.const import FEED_MIMETYPES
+from jarr.lib.const import FEED_MIMETYPES, REQUIRED_JSON_FEED
 from jarr.lib.html_parsing import (extract_feed_links, extract_icon_url,
                                    extract_opg_prop, extract_title)
 from jarr.lib.jarr_types import FeedType
@@ -30,6 +30,13 @@ class FeedBuilderController:
         self.feed_response = None
         self.parsed_feed = parsed_feed
 
+    @property
+    def feed_response_content_type(self):
+        try:
+            return self.feed_response.headers['Content-Type']
+        except Exception:
+            return ''
+
     @staticmethod
     def _fix_url(url):
         split = urllib.parse.urlsplit(url)
@@ -50,13 +57,20 @@ class FeedBuilderController:
         if not self.feed_response and not self.parsed_feed:
             return False
         if not self.parsed_feed:
-            if not any(mimetype in self.feed_response.headers['Content-Type']
-                       for mimetype in FEED_MIMETYPES):
+            if 'application/json' in self.feed_response_content_type:
+                self.parsed_feed = self.feed_response.json()
+                if len(REQUIRED_JSON_FEED.intersection(self.parsed_feed)) != 2:
+                    return False
+            elif any(mimetype in self.feed_response_content_type
+                   for mimetype in FEED_MIMETYPES):
+                self.parsed_feed = fp_parse(self.feed_response.content)
+            else:
                 return False
-            self.parsed_feed = fp_parse(self.feed_response.content)
-        if not isinstance(self.parsed_feed, FeedParserDict):
+        if not isinstance(self.parsed_feed, (FeedParserDict, dict)):
             return False
-        return self.parsed_feed['entries'] or not self.parsed_feed['bozo']
+        return self.parsed_feed.get('entries') \
+                or self.parsed_feed.get('items') \
+                or not self.parsed_feed.get('bozo')
 
     def construct_from_xml_feed_content(self):
         if not self.is_parsed_feed():
@@ -88,6 +102,28 @@ class FeedBuilderController:
             result['description'] = fp_feed['subtitle_detail']['value']
         return {key: value for key, value in result.items() if value}
 
+    def construct_from_json_feed_content(self):
+        if not self.is_parsed_feed():
+            return {}
+        result = {'feed_type': FeedType.json,
+                  'site_link': self.parsed_feed.get('home_page_url'),
+                  'link': self.feed_response.url,
+                  'icon_url': self.parsed_feed.get('favicon')
+                              or self.parsed_feed.get('icon'),
+                  'description': self.parsed_feed.get('description'),
+                  'title': self.parsed_feed.get('title')}
+        try:
+            result['links'] = [hub.get('url')
+                               for hub in self.parsed_feed.get('hubs', [])]
+        except Exception:
+            pass
+        return {key: value for key, value in result.items() if value}
+
+    def construct_from_feed_content(self):
+        if 'application/json' in self.feed_response_content_type:
+            return self.construct_from_json_feed_content()
+        return self.construct_from_xml_feed_content()
+
     def correct_rss_bridge_feed(self, regex, feed_type):
         def extract_id(url):
             try:
@@ -106,8 +142,8 @@ class FeedBuilderController:
         links = list(extract_feed_links(self.page_response))
         if links:
             result['link'] = links[0]
-        if len(links) > 1:
-            result['links'] = links
+            if len(links) > 1:
+                result['links'] = links
         result['title'] = extract_opg_prop(self.page_response,
                                            og_prop='og:site_name')
         if not result['title']:
@@ -121,18 +157,18 @@ class FeedBuilderController:
         self.feed_response = jarr_get(feed['link'])
         # is an XML feed
         if self.is_parsed_feed():
-            feed.update(self.construct_from_xml_feed_content())
+            feed.update(self.construct_from_feed_content())
             if feed.get('site_link'):
                 self.page_response = jarr_get(feed['site_link'])
-                feed.update(self.parse_webpage())
+                feed = dict(self.parse_webpage(), **feed)
         else:  # is a regular webpage
             del feed['link']
             self.page_response = self.feed_response
             self.feed_response = None
-            feed.update(self.parse_webpage())
+            feed = dict(self.parse_webpage(), **feed)
             if feed.get('link'):
                 self.feed_response = jarr_get(feed['link'])
-                feed.update(self.construct_from_xml_feed_content())
+                feed.update(self.construct_from_feed_content())
 
         # marking integration feed
         for regex, feed_type in ((REDDIT_FEED, FeedType.reddit),
@@ -142,7 +178,7 @@ class FeedBuilderController:
                 if regex.match(check_url):
                     logger.info('%r is %s site', check_url, feed_type.value)
                     feed['feed_type'] = feed_type
-        if feed['feed_type'] is FeedType.classic:
+        if feed['feed_type'] in {FeedType.classic, FeedType.json}:
             for regex, feed_type in ((TWITTER_RE, FeedType.twitter),
                                      (INSTAGRAM_RE, FeedType.instagram),
                                      (SOUNDCLOUD_RE, FeedType.soundcloud)):

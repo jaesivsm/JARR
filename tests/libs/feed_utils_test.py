@@ -38,27 +38,29 @@ class ConstructFeedFromTest(unittest.TestCase):
                 {'icon_url': 'https://lesjoiesducode.fr/favicon-32x32.png',
                  'feed_type': FeedType.classic,
                  'link': 'https://lesjoiesducode.fr/feed',
-                 'site_link': 'https://lesjoiesducode.fr/',
-                 'title': 'Les Joies du Code - Humour de développeurs '
+                 'site_link': 'https://lesjoiesducode.fr',
+                 'title': 'Les Joies du Code – Humour de développeurs '
                  ': gifs, memes'}, joi)
 
-    def test_apod(self):
+    def test_apod_from_site(self):
         nasa = FBC('http://apod.nasa.gov/').construct()
         self.assertEqual(
                 {'icon_url': 'https://apod.nasa.gov/favicon.ico',
                  'feed_type': FeedType.classic,
                  'site_link': 'https://apod.nasa.gov/apod/astropix.html',
                  'title': 'Astronomy Picture of the Day'}, nasa)
+
+    def test_apod_from_feed(self):
         nasa = FBC('http://apod.nasa.gov/apod.rss').construct()
         self.assertEqual(
                 {'description': 'Astronomy Picture of the Day',
                  'feed_type': FeedType.classic,
                  'icon_url': 'https://apod.nasa.gov/favicon.ico',
                  'link': 'https://apod.nasa.gov/apod.rss',
-                 'site_link': 'https://apod.nasa.gov/apod/astropix.html',
-                 'title': 'Astronomy Picture of the Day'}, nasa)
+                 'site_link': 'https://apod.nasa.gov/',
+                 'title': 'APOD'}, nasa)
 
-    def test_reddit(self):
+    def test_reddit_from_site(self):
         reddit = FBC('https://www.reddit.com/r/france/').construct()
         self.assertEqual({
             'feed_type': FeedType.reddit,
@@ -67,7 +69,7 @@ class ConstructFeedFromTest(unittest.TestCase):
             'site_link': 'https://www.reddit.com/r/france/',
             'title': 'reddit'}, reddit)
 
-    def test_reddit_rss(self):
+    def test_reddit_from_feed(self):
         reddit = FBC('https://www.reddit.com/r/france/.rss').construct()
         self.assertEqual(
             {'description': 'La France et les Français.',
@@ -76,7 +78,7 @@ class ConstructFeedFromTest(unittest.TestCase):
                          'img/favicon/android-icon-192x192.png',
              'link': 'https://www.reddit.com/r/france/.rss',
              'site_link': 'https://www.reddit.com/r/france/',
-             'title': 'reddit'}, reddit)
+             'title': 'France'}, reddit)
 
     def test_instagram(self):
         insta = FBC('http://www.instagram.com/jaesivsm/').construct()
@@ -117,3 +119,14 @@ class ConstructFeedFromTest(unittest.TestCase):
             'site_link': 'https://www.youtube.com/channel/'
                          'UCOWsWZTiXkbvQvtWO9RA0gA',
             'title': 'BenzaieLive'}, youtube)
+
+    def test_json(self):
+        feed = FBC('https://daringfireball.net/feeds/json').construct()
+        self.assertEqual({'feed_type': FeedType.json,
+                          'icon_url': 'https://daringfireball.net/'
+                                      'graphics/favicon-64.png',
+                          'link': 'https://daringfireball.net/feeds/json',
+                          'links': ['https://daringfireball.net/feeds/main',
+                                    'https://daringfireball.net/feeds/json'],
+                          'site_link': 'https://daringfireball.net/',
+                          'title': 'Daring Fireball'}, feed)
