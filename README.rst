@@ -2,15 +2,11 @@
 JARR
 ====
 
-.. image:: https://api.travis-ci.org/jaesivsm/JARR.svg?branch=develop
-    :target: https://travis-ci.org/jaesivsm/JARR
+.. image:: https://api.codacy.com/project/badge/Grade/8b81ef446c4849939796c4965f121ffe
+   :target: https://www.codacy.com/manual/francois_7/JARR?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=jaesivsm/JARR&amp;utm_campaign=Badge_Grade
 
 .. image:: https://coveralls.io/repos/github/jaesivsm/JARR/badge.svg?branch=develop
     :target: https://coveralls.io/github/jaesivsm/JARR?branch=develop
-
-.. image:: https://codeclimate.com/github/jaesivsm/JARR/badges/gpa.svg
-    :target: https://codeclimate.com/github/jaesivsm/JARR
-    :alt: Code Climate
 
 Presentation
 ------------
@@ -26,26 +22,17 @@ However JARR is stable and can function as easily on a light installation with t
 Installing
 ----------
 
-It's recommended to install JARR inside a virtualenv. Python3.4 is required.
-
 .. code:: bash
 
-    virtualenv venv
-    source venv/bin/activate
+    make install
 
-If you want to connect JARR to your PostgreSQL you'll have to have PostgreSQL install:
-
-.. code:: bash
-
-    # for debian stable
-    sudo apt install postgresql-server-dev-9.4
 
 And to create your database:
 
 .. code:: bash
 
-    sudo -u postgres createuser <your user> --no-superuser --createdb --no-createrole
-    sudo -u postgres createdb jarr --no-password
+    make init-db
+
 
 .. code:: sql
 

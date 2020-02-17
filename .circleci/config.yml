@@ -1,0 +1,25 @@
+version: 2.1
+
+orbs:
+  python: circleci/python@0.2.1
+
+jobs:
+  build-and-test:
+    executor: python/default
+    docker:
+      - image: postgres:11
+    steps:
+      - checkout
+      - run:
+          command: apt update && apt install --yes --force-yes make python3-pip && pip3 install pipenv
+      - run:
+          command: make install
+      - run:
+          command: make init-db
+      - run:
+          command: make test
+
+workflows:
+  main:
+    jobs:
+      - build-and-test
