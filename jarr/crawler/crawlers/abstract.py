@@ -4,11 +4,12 @@ from jarr.bootstrap import conf
 from jarr.controllers import (ArticleController, FeedBuilderController,
                               FeedController)
 from jarr.crawler.article_builders.classic import ClassicArticleBuilder
-from jarr.crawler.lib.headers_handling import extract_feed_info
+from jarr.crawler.lib.headers_handling import (extract_feed_info,
+                                               prepare_headers)
 from jarr.crawler.requests_utils import (response_calculated_etag_match,
                                          response_etag_match)
 from jarr.lib.jarr_types import FeedType
-from jarr.lib.utils import utc_now
+from jarr.lib.utils import jarr_get, utc_now
 
 logger = logging.getLogger(__name__)
 
@@ -113,7 +114,10 @@ class AbstractCrawler:
         return self.feed.link
 
     def request(self):
-        raise NotImplementedError()
+        return jarr_get(self.get_url(),
+                        timeout=conf.crawler.timeout,
+                        user_agent=conf.crawler.user_agent,
+                        headers=prepare_headers(self.feed))
 
     def is_cache_hit(self, response):
         if response.status_code == 304:

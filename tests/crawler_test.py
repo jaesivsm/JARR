@@ -1,5 +1,6 @@
 import logging
 import unittest
+import json
 
 from mock import Mock, patch
 
@@ -25,15 +26,15 @@ def crawler():
 
 
 class CrawlerTest(JarrFlaskCommon):
+    feed_path = 'tests/fixtures/example.feed.atom'
 
     def setUp(self):
         super().setUp()
-        with open('tests/fixtures/example.feed.atom') as fd:
+        with open(self.feed_path) as fd:
             self._content = fd.read()
         self._is_secure_served \
                 = patch('jarr.lib.article_cleaner.is_secure_served')
-        self._p_req = patch('jarr.crawler.crawlers.classic'
-                            '.jarr_get')
+        self._p_req = patch('jarr.crawler.crawlers.abstract.jarr_get')
         self._p_con = patch('jarr.crawler.crawlers.abstract.FeedBuilderControl'
                             'ler.construct_from_xml_feed_content')
         self.is_secure_served = self._is_secure_served.start()
@@ -51,6 +52,7 @@ class CrawlerTest(JarrFlaskCommon):
                             headers=self.resp_headers, history=[],
                             content=self._content, text=self._content)
                 resp.raise_for_status.return_value = self.resp_raise
+                resp.json = lambda : json.loads(self._content)
                 return resp
 
             url = url.split(conf.api_root)[1].strip('/')
@@ -147,6 +149,15 @@ class CrawlerTest(JarrFlaskCommon):
 
         crawler()
         self.assertNotEqual(BASE_COUNT, ArticleController().read().count())
+
+
+class JsonCrawlerTest(CrawlerTest):
+    feed_path = 'tests/fixtures/feed.json'
+
+    def setUp(self):
+        super().setUp()
+        self.resp_headers = {'content-type': 'application/json'}
+        FeedController().update({}, {'feed_type': 'json'})
 
 
 class CrawlerMethodsTest(unittest.TestCase):

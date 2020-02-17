@@ -51,7 +51,7 @@ class FeedBuilderController:
             return False
         if not self.parsed_feed:
             if not any(mimetype in self.feed_response.headers['Content-Type']
-                    for mimetype in FEED_MIMETYPES):
+                       for mimetype in FEED_MIMETYPES):
                 return False
             self.parsed_feed = fp_parse(self.feed_response.content)
         if not isinstance(self.parsed_feed, FeedParserDict):
