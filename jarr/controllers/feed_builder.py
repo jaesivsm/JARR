@@ -15,6 +15,7 @@ from jarr.utils import jarr_get
 logger = logging.getLogger(__name__)
 REDDIT_FEED = re.compile(r'^https?://www.reddit.com/r/(\S+)/$')
 INSTAGRAM_RE = re.compile(r'^https?://(www.)?instagram.com/([^ \t\n\r\f\v/]+)')
+TWITTER_RE = re.compile(r'^https?://(www.)?twitter.com/([^ \t\n\r\f\v/]+)')
 TUMBLR_RE = re.compile(r'^https?://([^ \t\n\r\f\v/]+).tumblr.com/.*$')
 SOUNDCLOUD_RE = re.compile(
         r'^https?://(www.)?soundcloud.com/([^ \t\n\r\f\v/]+)')
@@ -142,7 +143,8 @@ class FeedBuilderController:
                     logger.info('%r is %s site', check_url, feed_type.value)
                     feed['feed_type'] = feed_type
         if feed['feed_type'] is FeedType.classic:
-            for regex, feed_type in ((INSTAGRAM_RE, FeedType.instagram),
+            for regex, feed_type in ((TWITTER_RE, FeedType.twitter),
+                                     (INSTAGRAM_RE, FeedType.instagram),
                                      (SOUNDCLOUD_RE, FeedType.soundcloud)):
                 corrected = self.correct_rss_bridge_feed(regex, feed_type)
                 if corrected:

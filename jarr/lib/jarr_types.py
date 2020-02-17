@@ -10,6 +10,7 @@ class FeedType(Enum):
     reddit = 'reddit'
     fetch = 'fetch'
     koreus = 'koreus'
+    twitter = 'twitter'
 
 
 class ArticleType(Enum):

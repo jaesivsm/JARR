@@ -30,3 +30,8 @@ class InstagramCrawler(RssBridgeMixin, ClassicCrawler):
 class SoundcloudCrawler(RssBridgeMixin, ClassicCrawler):
     feed_type = FeedType.soundcloud
     bridge = 'Soundcloud'
+
+
+class TwitterCrawler(RssBridgeMixin, ClassicCrawler):
+    feed_type = FeedType.twitter
+    bridge = 'Twitter'
