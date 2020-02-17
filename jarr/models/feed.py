@@ -75,16 +75,6 @@ class Feed(Base):
         return '<Feed %r(%r)>' % (self.title, self.id)
 
     @property
-    def crawler(self):
-        from jarr.crawler import crawlers
-        if self.feed_type is FeedType.classic:
-            return crawlers.ClassicCrawler
-        for crawler in crawlers.ClassicCrawler.__subclasses__():
-            if self.feed_type is crawler.feed_type:
-                return crawler
-        raise ValueError('No crawler for %r' % self.feed_type)
-
-    @property
     def abs_icon_url(self):
         return url_for('feed_icon', url=self.icon_url, _external=True)
 

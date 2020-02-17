@@ -185,3 +185,13 @@ class FeedController(AbstractController):
                 and_(Cluster.user_id == feed.user_id,
                      Cluster.main_article_id.__eq__(None))))
         return super().delete(obj_id)
+
+    def get_crawler(self, feed_id):
+        from jarr.crawler import crawlers
+        feed = self.get(id=feed_id)
+        if feed.feed_type is crawlers.ClassicCrawler.feed_type:
+            return crawlers.ClassicCrawler(feed)
+        for crawler in crawlers.ClassicCrawler.__subclasses__():
+            if feed.feed_type is crawler.feed_type:
+                return crawler(feed)
+        raise ValueError('No crawler for %r' % self.feed_type)

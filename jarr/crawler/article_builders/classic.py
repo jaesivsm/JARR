@@ -37,7 +37,7 @@ class ClassicArticleBuilder:
         return {'feed_id': self.feed.id,
                 'category_id': self.feed.category_id,
                 'user_id': self.feed.user_id,
-                'retrived_date': utc_now()}
+                'retrieved_date': utc_now()}
 
     @staticmethod
     def extract_id(entry):

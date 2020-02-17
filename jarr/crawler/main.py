@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 
 @celery_app.task(name='crawler.process_feed')
 def process_feed(feed_id):
-    FeedController().get(id=feed_id).crawler.crawl()
+    FeedController().get_crawler(feed_id).crawl()
 
 
 @celery_app.task(name='crawler.clusterizer')

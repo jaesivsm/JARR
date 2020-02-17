@@ -33,7 +33,7 @@ class CrawlerTest(JarrFlaskCommon):
         self._is_secure_served \
                 = patch('jarr.lib.article_cleaner.is_secure_served')
         self._p_req = patch('jarr.crawler.crawlers.classic'
-                            '.ClassicCrawler.request')
+                            '.jarr_get')
         self._p_con = patch('jarr.crawler.crawlers.abstract.FeedBuilderControl'
                             'ler.construct_from_xml_feed_content')
         self.is_secure_served = self._is_secure_served.start()

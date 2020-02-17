@@ -3,7 +3,7 @@ import logging
 import feedparser
 
 from jarr.bootstrap import conf
-from jarr.controllers import FeedBuilderController
+from jarr.controllers.feed_builder import FeedBuilderController
 from jarr.crawler.crawlers.abstract import AbstractCrawler
 from jarr.crawler.lib.headers_handling import prepare_headers
 from jarr.lib.jarr_types import FeedType
