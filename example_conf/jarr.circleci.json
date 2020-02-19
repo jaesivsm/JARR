@@ -1,0 +1,17 @@
+{
+    "jarr_testing": true,
+    "crawler": {
+        "login": "admin",
+        "passwd": "admin"
+    },
+    "log": {
+        "level": 0
+    },
+    "db": {
+        "pg_uri": "postgresql://jarr@0.0.0.0:5432/jarr",
+        "redis": {"host": "0.0.0.0"}
+    },
+    "celery": {"broker": "amqp://0.0.0.0//",
+               "backend": "redis://0.0.0.0:6379/0",
+               "BROKER_URL": "amqp://0.0.0.0//"}
+}
