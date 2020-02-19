@@ -17,3 +17,4 @@ class ArticleType(Enum):
     text = 'text'
     image = 'image'
     video = 'video'
+    embedded = 'embedded'

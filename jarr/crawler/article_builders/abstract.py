@@ -112,6 +112,9 @@ class AbstractArticleBuilder:
             if head.headers['Content-Type'].startswith('image/'):
                 self.article['article_type'] = ArticleType.image
                 return self.article
+            if head.headers['Content-Type'].startswith('video/'):
+                self.article['article_type'] = ArticleType.video
+                return self.article
         page = self._fetch_article(self.article['link'])
         if not page:
             return self.article
