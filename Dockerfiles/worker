@@ -1,3 +1,4 @@
 FROM jarr-base:latest
 
+COPY ep_celery.py /opt/ep_celery.py
 CMD ["pipenv", "run", "celery", "worker", "--app", "ep_celery.celery_app"]

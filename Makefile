@@ -26,6 +26,12 @@ test:
 build-base:
 	docker build . --file Dockerfiles/pythonbase -t jarr-base:latest
 
+build-server: build-base
+	docker build . --file Dockerfiles/server -t jarr-server:latest
+
+build-worker: build-base
+	docker build . --file Dockerfiles/worker -t jarr-server:latest
+
 start-env:
 	pipenv run docker-compose \
 		--project-name jarr \

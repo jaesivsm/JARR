@@ -5,19 +5,18 @@ orbs:
 
 jobs:
   build-and-test:
-    executor: python/default
+    machine:
+      image: ubuntu-1604:201903-01
     docker:
       - image: postgres:11
     steps:
       - checkout
       - run:
-          command: apt update && apt install --yes --force-yes make python3-pip && pip3 install pipenv
+          name: building server image
+          command: make build-server
       - run:
-          command: make install
-      - run:
-          command: make init-db
-      - run:
-          command: make test
+          name: building worker image
+          command: make build-worker
 
 workflows:
   main:
