@@ -22,13 +22,13 @@ jobs:
           name: creating db user
           command: >-
             docker-compose --file Dockerfiles/test-env.yml
-            exec postgresql su postgres -c
+            exec jarr_postgresql su postgres -c
             "createuser jarr --no-superuser --createdb --no-createrole"
       - run:
           name: creating db
           command: >-
             docker-compose --file Dockerfiles/test-env.yml
-            exec postgresql su postgres -c "createdb jarr --no-password"
+            exec jarr_postgresql su postgres -c "createdb jarr --no-password"
       - run:
           name: creating tables
           command: >-
