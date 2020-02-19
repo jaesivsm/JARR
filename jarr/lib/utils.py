@@ -72,7 +72,7 @@ def jarr_get(url, timeout=None, user_agent=None, headers=None, **kwargs):
     def_headers = {'User-Agent': user_agent}
     if headers is not None:
         def_headers.update(headers)
-    request_kwargs = {'verify': False, 'allow_redirects': True,
+    request_kwargs = {'allow_redirects': True,
                       'timeout': timeout, 'headers': def_headers}
     request_kwargs.update(kwargs)
     return requests.get(url, **request_kwargs)

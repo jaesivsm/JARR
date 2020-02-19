@@ -84,9 +84,8 @@ class AbstractArticleBuilder:
     def _head(cls, url):
         try:
             headers = {'User-Agent': conf.crawler.user_agent}
-            head = requests.head(url, headers=headers, verify=False,
-                                 timeout=conf.crawler.timeout,
-                                 allow_redirects=True)
+            head = requests.head(url, headers=headers, allow_redirects=True,
+                                 timeout=conf.crawler.timeout)
             head.raise_for_status()
             return head
         except MissingSchema:
