@@ -14,4 +14,6 @@ services:
       - type: bind
         source: ./tests
         target: /jarr/tests
-
+      - type: bind
+        source: ./example_conf/jarr.test.json
+        target: /etc/jarr.json
