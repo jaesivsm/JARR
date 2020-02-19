@@ -1,12 +1,13 @@
 import logging
-from urllib.parse import SplitResult, urlsplit, urlunsplit
 
+import requests
 from requests.exceptions import MissingSchema
 
+from jarr.bootstrap import conf
 from jarr.lib.filter import FiltersAction, process_filters
 from jarr.lib.html_parsing import extract_lang, extract_tags, extract_title
-from jarr.lib.utils import utc_now
-from jarr.utils import jarr_get
+from jarr.lib.jarr_types import ArticleType
+from jarr.lib.utils import jarr_get, utc_now
 
 logger = logging.getLogger(__name__)
 
@@ -79,29 +80,42 @@ class AbstractArticleBuilder:
         self.article['lang'] = self.extract_lang(entry)
         self.article['comments'] = self.extract_comments(entry)
 
+    @classmethod
+    def _head(cls, url):
+        try:
+            headers = {'User-Agent': conf.crawler.user_agent}
+            head = requests.head(url, headers=headers, verify=False,
+                                 timeout=conf.crawler.timeout,
+                                 allow_redirects=True)
+            head.raise_for_status()
+            return head
+        except MissingSchema:
+            for scheme in 'https://', 'https:', 'http://', 'http:':
+                try:
+                    return cls._head(scheme + url)
+                except Exception as error:
+                    logger.debug('got %r for url %s%s', error, scheme, url)
+                    continue
+
     @staticmethod
     def _fetch_article(link):
         try:
-            # resolves URL behind proxies (like feedproxy.google.com)
-            return jarr_get(link)
-        except MissingSchema:
-            split = urlsplit(link)
-            for scheme in 'https', 'http':
-                new_link = urlunsplit(SplitResult(scheme, *split[1:]))
-                try:
-                    return jarr_get(new_link)
-                except Exception:
-                    logger.error("tried %r, didn't work", new_link)
-                    continue
-        except Exception as error:
-            logger.info("Unable to get the real URL of %s. Won't fix "
-                        "link or title. Error: %s", link, error)
+            response = jarr_get(link)
+            response.raise_for_status()
+            return response
+        except Exception:
+            logger.exception("Unable to retrieve %s", link)
 
     def enhance(self):
+        head = self._head(self.article['link'])
+        if head:
+            self.article['link'] = head.url
+            if head.headers['Content-Type'].startswith('image/'):
+                self.article['article_type'] = ArticleType.image
+                return self.article
         page = self._fetch_article(self.article['link'])
         if not page:
             return self.article
-        self.article['link'] = page.url
         if not self.article.get('title'):
             self.article['title'] = extract_title(page)
         self.article['tags'] = self.article['tags'].union(extract_tags(page))
