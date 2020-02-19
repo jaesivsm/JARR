@@ -9,7 +9,7 @@ RUN pipenv sync
 COPY ./jarr/ /jarr/jarr
 COPY ./migrations/ /jarr/migrations
 COPY ./manager.py /jarr/manager.py
-COPY ./*.py /jarr
+COPY ./*.py /jarr/
 
 COPY example_conf/jarr.json /etc/jarr/jarr.json
 VOLUME /etc/jarr/
