@@ -2,12 +2,11 @@ version: '3.2'
 services:
   postgresql:
     image: postgres:11
+    ports:
+      - 0.0.0.0:5432:5432
   server:
     image: jarr-server:latest
     volumes:
       - type: bind
         source: ./tests
         target: /jarr/tests
-      - type: bind
-        source: ./Makefile
-        target: /jarr/Makefile
