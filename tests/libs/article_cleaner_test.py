@@ -15,7 +15,7 @@ class ConstructArticleTest(unittest.TestCase):
 
     def setUp(self):
         self._jarr_get_patch = patch('jarr.crawler.article_builders'
-                                     '.classic.jarr_get')
+                                     '.abstract.jarr_get')
         self.jarr_get_patch = self._jarr_get_patch.start()
 
     def tearDown(self):
