@@ -15,6 +15,9 @@ jobs:
       - run:
           name: building worker image
           command: make build-worker
+      - run:
+          name: starting test env
+          command: docker-compose --file Dockerfiles/test-env.yml up -d
 
 workflows:
   main:
