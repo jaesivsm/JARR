@@ -95,10 +95,8 @@ class FeedController(AbstractController):
                                 if isinstance(filter_, dict)]
 
     def create(self, **attrs):
-        from jarr.signals import feed_creation
         self._ensure_icon(attrs)
         self.__clean_feed_fields(attrs)
-        feed_creation.send(self, feed=attrs)
         return super().create(**attrs)
 
     def __denorm_cat_id_on_articles(self, feed, attrs):
@@ -187,3 +185,13 @@ class FeedController(AbstractController):
                 and_(Cluster.user_id == feed.user_id,
                      Cluster.main_article_id.__eq__(None))))
         return super().delete(obj_id)
+
+    def get_crawler(self, feed_id):
+        from jarr.crawler.crawlers import AbstractCrawler, ClassicCrawler
+        feed = self.get(id=feed_id)
+        crawlers = set(AbstractCrawler.__subclasses__()).union(
+                ClassicCrawler.__subclasses__())
+        for crawler in crawlers:
+            if feed.feed_type is crawler.feed_type:
+                return crawler(feed)
+        raise ValueError('No crawler for %r' % feed.feed_type)

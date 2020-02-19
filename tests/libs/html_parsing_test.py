@@ -5,7 +5,7 @@ from mock import patch
 from requests import Response
 
 from jarr.lib.html_parsing import (extract_title, extract_tags,
-        extract_icon_url, extract_feed_link, extract_lang)
+        extract_icon_url, extract_feed_links, extract_lang)
 
 
 class HTMLParsingTest(unittest.TestCase):
@@ -43,28 +43,22 @@ class HTMLParsingTest(unittest.TestCase):
         self.assertEqual('fr_FR', extract_lang(self.article))
         self.assertEqual('fr', extract_lang(self.article2))
 
-    def test_extract_feed_link(self):
-        feed_split = urllib.parse.urlsplit(self.article.url)
+    def test_extract_feed_links(self):
         self.assertEqual(self.article.url + '/feed',
-                          extract_feed_link(self.article, feed_split))
+                         list(extract_feed_links(self.article))[0])
 
         yt_feed_link = 'http://www.youtube.com/oembed?url=https%3A%2F%2F'\
                        'www.youtube.com%2Fwatch%3Fv%3DscbrjaqM3Oc&format=xml'
-        feed_split = urllib.parse.urlsplit(self.article2.url)
         self.assertEqual(yt_feed_link,
-                          extract_feed_link(self.article2, feed_split))
+                         list(extract_feed_links(self.article2))[0])
 
     @patch('jarr.lib.html_parsing.try_get_icon_url')
     def test_extract_icon_url(self, get_icon_patch):
         def return_first_val(*a, **kwargs):
             return a[0]
         get_icon_patch.side_effect = return_first_val
-        split = urllib.parse.urlsplit(self.article.url)
         self.assertEqual('http://www.pariszigzag.fr/wp-content/themes'
                           '/paris_zigzag_2016/favicon.ico',
-                          extract_icon_url(self.article, split, split,
-                                           timeout=30, user_agent='jarr'))
-        split = urllib.parse.urlsplit(self.article2.url)
+                          extract_icon_url(self.article))
         self.assertEqual('https://s.ytimg.com/yts/img/favicon-vflz7uhzw.ico',
-                          extract_icon_url(self.article2, split, split,
-                                           timeout=30, user_agent='jarr'))
+                          extract_icon_url(self.article2))

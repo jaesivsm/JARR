@@ -3,8 +3,6 @@ import re
 from enum import Enum
 
 logger = logging.getLogger(__name__)
-PROCESSED_DATE_KEYS = {'published', 'created', 'updated'}
-FETCHABLE_DETAILS = {'link', 'title', 'tags', 'lang'}
 
 
 class FiltersAction(Enum):

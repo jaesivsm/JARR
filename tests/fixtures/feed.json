@@ -1,0 +1,182 @@
+{
+   "version" : "https://jsonfeed.org/version/1",
+   "title" : "Daring Fireball",
+   "home_page_url" : "https://daringfireball.net/",
+   "feed_url" : "https://daringfireball.net/feeds/json",
+   "author" : {
+      "url" : "https://twitter.com/gruber",
+      "name" : "John Gruber"
+   },
+   "icon" : "https://daringfireball.net/graphics/apple-touch-icon.png",
+   "favicon" : "https://daringfireball.net/graphics/favicon-64.png",
+   "items" : [
+      {
+         "title" : "Square",
+         "date_published" : "2020-02-16T23:57:00Z",
+         "date_modified" : "2020-02-16T23:57:40Z",
+         "id" : "https://daringfireball.net/linked/2020/02/16/square",
+         "url" : "https://daringfireball.net/linked/2020/02/16/square",
+         "external_url" : "https://youtu.be/qYx50YBnQeM",
+         "author" : {
+            "name" : "John Gruber"
+         },
+         "content_html" : "\n<p>My thanks to Square for sponsoring this week’s DF RSS. The entirety of their ad text: “Start taking 💸 with the In-App Payments SDK for iOS in less ⏰ than it takes to make ☕️.”.</p>\n\n<p>They’re promoting <a href=\"https://youtu.be/qYx50YBnQeM\">a short, smart 4-minute video</a> showing just how easy it is to use Square’s In-App Payments SDK for iOS.</p>\n\n<p style=\"padding-top: 1.5em;\"><em>Link: <strong><a href=\"https://youtu.be/qYx50YBnQeM\">youtu.be/qYx50YBnQeM</a></strong></em></p>\n"
+      },
+      {
+         "title" : "The Woman Shaking Up the Diamond Industry",
+         "date_published" : "2020-02-16T23:56:52Z",
+         "date_modified" : "2020-02-17T03:47:49Z",
+         "id" : "https://daringfireball.net/linked/2020/02/16/woman-shaking-up-the-diamond-industry",
+         "url" : "https://daringfireball.net/linked/2020/02/16/woman-shaking-up-the-diamond-industry",
+         "external_url" : "https://www.newyorker.com/magazine/2020/02/03/the-woman-shaking-up-the-diamond-industry",
+         "author" : {
+            "name" : "John Gruber"
+         },
+         "content_html" : "\n<p>For your weekend reading enjoyment, I highly recommend this recent New Yorker profile of Eira Thomas, co-founder and CEO of diamond-mining upstart Lucara, which has developed a knack for discovering particularly large stones:</p>\n\n<blockquote>\n  <p>Gren Thomas dismissed the idea that Lucara had been lucky. His\ndaughter, he said, was both a workaholic and a rigorous scientist.\nAlthough it was “beyond anyone’s dreams” that the biggest diamond\nsince the Cullinan would be discovered at Karowe, he felt that\nEira had an unteachable talent for discovery. “She has a good\nsmell for things that are liable to be successful,” Gren told me.\n“She has a good nose, as they say in our business.”</p>\n</blockquote>\n\n<p>The whole story is fascinating: from the security of modern diamond mines to the history of the marketing that keeps diamond prices high. And, just a week after publication, <a href=\"https://www.newyorker.com/news/news-desk/the-woman-shaking-up-the-diamond-industry-finds-yet-another-huge-gem\">Lucara found another very large diamond</a>.</p>\n\n<p style=\"padding-top: 1.5em;\"><em>Link: <strong><a href=\"https://www.newyorker.com/magazine/2020/02/03/the-woman-shaking-up-the-diamond-industry\">newyorker.com/magazine/2020/02/03/the-woman-shaking-up-the…</a></strong></em></p>\n"
+      },
+      {
+         "title" : "Dieter Bohn’s Motorola Razr Review: ‘Folding Flip Phone Flops’",
+         "date_published" : "2020-02-16T00:13:46Z",
+         "date_modified" : "2020-02-16T00:20:19Z",
+         "id" : "https://daringfireball.net/linked/2020/02/15/folding-flip-phone-flops",
+         "url" : "https://daringfireball.net/linked/2020/02/15/folding-flip-phone-flops",
+         "external_url" : "https://www.theverge.com/2020/2/13/21135809/motorola-razr-review-foldable-flip-phone-verizon-price-camera-display-battery",
+         "author" : {
+            "name" : "John Gruber"
+         },
+         "content_html" : "\n<p>Dieter Bohn, writing at The Verge:</p>\n\n<blockquote>\n  <p>The camera is perfectly acceptable for a phone that costs around $500 in the year 2018. Unfortunately for Motorola, the Razr costs $1,500 and it is 2020 — a year in which you can buy a Pixel 3A for $399 (or less on discount) with a camera that absolutely smokes the Razr.</p>\n\n<p>It’s a 16-megapixel sensor, and I was able to get decent shots in bright light or simple conditions. But I’ve been able to say that about most smartphone cameras for years now. Introduce even a little complication, like movement, shadow, or low light, and the whole thing falls apart. I had a super hard time even getting it to properly focus on faces. There is a night mode but it doesn’t do much.</p>\n</blockquote>\n\n<p>I get it that some compromises were inevitable, but the camera shouldn’t have  been one. And it just seems so wrong that the hinge — the defining aspect of this very-premiumly-priced device — has an unpleasant creaking sound.</p>\n\n<p style=\"padding-top: 1.5em;\"><em>Link: <strong><a href=\"https://www.theverge.com/2020/2/13/21135809/motorola-razr-review-foldable-flip-phone-verizon-price-camera-display-battery\">theverge.com/2020/2/13/21135809/motorola-razr-review…</a></strong></em></p>\n"
+      },
+      {
+         "title" : "Inside Mark Zuckerberg’s Lost Notebook",
+         "date_published" : "2020-02-15T19:44:09Z",
+         "date_modified" : "2020-02-15T19:44:40Z",
+         "id" : "https://daringfireball.net/linked/2020/02/15/levy-zuckerberg",
+         "url" : "https://daringfireball.net/linked/2020/02/15/levy-zuckerberg",
+         "external_url" : "https://www.wired.com/story/facebook-mark-zuckerberg-lost-notebook/",
+         "author" : {
+            "name" : "John Gruber"
+         },
+         "content_html" : "\n<p>Wired has a great excerpt from Steven Levy’s <a href=\"https://www.amazon.com/Facebook-Inside-Story-Steven-Levy/dp/0735213151/\">upcoming book on Facebook</a>. Here’s Levy on first meeting Mark Zuckerberg in 2006:</p>\n\n<blockquote>\n  <p>I took it in stride that Zuckerberg looked even younger than his\n21 years. I’d been covering hackers and tech companies for long\nenough to have met other peach-fuzz magnates. But what did shake\nme was his affect. I asked him a few softball questions about what\nthe company was up to, and he just stared at me. He said nothing.\nHe didn’t seem angry or preoccupied. Just blank. If my questions\nhad been shot from a water pistol at the rock face of a high cliff\nthey would have had more impact.</p>\n\n<p>I was flummoxed. This guy is the CEO, isn’t he? Is he having some\nsort of episode? Was there something I’d written that made him\nhate me? Time seemed to freeze as the silence continued.</p>\n</blockquote>\n\n<p style=\"padding-top: 1.5em;\"><em>Link: <strong><a href=\"https://www.wired.com/story/facebook-mark-zuckerberg-lost-notebook/\">wired.com/story/facebook-mark-zuckerberg-lost-notebook/</a></strong></em></p>\n"
+      },
+      {
+         "title" : "Let’s Get Real About How Important Our Phones Are",
+         "date_published" : "2020-02-11T23:33:09Z",
+         "date_modified" : "2020-02-11T23:41:50Z",
+         "id" : "https://daringfireball.net/linked/2020/02/11/fowler-s20",
+         "url" : "https://daringfireball.net/linked/2020/02/11/fowler-s20",
+         "external_url" : "https://www.washingtonpost.com/technology/2020/02/11/samsung-galaxy-s20-galaxy-z-flip/",
+         "author" : {
+            "name" : "John Gruber"
+         },
+         "content_html" : "\n<p>Geoffrey Fowler, writing for The Washington Post:</p>\n\n<blockquote>\n  <p>At its “Unpacked” event here on Tuesday, the world’s largest smartphone maker unveiled a new model called the Galaxy S20 that touts ultrafast 5G and a camera with enough zoom for a spy. A second new smartphone, called the Galaxy Z Flip, opens and closes like a flip phone from 2003, using a cutting-edge folding-screen technology.</p>\n\n<p>And with prices ranging from $1,000 to $1,400, either one is hard to justify as much more than a luxury.</p>\n</blockquote>\n\n<p>This is the same nonsense we hear about Apple’s phones, post-iPhone X. Yes, phones that cost $1,000 or more are expensive. Yes, that’s outside the budget for most people. But why in the world would anyone argue this is ”hard to justify”? Phones are, for most people, the most-used computing device in their lives. They are also their primary — usually <em>only</em> — camera. A good camera alone used to cost $500-600.</p>\n\n<p>There are way more people on the planet who’d rather have a $1,400 phone and a $400 laptop than the other way around. But you’ll never see a tech reviewer claim that $1,000-1,400 is “hard to justify” for a laptop. It’s ridiculously out of touch to argue otherwise. And, the fact that top-of-the-line phones have reached these price points does not negate the fact that truly excellent phones are available at much lower prices.</p>\n\n<p style=\"padding-top: 1.5em;\"><em>Link: <strong><a href=\"https://www.washingtonpost.com/technology/2020/02/11/samsung-galaxy-s20-galaxy-z-flip/\">washingtonpost.com/technology/2020/02/11/samsung-galaxy-s20…</a></strong></em></p>\n"
+      },
+      {
+         "title" : "21st Century Autocracy",
+         "date_published" : "2020-02-11T23:10:15Z",
+         "date_modified" : "2020-02-11T23:30:49Z",
+         "id" : "https://daringfireball.net/linked/2020/02/11/21st-century-autocracy",
+         "url" : "https://daringfireball.net/linked/2020/02/11/21st-century-autocracy",
+         "external_url" : "https://www.theatlantic.com/magazine/archive/2017/03/how-to-build-an-autocracy/513872/",
+         "author" : {
+            "name" : "John Gruber"
+         },
+         "content_html" : "\n<p>David Frum, writing back in 2017:</p>\n\n<blockquote>\n  <p>What has happened in Hungary since 2010 offers an example — and a blueprint for would-be strongmen. Hungary is a member state of the European Union and a signatory of the European Convention on Human Rights. It has elections and uncensored internet. Yet Hungary is ceasing to be a free country.</p>\n\n<p>The transition has been nonviolent, often not even very dramatic. Opponents of the regime are not murdered or imprisoned, although many are harassed with building inspections and tax audits. If they work for the government, or for a company susceptible to government pressure, they risk their jobs by speaking out. Nonetheless, they are free to emigrate anytime they like. Those with money can even take it with them. Day in and day out, the regime works more through inducements than through intimidation. The courts are packed, and forgiving of the regime’s allies. Friends of the government win state contracts at high prices and borrow on easy terms from the central bank. Those on the inside grow rich by favoritism; those on the outside suffer from the general deterioration of the economy. As one shrewd observer told me on a recent visit, “The benefit of controlling a modern state is less the power to persecute the innocent, more the power to protect the guilty.”</p>\n</blockquote>\n\n<p>21st century autocracy does not resemble 20th century autocracy. It’s a different ballgame. And we’re facing it right here in America, <a href=\"https://www.nytimes.com/2020/02/11/us/politics/roger-stone-sentencing.html\">right now</a>. I’m not going to say that the president of the United States brazenly pushing for a lighter criminal sentence for his long-time friend and co-conspirator is the worst that it can get. It’s not, and I think it’s going to get worse. But let’s stop pretending that Trump and his enablers haven’t already crossed the autocrat line. This is where we are; let’s deal with it with our eyes wide open.</p>\n\n<p style=\"padding-top: 1.5em;\"><em>Link: <strong><a href=\"https://www.theatlantic.com/magazine/archive/2017/03/how-to-build-an-autocracy/513872/\">theatlantic.com/magazine/archive/2017/03/how-to-build-an…</a></strong></em></p>\n"
+      },
+      {
+         "title" : "Samsung’s Galaxy Book S Is Thinner, Lighter, Faster Than MacBook Air",
+         "date_published" : "2020-02-11T22:51:34Z",
+         "date_modified" : "2020-02-12T04:36:33Z",
+         "id" : "https://daringfireball.net/linked/2020/02/11/galaxy-book-s-macbook-air",
+         "url" : "https://daringfireball.net/linked/2020/02/11/galaxy-book-s-macbook-air",
+         "external_url" : "https://www.notebookcheck.net/Benchmarked-Galaxy-Book-S-is-thinner-lighter-faster-than-MacBook-Air.453633.0.html",
+         "author" : {
+            "name" : "John Gruber"
+         },
+         "content_html" : "\n<p>Sanjiv Sathiah, writing for NotebookCheck:</p>\n\n<blockquote>\n  <p>The Intel Core i5-8210Y delivers a multi-core score of 1544 which\ncompares poorly with the Qualcomm Snapdragon 8cx multi-core score\nof 2745. Yet, despite fitting the MacBook Air with a 49.9 Wh\nbattery, Apple claims it will deliver just 13 hours of continuous\nvideo playback. However, because of the superior\nperformance-per-watt of the Snapdragon 8cx when paired with the\nsmaller 42 Wh battery in the Galaxy Book S, it delivers up to 25\nhours (claimed) of continuous video playback. […]</p>\n\n<p>The MacBook Air weighs 1.25 kg (2.75 pounds) and is 15.6 mm\n(0.61-inches) at its thickest point. This compares with the Galaxy\nBook S which weighs 0.96 kg (2.11 pounds) and measures 11.8 mm\n(0.46-inches). Given that buyers of the slightly more expensive\nMacBook Air (US$1,099) are also only going to be doing relatively\nlight-weight tasks on it like internet browsing and running\nMicrosoft’s Office suite on it, why would anyone choose the\nMacBook Air over the Galaxy Book S (US$999)?</p>\n</blockquote>\n\n<p>Well, there’s the small notion of, you know, the operating system. And let’s see if it really does get 25 hours of video playback. But the point stands. A lot of people using MacBooks today aren’t devoted to the MacOS experience, and might switch, based on hardware alone. The ARM revolution for notebook PCs is coming, whether Apple is ready or not.</p>\n\n<p>(I think they’re ready.)</p>\n\n<p style=\"padding-top: 1.5em;\"><em>Link: <strong><a href=\"https://www.notebookcheck.net/Benchmarked-Galaxy-Book-S-is-thinner-lighter-faster-than-MacBook-Air.453633.0.html\">notebookcheck.net/Benchmarked-Galaxy-Book-S-is-thinner…</a></strong></em></p>\n"
+      },
+      {
+         "title" : "What Jonathan Chait Does Like About Bernie Sanders",
+         "date_published" : "2020-02-11T21:32:32Z",
+         "date_modified" : "2020-02-11T21:42:47Z",
+         "id" : "https://daringfireball.net/linked/2020/02/11/what-chait-likes-about-sanders",
+         "url" : "https://daringfireball.net/linked/2020/02/11/what-chait-likes-about-sanders",
+         "external_url" : "https://nymag.com/intelligencer/2020/02/bernie-sanders-praise-critic-vote-2020.html",
+         "author" : {
+            "name" : "John Gruber"
+         },
+         "content_html" : "\n<p>In broad strokes, you can probably file me as a Jonathan Chait Democrat. I agree with Chait far more often than not, and when I disagree with him, I almost always think, “Well, he does make some good points.”</p>\n\n<p>Long story short, we’re not Bernie Sanders fans.</p>\n\n<p>But! As Chait points out in his column today, there’s a lot to like about Bernie Sanders even if you’re not a Bernie Sanders Democrat. (I will not bring up the fact that Bernie Sanders himself is not a Democrat.) Among the candidates who seem to have a legitimate chance to win the Democratic nomination this year — Biden, Bloomberg, Buttigieg, Klobuchar, Sanders, Warren, in alphabetical order — Sanders is far from my first choice. But if he’s the nominee — and he may well be — I will support him wholeheartedly and with no reservations. There is a lot to like about all of these candidates, and those of us in opposition to Trump have got to stick together.</p>\n\n<p>Elections are fundamentally about winning. Trump is already trying to distract and divide us.</p>\n\n<p style=\"padding-top: 1.5em;\"><em>Link: <strong><a href=\"https://nymag.com/intelligencer/2020/02/bernie-sanders-praise-critic-vote-2020.html\">nymag.com/intelligencer/2020/02/bernie-sanders-praise…</a></strong></em></p>\n"
+      },
+      {
+         "title" : "Today, in Our Headlong Roll Into Banana Republicdom",
+         "date_published" : "2020-02-11T19:09:17Z",
+         "date_modified" : "2020-02-11T19:15:42Z",
+         "id" : "https://daringfireball.net/linked/2020/02/11/trump-stone",
+         "url" : "https://daringfireball.net/linked/2020/02/11/trump-stone",
+         "external_url" : "https://www.nytimes.com/2020/02/11/us/politics/roger-stone-sentencing.html?referringSource=articleShare",
+         "author" : {
+            "name" : "John Gruber"
+         },
+         "content_html" : "\n<p>Katie Benner:</p>\n\n<blockquote>\n  <p>Senior Justice Department officials intervened to overrule front-line prosecutors and will recommend a more lenient sentencing for Roger J. Stone Jr., convicted last year of impeding investigators in a bid to protect his longtime friend President Trump, a senior department official said Tuesday.</p>\n\n<p>The move is highly unusual and is certain to generate allegations of political interference. It came after federal prosecutors in Washington asked a judge late Monday evening to sentence Mr. Stone to seven to nine years in prison on seven felony convictions for trying to sabotage a congressional investigation that threatened Mr. Trump.</p>\n\n<p>Early on Tuesday, Mr. Trump declared the sentencing recommendation “horrible and very unfair.”</p>\n\n<p>“The real crimes were on the other side, as nothing happens to them,” Mr. Trump wrote. “Cannot allow this miscarriage of justice!”</p>\n</blockquote>\n\n<p>Trump is not just intervening on behalf of a friend, it’s a case where Trump himself (and his son) were up to their necks in it.</p>\n\n<p>“Highly unusual” is an absurd euphemism.</p>\n\n<p style=\"padding-top: 1.5em;\"><em>Link: <strong><a href=\"https://www.nytimes.com/2020/02/11/us/politics/roger-stone-sentencing.html?referringSource=articleShare\">nytimes.com/2020/02/11/us/politics/roger-stone-sentencing…</a></strong></em></p>\n"
+      },
+      {
+         "title" : "Fox’s Redesigned NFL Graphics",
+         "date_published" : "2020-02-10T21:32:56Z",
+         "date_modified" : "2020-02-10T21:45:42Z",
+         "id" : "https://daringfireball.net/linked/2020/02/10/fox-box-2",
+         "url" : "https://daringfireball.net/linked/2020/02/10/fox-box-2",
+         "external_url" : "https://tv.avclub.com/fox-redesigns-its-nfl-graphics-for-the-point-your-phone-1841522459",
+         "author" : {
+            "name" : "John Gruber"
+         },
+         "content_html" : "\n<p>John Teti, writing for The AV Club:</p>\n\n<blockquote>\n  <p>Everyone has their own focal point on Super Bowl Sunday. Some\nviewers are there for the halftime show. Others watch for the\ncommercials. And let’s not forget those of us who tune in to see\nthe main event: three hours of men in brightly colored garments,\npummeling each other, for America.</p>\n\n<p>Those are all marvelous reasons to watch, but in my living room,\nthere was yet another, admittedly obscure facet of the game that\nfilled me with anticipation right up until kickoff, as I wondered,\n“Will Fox premiere a new suite of onscreen graphics for the Super\nBowl?” The answer, to my delight, was yes.</p>\n</blockquote>\n\n<p>It really is a good graphics system — replacing an older design that was also very good. It works well for everyone — those who are playing close attention to the game <em>and</em> those who are not, but just want to see what’s going on at a glance.</p>\n\n<p>(<a href=\"https://twitter.com/tvaziri/status/1225905096124317697\">Via Todd Vaziri</a>.)</p>\n\n<p style=\"padding-top: 1.5em;\"><em>Link: <strong><a href=\"https://tv.avclub.com/fox-redesigns-its-nfl-graphics-for-the-point-your-phone-1841522459\">tv.avclub.com/fox-redesigns-its-nfl-graphics-for-the-point…</a></strong></em></p>\n"
+      },
+      {
+         "title" : "MLB’s 2020 Batting Practice Caps Are Mostly Terrible",
+         "date_published" : "2020-02-10T21:21:23Z",
+         "date_modified" : "2020-02-10T21:21:40Z",
+         "id" : "https://daringfireball.net/linked/2020/02/10/kafasis-mlb-batting-practice-caps",
+         "url" : "https://daringfireball.net/linked/2020/02/10/kafasis-mlb-batting-practice-caps",
+         "external_url" : "https://onefoottsunami.com/2020/02/10/these-designs-are-bad-and-the-designers-should-feel-bad/",
+         "author" : {
+            "name" : "John Gruber"
+         },
+         "content_html" : "\n<p>Paul Kafasis:</p>\n\n<blockquote>\n  <p>I know it goes against all logic and reason, but it really seems\nlike shoving one logo inside of another logo is not a great way to\ndesign a third logo.</p>\n</blockquote>\n\n<p style=\"padding-top: 1.5em;\"><em>Link: <strong><a href=\"https://onefoottsunami.com/2020/02/10/these-designs-are-bad-and-the-designers-should-feel-bad/\">onefoottsunami.com/2020/02/10/these-designs-are-bad-and-the…</a></strong></em></p>\n"
+      },
+      {
+         "title" : "Oscar-Winning Screenwriter Taika Waititi, Asked What Writers Should Be Asking for in the Next Round of Talks With Producers: ‘Apple Needs to Fix Those Keyboards. They Are Impossible to Write on. They’ve Gotten Worse. It Makes Me Want to Go Back to PCs.’",
+         "date_published" : "2020-02-10T17:34:09Z",
+         "date_modified" : "2020-02-10T20:04:28Z",
+         "id" : "https://daringfireball.net/linked/2020/02/10/waititi-keyboards",
+         "url" : "https://daringfireball.net/linked/2020/02/10/waititi-keyboards",
+         "external_url" : "https://twitter.com/variety/status/1226710675554091008",
+         "author" : {
+            "name" : "John Gruber"
+         },
+         "content_html" : "\n<p>This clip is making the rounds this morning, with good reason. It hits home. Watch the whole video — Waititi is obviously being a bit glib with the entire premise of his answer, but he’s not joking. He’s a writer and writers <em>really</em> care about keyboards.</p>\n\n<p>I’ve been saying for years now that Apple has done severe reputational harm to the MacBook brand, which effectively is the Mac brand for most people, especially writers. Yes, there’s a new keyboard with scissor-switch mechanisms in the 16-inch MacBook Pro. It’s <a href=\"https://daringfireball.net/2019/11/16-inch_macbook_pro_first_impressions\">a pleasure to type on</a>. But we’re still months away from the rest of the MacBook lineup being updated to use that new keyboard. And that’s a presumption on my part, that all MacBooks will get the new keyboard sooner rather than later. It certainly wouldn’t make any sense if they didn’t — but the whole butterfly-switch saga has never made any sense.</p>\n\n<p>Apple could switch every single Mac in the lineup to the new keyboards tomorrow, and people would still be joking about MacBook keyboards for years to come.</p>\n\n<p style=\"padding-top: 1.5em;\"><em>Link: <strong><a href=\"https://twitter.com/variety/status/1226710675554091008\">twitter.com/variety/status/1226710675554091008</a></strong></em></p>\n"
+      },
+      {
+         "title" : "[Sponsor] Square",
+         "date_published" : "2020-02-10T17:18:05-05:00",
+         "date_modified" : "2020-02-10T17:18:05-05:00",
+         "id" : "https://daringfireball.net/feeds/sponsors/2020/02/square",
+         "url" : "https://daringfireball.net/feeds/sponsors/2020/02/square",
+         "external_url" : "https://youtu.be/qYx50YBnQeM",
+         "author" : {
+            "name" : "Daring Fireball Department of Commerce"
+         },
+         "content_html" : "\n<p>Start taking 💸 with the In-App Payments SDK for iOS in less ⏰ than it takes to make ☕️.</p>\n\n<p style=\"padding-top: 1.5em;\"><em>Link: <strong><a href=\"https://youtu.be/qYx50YBnQeM\">youtu.be/qYx50YBnQeM</a></strong></em></p>\n"
+      },
+      {
+         "title" : "Morning Brew",
+         "date_published" : "2020-02-10T17:09:36Z",
+         "date_modified" : "2020-02-10T17:09:37Z",
+         "id" : "https://daringfireball.net/linked/2020/02/10/morning-brew",
+         "url" : "https://daringfireball.net/linked/2020/02/10/morning-brew",
+         "external_url" : "https://www.morningbrew.com/?utm_source=daring&utm_medium=rss&utm_campaign=feed",
+         "author" : {
+            "name" : "John Gruber"
+         },
+         "content_html" : "\n<p>My thanks to Morning Brew for sponsoring DF last week. There’s a reason over 1 million people start their day with Morning Brew — the daily email that delivers the latest news from Wall Street to Silicon Valley. Business news doesn’t have to be dry and dense… make your mornings more enjoyable, for free.</p>\n\n<p>I’ve been subscribed for over six months. It’s a great daily read — concise, fun, and a clean crisp design. You get one email each morning and that’s it. <a href=\"https://www.morningbrew.com/\">I recommend it</a>.</p>\n\n<p style=\"padding-top: 1.5em;\"><em>Link: <strong><a href=\"https://www.morningbrew.com/?utm_source=daring&utm_medium=rss&utm_campaign=feed\">morningbrew.com/?utm_source=daring&utm_medium=rss&utm…</a></strong></em></p>\n"
+      }
+   ]
+}

@@ -1,7 +1,7 @@
 from tests.base import JarrFlaskCommon
 from datetime import timezone, timedelta
-from mock import patch
 from jarr.lib.utils import utc_now
+from jarr.lib.jarr_types import FeedType
 from jarr.controllers import FeedController
 
 
@@ -115,10 +115,7 @@ class FeedApiTest(JarrFlaskCommon):
         feeds = self.jarr_client('get', 'feeds', user='user1').json
         self.assertFalse(feed_id in [feed['id'] for feed in feeds])
 
-    @patch('jarr.api.feed.construct_feed_from')
-    def test_FeedBuilder_get(self, construct_feed_from):
-        construct_feed_from.return_value = FEED
-
+    def test_FeedBuilder_get(self):
         resp = self.jarr_client('get', 'feed', 'build')
         self.assertStatusCode(401, resp)
 
@@ -126,9 +123,25 @@ class FeedApiTest(JarrFlaskCommon):
         self.assertStatusCode(400, resp)
 
         resp = self.jarr_client('get', 'feed', 'build', user='user1',
-                data={'url': "whateve', it's mocked"})
+                                data={'url': "koreus.com"})
         self.assertStatusCode(200, resp)
-        self.assertEqual(resp.json, FEED)
+        self.assertEqual({
+            'description': 'Koreus',
+            'feed_type': FeedType.koreus.value,
+            'icon_url': 'https://koreus.cdn.li/static/images/favicon.png',
+            'link': 'http://feeds.feedburner.com/Koreus-articles',
+            'links': ['http://feeds.feedburner.com/Koreus-articles',
+                      'http://feeds.feedburner.com/Koreus-media',
+                      'http://feeds.feedburner.com/Koreus-videos',
+                      'http://feeds.feedburner.com/Koreus-animations',
+                      'http://feeds.feedburner.com/Koreus-jeux',
+                      'http://feeds.feedburner.com/Koreus-images',
+                      'http://feeds.feedburner.com/Koreus-sons',
+                      'http://feeds.feedburner.com/Koreus-podcasts-audio',
+                      'http://feeds.feedburner.com/Koreus-podcasts-video',
+                      'http://feeds.feedburner.com/Koreus-forums'],
+            'site_link': 'https://www.koreus.com/',
+            'title': 'Koreus.com - Articles'}, resp.json)
 
     def test_IconResource_get(self):
         resp = self.jarr_client('post', 'feed', user='user1', data=FEED)

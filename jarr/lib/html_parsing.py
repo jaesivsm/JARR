@@ -1,8 +1,10 @@
 import logging
+import urllib
 from functools import lru_cache
 
 from bs4 import BeautifulSoup, SoupStrainer
 
+from jarr.bootstrap import conf
 from jarr.lib.const import FEED_MIMETYPES
 from jarr.lib.utils import clean_lang, jarr_get, rebuild_url
 
@@ -10,7 +12,7 @@ logger = logging.getLogger(__name__)
 CHARSET_TAG = b'<meta charset='
 
 
-def try_get_icon_url(url, timeout, user_agent, *splits):
+def try_get_icon_url(url, *splits):
     for split in splits:
         if split is None:
             continue
@@ -18,7 +20,8 @@ def try_get_icon_url(url, timeout, user_agent, *splits):
         response = None
         # if html in content-type, we assume it's a fancy 404 page
         try:
-            response = jarr_get(rb_url, timeout, user_agent)
+            response = jarr_get(rb_url,
+                                conf.crawler.timeout, conf.crawler.user_agent)
             content_type = response.headers.get('content-type', '')
         except Exception:
             pass
@@ -135,7 +138,8 @@ def _check_keys(**kwargs):
     return wrapper
 
 
-def extract_icon_url(response, site_split, feed_split, timeout, user_agent):
+def extract_icon_url(response):
+    split = urllib.parse.urlsplit(response.url)
     soup = get_soup(response.content, response.encoding)
     if not soup:
         return
@@ -144,21 +148,19 @@ def extract_icon_url(response, site_split, feed_split, timeout, user_agent):
         icons = soup.find_all(_check_keys(rel=['icon']))
     if icons:
         for icon in icons:
-            icon_url = try_get_icon_url(icon.attrs['href'],
-                                        timeout, user_agent,
-                                        site_split, feed_split)
+            icon_url = try_get_icon_url(icon.attrs['href'], split)
             if icon_url:
                 return icon_url
 
-    icon_url = try_get_icon_url('/favicon.ico',
-                                timeout, user_agent, site_split, feed_split)
+    icon_url = try_get_icon_url('/favicon.ico', split)
     if icon_url:
         return icon_url
 
 
-def extract_feed_link(response, feed_split):
+def extract_feed_links(response):
+    split = urllib.parse.urlsplit(response.url)
     soup = get_soup(response.content, response.encoding)
     for tpe in FEED_MIMETYPES:
-        alternates = soup.find_all(_check_keys(rel=['alternate'], type=[tpe]))
-        if len(alternates) >= 1:
-            return rebuild_url(alternates[0].attrs['href'], feed_split)
+        for alternate in soup.find_all(
+                _check_keys(rel=['alternate'], type=[tpe])):
+            yield rebuild_url(alternate.attrs['href'], split)

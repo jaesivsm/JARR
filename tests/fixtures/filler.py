@@ -23,8 +23,7 @@ def populate_db():
     ccontr = CategoryController()
     UserController().create(**{'is_admin': True, 'is_api': True,
                      'cluster_enabled': False,
-                     'login': conf.crawler.login,
-                     'password': conf.crawler.passwd})
+                     'login': 'admin', 'password': 'admin'})
     user1, user2 = [UserController().create(login=name, cluster_enabled=False,
                         email="%s@test.te" % name, password=name)
                     for name in ["user1", "user2"]]

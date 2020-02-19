@@ -7,6 +7,7 @@ from flask_jwt import JWT, JWTError
 from flask_restplus import Api
 from sqlalchemy.exc import IntegrityError
 
+from jarr.lib.utils import default_handler
 from jarr.bootstrap import PARSED_PLATFORM_URL, conf, session
 from jarr.controllers import UserController
 
@@ -93,6 +94,7 @@ def create_app(testing=False):
     application.config['PLATFORM_URL'] = conf.platform_url
     application.config['SERVER_NAME'] = PARSED_PLATFORM_URL.netloc
     application.config['PREFERRED_URL_SCHEME'] = PARSED_PLATFORM_URL.scheme
+    application.config['RESTPLUS_JSON'] = {'default': default_handler}
 
     setup_sqla_binding(application)
     api = setup_api(application)

@@ -18,7 +18,7 @@ class Cluster(Base):
     read = Column(Boolean, default=False)
     liked = Column(Boolean, default=False)
     created_date = Column(UTCDateTime, default=utc_now)
-    content = Column(String)
+    content = Column(String, default=None)
 
     # denorm
     main_date = Column(UTCDateTime, default=utc_now)

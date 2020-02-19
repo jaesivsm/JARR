@@ -1,6 +1,7 @@
 import unittest
-from jarr.signals import feed_creation, entry_parsing
 from jarr.models.feed import Feed
+from jarr.lib.jarr_types import FeedType
+from jarr.crawler.article_builders.reddit import RedditArticleBuilder
 
 CONTENT = """<table><tr><td>
 <a href="https://www.reddit.com/r/Map_Porn/comments/5mxq4o/\
@@ -19,37 +20,17 @@ map_of_irish_clans_in_times_of_henry_viii_1294/">[comments]</a></span>
 
 class RedditIntegrationTest(unittest.TestCase):
 
-    def test_feed_creation(self):
-        feed = {'link': 'http://www.reddit.com/r/france/.rss'}
-        feed_creation.send('test', feed=feed)
-        self.assertTrue(feed['integration_reddit'])
-
-    def test_feed_creation_https(self):
-        feed = {'link': 'https://www.reddit.com/r/france/.rss'}
-        feed_creation.send('test', feed=feed)
-        self.assertTrue(feed['integration_reddit'])
-
-    def test_match_light_parsing_nok(self):
-        feed = Feed(integration_reddit=True, link='')
-        tags = [{'scheme': None, 'term': 'to', 'label': ''},
-                {'scheme': None, 'term': 'be', 'label': ''},
-                {'scheme': None, 'term': 'removed', 'label': ''}]
-        entry = {'content': [{'value': CONTENT[:-40]}], 'tags': tags}
-        entry_parsing.send('test', feed=feed, entry=entry)
-        self.assertNotIn('link', entry)
-        self.assertNotIn('comments', entry)
-        self.assertEqual(entry['tags'], tags)
-
     def test_match_light_parsing_ok(self):
-        feed = Feed(integration_reddit=True,
+        feed = Feed(feed_type=FeedType.reddit,
                     link='https://www.reddit.com/r/france/.rss')
         tags = [{'scheme': None, 'term': 'to', 'label': ''},
                 {'scheme': None, 'term': 'be', 'label': ''},
                 {'scheme': None, 'term': 'removed', 'label': ''}]
         entry = {'content': [{'value': CONTENT}], 'tags': tags}
-        entry_parsing.send('test', feed=feed, entry=entry)
-        self.assertEqual(entry['link'], 'https://supload.com/rJY-37gLe')
-        self.assertEqual(entry['comments'], 'https://www.reddit.com/r/'
-                'Map_Porn/comments/5mxq4o/'
-                'map_of_irish_clans_in_times_of_henry_viii_1294/')
-        self.assertEqual(entry['tags'], [])
+        builder = RedditArticleBuilder(feed, entry)
+        self.assertEqual(builder.article['link'],
+                         'https://supload.com/rJY-37gLe')
+        self.assertEqual(builder.article['comments'],
+                         'https://www.reddit.com/r/Map_Porn/comments/5mxq4o/'
+                         'map_of_irish_clans_in_times_of_henry_viii_1294/')
+        self.assertEqual(builder.article['tags'], set())
