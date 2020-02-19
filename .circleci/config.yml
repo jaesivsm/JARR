@@ -10,6 +10,9 @@ jobs:
     steps:
       - checkout
       - run:
+          name: installing dependencies
+          command: apt update && apt install --yes --force-yes postgresql-client-common
+      - run:
           name: building server image
           command: make build-server
       - run:
