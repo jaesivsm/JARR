@@ -20,7 +20,9 @@ jobs:
           command: make build-worker
       - run:
           name: starting test env
-          command: docker-compose --file Dockerfiles/test-env.yml up -d
+          command: >-
+            docker-compose --file Dockerfiles/test-env.yml up -d
+            && sleep 10s
       - run:
           name: creating db user
           command: >-
