@@ -24,22 +24,16 @@ jobs:
             docker-compose --file Dockerfiles/test-env.yml up -d
             && sleep 10s
       - run:
-          name: creating db user
+          name: creating postgres user and db
           command: >-
             docker-compose --file Dockerfiles/test-env.yml
             exec postgresql su postgres -c
-            "createuser jarr --no-superuser --createdb --no-createrole"
-      - run:
-          name: creating db
-          command: >-
-            docker-compose --file Dockerfiles/test-env.yml
-            exec postgresql su postgres -c "createdb jarr --no-password"
+            "createuser jarr --no-superuser --createdb --no-createrole; createdb jarr --no-password"
       - run:
           name: creating tables
           command: >-
             docker-compose --file Dockerfiles/test-env.yml
-            exec server bash -c
-            "pipenv sync --dev --bare; pipenv run ./manager.py db_create"
+            exec server bash -c "pipenv run ./manager.py db_create"
       - run:
           name: testing
           command: >-
