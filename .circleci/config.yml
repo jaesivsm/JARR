@@ -11,7 +11,9 @@ jobs:
       - checkout
       - run:
           name: moving test config to default config
-          command: mv example_conf/jarr.test.json example_conf/jarr.json
+          command: >-
+            rm example_conf/jarr.test.json example_conf/jarr.json;
+            mv example_conf/jarr.circleci.json example_conf/jarr.json
       - run:
           name: building server image
           command: make build-server
@@ -21,23 +23,23 @@ jobs:
       - run:
           name: starting test env
           command: >-
-            docker-compose --file Dockerfiles/test-env.yml up -d
+            docker-compose --file Dockerfiles/circleci-env.yml up -d
             && sleep 10s
       - run:
           name: creating postgres user and db
           command: >-
-            docker-compose --file Dockerfiles/test-env.yml
+            docker-compose --file Dockerfiles/circleci-env.yml
             exec postgresql su postgres -c
             "createuser jarr --no-superuser --createdb --no-createrole; createdb jarr --no-password"
       - run:
           name: creating tables
           command: >-
-            docker-compose --file Dockerfiles/test-env.yml
+            docker-compose --file Dockerfiles/circleci-env.yml
             exec server bash -c "pipenv run ./manager.py db_create"
       - run:
           name: testing
           command: >-
-            docker-compose --file Dockerfiles/test-env.yml
+            docker-compose --file Dockerfiles/circleci-env.yml
             exec server bash -c
             "pipenv sync --dev --bare; pipenv run nosetests tests/ -vv --with-coverage --cover-package=jarr"
 

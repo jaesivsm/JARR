@@ -9,9 +9,5 @@ services:
   server:
     image: jarr-server:latest
     volumes:
-      - type: bind
-        source: ./tests
-        target: /jarr/tests
-      - type: bind
-        source: ./example_conf
-        target: /etc/jarr/
+      - "/home/circleci/project/tests:/jarr/tests"
+      - "/home/circleci/project/example_conf:/etc/jarr"
