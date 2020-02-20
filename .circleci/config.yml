@@ -44,19 +44,19 @@ jobs:
       - run:
           name: running tests
           command: >-
-            docker-compose --file dockerfiles/circleci-env.yml
+            docker-compose --file Dockerfiles/circleci-env.yml
             exec server bash -c
             "pipenv run nosetests tests/ -vv --with-coverage --cover-package=jarr"
       - run:
           name: "linter: pep8"
           command: >-
-            docker-compose --file dockerfiles/circleci-env.yml
+            docker-compose --file Dockerfiles/circleci-env.yml
             exec server bash -c
             "pipenv run pycodestyle --ignore=E126,E127,E128,W503 jarr/ --exclude=jarr/migrations"
       - run:
           name: "linter: mypy"
           command: >-
-            docker-compose --file dockerfiles/circleci-env.yml
+            docker-compose --file Dockerfiles/circleci-env.yml
             exec server bash -c
             "pipenv run mypy jarr --ignore-missing-imports"
 
