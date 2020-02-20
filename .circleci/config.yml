@@ -38,13 +38,13 @@ jobs:
           name: creating tables
           command: >-
             docker-compose --file Dockerfiles/test-env.yml
-            exec jarr_server bash -c
+            exec server bash -c
             "pipenv sync --dev --bare; pipenv run ./manager.py db_create"
       - run:
           name: testing
           command: >-
             docker-compose --file Dockerfiles/test-env.yml
-            exec jarr_server bash -c
+            exec server bash -c
             "pipenv sync --dev --bare; pipenv run nosetests tests/ -vv --with-coverage --cover-package=jarr"
 
 workflows:
