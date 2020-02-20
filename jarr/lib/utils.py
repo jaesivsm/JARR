@@ -9,8 +9,6 @@ from hashlib import md5
 import pytz
 import requests
 
-from jarr.bootstrap import conf
-
 logger = logging.getLogger(__name__)
 RFC_1123_FORMAT = '%a, %d %b %Y %X %Z'
 LANG_FORMAT = re.compile('^[a-z]{2}(_[A-Z]{2})?$')
@@ -70,6 +68,7 @@ def to_hash(text):
 
 
 def jarr_get(url, timeout=None, user_agent=None, headers=None, **kwargs):
+    from jarr.bootstrap import conf
     timeout = timeout or conf.crawler.timeout
     user_agent = user_agent or conf.crawler.user_agent
     def_headers = {'User-Agent': user_agent}
