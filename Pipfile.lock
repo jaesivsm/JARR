@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "d61dd083b856125aec3df7790ad89779a0c5a63f5b9a3a1acacf5144e3e92b27"
+            "sha256": "93d8618bb9450c2ba1e1808d81416955412267bef4d6bbac2d30f5c37cd4a88f"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -129,11 +129,11 @@
         },
         "flask-restplus": {
             "hashes": [
-                "sha256:a15d251923a8feb09a5d805c2f4d188555910a42c64d58f7dd281b8cac095f1b",
-                "sha256:a66e442d0bca08f389fc3d07b4d808fc89961285d12fb8013f7cf15516fa9f5c"
+                "sha256:3fad697e1d91dfc13c078abcb86003f438a751c5a4ff41b84c9050199d2eab62",
+                "sha256:cdc27b5be63f12968a7f762eaa355e68228b0c904b4c96040a314ba7dc6d0e69"
             ],
             "index": "pypi",
-            "version": "==0.13.0"
+            "version": "==0.12.1"
         },
         "flask-script": {
             "hashes": [
@@ -879,7 +879,6 @@
                 "sha256:920492895db8013f6cc0179293147f830b8c7b21fdfc839b6bad760c27459d9f",
                 "sha256:9c980875fa4d2cb751604664e9a2d0f69096643f5be4db1b99599fe114a97b2f"
             ],
-            "markers": "extra == 'ssh'",
             "version": "==2.7.1"
         },
         "parso": {
@@ -928,6 +927,7 @@
         },
         "pycparser": {
             "hashes": [
+                "sha256:0c036e21135290e979759ffe38ff17056bfd25e0fba91d55c3f45efd97c1dc95",
                 "sha256:a988718abfad80b6b157acce7bf130a30876d27603738ac39f140993246b25b3"
             ],
             "version": "==2.19"
