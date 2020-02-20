@@ -10,8 +10,8 @@ jobs:
     steps:
       - checkout
       - run:
-          name: installing dependencies
-          command: sudo apt update && sudo apt install --yes --force-yes postgresql-client-common
+          name: moving test config to default config
+          commant: mv example_conf/jarr.test.json example_conf/jarr.json
       - run:
           name: building server image
           command: make build-server
@@ -25,13 +25,13 @@ jobs:
           name: creating db user
           command: >-
             docker-compose --file Dockerfiles/test-env.yml
-            exec jarr_postgresql su postgres -c
+            exec postgresql su postgres -c
             "createuser jarr --no-superuser --createdb --no-createrole"
       - run:
           name: creating db
           command: >-
             docker-compose --file Dockerfiles/test-env.yml
-            exec jarr_postgresql su postgres -c "createdb jarr --no-password"
+            exec postgresql su postgres -c "createdb jarr --no-password"
       - run:
           name: creating tables
           command: >-

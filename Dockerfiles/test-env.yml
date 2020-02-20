@@ -4,10 +4,8 @@ services:
     image: postgres:11
     ports:
       - 0.0.0.0:5432:5432
-    command:
-      - "postgres"
-      - "-e"
-      - "POSTGRES_PASSWORD=password"
+    environment:
+      - POSTGRES_PASSWORD=password
   server:
     image: jarr-server:latest
     volumes:
@@ -15,5 +13,5 @@ services:
         source: ./tests
         target: /jarr/tests
       - type: bind
-        source: ./example_conf/jarr.test.json
-        target: /etc/jarr.json
+        source: ./example_conf/
+        target: /etc/jarr/
