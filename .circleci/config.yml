@@ -11,7 +11,7 @@ jobs:
       - checkout
       - run:
           name: moving test config to default config
-          commant: mv example_conf/jarr.test.json example_conf/jarr.json
+          command: mv example_conf/jarr.test.json example_conf/jarr.json
       - run:
           name: building server image
           command: make build-server
