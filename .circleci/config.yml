@@ -4,7 +4,7 @@ orbs:
   python: circleci/python@0.2.1
 
 jobs:
-  build-and-test:
+  building-and-testing-backend:
     machine:
       image: ubuntu-1604:201903-01
     steps:
@@ -30,7 +30,7 @@ jobs:
           command: >-
             docker-compose --file Dockerfiles/circleci-env.yml
             exec postgresql su postgres -c
-            "createuser jarr --no-superuser --createdb --no-createrole; createdb jarr --owner jarr --no-password"
+            "createuser jarr --no-superuser --createdb --no-createrole; createdb jarr --no-password"
       - run:
           name: creating tables
           command: >-
@@ -46,4 +46,4 @@ jobs:
 workflows:
   jarr-testing:
     jobs:
-      - build-and-test
+      - building-and-testing-backend

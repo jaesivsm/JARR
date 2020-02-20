@@ -8,7 +8,7 @@
         "level": 0
     },
     "db": {
-        "pg_uri": "postgresql://jarr@postgresql:5432/jarr",
+        "pg_uri": "postgresql://postgres:password@postgresql:5432/jarr",
         "redis": {"host": "0.0.0.0"}
     },
     "celery": {"broker": "amqp://0.0.0.0//",
