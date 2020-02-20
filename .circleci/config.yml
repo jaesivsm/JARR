@@ -30,7 +30,7 @@ jobs:
           command: >-
             docker-compose --file Dockerfiles/circleci-env.yml
             exec postgresql su postgres -c
-            "createuser jarr --no-superuser --createdb --no-createrole; createdb jarr --no-password"
+            "createuser jarr --no-superuser --createdb --no-createrole; createdb jarr --owner jarr --no-password"
       - run:
           name: creating tables
           command: >-
