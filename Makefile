@@ -4,7 +4,6 @@ CONF_FILE = example_conf/jarr.json
 SERVER_PORT = 8000
 SERVER_ADDR = 0.0.0.0
 DB_VER = $(shell pipenv run ./manager.py db heads | sed -e 's/ .*//g')
-DOCKER_TAG ?= ''
 
 install:
 	pipenv sync --dev
@@ -22,13 +21,13 @@ test:
 	pipenv run nosetests tests/ -vv --with-coverage --cover-package=jarr
 
 build-base:
-	docker build --cache-from=jarr . --file Dockerfiles/pythonbase -t jarr-base$(DOCKER_TAG)
+	docker build --cache-from=jarr . --file Dockerfiles/pythonbase -t jarr-base:latest
 
 build-server: build-base
-	docker build --cache-from=jarr . --file Dockerfiles/server -t jaesivsm/jarr-server$(DOCKER_TAG)
+	docker build --cache-from=jarr . --file Dockerfiles/server -t jarr-server:latest
 
 build-worker: build-base
-	docker build --cache-from=jarr . --file Dockerfiles/worker -t jaesivsm/jarr-worker$(DOCKER_TAG)
+	docker build --cache-from=jarr . --file Dockerfiles/worker -t jarr-worker:latest
 
 start-env:
 	pipenv run docker-compose \
