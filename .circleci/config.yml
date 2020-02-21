@@ -132,9 +132,11 @@ jobs:
           name: Push tested image to registry
           command: |
             if [ "$CIRCLE_BRANCH" = "master" ]; then
-              make docker-push-version BRANCH=$CIRCLE_BRANCH
+              docker push jaesivsm/jarr-server:latest
+              docker push jaesivsm/jarr-worker:latest
             else
-              make docker-push-latest BRANCH=$CIRCLE_BRANCH
+              docker push jaesivsm/jarr-server:develop
+              docker push jaesivsm/jarr-worker:develop
             fi
 
 workflows:

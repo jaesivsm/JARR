@@ -22,7 +22,7 @@ test:
 	pipenv run nosetests tests/ -vv --with-coverage --cover-package=jarr
 
 build-base:
-	docker build --cache-from=jarr . --file Dockerfiles/pythonbase -t jaesivsm/jarr-base$(DOCKER_TAG)
+	docker build --cache-from=jarr . --file Dockerfiles/pythonbase -t jarr-base$(DOCKER_TAG)
 
 build-server: build-base
 	docker build --cache-from=jarr . --file Dockerfiles/server -t jaesivsm/jarr-server$(DOCKER_TAG)
