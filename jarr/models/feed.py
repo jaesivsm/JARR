@@ -33,10 +33,6 @@ class Feed(Base):
     cluster_wake_up = Column(Boolean, default=True)
     cluster_conf = Column(PickleType, default={})
 
-    # cache reasons
-    cache_type = Column(Enum(CacheReason), default=None)
-    cache_support_a_im = Column(Boolean, default=False)
-
     # cache handling
     etag = Column(String, default="")
     last_modified = Column(String, default="")
