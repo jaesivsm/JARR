@@ -50,8 +50,8 @@ conf = TheConf({'config_files': ['/etc/jarr/jarr.json', '~/.config/jarr.json'],
                      {'path': {'default': "jarr.log"}}]},
             {'crawler': [{'idle_delay': {'default': 2 * 60, 'type': int}},
                          {'passwd': {'default': 'admin'}},
-                         {'user_agent': {
-                             'default': 'Mozilla/5.0 (compatible; jarr.info)'}},
+                         {'user_agent': {'default': 'Mozilla/5.0 (compatible; '
+                                                    'jarr.info)'}},
                          {'timeout': {'default': 30, 'type': int}}]},
             {'plugins': [{'readability_key': {'default': ''}},
                          {'rss_bridge': {'default': ''}}]},
@@ -85,13 +85,9 @@ conf = TheConf({'config_files': ['/etc/jarr/jarr.json', '~/.config/jarr.json'],
                                      'type': int}}]},
                       ]})
 
-# utilities
-
 
 def is_secure_served():
     return PARSED_PLATFORM_URL.scheme == 'https'
-
-# init func
 
 
 def init_logging(log_path=None, log_level=logging.INFO, modules=(),

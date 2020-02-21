@@ -13,7 +13,6 @@ Flask-Testing = "*"
 isort = "*"
 ipdb = "*"
 ipython = "*"
-pylint = "*"
 mypy = "*"
 docker-compose = "*"
 
