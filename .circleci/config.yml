@@ -30,11 +30,11 @@ jobs:
           name: building images
           command: |
             if [ "$CIRCLE_BRANCH" = "master" ]; then
-              make builder-server DOCKER_TAG=":latest"
-              make builder-worker DOCKER_TAG=":latest"
+              make build-server DOCKER_TAG=":latest"
+              make build-worker DOCKER_TAG=":latest"
             else
-              make builder-server DOCKER_TAG=":develop"
-              make builder-worker DOCKER_TAG=":develop"
+              make build-server DOCKER_TAG=":develop"
+              make build-worker DOCKER_TAG=":develop"
             fi
       # save built layers and image in cache
       - run:
