@@ -138,7 +138,7 @@ jobs:
               export DOCKER_TAG=develop
             fi
             docker image tag jarr-server $DOCKER_USER/jarr-server:$DOCKER_TAG
-            docker image tag jarr-server $DOCKER_USER/jarr-server:$DOCKER_TAG
+            docker image tag jarr-worker $DOCKER_USER/jarr-worker:$DOCKER_TAG
             docker push $DOCKER_USER/jarr-server:$DOCKER_TAG
             docker push $DOCKER_USER/jarr-worker:$DOCKER_TAG
 
