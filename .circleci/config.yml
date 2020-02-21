@@ -26,13 +26,8 @@ jobs:
           name: Building images for server and worker
           command: |
             mkdir -p ~/caches
-            if [ "$CIRCLE_BRANCH" = "master" ]; then
-              make build-server DOCKER_TAG=":latest"
-              make build-worker DOCKER_TAG=":latest"
-            else
-              make build-server DOCKER_TAG=":develop"
-              make build-worker DOCKER_TAG=":develop"
-            fi
+            make build-server
+            make build-worker
       - run:
           name: Saving docker image layer caches
           command: |
@@ -138,12 +133,14 @@ jobs:
           command: |
             echo "$DOCKER_PASS" | docker login --username $DOCKER_USER --password-stdin
             if [ "$CIRCLE_BRANCH" = "master" ]; then
-              docker push jarr-server:latest
-              docker push jarr-worker:latest
+              export DOCKER_TAG=latest
             else
-              docker push jarr-server:develop
-              docker push jarr-worker:develop
+              export DOCKER_TAG=$CIRCLE_BRANCH
             fi
+            docker image tag jarr-server $DOCKER_USER/jarr-server:$DOCKER_TAG
+            docker image tag jarr-server $DOCKER_USER/jarr-server:$DOCKER_TAG
+            docker push $DOCKER_USER/jarr-server:$DOCKER_TAG
+            docker push $DOCKER_USER/jarr-worker:$DOCKER_TAG
 
 workflows:
   jarr-testing:

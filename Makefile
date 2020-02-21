@@ -21,13 +21,13 @@ test:
 	pipenv run nosetests tests/ -vv --with-coverage --cover-package=jarr
 
 build-base:
-	docker build --cache-from=jarr . --file Dockerfiles/pythonbase -t jarr-base:latest
+	docker build --cache-from=jarr . --file Dockerfiles/pythonbase -t jarr-base
 
 build-server: build-base
-	docker build --cache-from=jarr . --file Dockerfiles/server -t jarr-server:latest
+	docker build --cache-from=jarr . --file Dockerfiles/server -t jarr-server
 
 build-worker: build-base
-	docker build --cache-from=jarr . --file Dockerfiles/worker -t jarr-worker:latest
+	docker build --cache-from=jarr . --file Dockerfiles/worker -t jarr-worker
 
 start-env:
 	pipenv run docker-compose \
