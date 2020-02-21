@@ -98,7 +98,7 @@ jobs:
           name: Uplaoding coverage to codacy
           command: >-
             docker-compose --file Dockerfiles/circleci-env.yml
-            exec server -u root bash -c "chown -R jarr:jarr /jarr/coverage_results";
+            exec -u root server bash -c "chown -R jarr:jarr /jarr/coverage_results";
             docker-compose --file Dockerfiles/circleci-env.yml
             exec server bash -c
             "pipenv run coverage xml -o coverage_results/coverage.xml";
