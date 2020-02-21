@@ -138,11 +138,11 @@ jobs:
           command: |
             echo "$DOCKER_PASS" | docker login --username $DOCKER_USER --password-stdin
             if [ "$CIRCLE_BRANCH" = "master" ]; then
-              docker push jaesivsm/jarr-server:latest
-              docker push jaesivsm/jarr-worker:latest
+              docker push jarr-server:latest
+              docker push jarr-worker:latest
             else
-              docker push jaesivsm/jarr-server:develop
-              docker push jaesivsm/jarr-worker:develop
+              docker push jarr-server:develop
+              docker push jarr-worker:develop
             fi
 
 workflows:
