@@ -3,6 +3,7 @@ from flask_restplus import Namespace, Resource, fields
 
 from jarr.controllers import ClusterController, FeedController
 from jarr.lib.enums import ReadReason
+from jarr.metrics import READ
 
 ACCEPTED_LEVELS = {'success', 'info', 'warning', 'error'}
 default_ns = Namespace('default', path='/')
@@ -154,4 +155,5 @@ class MarkClustersAsRead(Resource):
             clu_ctrl.update({'id__in': [clu['id'] for clu in clusters]},
                             {'read': True,
                              'read_reason': ReadReason.mass_marked})
+            READ.labels(ReadReason.mass_marked.value).inc(len(clusters))
         return clusters, 200

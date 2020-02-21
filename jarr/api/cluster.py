@@ -5,6 +5,7 @@ from werkzeug.exceptions import Forbidden, NotFound
 from jarr.api.common import parse_meaningful_params
 from jarr.controllers import ClusterController
 from jarr.lib.enums import ReadReason
+from jarr.metrics import READ
 
 cluster_ns = Namespace('cluster', description='Cluster related operations')
 cluster_parser = cluster_ns.parser()
@@ -52,6 +53,7 @@ class ClusterResource(Resource):
             cluc.update({'id': cluster_id},
                         {'read': True,
                          'read_reason': ReadReason.read})
+            READ.labels(reason=ReadReason.read.value).inc()
             cluster.read = True
             cluster.read_reason = ReadReason.read
             code = 226
@@ -70,6 +72,7 @@ class ClusterResource(Resource):
         attrs = parse_meaningful_params(cluster_parser)
         if 'read' in attrs and attrs['read']:
             attrs['read_reason'] = ReadReason.marked
+            READ.labels(reason=ReadReason.marked.value).inc()
         elif 'read' in attrs and not attrs['read']:
             attrs['read_reason'] = None
         changed = cctrl.update({'id': cluster_id}, attrs)

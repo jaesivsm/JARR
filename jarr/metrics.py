@@ -11,7 +11,7 @@ CLUSTERING = Counter('clustering', 'Cluster events',
                       'article_type', 'feed_type'],
                      namespace='jarr', registry=REGISTRY)
 
-READ = Counter('read', 'Read event', ['article_type', 'feed_type'],
+READ = Counter('read', 'Read event', ['reason'],
                namespace='jarr', registry=REGISTRY)
 
 FEED_FETCH = Counter('feed_fetch', 'Feed fetching event',
