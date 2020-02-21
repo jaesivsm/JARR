@@ -155,8 +155,8 @@ workflows:
       - push-docker-images:
           requires:
             - backend-test
-          filters:
-            branches:
-              only:
-                - master
-                - develop  # TODO: remove when merging to master
+#          filters:
+#            branches:
+#              only:
+#                - master
+#                - develop  # TODO: remove when merging to master
