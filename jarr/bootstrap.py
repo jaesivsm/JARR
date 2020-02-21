@@ -7,6 +7,7 @@ import logging
 import random
 from urllib.parse import urlparse
 
+from prometheus_distributed_client import set_redis_conn
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, scoped_session
@@ -115,7 +116,6 @@ def init_db(echo=False):
     NewBase = declarative_base(new_engine)
     SessionMaker = sessionmaker(bind=new_engine)
     new_session = scoped_session(SessionMaker)
-
     return new_engine, new_session, NewBase
 
 
@@ -128,6 +128,8 @@ PARSED_PLATFORM_URL = urlparse(conf.platform_url)
 
 engine, session, Base = init_db()
 init_models()
+set_redis_conn(host=conf.db.redis.host, db=conf.db.redis.db,
+               port=conf.db.redis.port, password=conf.db.redis.password)
 
 init_logging(conf.log.path, log_level=conf.log.level)
 init_logging(conf.log.path, log_level=logging.WARNING, modules=('the_conf',))
