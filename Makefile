@@ -14,7 +14,7 @@ pep8:
 mypy:
 	pipenv run mypy jarr --ignore-missing-imports
 
-lint: pep8 mypy pylint
+lint: pep8 mypy
 
 test: export JARR_CONFIG = example_conf/jarr.test.json
 test:
