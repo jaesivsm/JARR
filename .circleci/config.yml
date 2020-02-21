@@ -103,13 +103,13 @@ jobs:
             pip install --upgrade codacy-coverage;
             python-codacy-coverage -r ~/coverage_results/coverage.xml
       - run:
-          name: Running linters: pep8
+          name: Running PEP8 linter
           command: >-
             docker-compose --file Dockerfiles/circleci-env.yml
             exec server bash -c
             "pipenv run pycodestyle --ignore=E126,E127,E128,W503 jarr/ --exclude=jarr/migrations"
       - run:
-          name: Running linter: mypy
+          name: Running MyPy linter
           command: >-
             docker-compose --file Dockerfiles/circleci-env.yml
             exec server bash -c
