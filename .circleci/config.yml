@@ -4,7 +4,7 @@ orbs:
   python: circleci/python@0.2.1
 
 jobs:
-  backend_build:
+  backend-build:
     machine:
       image: ubuntu-1604:201903-01
     steps:
@@ -42,7 +42,7 @@ jobs:
           command: |
             docker save -o ~/caches/jarr.tar jarr
 
-  backend_test:
+  backend-test:
     machine:
       image: ubuntu-1604:201903-01
     steps:
@@ -112,7 +112,7 @@ jobs:
             exec server bash -c
             "pipenv run mypy jarr --ignore-missing-imports"
 
-  push_images:
+  push-docker-images:
     machine:
       image: ubuntu-1604:201903-01
     steps:
@@ -140,13 +140,13 @@ jobs:
 workflows:
   jarr-testing:
     jobs:
-      - backend_build
-      - backend_test:
+      - backend-build
+      - backend-test:
           requires:
-            - backend_build
+            - backend-build
       - push-docker-images:
           requires:
-            - backend_test
+            - backend-test
           filters:
             branches:
               only:
