@@ -3,7 +3,6 @@
 [![CircleCI](https://circleci.com/gh/circleci/circleci-docs.svg?style=svg)](https://circleci.com/gh/circleci/circleci-docs)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/8b81ef446c4849939796c4965f121ffe)](https://www.codacy.com/manual/francois_7/JARR?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=jaesivsm/JARR&amp;utm_campaign=Badge_Grade)
 
-
 ## Presentation
 
 JARR (which stands for Just Another RSS Reader) is a web-based news aggregator and reader.
@@ -11,7 +10,6 @@ JARR (which stands for Just Another RSS Reader) is a web-based news aggregator a
 JARR is under ongoing developments and functionnalities are regularly added.
 For past and futur updates see the [milestones](https://github.com/jaesivsm/JARR/milestones).
 However JARR is stable and can function as easily on a light installation with the python SimpleHTTP server and a PostGreSQL database.
-
 
 ## Installing
 
