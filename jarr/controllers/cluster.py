@@ -10,7 +10,10 @@ from jarr.bootstrap import session
 from jarr.controllers.article import ArticleController
 from jarr.lib.clustering_af.grouper import get_best_match_and_score
 from jarr.lib.filter import process_filters
+from jarr.lib.html_parsing import extract_lang, extract_tags, extract_title
+from jarr.lib.jarr_types import ArticleType
 from jarr.lib.reasons import ClusterReason, ReadReason
+from jarr.lib.utils import jarr_get
 from jarr.models import Article, Cluster, Feed, User
 from jarr.utils import get_cluster_pref
 
@@ -102,15 +105,42 @@ class ClusterController(AbstractController):
             article.cluster_tfidf_with = best_match.id
             return best_match.cluster
 
+    @staticmethod
+    def _fetch_article(link):
+        try:
+            response = jarr_get(link)
+            response.raise_for_status()
+            return response
+        except Exception:
+            logger.exception("Unable to retrieve %s", link)
+
+    def _enrich_with_article_details(self, cluster, article):
+        cluster.main_link = article.link
+        cluster.main_title = article.title
+        cluster.main_date = article.date
+        cluster.main_feed_title = article.feed.title
+        cluster.main_article_id = article.id
+        if article.article_type in {ArticleType.image, ArticleType.video}:
+            # todo construct integrated cluster content
+            return
+        if article.article_type is ArticleType.embedded:
+            # construct content for embedded player
+            return
+        page = self._fetch_article(article.link)
+        if not page:
+            return
+        if not article.title:
+            cluster.main_title = extract_title(page)
+        article.tags = set(article.tags).union(extract_tags(page))
+        lang = extract_lang(page)
+        if lang:
+            article.lang = lang
+
     def _create_from_article(self, article,
                              cluster_read=None, cluster_liked=False):
         cluster = Cluster()
         cluster.user_id = article.user_id
-        cluster.main_link = article.link
-        cluster.main_date = article.date
-        cluster.main_feed_title = article.feed.title
-        cluster.main_title = article.title
-        cluster.main_article_id = article.id
+        self._enrich_with_article_details(cluster, article)
         cluster.read = bool(cluster_read)
         cluster.liked = cluster_liked
         article.cluster_reason = ClusterReason.original
@@ -132,10 +162,7 @@ class ClusterController(AbstractController):
         # once one article is liked the cluster is liked
         cluster.liked = cluster.liked or cluster_liked
         if cluster.main_date > article.date or force_article_as_main:
-            cluster.main_title = article.title
-            cluster.main_date = article.date
-            cluster.main_feed_title = article.feed.title
-            cluster.main_article_id = article.id
+            self._enrich_with_article_details(cluster, article)
         session.add(cluster)
         session.add(article)
         session.commit()

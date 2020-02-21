@@ -5,9 +5,8 @@ from requests.exceptions import MissingSchema
 
 from jarr.bootstrap import conf
 from jarr.lib.filter import FiltersAction, process_filters
-from jarr.lib.html_parsing import extract_lang, extract_tags, extract_title
 from jarr.lib.jarr_types import ArticleType
-from jarr.lib.utils import jarr_get, utc_now
+from jarr.lib.utils import utc_now
 
 logger = logging.getLogger(__name__)
 
@@ -96,32 +95,12 @@ class AbstractArticleBuilder:
                     logger.debug('got %r for url %s%s', error, scheme, url)
                     continue
 
-    @staticmethod
-    def _fetch_article(link):
-        try:
-            response = jarr_get(link)
-            response.raise_for_status()
-            return response
-        except Exception:
-            logger.exception("Unable to retrieve %s", link)
-
     def enhance(self):
         head = self._head(self.article['link'])
         if head:
             self.article['link'] = head.url
             if head.headers['Content-Type'].startswith('image/'):
                 self.article['article_type'] = ArticleType.image
-                return self.article
-            if head.headers['Content-Type'].startswith('video/'):
+            elif head.headers['Content-Type'].startswith('video/'):
                 self.article['article_type'] = ArticleType.video
-                return self.article
-        page = self._fetch_article(self.article['link'])
-        if not page:
-            return self.article
-        if not self.article.get('title'):
-            self.article['title'] = extract_title(page)
-        self.article['tags'] = self.article['tags'].union(extract_tags(page))
-        lang = extract_lang(page)
-        if lang:
-            self.article['lang'] = lang
         return self.article
