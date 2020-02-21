@@ -12,7 +12,7 @@ jobs:
       # restore cache and docker layer cache
       - restore_cache:
           keys:
-            - v1-{{ .Branch }}
+            - jarr-{{ .Branch }}
           paths:
             - ~/caches/jarr-server.tar
             - ~/caches/jarr-worker.tar
@@ -33,12 +33,16 @@ jobs:
               make build-server DOCKER_TAG=":develop"
               make build-worker DOCKER_TAG=":develop"
             fi
-      # save built layers and image in cache
       - run:
           name: Saving docker image layer caches
           command: |
             docker save -o ~/caches/jarr-server.tar jarr-server
             docker save -o ~/caches/jarr-worker.tar jarr-worker
+      - save_cache:
+          key: jarr-{{ .Branch }}-{{ epoch }}
+          paths:
+            - ~/caches/jarr-server.tar
+            - ~/caches/jarr-worker.tar
 
   backend-test:
     machine:
@@ -48,7 +52,7 @@ jobs:
       # restore cache and docker layer cache
       - restore_cache:
           keys:
-            - v1-{{ .Branch }}
+            - jarr-{{ .Branch }}
           paths:
             - ~/caches/jarr-server.tar
             - ~/caches/jarr-worker.tar
@@ -117,7 +121,7 @@ jobs:
     steps:
       - restore_cache:
           keys:
-            - v1-{{ .Branch }}
+            - jarr-{{ .Branch }}
           paths:
             - ~/caches/jarr-server.tar
             - ~/caches/jarr-worker.tar
