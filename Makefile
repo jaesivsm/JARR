@@ -11,26 +11,23 @@ install:
 pep8:
 	pipenv run pycodestyle --ignore=E126,E127,E128,W503 jarr/ --exclude=jarr/migrations
 
-pylint:
-	pipenv run pylint -d I0011,R0901,R0902,R0801,C0111,C0103,C0411,C0415,C0330,R0903,R0913,R0914,R0915,R1710,W0613,W0703 jarr
-
 mypy:
 	pipenv run mypy jarr --ignore-missing-imports
 
-lint: pep8 mypy pylint
+lint: pep8 mypy
 
 test: export JARR_CONFIG = example_conf/jarr.test.json
 test:
 	pipenv run nosetests tests/ -vv --with-coverage --cover-package=jarr
 
 build-base:
-	docker build . --file Dockerfiles/pythonbase -t jarr-base:latest
+	docker build --cache-from=jarr . --file Dockerfiles/pythonbase -t jarr-base
 
 build-server: build-base
-	docker build . --file Dockerfiles/server -t jarr-server:latest
+	docker build --cache-from=jarr . --file Dockerfiles/server -t jarr-server
 
 build-worker: build-base
-	docker build . --file Dockerfiles/worker -t jarr-server:latest
+	docker build --cache-from=jarr . --file Dockerfiles/worker -t jarr-worker
 
 start-env:
 	pipenv run docker-compose \

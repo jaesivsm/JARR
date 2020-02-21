@@ -11,3 +11,4 @@ services:
     volumes:
       - "/home/circleci/project/tests:/jarr/tests"
       - "/home/circleci/project/example_conf:/etc/jarr"
+      - "/home/circleci/coverage_results:/jarr/coverage_results:rw"

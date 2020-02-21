@@ -14,7 +14,6 @@ from jarr.lib.utils import jarr_get, utc_now
 logger = logging.getLogger(__name__)
 
 
-
 class AbstractCrawler:
     feed_type = None  # type: FeedType
     article_builder = ClassicArticleBuilder
