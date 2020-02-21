@@ -17,13 +17,13 @@ jobs:
             - ~/caches/jarr-server.tar
             - ~/caches/jarr-worker.tar
       - run:
-          name: Load Docker image layer caches
+          name: Loading docker image layer caches
           command: |
             set +o pipefail
             docker load -i ~/caches/jarr-server.tar | true
             docker load -i ~/caches/jarr-worker.tar | true
       - run:
-          name: building images
+          name: Building images for server and worker
           command: |
             mkdir -p ~/caches
             if [ "$CIRCLE_BRANCH" = "master" ]; then
@@ -35,7 +35,7 @@ jobs:
             fi
       # save built layers and image in cache
       - run:
-          name: Save Docker image layer cache
+          name: Saving docker image layer caches
           command: |
             docker save -o ~/caches/jarr-server.tar jarr-server
             docker save -o ~/caches/jarr-worker.tar jarr-worker
@@ -53,45 +53,45 @@ jobs:
             - ~/caches/jarr-server.tar
             - ~/caches/jarr-worker.tar
       - run:
-          name: Load Docker image layer caches
+          name: Loading docker image layer caches
           command: |
             docker load -i ~/caches/jarr-server.tar
             docker load -i ~/caches/jarr-worker.tar
       - run:
-          name: moving test config to default config
+          name: Moving test config to default config
           command: |
             mkdir -p ~/coverage_results
             rm example_conf/jarr.test.json example_conf/jarr.json
             mv example_conf/jarr.circleci.json example_conf/jarr.json
       - run:
-          name: starting test env
+          name: Starting test env (postgres)
           command: |
             docker-compose --file Dockerfiles/circleci-env.yml up -d
             sleep 10s
       - run:
-          name: creating postgres db
+          name: Creating postgres database
           command: >-
             docker-compose --file Dockerfiles/circleci-env.yml
             exec postgresql su postgres -c
             "createdb jarr --no-password"
       - run:
-          name: creating tables
+          name: Populating database with tables
           command: >-
             docker-compose --file Dockerfiles/circleci-env.yml
             exec server bash -c "pipenv run ./manager.py db_create"
       - run:
-          name: installing testing dependencies
+          name: Installing testing dependencies
           command: >-
             docker-compose --file Dockerfiles/circleci-env.yml
             exec server bash -c "pipenv sync --dev --bare"
       - run:
-          name: running tests
+          name: Running tests
           command: >-
             docker-compose --file Dockerfiles/circleci-env.yml
             exec server bash -c
             "pipenv run nosetests tests/ -vv --with-coverage --cover-package=jarr"
       - run:
-          name: uplaoding coverage
+          name: Uplaoding coverage to codacy
           command: >-
             docker-compose --file Dockerfiles/circleci-env.yml \
             exec server bash -c
@@ -99,13 +99,13 @@ jobs:
             pip install --upgrade codacy-coverage;
             python-codacy-coverage -r ~/coverage_results/coverage.xml
       - run:
-          name: "linter: pep8"
+          name: Running linters: pep8
           command: >-
             docker-compose --file Dockerfiles/circleci-env.yml
             exec server bash -c
             "pipenv run pycodestyle --ignore=E126,E127,E128,W503 jarr/ --exclude=jarr/migrations"
       - run:
-          name: "linter: mypy"
+          name: Running linter: mypy
           command: >-
             docker-compose --file Dockerfiles/circleci-env.yml
             exec server bash -c
@@ -122,13 +122,13 @@ jobs:
             - ~/caches/jarr-server.tar
             - ~/caches/jarr-worker.tar
       - run:
-          name: Load Docker image layer caches
+          name: Loading ALL docker image layer caches
           command: |
             set +o pipefail
             docker load -i ~/caches/jarr-server.tar
             docker load -i ~/caches/jarr-worker.tar
       - run:
-          name: Push tested image to registry
+          name: Pushing tested images to registry
           command: |
             echo "$DOCKER_PASS" | docker login --username $DOCKER_USER --password-stdin
             if [ "$CIRCLE_BRANCH" = "master" ]; then
