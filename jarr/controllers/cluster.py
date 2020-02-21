@@ -114,6 +114,7 @@ class ClusterController(AbstractController):
         except Exception:
             logger.exception("Unable to retrieve %s", link)
 
+    @classmethod
     def _enrich_with_article_details(self, cluster, article):
         cluster.main_link = article.link
         cluster.main_title = article.title
@@ -126,7 +127,7 @@ class ClusterController(AbstractController):
         if article.article_type is ArticleType.embedded:
             # construct content for embedded player
             return
-        page = self._fetch_article(article.link)
+        page = cls._fetch_article(article.link)
         if not page:
             return
         if not article.title:
@@ -147,8 +148,7 @@ class ClusterController(AbstractController):
         self.enrich_cluster(cluster, article, cluster_read, cluster_liked)
         return cluster
 
-    @staticmethod
-    def enrich_cluster(cluster, article,
+    def enrich_cluster(cls, cluster, article,
                        cluster_read=None, cluster_liked=False,
                        force_article_as_main=False):
         article.cluster = cluster
@@ -162,7 +162,7 @@ class ClusterController(AbstractController):
         # once one article is liked the cluster is liked
         cluster.liked = cluster.liked or cluster_liked
         if cluster.main_date > article.date or force_article_as_main:
-            self._enrich_with_article_details(cluster, article)
+            cls._enrich_with_article_details(cluster, article)
         session.add(cluster)
         session.add(article)
         session.commit()
