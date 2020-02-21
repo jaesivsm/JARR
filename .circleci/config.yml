@@ -14,21 +14,18 @@ jobs:
           keys:
             - v1-{{ .Branch }}
           paths:
-            - ~/caches/jarr.tar
+            - ~/caches/jarr-server.tar
+            - ~/caches/jarr-worker.tar
       - run:
           name: Load Docker image layer caches
           command: |
             set +o pipefail
-            docker load -i ~/caches/jarr.tar | true
-      - run:
-          name: moving test config to default config
-          command: |
-            mkdir -p ~/caches ~/coverage_results
-            rm example_conf/jarr.test.json example_conf/jarr.json
-            mv example_conf/jarr.circleci.json example_conf/jarr.json
+            docker load -i ~/caches/jarr-server.tar | true
+            docker load -i ~/caches/jarr-worker.tar | true
       - run:
           name: building images
           command: |
+            mkdir -p ~/caches
             if [ "$CIRCLE_BRANCH" = "master" ]; then
               make build-server DOCKER_TAG=":latest"
               make build-worker DOCKER_TAG=":latest"
@@ -40,7 +37,8 @@ jobs:
       - run:
           name: Save Docker image layer cache
           command: |
-            docker save -o ~/caches/jarr.tar jarr
+            docker save -o ~/caches/jarr-server.tar jarr-server
+            docker save -o ~/caches/jarr-worker.tar jarr-worker
 
   backend-test:
     machine:
@@ -52,16 +50,17 @@ jobs:
           keys:
             - v1-{{ .Branch }}
           paths:
-            - ~/caches/jarr.tar
+            - ~/caches/jarr-server.tar
+            - ~/caches/jarr-worker.tar
       - run:
           name: Load Docker image layer caches
           command: |
-            set +o pipefail
-            docker load -i ~/caches/jarr.tar | true
+            docker load -i ~/caches/jarr-server.tar
+            docker load -i ~/caches/jarr-worker.tar
       - run:
           name: moving test config to default config
           command: |
-            mkdir -p ~/caches ~/coverage_results
+            mkdir -p ~/coverage_results
             rm example_conf/jarr.test.json example_conf/jarr.json
             mv example_conf/jarr.circleci.json example_conf/jarr.json
       - run:
@@ -116,21 +115,22 @@ jobs:
     machine:
       image: ubuntu-1604:201903-01
     steps:
-      # checkout so that make recepies are available
-      - checkout
-      # restore cache with docker image layer cache to find back image form last job
       - restore_cache:
           keys:
             - v1-{{ .Branch }}
           paths:
-            - ~/caches/doom.tar
+            - ~/caches/jarr-server.tar
+            - ~/caches/jarr-worker.tar
       - run:
-          name: Load Docker image layer cache
-          command: docker load -i ~/caches/doom.tar
-      # push doom:latest image and add tag date
+          name: Load Docker image layer caches
+          command: |
+            set +o pipefail
+            docker load -i ~/caches/jarr-server.tar
+            docker load -i ~/caches/jarr-worker.tar
       - run:
           name: Push tested image to registry
           command: |
+            echo "$DOCKER_PASS" | docker login --username $DOCKER_USER --password-stdin
             if [ "$CIRCLE_BRANCH" = "master" ]; then
               docker push jaesivsm/jarr-server:latest
               docker push jaesivsm/jarr-worker:latest
