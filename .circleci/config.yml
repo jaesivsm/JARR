@@ -135,7 +135,7 @@ jobs:
             if [ "$CIRCLE_BRANCH" = "master" ]; then
               export DOCKER_TAG=latest
             else
-              export DOCKER_TAG=$CIRCLE_BRANCH
+              export DOCKER_TAG=develop
             fi
             docker image tag jarr-server $DOCKER_USER/jarr-server:$DOCKER_TAG
             docker image tag jarr-server $DOCKER_USER/jarr-server:$DOCKER_TAG
