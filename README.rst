@@ -82,3 +82,8 @@ License
 -------
 
 JARR is under the `GNU Affero General Public License version 3 <https://www.gnu.org/licenses/agpl-3.0.html>`_.
+
+
+.. image:: https://api.codacy.com/project/badge/Grade/6c692b4bfdaf409ea264b72dcc13dc7c
+   :alt: Codacy Badge
+   :target: https://app.codacy.com/manual/francois_7/JARR?utm_source=github.com&utm_medium=referral&utm_content=jaesivsm/JARR&utm_campaign=Badge_Grade_Dashboard
