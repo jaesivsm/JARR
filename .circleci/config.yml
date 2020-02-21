@@ -135,7 +135,7 @@ jobs:
             if [ "$CIRCLE_BRANCH" = "master" ]; then
               export DOCKER_TAG=latest
             else
-              export DOCKER_TAG=develop
+              export DOCKER_TAG=$CIRCLE_BRANCH
             fi
             docker image tag jarr-server $DOCKER_USER/jarr-server:$DOCKER_TAG
             docker image tag jarr-worker $DOCKER_USER/jarr-worker:$DOCKER_TAG
@@ -152,8 +152,8 @@ workflows:
       - push-docker-images:
           requires:
             - backend-test
-#          filters:
-#            branches:
-#              only:
-#                - master
-#                - develop  # TODO: remove when merging to master
+          filters:
+            branches:
+              only:
+                - master
+                - develop  # TODO: remove when merging to master
