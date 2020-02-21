@@ -4,22 +4,66 @@ orbs:
   python: circleci/python@0.2.1
 
 jobs:
-  building-and-testing-backend:
+  backend_build:
     machine:
       image: ubuntu-1604:201903-01
     steps:
       - checkout
+      # restore cache and docker layer cache
+      - restore_cache:
+          keys:
+            - v1-{{ .Branch }}
+          paths:
+            - ~/caches/jarr.tar
+      - run:
+          name: Load Docker image layer caches
+          command: |
+            set +o pipefail
+            docker load -i ~/caches/jarr.tar | true
       - run:
           name: moving test config to default config
           command: |
+            mkdir -p ~/caches ~/coverage_results
             rm example_conf/jarr.test.json example_conf/jarr.json
             mv example_conf/jarr.circleci.json example_conf/jarr.json
       - run:
-          name: building server image
-          command: make build-server
+          name: building images
+          command: |
+            if [ "$CIRCLE_BRANCH" = "master" ]; then
+              make builder-server DOCKER_TAG=":latest"
+              make builder-worker DOCKER_TAG=":latest"
+            else
+              make builder-server DOCKER_TAG=":develop"
+              make builder-worker DOCKER_TAG=":develop"
+            fi
+      # save built layers and image in cache
       - run:
-          name: building worker image
-          command: make build-worker
+          name: Save Docker image layer cache
+          command: |
+            docker save -o ~/caches/jarr.tar jarr
+
+  backend_test:
+    machine:
+      image: ubuntu-1604:201903-01
+    steps:
+      - checkout
+      # restore cache and docker layer cache
+      - restore_cache:
+          keys:
+            - v1-{{ .Branch }}
+          paths:
+            - ~/caches/jarr.tar
+      - run:
+          name: Load Docker image layer caches
+          command: |
+            set +o pipefail
+            docker load -i ~/caches/jarr.tar | true
+      - run:
+          name: moving test config to default config
+          command: |
+            mkdir -p ~/caches ~/coverage_results
+            rm example_conf/jarr.test.json example_conf/jarr.json
+            mv example_conf/jarr.circleci.json example_conf/jarr.json
       - run:
           name: starting test env
           command: |
@@ -48,6 +92,14 @@ jobs:
             exec server bash -c
             "pipenv run nosetests tests/ -vv --with-coverage --cover-package=jarr"
       - run:
+          name: uplaoding coverage
+          command: >-
+            docker-compose --file Dockerfiles/circleci-env.yml \
+            exec server bash -c
+            "pipenv run coverage xml -o coverage_results/coverage.xml";
+            pip install --upgrade codacy-coverage;
+            python-codacy-coverage -r ~/coverage_results/coverage.xml
+      - run:
           name: "linter: pep8"
           command: >-
             docker-compose --file Dockerfiles/circleci-env.yml
@@ -60,7 +112,43 @@ jobs:
             exec server bash -c
             "pipenv run mypy jarr --ignore-missing-imports"
 
+  push_images:
+    machine:
+      image: ubuntu-1604:201903-01
+    steps:
+      # checkout so that make recepies are available
+      - checkout
+      # restore cache with docker image layer cache to find back image form last job
+      - restore_cache:
+          keys:
+            - v1-{{ .Branch }}
+          paths:
+            - ~/caches/doom.tar
+      - run:
+          name: Load Docker image layer cache
+          command: docker load -i ~/caches/doom.tar
+      # push doom:latest image and add tag date
+      - run:
+          name: Push tested image to registry
+          command: |
+            if [ "$CIRCLE_BRANCH" = "master" ]; then
+              make docker-push-version BRANCH=$CIRCLE_BRANCH
+            else
+              make docker-push-latest BRANCH=$CIRCLE_BRANCH
+            fi
+
 workflows:
   jarr-testing:
     jobs:
-      - building-and-testing-backend
+      - backend_build
+      - backend_test:
+          requires:
+            - backend_build
+      - push-docker-images:
+          requires:
+            - backend_test
+          filters:
+            branches:
+              only:
+                - master
+                - develop  # TODO: remove when merging to master
