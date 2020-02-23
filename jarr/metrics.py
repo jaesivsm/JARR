@@ -7,9 +7,12 @@ REQUESTS = Counter('request', 'request', ['type'],
                    namespace='jarr', registry=REGISTRY)
 
 CLUSTERING = Counter('clustering', 'Cluster events',
-                     ['event',  # new cluster, add to cluster
-                      'article_type', 'feed_type'],
+                     ['event'],  # new cluster, add to cluster
                      namespace='jarr', registry=REGISTRY)
+
+ARTICLE_CREATION = Counter('article_creation', 'Article Creation',
+                           ['article_type'],
+                           namespace='jarr', registry=REGISTRY)
 
 READ = Counter('read', 'Read event', ['reason'],
                namespace='jarr', registry=REGISTRY)

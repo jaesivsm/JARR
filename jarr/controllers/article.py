@@ -12,6 +12,7 @@ from jarr.bootstrap import session
 from jarr.controllers import CategoryController, FeedController
 from jarr.lib.utils import utc_now
 from jarr.models import Article, User
+from jarr.metrics import ARTICLE_CREATION
 
 from .abstract import AbstractController
 
@@ -90,7 +91,9 @@ class ArticleController(AbstractController):
         if vector:
             attrs['vector'] = cast(vector, TSVECTOR)
         attrs['link_hash'] = sha1(attrs['link'].encode('utf8')).digest()
-        return super().create(**attrs)
+        article = super().create(**attrs)
+        ARTICLE_CREATION.labels(article_type=article.article_type.value).inc()
+        return article
 
     def update(self, filters, attrs, return_objs=False, commit=True):
         user_id = attrs.get('user_id', self.user_id)
