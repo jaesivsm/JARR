@@ -10,6 +10,7 @@ from jarr.crawler.requests_utils import (response_calculated_etag_match,
                                          response_etag_match)
 from jarr.lib.enums import FeedType
 from jarr.lib.utils import jarr_get, utc_now
+from jarr.metrics import FEED_FETCH
 
 logger = logging.getLogger(__name__)
 
@@ -121,14 +122,24 @@ class AbstractCrawler:
     def is_cache_hit(self, response):
         if response.status_code == 304:
             logger.info('feed responded with 304')
+            FEED_FETCH.labels(feed_type=self.feed.feed_type.value,
+                              result='304').inc()
             return True
         if response.status_code == 226:
             logger.info('feed responded with 226')
+            FEED_FETCH.labels(feed_type=self.feed.feed_type.value,
+                              result='226').inc()
             return False
         if response_etag_match(self.feed, response):
+            FEED_FETCH.labels(feed_type=self.feed.feed_type.value,
+                              result='etag_manual_comparison_match').inc()
             return True
         if response_calculated_etag_match(self.feed, response):
+            FEED_FETCH.labels(feed_type=self.feed.feed_type.value,
+                              result='fabricated_etag_comparison_match').inc()
             return True
+        FEED_FETCH.labels(feed_type=self.feed.feed_type.value,
+                          result='no_cache_hit').inc()
         logger.debug('etag mismatch %r != %r',
                      response.headers.get('etag'), self.feed.etag)
         return False
