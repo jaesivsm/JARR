@@ -73,6 +73,7 @@ class ClusterController(AbstractController):
         for candidate in self._get_query_for_clustering(article,
                 {'link_hash': article.link_hash}):
             article.cluster_reason = ClusterReason.link
+            CLUSTERING.labels(reason=ClusterReason.link.value).inc()
             return candidate.cluster
 
     def _get_cluster_by_similarity(self, article):
@@ -100,6 +101,7 @@ class ClusterController(AbstractController):
             article.cluster_score = int(score * 1000)
             article.cluster_tfidf_neighbor_size = len(neighbors)
             article.cluster_tfidf_with = best_match.id
+            CLUSTERING.labels(reason=ClusterReason.tf_idf.value).inc()
             return best_match.cluster
 
     def _create_from_article(self, article,
@@ -114,6 +116,7 @@ class ClusterController(AbstractController):
         cluster.read = bool(cluster_read)
         cluster.liked = cluster_liked
         article.cluster_reason = ClusterReason.original
+        CLUSTERING.labels(reason=ClusterReason.original.value).inc()
         self.enrich_cluster(cluster, article, cluster_read, cluster_liked)
         return cluster
 
