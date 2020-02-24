@@ -115,7 +115,7 @@ class ClusterController(AbstractController):
             logger.exception("Unable to retrieve %s", link)
 
     @classmethod
-    def _enrich_with_article_details(self, cluster, article):
+    def _enrich_with_article_details(cls, cluster, article):
         cluster.main_link = article.link
         cluster.main_title = article.title
         cluster.main_date = article.date
@@ -148,6 +148,7 @@ class ClusterController(AbstractController):
         self.enrich_cluster(cluster, article, cluster_read, cluster_liked)
         return cluster
 
+    @classmethod
     def enrich_cluster(cls, cluster, article,
                        cluster_read=None, cluster_liked=False,
                        force_article_as_main=False):
