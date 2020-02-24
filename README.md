@@ -1,7 +1,8 @@
 # JARR
 
-[![CircleCI](https://circleci.com/gh/circleci/circleci-docs.svg?style=shield)](https://circleci.com/gh/circleci/circleci-docs)
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/8b81ef446c4849939796c4965f121ffe)](https://www.codacy.com/manual/francois_7/JARR?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=jaesivsm/JARR&amp;utm_campaign=Badge_Grade)
+[![CircleCI](https://circleci.com/gh/jaesivsm/JARR.svg?style=shield)](https://circleci.com/gh/jaesivsm/JARR)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/8b81ef446c4849939796c4965f121ffe)](https://www.codacy.com/manual/jaesivsm/JARR?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=jaesivsm/JARR&amp;utm_campaign=Badge_Grade)
+[![Coverage](https://api.codacy.com/project/badge/Coverage/8b81ef446c4849939796c4965f121ffe)](https://www.codacy.com/manual/jaesivsm/JARR?utm_source=github.com&utm_medium=referral&utm_content=jaesivsm/JARR&utm_campaign=Badge_Coverage)
 
 ## Presentation
 
