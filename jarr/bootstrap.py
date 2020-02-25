@@ -129,7 +129,7 @@ PARSED_PLATFORM_URL = urlparse(conf.platform_url)
 engine, session, Base = init_db()
 init_models()
 set_redis_conn(host=conf.db.redis.host, db=conf.db.redis.db,
-               port=conf.db.redis.port, password=conf.db.redis.password)
+               port=conf.db.redis.port)
 
 init_logging(conf.log.path, log_level=conf.log.level)
 init_logging(conf.log.path, log_level=logging.WARNING, modules=('the_conf',))
