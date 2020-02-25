@@ -43,7 +43,7 @@ class NewCategoryResource(Resource):
     @category_ns.marshal_with(model, code=201, description='Created')
     @jwt_required()
     def post():
-        "Create a new category"
+        """Create a new category."""
         attrs = parse_meaningful_params(parser)
         return CategoryController(current_identity.id).create(**attrs), 201
 
@@ -57,7 +57,7 @@ class ListCategoryResource(Resource):
     @category_ns.marshal_list_with(model)
     @jwt_required()
     def get():
-        "List all categories with their unread counts"
+        """List all categories with their unread counts."""
         return list(CategoryController(current_identity.id).read()), 200
 
 
@@ -73,7 +73,7 @@ class CategoryResource(Resource):
     @category_ns.response(404, 'Not found')
     @jwt_required()
     def put(category_id):
-        "Update an existing category"
+        """Update an existing category."""
         cctrl = CategoryController(current_identity.id)
         attrs = parse_meaningful_params(parser_edit)
         if attrs:
@@ -91,7 +91,7 @@ class CategoryResource(Resource):
     @category_ns.response(404, 'Not found')
     @jwt_required()
     def delete(category_id):
-        "Delete an existing category"
+        """Delete an existing category."""
         try:
             CategoryController(current_identity.id).delete(category_id)
         except NotFound:

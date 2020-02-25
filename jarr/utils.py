@@ -19,7 +19,9 @@ def jarr_get(*args, **kwargs):
 
 
 def get_cluster_pref(feed, pref_name):
-    """For a given feed and a given attribute name will return a boolean
+    """Tool to figure out clustering setting for a feed.
+
+    For a given feed and a given attribute name will return a boolean
     If this same attribute is set to false on feed's user false will be
     returned, if it's set to false on feed's category false will also be
     returned. If not the value be returned from feed configuration.

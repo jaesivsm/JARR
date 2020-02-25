@@ -1,7 +1,5 @@
 from tests.base import JarrFlaskCommon
 
-from jarr.controllers import FeedController
-
 
 class CategoryApiTest(JarrFlaskCommon):
 

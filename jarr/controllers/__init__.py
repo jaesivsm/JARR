@@ -1,3 +1,5 @@
+"""Root package for all controllers."""
+
 from .feed import FeedController
 from .category import CategoryController
 from .article import ArticleController

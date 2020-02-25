@@ -1,23 +1,3 @@
-"""For a given resources, classes in the module intend to create the following
-routes :
-    GET resource/<id>
-        -> to retrieve one
-    POST resource
-        -> to create one
-    PUT resource/<id>
-        -> to update one
-    DELETE resource/<id>
-        -> to delete one
-
-    GET resources
-        -> to retrieve several
-    POST resources
-        -> to create several
-    PUT resources
-        -> to update several
-    DELETE resources
-        -> to delete several
-"""
 import logging
 
 from flask_restplus import fields

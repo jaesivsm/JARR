@@ -21,7 +21,7 @@ manager.add_command('db', MigrateCommand)
 
 @manager.command
 def db_create(login='admin', password='admin'):
-    "Will create the database from conf parameters."
+    """Will create the database from conf parameters."""
     admin = {'is_admin': True, 'is_api': True,
              'login': login, 'password': password}
     with application.app_context():

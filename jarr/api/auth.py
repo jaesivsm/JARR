@@ -31,7 +31,7 @@ class LoginResource(Resource):
     @auth_ns.response(400, 'Missing params')
     @auth_ns.response(403, 'Forbidden')
     def post():
-        "Given valid credentials, will provide a token to request the API"
+        """Given valid credentials, will provide a token to request the API."""
         attrs = login_parser.parse_args()
         jwt = current_app.extensions['jwt']
         user = jwt.authentication_callback(attrs['login'], attrs['password'])
@@ -49,8 +49,10 @@ class InitPasswordRecovery(Resource):
     @auth_ns.response(204, 'Token generated and mail sent')
     @auth_ns.response(400, 'Bad request')
     def post(email):
-        """Initialize password recovery by creating a uniq token and sending
-        a mail with link to password recovery page"""
+        """Initialize password recovery.
+
+        Creates a uniq token and sending a mail with link to recovery page.
+        """
         token = str(random.getrandbits(128))
         changed = UserController().update(
                 {'email': email}, {'renew_password_token': token})
@@ -72,7 +74,7 @@ class PasswordRecovery(Resource):
     @auth_ns.response(403, "Wrong token")
     @auth_ns.response(404, "Email doesn't match any user")
     def put():
-        """Sending new password with recovery token"""
+        """Sending new password with recovery token."""
         attrs = login_recovery_parser.parse_args()
         user = UserController().get(email=attrs['email'])
         if user.renew_password_token != attrs['token']:

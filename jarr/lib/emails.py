@@ -11,9 +11,7 @@ logger = logging.getLogger(__name__)
 
 
 def send(to="", bcc="", subject="", plaintext=""):
-    """
-    Send an email.
-    """
+    """Send an email."""
     # Create message container - the correct MIME type is multipart/alternative
     msg = MIMEMultipart('alternative')
     msg['Subject'] = subject

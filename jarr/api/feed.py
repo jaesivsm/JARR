@@ -74,7 +74,7 @@ class NewFeedResource(Resource):
     @feed_ns.marshal_with(feed_model, code=201, description='Created')
     @jwt_required()
     def post():
-        "Create an new feed"
+        """Create an new feed."""
         attrs = parse_meaningful_params(feed_parser)
         return FeedController(current_identity.id).create(**attrs), 201
 
@@ -88,8 +88,7 @@ class ListFeedResource(Resource):
     @feed_ns.marshal_list_with(feed_model)
     @jwt_required()
     def get():
-        """List all available feeds with their unread counts and a relative
-        URL to their icons """
+        """List all available feeds with a relative URL to their icons."""
         return list(FeedController(current_identity.id).read())
 
 
@@ -105,7 +104,7 @@ class FeedResource(Resource):
     @feed_ns.response(404, 'Not found')
     @jwt_required()
     def put(feed_id):
-        "Update an existing feed"
+        """Update an existing feed."""
         fctrl = FeedController(current_identity.id)
         attrs = parse_meaningful_params(feed_parser_edit)
         changed = fctrl.update({'id': feed_id}, attrs)
@@ -121,7 +120,7 @@ class FeedResource(Resource):
     @feed_ns.response(404, 'Not found')
     @jwt_required()
     def delete(feed_id):
-        "delete an existing feed"
+        """Delete an existing feed."""
         try:
             FeedController(current_identity.id).delete(feed_id)
         except NotFound:
@@ -140,8 +139,16 @@ class FeedBuilder(Resource):
     @feed_ns.response(406, "Pseudo feed missing link", model=feed_build_model)
     @jwt_required()
     def get():
-        """Construct a feed from (any) url and send back that field for later
-        creation"""
+        """
+        Construct a feed from (any) url.
+
+        Returns
+        -------
+        feed:
+            a dictionnary with most of what's needed to contruct a feed
+            plus alternative links found during parsing
+
+        """
         url = url_parser.parse_args()['url']
         feed = FeedBuilderController(url).construct()
         return feed, 200 if feed.get('link') else 406

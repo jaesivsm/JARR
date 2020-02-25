@@ -60,4 +60,5 @@ class User(Base):
         return re.sub(r'[^a-zA-Z0-9_\.]', '', value.strip())
 
     def __repr__(self):
+        """Represents a user with its id."""
         return "<User %s(%s)>" % (self.login, self.id)

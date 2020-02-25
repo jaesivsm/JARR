@@ -1,3 +1,5 @@
+"""All the JARR's models."""
+
 from .feed import Feed
 from .user import User
 from .article import Article

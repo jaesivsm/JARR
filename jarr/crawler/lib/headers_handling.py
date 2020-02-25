@@ -34,12 +34,11 @@ def _extract_expires(headers, feed_info):
 
 
 def extract_feed_info(headers, text=None):
-    """providing the headers of a feed response, will calculate the headers
-    needed for basic cache control.
-
-    will extract etag and last modified.
-
-    will calculate expires, with limit define in configuration file by
+    """
+    Providing the headers of a feed response,
+    will calculate the headers needed for basic cache control,
+    will extract etag and last modified,
+    and will calculate expires, with limit define in configuration file by
     FEED_MIN_EXPIRES and FEED_MAX_EXPIRES.
     """
     now = utc_now()

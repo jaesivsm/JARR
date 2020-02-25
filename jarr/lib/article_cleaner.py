@@ -18,8 +18,11 @@ def __fix_addr(to_fix, reference, scheme=None):
 
 
 def _handle_img(img, parsed_article_url, fix_readability):
-    """Will fix images url being either incompatible with JARR instance or just
-    broken."""
+    """
+    Will fix images url.
+
+    Only if they're either incompatible with JARR instance or just broken.
+    """
     if 'src' not in img.attrs:
         return
     # bug reported to readability, fixing it here for now
@@ -37,8 +40,11 @@ def _handle_img(img, parsed_article_url, fix_readability):
 
 
 def _handle_link(link, parsed_article_url):
-    """Will correct href link missing scheme or netloc with scheme or netloc
-    from article url."""
+    """Will correct href link.
+
+    Correction if missing scheme or netloc with scheme
+    or netloc from article url.
+    """
     if 'href' not in link.attrs:
         return
     parsed_href = urlparse(link.attrs['href'])
@@ -47,7 +53,7 @@ def _handle_link(link, parsed_article_url):
 
 
 def _handle_iframe(iframe):
-    """Securizing known iframe"""
+    """Securizing known iframe."""
     if 'src' not in iframe.attrs:
         return
     iframe_src = urlparse(iframe.attrs['src'])

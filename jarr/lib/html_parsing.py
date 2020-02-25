@@ -53,7 +53,9 @@ def _try_encodings(content, *encodings):
 
 @lru_cache(maxsize=None)
 def get_soup(content, header_encoding='utf8'):
-    """For a content and an encoding will return a bs4 object which will be
+    """Try parsing html content and caching parsed result.
+
+    For a content and an encoding will return a bs4 object which will be
     cached so you can call on this method as often as you want.
 
     As the encoding written in the HTML is more reliable, ```get_soup``` will
@@ -108,8 +110,10 @@ def extract_lang(response):
 
 
 def extract_tags(response):
-    """From a requests.Response objects will return the tags
-    (keywords + open graphs ones)."""
+    """
+    From a requests.Response objects will return the tags.
+
+    Tags will be html and open graphs keywords."""
     soup = get_soup(response.content, response.encoding)
     if not soup:
         return {}
@@ -125,8 +129,10 @@ def extract_tags(response):
 
 
 def _check_keys(**kwargs):
-    """Returns a callable for BeautifulSoup.find_all add will check existence
-    of key and values they hold in the in listed elements.
+    """ Returns a callable for BeautifulSoup.find_all.
+
+    Will also check existence of keys and values
+    they hold in the in listed elements.
     """
     def wrapper(elem):
         for key, vals in kwargs.items():

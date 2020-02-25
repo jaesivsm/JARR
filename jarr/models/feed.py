@@ -72,6 +72,7 @@ class Feed(Base):
     )
 
     def __repr__(self):
+        """Represents a feed with title and id."""
         return '<Feed %r(%r)>' % (self.title, self.id)
 
     @property

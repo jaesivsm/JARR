@@ -22,12 +22,16 @@ class AbstractController:
     _user_id_key = 'user_id'
 
     def __init__(self, user_id=None, ignore_context=False):
-        """User id is a right management mechanism that should be used to
+        """
+        Base methods for controllers accross JARR.
+        User id is a right management mechanism that should be used to
         filter objects in database on their denormalized "user_id" field
         (or "id" field for users).
         Should no user_id be provided, the Controller won't apply any filter
         allowing for a kind of "super user" mode.
         """
+        if self._db_cls is None:
+            raise NotImplementedError("%r _db_cls isn't overridden" % self)
         try:
             self.user_id = int(user_id)
         except TypeError:
@@ -35,7 +39,7 @@ class AbstractController:
 
     @staticmethod
     def _to_comparison(key, model):
-        "extract from the key the method used by sqla for comparison"
+        """Extract from the key the method used by sqla for comparison."""
         if '__' not in key:
             return getattr(model, key).__eq__
         attr, ope = key.rsplit('__', 1)
@@ -67,7 +71,9 @@ class AbstractController:
         return db_filters
 
     def _get(self, **filters):
-        """ Will add the current user id if that one is not none (in which case
+        """
+        Abstract get.
+        Will add the current user id if that one is not none (in which case
         the decision has been made in the code that the query shouldn't be user
         dependant) and the user is not an admin and the filters doesn't already
         contains a filter for that user.
@@ -90,8 +96,8 @@ class AbstractController:
         return obj
 
     def create(self, **attrs):
-        assert self._db_cls is not None
-        assert attrs, "attributes to update must not be empty"
+        if not attrs:
+            raise ValueError("attributes to update must not be empty")
         if self._user_id_key is not None and self._user_id_key not in attrs:
             attrs[self._user_id_key] = self.user_id
         if not (self._user_id_key is None or self._user_id_key in attrs
@@ -108,7 +114,8 @@ class AbstractController:
         return self._get(**filters)
 
     def update(self, filters, attrs, return_objs=False, commit=True):
-        assert attrs, "attributes to update must not be empty"
+        if not attrs:
+            raise ValueError("attributes to update must not be empty")
         result = self._get(**filters).update(attrs, synchronize_session=False)
         if commit:
             session.flush()
@@ -133,7 +140,8 @@ class AbstractController:
                 or getattr(obj, self._user_id_key, None) == self.user_id
 
     def assert_right_ok(self, obj_id):
-        assert self.user_id
+        if not self.user_id:
+            raise ValueError("%r user_id can't be None" % self)
         rows = self.__class__().read(id=obj_id).with_entities(
                 getattr(self._db_cls, self._user_id_key)).first()
         if not rows:

@@ -90,7 +90,8 @@ class AbstractArticleBuilder:
                 new_link = urlunsplit(SplitResult(scheme, *split[1:]))
                 try:
                     return jarr_get(new_link)
-                except Exception as error:
+                except Exception:
+                    logger.error("tried %r, didn't work", new_link)
                     continue
         except Exception as error:
             logger.info("Unable to get the real URL of %s. Won't fix "

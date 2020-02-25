@@ -17,7 +17,8 @@ class UTCDateTime(types.TypeDecorator):
     @staticmethod
     def process_result_value(value, dialect):
         if value is not None:
-            assert not value.tzinfo
+            if value.tzinfo:
+                raise ValueError("%r tzinfo is defined, shouldn't be")
             return value.replace(tzinfo=timezone.utc)
         return value
 

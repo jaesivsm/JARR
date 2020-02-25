@@ -41,10 +41,12 @@ class FeedController(AbstractController):
         return query
 
     def list_late(self, limit=DEFAULT_LIMIT):
-        """Will list either late feed (which have been retrieved for the last
-        time sooner than now minus the delta (default to 1h)) or the feed with
-        articles recentrly created (later than now minus a quarter the delta
-        (default to 15 logically)).
+        """Will list either late feeds or feeds with articles recently created.
+
+        Late feeds are feeds which have been retrieved for the last time sooner
+        than now minus the delta (default to 1h). The others are feeds with
+        article created later than now minus a quarter the delta (default to
+        15 logically).
 
         The idea is to keep very active feed up to date and to avoid missing
         articles du to high activity (when, for example, the feed only displays

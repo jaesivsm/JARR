@@ -59,7 +59,8 @@ class BaseJarrTest(TestCase):
                 self._contr_cls(user.id).delete(obj.id).id)
         self.assertRaises(NotFound, self._contr_cls(user.id).delete, obj.id)
 
-    def _drop_all(self):
+    @staticmethod
+    def _drop_all():
         try:
             session.expunge_all()
             session.execute('DROP TABLE IF EXISTS %s CASCADE'

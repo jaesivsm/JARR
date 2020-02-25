@@ -1,3 +1,4 @@
+"""Root package for all implemented Crawlers."""
 from .abstract import AbstractCrawler
 from .classic import ClassicCrawler
 from .json import JSONCrawler

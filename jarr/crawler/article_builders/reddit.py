@@ -10,6 +10,7 @@ logger = logging.getLogger(__name__)
 class RedditArticleBuilder(ClassicArticleBuilder):
 
     def __init__(self, *args, **kwargs):
+        """Reddit article builder. Will swap link and comments."""
         self._article_bs = None
         super().__init__(*args, **kwargs)
 

@@ -1,3 +1,4 @@
+"""Root package for all API endpoints."""
 import logging
 from datetime import timedelta
 from functools import lru_cache
@@ -7,9 +8,9 @@ from flask_jwt import JWT, JWTError
 from flask_restplus import Api
 from sqlalchemy.exc import IntegrityError
 
-from jarr.lib.utils import default_handler
 from jarr.bootstrap import PARSED_PLATFORM_URL, conf, session
 from jarr.controllers import UserController
+from jarr.lib.utils import default_handler
 
 
 def __authenticate(username, password):
@@ -44,12 +45,12 @@ def setup_jwt(application, api):
 
     @api.errorhandler(JWTError)
     def handle_jwt_error(error):
-        '''This is a custom error'''
+        """Mapping JWT error to Unauthorized."""
         return error, 401
 
     @api.errorhandler(IntegrityError)
     def handle_sqla_error(error):
-        '''This is a custom error'''
+        """Mapping IntegrityError to HTTP Conflict(409)."""
         return {'message': 'Database rules prevented this operation'}, 409
     return jwt, handle_jwt_error, handle_sqla_error
 

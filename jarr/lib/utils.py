@@ -31,9 +31,7 @@ def clean_lang(lang):
 
 
 def rfc_1123_utc(time_obj=None, delta=None):
-    """return time obj or now formated in the RFC1123 style. Add time delta if
-    present.
-    """
+    """Return time obj or now formated in the RFC1123 style (with delta)."""
     if time_obj is None:
         time_obj = utc_now()
     if delta is not None:
@@ -42,7 +40,7 @@ def rfc_1123_utc(time_obj=None, delta=None):
 
 
 def default_handler(obj):
-    """JSON handler for default query formatting"""
+    """JSON handler for default query formatting."""
     if isinstance(obj, (set, frozenset, filter, types.GeneratorType)):
         return list(obj)
     if isinstance(obj, Enum):

@@ -56,7 +56,7 @@ class ListFeeds(Resource):
     @default_ns.marshal_list_with(list_feeds_model)
     @jwt_required()
     def get():
-        """Will list feeds with their category and respective id"""
+        """Will list feeds with their category and respective id."""
         ctrl = FeedController(current_identity.id)
         result = []
         fields_name = 'fid', 'cid', 'ftitle', 'cname'
@@ -74,8 +74,7 @@ class Unreads(Resource):
     @default_ns.marshal_list_with(unreads_model)
     @jwt_required()
     def get():
-        """Will result list of dict with the unread count for feeds with unread
-        clusters"""
+        """Return feeds with count of unread clusters."""
         result = []
         fields_name = 'fid', 'unread'
         for line in ClusterController(current_identity.id).get_unreads():
@@ -84,8 +83,13 @@ class Unreads(Resource):
 
 
 def _get_filters(in_dict):
-    """Will extract filters applicable to the JARR controllers from a dict
-    either request.json or request.form depending on the use case.
+    """
+    Will extract filters applicable to the JARR controllers.
+
+    Parameters
+    ----------
+    in_dict: either request.json or request.form depending on the use case
+
     """
     search_str = in_dict.get('search_str')
     if search_str:
@@ -122,7 +126,7 @@ class Clusters(Resource):
     @default_ns.expect(filter_parser, validate=True)
     @jwt_required()
     def get():
-        """Will list all cluster extract for the middle pannel"""
+        """Will list all cluster extract for the middle pannel."""
         attrs = filter_parser.parse_args()
         clu_ctrl = ClusterController(current_identity.id)
         return list(clu_ctrl.join_read(**_get_filters(attrs)))
@@ -139,7 +143,7 @@ class MarkClustersAsRead(Resource):
     @default_ns.marshal_list_with(midle_panel_model)
     @jwt_required()
     def put():
-        """Will mark all clusters selected by the filter as read"""
+        """Will mark all clusters selected by the filter as read."""
         attrs = mark_as_read_parser.parse_args()
         filters = _get_filters(attrs)
         clu_ctrl = ClusterController(current_identity.id)

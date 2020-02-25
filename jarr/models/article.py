@@ -87,6 +87,7 @@ class Article(Base):
     )
 
     def __repr__(self):
+        """Represents and article."""
         return "<Article(id=%s, entry_id=%r, title=%r, " \
                "date=%s, retrieved_date=%s)>" % (self.id, self.entry_id,
                        self.title, self.date.isoformat(),
