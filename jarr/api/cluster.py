@@ -114,4 +114,5 @@ class ClusterRedirectResource(Resource):
         ClusterController(current_identity.id).update(
                 {'id': cluster_id},
                 {'read': True, 'read_reason': ReadReason.consulted})
+        READ.labels(ReadReason.consulted.value).inc()
         return None, 301, {'Location': cluster.main_link}
