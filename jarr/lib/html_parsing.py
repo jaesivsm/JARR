@@ -22,12 +22,12 @@ def try_get_icon_url(url, *splits):
         try:
             response = jarr_get(rb_url,
                                 conf.crawler.timeout, conf.crawler.user_agent)
+            response.raise_for_status()
             content_type = response.headers.get('content-type', '')
         except Exception:
-            pass
+            logger.exception('something went wrong while fetching %r', rb_url)
         else:
-            if response is not None and response.ok \
-                    and 'html' not in content_type and response.content:
+            if response.ok and 'html' not in content_type and response.content:
                 return response.url
     return None
 

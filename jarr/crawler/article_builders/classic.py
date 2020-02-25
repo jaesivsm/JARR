@@ -33,7 +33,7 @@ class ClassicArticleBuilder(AbstractArticleBuilder):
                     return dateutil.parser.parse(entry[date_key])\
                             .astimezone(timezone.utc)
                 except Exception:
-                    pass
+                    logger.error("Couldn't parse %r", entry[date_key])
 
     @staticmethod
     def extract_title(entry):

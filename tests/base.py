@@ -20,7 +20,7 @@ class BaseJarrTest(TestCase):
     _application = None
 
     def create_app(self):
-        assert conf.jarr_testing, "configuration not set on testing"
+        self.assertTrue(conf.jarr_testing, "configuration not set on testing")
         from jarr.api import create_app
         self._application = create_app(testing=True)
         return self._application
@@ -68,10 +68,10 @@ class BaseJarrTest(TestCase):
                              for table in list(Base.metadata.tables)]))
             session.commit()
         except Exception:
-            pass
+            logger.exception("Dropping db failed")
 
     def setUp(self):
-        assert conf.jarr_testing, "configuration not set on testing"
+        self.assertTrue(conf.jarr_testing, "configuration not set on testing")
         from jarr.api import get_cached_user
         get_cached_user.cache_clear()
         init_db()
@@ -89,7 +89,7 @@ class BaseJarrTest(TestCase):
 class JarrFlaskCommon(BaseJarrTest):
 
     def setUp(self):
-        assert conf.jarr_testing, "configuration not set on testing"
+        self.assertTrue(conf.jarr_testing, "configuration not set on testing")
         super().setUp()
         self.app = self._application.test_client()
 

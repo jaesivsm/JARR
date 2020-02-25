@@ -17,7 +17,7 @@ def _extract_max_age(headers, feed_info, now):
             max_age = int(MAX_AGE_RE.search(headers['cache-control']).group(1))
             feed_info['expires'] = now + timedelta(seconds=max_age)
         except Exception:
-            pass
+            logger.exception("something went wrong while parsing max-age")
 
 
 def _extract_expires(headers, feed_info):
@@ -30,7 +30,7 @@ def _extract_expires(headers, feed_info):
                 expires = expires.replace(tzinfo=timezone.utc)
             feed_info['expires'] = expires
         except Exception:
-            pass
+            logger.exception("something went wrong while parsing expires")
 
 
 def extract_feed_info(headers, text=None):
