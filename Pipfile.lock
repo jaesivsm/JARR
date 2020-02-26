@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "e45aaa2208976150fc611c84a5aea91ac6d038506d22ad66263f05236a09a7a7"
+            "sha256": "58f1ac9f9d1a83cd9227ab63bd7700c19c59591e0d05bf1b842361d902775680"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -296,14 +296,8 @@
             "hashes": [
                 "sha256:71cd24a2b3eb335cb800c7159f423df1bd4dcd5171b234be15e3f31ec9f622da"
             ],
-            "version": "==0.7.1"
-        },
-        "prometheus-distributed-client": {
-            "hashes": [
-                "sha256:7218ba174ffd4dd188e03641ee725e9c690cf98bd533ce64bba21f2142d44aab"
-            ],
             "index": "pypi",
-            "version": "==1.2.1"
+            "version": "==0.7.1"
         },
         "psycopg2": {
             "hashes": [
@@ -844,6 +838,7 @@
                 "sha256:920492895db8013f6cc0179293147f830b8c7b21fdfc839b6bad760c27459d9f",
                 "sha256:9c980875fa4d2cb751604664e9a2d0f69096643f5be4db1b99599fe114a97b2f"
             ],
+            "markers": "extra == 'ssh'",
             "version": "==2.7.1"
         },
         "parso": {

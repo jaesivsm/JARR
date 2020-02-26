@@ -7,7 +7,6 @@ import logging
 import random
 from urllib.parse import urlparse
 
-from prometheus_distributed_client import set_redis_conn
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, scoped_session
