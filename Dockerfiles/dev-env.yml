@@ -13,6 +13,9 @@ services:
       - 0.0.0.0:5672:5672
   postgresql:
     image: postgres:11
+    environment:
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_HOST_AUTH_METHOD=trust
     ports:
       - 0.0.0.0:5432:5432
     volumes:
