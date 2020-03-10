@@ -112,13 +112,13 @@ class FeedApiTest(JarrFlaskCommon):
         self.assertStatusCode(403, resp)
 
         resp = self.jarr_client('get', 'list-feeds', user='user1')
-        self.assertTrue(feed_id in {row['fid'] for row in len(resp.json)})
+        self.assertTrue(feed_id in {row['fid'] for row in resp.json})
 
         resp = self.jarr_client('delete', 'feed', feed_id, user='user1')
         self.assertStatusCode(204, resp)
 
         resp = self.jarr_client('get', 'list-feeds', user='user1')
-        self.assertFalse(feed_id in {row['fid'] for row in len(resp.json)})
+        self.assertFalse(feed_id in {row['fid'] for row in resp.json})
 
         feeds = self.jarr_client('get', 'feeds', user='user1').json
         self.assertTrue(feed_id in [feed['id'] for feed in feeds])
@@ -130,7 +130,7 @@ class FeedApiTest(JarrFlaskCommon):
         self.assertFalse(feed_id in [feed['id'] for feed in feeds])
 
         resp = self.jarr_client('get', 'list-feeds', user='user1')
-        self.assertFalse(feed_id in {row['fid'] for row in len(resp.json)})
+        self.assertFalse(feed_id in {row['fid'] for row in resp.json})
 
     def test_FeedBuilder_get(self):
         resp = self.jarr_client('get', 'feed', 'build')
