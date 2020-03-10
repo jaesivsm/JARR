@@ -5,7 +5,7 @@ from sqlalchemy.orm import relationship
 
 from jarr.bootstrap import Base
 from jarr.lib.jarr_types import ArticleType
-from jarr.lib.reasons import ClusterReason
+from jarr.lib.enums import ClusterReason
 from jarr.lib.utils import utc_now
 from jarr.models.utc_datetime_type import UTCDateTime
 

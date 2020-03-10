@@ -3,7 +3,7 @@ from sqlalchemy import (Boolean, Column, Integer, String, Enum,
 from sqlalchemy.orm import relationship
 
 from jarr.lib.utils import utc_now
-from jarr.lib.reasons import ReadReason
+from jarr.lib.enums import ReadReason
 from jarr.bootstrap import Base
 from jarr.models.article import Article
 from jarr.models.utc_datetime_type import UTCDateTime

@@ -1,6 +1,12 @@
 from enum import Enum
 
 
+class FeedStatus(Enum):
+    active = 'active'
+    paused = 'paused'
+    deleting = 'deleting'
+
+
 class ClusterReason(Enum):
     original = 'original'  # the article is the cluster's original one
     # the article has the same name and share a suitable category

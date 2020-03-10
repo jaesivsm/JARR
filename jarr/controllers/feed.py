@@ -11,6 +11,7 @@ from jarr.controllers.abstract import AbstractController
 from jarr.controllers.icon import IconController
 from jarr.lib.utils import utc_now
 from jarr.models import Article, Category, Cluster, Feed, User
+from jarr.lib.enums import FeedStatus
 
 DEFAULT_LIMIT = 0
 DEFAULT_ART_SPAN_TIME = timedelta(seconds=conf.feed.max_expires)
@@ -35,7 +36,7 @@ class FeedController(AbstractController):
 
     def get_active_feed(self, **filters):
         filters['error_count__lt'] = conf.feed.error_max
-        query = self.read(enabled=True, **filters)
+        query = self.read(status=FeedStatus.active, **filters)
         last_conn = utc_now() - timedelta(days=conf.feed.stop_fetch)
         if conf.feed.stop_fetch:
             return query.join(User).filter(User.is_active.__eq__(True),
