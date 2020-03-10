@@ -3,7 +3,7 @@ import base64
 from flask import Response
 from flask_jwt import current_identity, jwt_required
 from flask_restplus import Namespace, Resource, fields
-from werkzeug.exceptions import Forbidden, NotFound
+from werkzeug.exceptions import Forbidden
 
 from jarr.api.common import parse_meaningful_params, set_model_n_parser
 from jarr.controllers import (FeedBuilderController, FeedController,
@@ -122,13 +122,9 @@ class FeedResource(Resource):
     @jwt_required()
     def delete(feed_id):
         """Delete an existing feed."""
-        try:
-            FeedController(current_identity.id).update(
-                    {'id': feed_id}, {'status': FeedStatus.to_delete})
-        except NotFound:
-            if FeedController().get(id=feed_id).user_id != current_identity.id:
-                raise Forbidden()
-            raise
+        fctrl = FeedController(current_identity.id)
+        if not fctrl.update({'id': feed_id}, {'status': FeedStatus.to_delete}):
+            fctrl.assert_right_ok(feed_id)
         return None, 204
 
 
