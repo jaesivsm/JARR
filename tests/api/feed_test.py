@@ -3,6 +3,7 @@ from datetime import timezone, timedelta
 from jarr.lib.utils import utc_now
 from jarr.lib.enums import FeedType
 from jarr.controllers import FeedController
+from jarr.crawler.main import feed_cleaner
 
 
 FEED = {'link': 'https://1pxsolidblack.pl/feeds/all.atom.xml',
@@ -109,11 +110,27 @@ class FeedApiTest(JarrFlaskCommon):
         self.assertStatusCode(401, resp)
         resp = self.jarr_client('delete', 'feed', feed_id, user='user2')
         self.assertStatusCode(403, resp)
+
+        resp = self.jarr_client('get', 'list-feeds', user=self.user.login)
+        self.assertTrue(feed_id in {row['fid'] for row in len(resp.json)})
+
         resp = self.jarr_client('delete', 'feed', feed_id, user='user1')
         self.assertStatusCode(204, resp)
 
+        resp = self.jarr_client('get', 'list-feeds', user=self.user.login)
+        self.assertFalse(feed_id in {row['fid'] for row in len(resp.json)})
+
+        feeds = self.jarr_client('get', 'feeds', user='user1').json
+        self.assertTrue(feed_id in [feed['id'] for feed in feeds])
+        self.assertEqual('to_delete', [feed['status'] for feed in feeds
+                                       if feed['id'] == feed_id])
+        feed_cleaner()
+
         feeds = self.jarr_client('get', 'feeds', user='user1').json
         self.assertFalse(feed_id in [feed['id'] for feed in feeds])
+
+        resp = self.jarr_client('get', 'list-feeds', user=self.user.login)
+        self.assertFalse(feed_id in {row['fid'] for row in len(resp.json)})
 
     def test_FeedBuilder_get(self):
         resp = self.jarr_client('get', 'feed', 'build')
