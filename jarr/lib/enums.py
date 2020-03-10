@@ -4,6 +4,7 @@ from enum import Enum
 class FeedStatus(Enum):
     active = 'active'
     paused = 'paused'
+    to_delete = 'to_delete'
     deleting = 'deleting'
 
 

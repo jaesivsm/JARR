@@ -124,7 +124,7 @@ class FeedResource(Resource):
         """Delete an existing feed."""
         try:
             FeedController(current_identity.id).update(
-                    {'id': feed_id}, {'status': FeedStatus.deleting})
+                    {'id': feed_id}, {'status': FeedStatus.to_delete})
         except NotFound:
             if FeedController().get(id=feed_id).user_id != current_identity.id:
                 raise Forbidden()

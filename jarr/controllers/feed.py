@@ -32,6 +32,7 @@ class FeedController(AbstractController):
                 .outerjoin(Category, and_(Feed.category_id == Category.id,
                                           Category.user_id == self.user_id))\
                 .filter(Feed.user_id == self.user_id,
+                        Feed.status != FeedStatus.to_delete,
                         Feed.status != FeedStatus.deleting)\
                 .order_by(Category.name, Feed.title)
 
