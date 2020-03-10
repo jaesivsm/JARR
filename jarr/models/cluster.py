@@ -56,7 +56,11 @@ class Cluster(Base):
                   liked, user_id, main_date.desc().nullslast()),
             Index('ix_cluster_read_uid_date',
                   read, user_id, main_date.desc().nullslast()),
-            Index('ix_cluster_martid', user_id, main_article_id.nullsfirst()),
+            # used by cluster deletion in FeedController.delete
+            Index('ix_cluster_uid_martid',
+                  user_id, main_article_id.nullsfirst()),
+            # triggered by article.ondelete
+            Index('ix_cluster_martid', main_article_id.nullslast()),
     )
 
     @property

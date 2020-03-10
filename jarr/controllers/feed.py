@@ -1,3 +1,4 @@
+import logging
 from datetime import datetime, timedelta
 
 import dateutil.parser
@@ -13,6 +14,7 @@ from jarr.models import Article, Category, Cluster, Feed, User
 
 DEFAULT_LIMIT = 0
 DEFAULT_ART_SPAN_TIME = timedelta(seconds=conf.feed.max_expires)
+logger = logging.getLogger(__name__)
 
 
 class FeedController(AbstractController):
@@ -153,9 +155,11 @@ class FeedController(AbstractController):
     def delete(self, obj_id, commit=True):
         from jarr.controllers.cluster import ClusterController
         feed = self.get(id=obj_id)
+        logger.debug('DELETE %r - Found feed', feed)
         clu_ctrl = ClusterController(self.user_id)
 
-        # removing back ref from cluster to article
+        logger.info('DELETE %r - removing back ref from cluster to article',
+                    feed)
         clu_ctrl.update({'user_id': feed.user_id,
                          'main_article_id__in': self.__actrl.read(
                                 feed_id=obj_id).with_entities('id')},
@@ -166,12 +170,12 @@ class FeedController(AbstractController):
                                             Article.user_id == feed.user_id))\
                                 .order_by(Article.date.asc()).limit(1)
 
-        # removing articles
+        logger.info('DELETE %r - removing articles', feed)
         session.execute(delete(Article).where(
                 and_(Article.feed_id == feed.id,
                      Article.user_id == feed.user_id)))
 
-        # reclustering
+        logger.info('DELETE %r - fixing cluster without main article', feed)
         clu_ctrl.update({'user_id': feed.user_id, 'main_article_id': None},
                 {'main_title': select_art(Article.title),
                  'main_article_id': select_art(Article.id),
@@ -182,7 +186,8 @@ class FeedController(AbstractController):
                                            Feed.id == Article.feed_id,
                                            Feed.user_id == feed.user_id))
                                     .order_by(Article.date.asc()).limit(1)})
-        # removing remaing clusters
+
+        logger.info('DELETE %r - removing clusters without main article', feed)
         session.execute(delete(Cluster).where(
                 and_(Cluster.user_id == feed.user_id,
                      Cluster.main_article_id.__eq__(None))))
