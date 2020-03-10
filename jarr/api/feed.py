@@ -8,7 +8,7 @@ from werkzeug.exceptions import Forbidden, NotFound
 from jarr.api.common import parse_meaningful_params, set_model_n_parser
 from jarr.controllers import (FeedBuilderController, FeedController,
                               IconController)
-from jarr.lib.jarr_types import FeedType
+from jarr.lib.enums import FeedStatus, FeedType
 
 feed_ns = Namespace('feed', description='Feed related operations')
 url_parser = feed_ns.parser()
@@ -57,7 +57,8 @@ set_model_n_parser(feed_model, feed_parser, 'site_link', str)
 set_model_n_parser(feed_model, feed_parser, 'description', str)
 feed_parser_edit = feed_parser.copy()
 set_model_n_parser(feed_model, feed_parser_edit, 'title', str)
-set_model_n_parser(feed_model, feed_parser_edit, 'link', str)
+set_model_n_parser(feed_model, feed_parser_edit, 'status', str,
+                   enum=[status.value for status in FeedStatus])
 feed_parser.add_argument('title', type=str, required=True)
 feed_parser.add_argument('link', type=str, required=True)
 feed_parser.add_argument('icon_url', type=str)
@@ -122,7 +123,8 @@ class FeedResource(Resource):
     def delete(feed_id):
         """Delete an existing feed."""
         try:
-            FeedController(current_identity.id).delete(feed_id)
+            FeedController(current_identity.id).update(
+                    {'id': feed_id}, {'status': FeedStatus.deleting})
         except NotFound:
             if FeedController().get(id=feed_id).user_id != current_identity.id:
                 raise Forbidden()

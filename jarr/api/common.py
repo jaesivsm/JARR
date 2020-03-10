@@ -11,7 +11,8 @@ MODEL_PARSER_MAPPING = {bool: fields.Boolean, float: fields.Float,
 def set_model_n_parser(model, parser, name, type_, **kwargs):
     model[name] = MODEL_PARSER_MAPPING[type_](**kwargs)
     parser.add_argument(name, type=type_, **kwargs,
-            help=kwargs.pop('description', None))
+                        choices=kwargs.pop('enum', None),
+                        help=kwargs.pop('description', None))
 
 
 def parse_meaningful_params(parser):

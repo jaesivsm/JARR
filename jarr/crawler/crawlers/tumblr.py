@@ -3,7 +3,7 @@ import logging
 from jarr.bootstrap import conf
 from jarr.crawler.crawlers.classic import ClassicCrawler
 from jarr.crawler.lib.headers_handling import prepare_headers
-from jarr.lib.jarr_types import FeedType
+from jarr.lib.enums import FeedType
 from jarr.lib.utils import jarr_get
 
 logger = logging.getLogger(__name__)

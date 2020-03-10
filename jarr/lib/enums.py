@@ -7,6 +7,24 @@ class FeedStatus(Enum):
     deleting = 'deleting'
 
 
+class FeedType(Enum):
+    classic = 'classic'
+    json = 'json'
+    tumblr = 'tumblr'
+    instagram = 'instagram'
+    soundcloud = 'soundcloud'
+    reddit = 'reddit'
+    fetch = 'fetch'
+    koreus = 'koreus'
+    twitter = 'twitter'
+
+
+class ArticleType(Enum):
+    text = 'text'
+    image = 'image'
+    video = 'video'
+
+
 class ClusterReason(Enum):
     original = 'original'  # the article is the cluster's original one
     # the article has the same name and share a suitable category

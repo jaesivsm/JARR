@@ -5,8 +5,7 @@ from sqlalchemy.orm import relationship, validates
 
 from jarr.bootstrap import Base
 from jarr.lib.const import UNIX_START
-from jarr.lib.jarr_types import FeedType
-from jarr.lib.enums import CacheReason, FeedStatus
+from jarr.lib.enums import CacheReason, FeedStatus, FeedType
 from jarr.lib.utils import utc_now
 from jarr.models.utc_datetime_type import UTCDateTime
 

@@ -31,7 +31,8 @@ class FeedController(AbstractController):
         return session.query(*fields)\
                 .outerjoin(Category, and_(Feed.category_id == Category.id,
                                           Category.user_id == self.user_id))\
-                .filter(Feed.user_id == self.user_id)\
+                .filter(Feed.user_id == self.user_id,
+                        Feed.status != FeedStatus.deleting)\
                 .order_by(Category.name, Feed.title)
 
     def get_active_feed(self, **filters):
