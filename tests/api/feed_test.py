@@ -122,7 +122,7 @@ class FeedApiTest(JarrFlaskCommon):
 
         feeds = self.jarr_client('get', 'feeds', user='user1').json
         self.assertTrue(feed_id in [feed['id'] for feed in feeds])
-        self.assertEqual('to_delete', [feed['status'] for feed in feeds
+        self.assertEqual('FeedStatus.to_delete', [feed['status'] for feed in feeds
                                        if feed['id'] == feed_id])
         feed_cleaner()
 
