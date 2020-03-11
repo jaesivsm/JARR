@@ -1,6 +1,6 @@
 import unittest
 from jarr.models.feed import Feed
-from jarr.lib.jarr_types import FeedType
+from jarr.lib.enums import FeedType
 from jarr.crawler.article_builders.reddit import RedditArticleBuilder
 
 CONTENT = """<table><tr><td>

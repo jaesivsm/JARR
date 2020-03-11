@@ -2,7 +2,7 @@ from urllib.parse import SplitResult, urlencode, urlsplit, urlunsplit
 
 from jarr.bootstrap import conf
 from jarr.crawler.crawlers.classic import ClassicCrawler
-from jarr.lib.jarr_types import FeedType
+from jarr.lib.enums import FeedType
 
 
 class RssBridgeMixin:

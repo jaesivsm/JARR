@@ -4,6 +4,9 @@ CONF_FILE = example_conf/jarr.json
 SERVER_PORT = 8000
 SERVER_ADDR = 0.0.0.0
 DB_VER = $(shell pipenv run ./manager.py db heads | sed -e 's/ .*//g')
+ENV = dev
+COMPOSE = pipenv run docker-compose --project-name jarr --file Dockerfiles/$(ENV)-env.yml
+TEST = tests/
 
 install:
 	pipenv sync --dev
@@ -18,7 +21,7 @@ lint: pep8 mypy
 
 test: export JARR_CONFIG = example_conf/jarr.test.json
 test:
-	pipenv run nosetests tests/ -vv --with-coverage --cover-package=jarr
+	pipenv run nosetests $(TEST) -vv --with-coverage --cover-package=jarr
 
 build-base:
 	docker build --cache-from=jarr . --file Dockerfiles/pythonbase -t jarr-base
@@ -30,10 +33,7 @@ build-worker: build-base
 	docker build --cache-from=jarr . --file Dockerfiles/worker -t jarr-worker
 
 start-env:
-	pipenv run docker-compose \
-		--project-name jarr \
-		--file Dockerfiles/dev-env.yml \
-		up -d
+	$(COMPOSE) up -d
 
 run-server: export JARR_CONFIG = $(CONF_FILE)
 run-server:
@@ -44,16 +44,9 @@ run-worker:
 	pipenv run celery worker --app ep_celery.celery_app
 
 create-db:
-	pipenv run docker-compose \
-		--project-name jarr \
-		--file Dockerfiles/dev-env.yml \
-		exec postgresql \
-		su postgres -c \
+	$(COMPOSE) exec postgresql su postgres -c \
 		"createuser jarr --no-superuser --createdb --no-createrole"
-	pipenv run docker-compose \
-		--project-name jarr \
-		--file Dockerfiles/dev-env.yml \
-		exec postgresql su postgres -c "createdb jarr --no-password"
+	$(COMPOSE) exec postgresql su postgres -c "createdb jarr --no-password"
 
 init-env: export JARR_CONFIG = $(CONF_FILE)
 init-env: create-db
@@ -61,19 +54,10 @@ init-env: create-db
 	pipenv run ./manager.py db stamp $(DB_VER)
 
 stop-env:
-	pipenv run docker-compose \
-		--project-name jarr \
-		--file Dockerfiles/dev-env.yml \
-		down --remove-orphans
+	$(COMPOSE) down --remove-orphans
 
 clean-env: stop-env
-	pipenv run docker-compose \
-		--project-name jarr \
-		--file Dockerfiles/dev-env.yml \
-		rm --force
+	$(COMPOSE) rm --force
 
 status-env:
-	pipenv run docker-compose \
-		--project-name jarr \
-		--file Dockerfiles/dev-env.yml \
-		ps
+	$(COMPOSE) ps

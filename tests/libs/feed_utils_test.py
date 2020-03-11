@@ -1,7 +1,7 @@
 import unittest
 
 from jarr.controllers.feed_builder import FeedBuilderController as FBC
-from jarr.lib.jarr_types import FeedType
+from jarr.lib.enums import FeedType
 
 
 class ConstructFeedFromTest(unittest.TestCase):

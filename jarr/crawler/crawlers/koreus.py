@@ -1,5 +1,5 @@
 from jarr.crawler.crawlers.classic import ClassicCrawler
-from jarr.lib.jarr_types import FeedType
+from jarr.lib.enums import FeedType
 from jarr.crawler.article_builders.koreus import KoreusArticleBuilder
 
 

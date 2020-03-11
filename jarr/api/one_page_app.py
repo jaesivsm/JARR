@@ -2,7 +2,7 @@ from flask_jwt import current_identity, jwt_required
 from flask_restplus import Namespace, Resource, fields
 
 from jarr.controllers import ClusterController, FeedController
-from jarr.lib.reasons import ReadReason
+from jarr.lib.enums import ReadReason
 
 ACCEPTED_LEVELS = {'success', 'info', 'warning', 'error'}
 default_ns = Namespace('default', path='/')
