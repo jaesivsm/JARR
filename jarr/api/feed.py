@@ -5,7 +5,8 @@ from flask_jwt import current_identity, jwt_required
 from flask_restplus import Namespace, Resource, fields
 from werkzeug.exceptions import Forbidden
 
-from jarr.api.common import parse_meaningful_params, set_model_n_parser
+from jarr.api.common import (EnumField, parse_meaningful_params,
+                             set_model_n_parser)
 from jarr.controllers import (FeedBuilderController, FeedController,
                               IconController)
 from jarr.lib.enums import FeedStatus, FeedType
@@ -18,9 +19,7 @@ feed_build_model = feed_ns.model('FeedBuilder', {
         'link': fields.String(),
         'links': fields.List(fields.String()),
         'site_link': fields.String(),
-        'feed_type': fields.String(
-            attribute=lambda feed: feed.feed_type.value,
-            enum=[ft.value for ft in FeedType]),
+        'feed_type': EnumField(FeedType),
         'icon_url': fields.String(),
         'title': fields.String(),
         'description': fields.String(),
@@ -59,9 +58,7 @@ set_model_n_parser(feed_model, feed_parser, 'site_link', str)
 set_model_n_parser(feed_model, feed_parser, 'description', str)
 feed_parser_edit = feed_parser.copy()
 set_model_n_parser(feed_model, feed_parser_edit, 'title', str)
-set_model_n_parser(feed_model, feed_parser_edit, 'status', str,
-                   attribute=lambda feed: feed.status.value,
-                   enum=[status.value for status in FeedStatus])
+set_model_n_parser(feed_model, feed_parser_edit, 'status', FeedStatus)
 feed_parser.add_argument('title', type=str, required=True)
 feed_parser.add_argument('link', type=str, required=True)
 feed_parser.add_argument('icon_url', type=str)
