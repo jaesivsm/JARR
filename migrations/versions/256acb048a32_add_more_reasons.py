@@ -7,14 +7,12 @@ Create Date: 2017-07-31 11:49:16.345244
 """
 from alembic import op
 import sqlalchemy as sa
-from jarr.lib.enums import CacheReason
-
 
 revision = '256acb048a32'
 down_revision = 'e2d7db861709'
 branch_labels = None
 depends_on = None
-enum_fields = [cr.value for cr in CacheReason]
+enum_fields = ['status_code_304', 'etag', 'etag_calculated']
 
 
 def upgrade():
