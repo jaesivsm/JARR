@@ -3,12 +3,12 @@ import base64
 from flask import Response
 from flask_jwt import current_identity, jwt_required
 from flask_restplus import Namespace, Resource, fields
-from werkzeug.exceptions import Forbidden, NotFound
 
-from jarr.api.common import parse_meaningful_params, set_model_n_parser
+from jarr.api.common import (EnumField, parse_meaningful_params,
+                             set_model_n_parser)
 from jarr.controllers import (FeedBuilderController, FeedController,
                               IconController)
-from jarr.lib.jarr_types import FeedType
+from jarr.lib.enums import FeedStatus, FeedType
 
 feed_ns = Namespace('feed', description='Feed related operations')
 url_parser = feed_ns.parser()
@@ -18,7 +18,7 @@ feed_build_model = feed_ns.model('FeedBuilder', {
         'link': fields.String(),
         'links': fields.List(fields.String()),
         'site_link': fields.String(),
-        'feed_type': fields.String(enum=[ft.value for ft in FeedType]),
+        'feed_type': EnumField(FeedType),
         'icon_url': fields.String(),
         'title': fields.String(),
         'description': fields.String(),
@@ -57,7 +57,7 @@ set_model_n_parser(feed_model, feed_parser, 'site_link', str)
 set_model_n_parser(feed_model, feed_parser, 'description', str)
 feed_parser_edit = feed_parser.copy()
 set_model_n_parser(feed_model, feed_parser_edit, 'title', str)
-set_model_n_parser(feed_model, feed_parser_edit, 'link', str)
+set_model_n_parser(feed_model, feed_parser_edit, 'status', FeedStatus)
 feed_parser.add_argument('title', type=str, required=True)
 feed_parser.add_argument('link', type=str, required=True)
 feed_parser.add_argument('icon_url', type=str)
@@ -121,12 +121,9 @@ class FeedResource(Resource):
     @jwt_required()
     def delete(feed_id):
         """Delete an existing feed."""
-        try:
-            FeedController(current_identity.id).delete(feed_id)
-        except NotFound:
-            if FeedController().get(id=feed_id).user_id != current_identity.id:
-                raise Forbidden()
-            raise
+        fctrl = FeedController(current_identity.id)
+        if not fctrl.update({'id': feed_id}, {'status': FeedStatus.to_delete}):
+            fctrl.assert_right_ok(feed_id)
         return None, 204
 
 

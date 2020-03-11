@@ -4,7 +4,7 @@ import feedparser
 
 from jarr.controllers.feed_builder import FeedBuilderController
 from jarr.crawler.crawlers.abstract import AbstractCrawler
-from jarr.lib.jarr_types import FeedType
+from jarr.lib.enums import FeedType
 
 logger = logging.getLogger(__name__)
 

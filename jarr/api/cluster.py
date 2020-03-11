@@ -4,7 +4,7 @@ from werkzeug.exceptions import Forbidden, NotFound
 
 from jarr.api.common import parse_meaningful_params
 from jarr.controllers import ClusterController
-from jarr.lib.reasons import ReadReason
+from jarr.lib.enums import ReadReason
 
 cluster_ns = Namespace('cluster', description='Cluster related operations')
 cluster_parser = cluster_ns.parser()

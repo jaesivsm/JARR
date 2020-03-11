@@ -9,7 +9,7 @@ from feedparser import parse as fp_parse
 from jarr.lib.const import FEED_MIMETYPES, REQUIRED_JSON_FEED
 from jarr.lib.html_parsing import (extract_feed_links, extract_icon_url,
                                    extract_opg_prop, extract_title)
-from jarr.lib.jarr_types import FeedType
+from jarr.lib.enums import FeedType
 from jarr.utils import jarr_get
 
 logger = logging.getLogger(__name__)
