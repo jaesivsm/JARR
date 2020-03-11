@@ -1,5 +1,5 @@
 from flask_jwt import current_identity, jwt_required
-from flask_restplus import Namespace, Resource
+from flask_restx import Namespace, Resource
 
 from jarr.api.common import parse_meaningful_params, set_model_n_parser
 from jarr.controllers import UserController

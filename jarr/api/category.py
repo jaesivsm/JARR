@@ -1,5 +1,5 @@
 from flask_jwt import current_identity, jwt_required
-from flask_restplus import Namespace, Resource, fields
+from flask_restx import Namespace, Resource, fields
 from werkzeug.exceptions import Forbidden, NotFound
 
 from jarr.api.common import parse_meaningful_params, set_model_n_parser

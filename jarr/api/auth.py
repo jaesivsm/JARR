@@ -1,7 +1,7 @@
 import random
 
 from flask import current_app, render_template
-from flask_restplus import Namespace, Resource, fields
+from flask_restx import Namespace, Resource, fields
 from werkzeug.exceptions import BadRequest, Forbidden
 
 from jarr.bootstrap import conf

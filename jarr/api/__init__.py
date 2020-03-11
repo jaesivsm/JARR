@@ -5,7 +5,7 @@ from functools import lru_cache
 
 from flask import Flask
 from flask_jwt import JWT, JWTError
-from flask_restplus import Api
+from flask_restx import Api
 from sqlalchemy.exc import IntegrityError
 
 from jarr.bootstrap import PARSED_PLATFORM_URL, conf, session
@@ -46,7 +46,7 @@ def setup_jwt(application, api):
     @api.errorhandler(JWTError)
     def handle_jwt_error(error):
         """Mapping JWT error to Unauthorized."""
-        return error, 401
+        return {'message': ', '.join(error.args)}, 401
 
     @api.errorhandler(IntegrityError)
     def handle_sqla_error(error):
@@ -95,7 +95,7 @@ def create_app(testing=False):
     application.config['PLATFORM_URL'] = conf.platform_url
     application.config['SERVER_NAME'] = PARSED_PLATFORM_URL.netloc
     application.config['PREFERRED_URL_SCHEME'] = PARSED_PLATFORM_URL.scheme
-    application.config['RESTPLUS_JSON'] = {'default': default_handler}
+    application.config['RESTX_JSON'] = {'default': default_handler}
 
     setup_sqla_binding(application)
     api = setup_api(application)
