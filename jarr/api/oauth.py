@@ -1,6 +1,6 @@
 import json
 from flask import url_for, session, current_app
-from flask_restplus import Namespace, Resource
+from flask_restx import Namespace, Resource
 from werkzeug.exceptions import BadRequest, NotFound, UnprocessableEntity
 from rauth import OAuth1Service, OAuth2Service
 from jarr.bootstrap import conf

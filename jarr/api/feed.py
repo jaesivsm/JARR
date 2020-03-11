@@ -2,7 +2,7 @@ import base64
 
 from flask import Response
 from flask_jwt import current_identity, jwt_required
-from flask_restplus import Namespace, Resource, fields
+from flask_restx import Namespace, Resource, fields
 
 from jarr.api.common import (EnumField, parse_meaningful_params,
                              set_model_n_parser)
@@ -58,6 +58,7 @@ set_model_n_parser(feed_model, feed_parser, 'description', str)
 feed_parser_edit = feed_parser.copy()
 set_model_n_parser(feed_model, feed_parser_edit, 'title', str)
 set_model_n_parser(feed_model, feed_parser_edit, 'status', FeedStatus)
+set_model_n_parser(feed_model, feed_parser_edit, 'link', str)
 feed_parser.add_argument('title', type=str, required=True)
 feed_parser.add_argument('link', type=str, required=True)
 feed_parser.add_argument('icon_url', type=str)

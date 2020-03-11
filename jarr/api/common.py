@@ -1,7 +1,7 @@
 import logging
 from enum import Enum
 
-from flask_restplus import fields
+from flask_restx import fields
 
 logger = logging.getLogger(__name__)
 

@@ -88,11 +88,11 @@ class AbstractController:
         obj = self._get(**filters).first()
 
         if obj and not self._has_right_on(obj):
-            raise Forbidden({'message': 'No authorized to access %r (%r)'
-                                % (self._db_cls.__class__.__name__, filters)})
+            raise Forbidden('No authorized to access %r (%r)' % (
+                                self._db_cls.__class__.__name__, filters))
         if not obj:
-            raise NotFound({'message': 'No %r (%r)'
-                                % (self._db_cls.__class__.__name__, filters)})
+            raise NotFound('No %r (%r)' % (self._db_cls.__class__.__name__,
+                                           filters))
         return obj
 
     def create(self, **attrs):
