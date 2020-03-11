@@ -18,7 +18,9 @@ feed_build_model = feed_ns.model('FeedBuilder', {
         'link': fields.String(),
         'links': fields.List(fields.String()),
         'site_link': fields.String(),
-        'feed_type': fields.String(enum=[ft.value for ft in FeedType]),
+        'feed_type': fields.String(
+            attribute=lambda feed: feed.feed_type.value,
+            enum=[ft.value for ft in FeedType]),
         'icon_url': fields.String(),
         'title': fields.String(),
         'description': fields.String(),
@@ -58,6 +60,7 @@ set_model_n_parser(feed_model, feed_parser, 'description', str)
 feed_parser_edit = feed_parser.copy()
 set_model_n_parser(feed_model, feed_parser_edit, 'title', str)
 set_model_n_parser(feed_model, feed_parser_edit, 'status', str,
+                   attribute=lambda feed: feed.status.value,
                    enum=[status.value for status in FeedStatus])
 feed_parser.add_argument('title', type=str, required=True)
 feed_parser.add_argument('link', type=str, required=True)
