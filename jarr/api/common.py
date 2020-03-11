@@ -18,7 +18,6 @@ class EnumField(fields.String):
         return super().format(value.value)
 
 
-
 def set_model_n_parser(model, parser, name, type_, **kwargs):
     if isinstance(type_, Enum.__class__):
         model[name] = EnumField(type_, **kwargs)
