@@ -1,9 +1,19 @@
 import React from 'react';
+import PropTypes from 'prop-types';
+import { connect } from 'react-redux'
 import logo from './logo.svg';
-import { Counter } from './features/counter/Counter';
+import Counter from './features/counter/Counter';
+import Login from './features/login/Login';
 import './App.css';
 
-function App() {
+function mapStateToProps(state) {
+    return { isLogged: state.login.login !== undefined };
+}
+
+function App({ isLogged }) {
+  if (isLogged === false) {
+    return <Login />;
+  }
   return (
     <div className="App">
       <header className="App-header">
@@ -55,4 +65,8 @@ function App() {
   );
 }
 
-export default App;
+App.propTypes = {
+  isLogged: PropTypes.bool.isRequired
+}
+
+export default connect(mapStateToProps)(App);

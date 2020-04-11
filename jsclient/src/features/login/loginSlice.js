@@ -9,20 +9,18 @@ const loginSlice = createSlice({
                   token: undefined },
   reducers: {
     login(state, action) {
-        console.log(state);
-        console.log(action);
         const { login, password } = action.payload;
-        return { login, password, loading: true, ...state };
+        return { ...state, login, password, loading: true };
     },
     loginFailed(state, action) {
-        return { loading: false, token: undefined,
-                 error: action.payload.error, ...state };
+        return { ...state, loading: false, token: undefined,
+                 error: action.payload.error };
     },
     tokenAcquire(state, action) {
-        return { loading: false, token: action.payload.token, ...state };
+        return { ...state, loading: false, token: action.payload.token };
     },
     tokenExpire(state, action) {
-        return { loading: true, token: undefined, ...state };
+        return { ...state, loading: true, token: undefined };
     },
     logout() {
         return { loading: false,
