@@ -4,14 +4,4 @@
   margin: auto;
   width: 400px;
 }
-
-.loginRightGridItem {
-  text-align: left;
-}
-
-.loginLeftGridItem {
-  text-align: right;
-}
-.loginInput {
-  float: right;
-}
+.loginInput {float: right;}
