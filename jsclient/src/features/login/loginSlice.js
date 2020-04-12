@@ -2,10 +2,13 @@ import axios from 'axios';
 import { createSlice } from '@reduxjs/toolkit';
 import { apiUrl } from '../../const.js';
 
+const accessTokenLocalStorageKey = 'jarr-access-token';
+
 const loginSlice = createSlice({
   name: 'login',
   initialState: { loading: false, error: undefined,
-                  login: undefined, password: undefined, token: undefined },
+                  login: undefined, password: undefined,
+                  token: localStorage.getItem(accessTokenLocalStorageKey)},
   reducers: {
     attemptLogin(state, action) {
         const { login, password } = action.payload;
@@ -16,7 +19,8 @@ const loginSlice = createSlice({
                  error: action.payload.error };
     },
     tokenAcquired(state, action) {
-        console.log(action);
+        localStorage.setItem(accessTokenLocalStorageKey,
+                             action.payload.data.access_token);
         return { ...state, loading: false,
                  token: action.payload.data.access_token };
     },
