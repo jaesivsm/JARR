@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux'
-import { TextField, Button, CircularProgress } from '@material-ui/core';
+import { Grid, TextField, Button, CircularProgress } from '@material-ui/core';
 import styles from './Login.module.css';
 import { doLogin } from './loginSlice.js';
 
@@ -21,17 +21,37 @@ const mapDispatchToProps = (dispatch) => ({
 });
 
 function Login({ isLoading, isLoginError, loginError, onSubmit }) {
+  let info;
+  if (isLoading) {
+    info = <CircularProgress />;
+  } else {
+    info = <span>Welcome to JARR !</span>;
+  }
   return (
-    <form className={styles.loginForm} noValidate autoComplete="off"
-      onSubmit={onSubmit}>
-      <TextField required id="jarr-login" label="Login"
-        disabled={isLoading} error={isLoginError} helperText={loginError}
-      />
-      <TextField required id="jarr-password" label="Password" type="password"
-        disabled={isLoading} error={isLoginError}
-      />
-      <Button variant="contained" type="submit">Login</Button>
-      {isLoading ? <CircularProgress /> : undefined }
+    <form autoComplete="off" onSubmit={onSubmit}>
+      <Grid container className={styles.loginContainer} spacing={4}>
+        <Grid item xs={6} className={styles.loginLeftGridItem}>
+          <TextField required id="jarr-login" label="Login"
+            className={styles.loginInput}
+            disabled={isLoading} error={isLoginError} helperText={loginError}
+          />
+        </Grid>
+
+        <Grid item xs={6} className={styles.loginRightGridItem}>
+          {info}
+        </Grid>
+        <Grid item xs={6} className={styles.loginLeftGridItem}>
+          <TextField required id="jarr-password" label="Password" type="password"
+            className={styles.loginInput}
+            disabled={isLoading} error={isLoginError}
+          />
+        </Grid>
+        <Grid item xs={6} className={styles.loginiRightGridItem}>
+          <Button align="right" variant="contained" type="submit">
+            Login
+          </Button>
+        </Grid>
+      </Grid>
     </form>
   );
 }

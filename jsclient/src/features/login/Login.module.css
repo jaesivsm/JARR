@@ -1,2 +1,17 @@
-.loginForm {
+.loginContainer {
+  top: 45%;
+  position: absolute;
+  margin: auto;
+  width: 400px;
+}
+
+.loginRightGridItem {
+  text-align: left;
+}
+
+.loginLeftGridItem {
+  text-align: right;
+}
+.loginInput {
+  float: right;
 }
