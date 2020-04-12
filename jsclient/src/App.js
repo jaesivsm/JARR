@@ -7,7 +7,7 @@ import Login from './features/login/Login';
 import './App.css';
 
 function mapStateToProps(state) {
-    return { isLogged: state.login.login !== undefined };
+    return { isLogged: state.login.token !== undefined };
 }
 
 function App({ isLogged }) {
