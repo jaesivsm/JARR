@@ -6,6 +6,8 @@ from functools import lru_cache
 from flask import Flask
 from flask_jwt import JWT, JWTError
 from flask_restx import Api
+from flask_cors import CORS
+
 from sqlalchemy.exc import IntegrityError
 
 from jarr.bootstrap import PARSED_PLATFORM_URL, conf, session
@@ -86,6 +88,8 @@ def create_app(testing=False):
             static_folder='jarr/static',
             template_folder='../templates')
     application.config.from_object(conf)
+
+    CORS(application, resources={r"/*": {"origins": "*"}})
     if testing:
         application.debug = True
         application.config['TESTING'] = True

@@ -1,4 +1,6 @@
+import axios from 'axios';
 import { createSlice } from '@reduxjs/toolkit';
+import { apiUrl } from '../../const.js';
 
 const loginSlice = createSlice({
   name: 'login',
@@ -14,7 +16,9 @@ const loginSlice = createSlice({
                  error: action.payload.error };
     },
     tokenAcquired(state, action) {
-        return { ...state, loading: false, token: action.payload.token };
+        console.log(action);
+        return { ...state, loading: false,
+                 token: action.payload.data.access_token };
     },
     tokenExpire(state, action) {
         return { ...state, loading: true, token: undefined };
@@ -36,9 +40,13 @@ export const doLogin = (
 ): AppThunk => async dispatch => {
   try {
     dispatch(attemptLogin({ login, password }));
-    const result = await getRepoDetails(login, password)
+    const result = await axios.post(
+        apiUrl + '/auth',
+        { login, password },
+        { responseType: 'json' },
+    );
     dispatch(tokenAcquired(result))
   } catch (err) {
-    dispatch(loginFailed(err.toString()))
+    dispatch(loginFailed({ error: err.toString() }))
   }
 }
