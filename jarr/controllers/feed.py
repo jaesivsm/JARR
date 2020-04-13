@@ -27,14 +27,24 @@ class FeedController(AbstractController):
         return ArticleController(self.user_id)
 
     def list_w_categ(self):
-        fields = Feed.id, Category.id, Feed.title, Category.name
-        return session.query(*fields)\
+        current = {'feeds': []}
+        fields = Category.id, Category.name, Feed.id, Feed.title
+        for row in session.query(*fields)\
                 .outerjoin(Category, and_(Feed.category_id == Category.id,
                                           Category.user_id == self.user_id))\
                 .filter(Feed.user_id == self.user_id,
                         Feed.status != FeedStatus.to_delete,
                         Feed.status != FeedStatus.deleting)\
-                .order_by(Category.name, Feed.title)
+                .order_by(Category.name.nullsfirst(), Feed.title):
+            if 'id' in current and current['id'] != row[0]:
+                yield current
+                current = {'feeds': []}
+            if 'id' not in current:
+                current['id'] = row[0]
+                current['name'] = row[1]
+                if not row[1]:
+                    current['no categ'] = True
+            current['feeds'].append({'id': row[2], 'title': row[3]})
 
     def get_active_feed(self, **filters):
         filters['error_count__lt'] = conf.feed.error_max

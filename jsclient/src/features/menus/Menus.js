@@ -3,14 +3,14 @@ import React from 'react';
 import { connect } from 'react-redux'
 
 function mapStateToProps(state) {
-    return {};
+  return {};
 };
 
-function TopMenu({ feeds }) {
-    return (<div />);
+function Menus({ feeds, handleDrawerOpen }) {
+  return (<div />);
 }
 
-TopMenu.propTypes = {
+Menus.propTypes = {
 }
 
-export default connect(mapStateToProps)(TopMenu);
+export default connect(mapStateToProps)(Menus);

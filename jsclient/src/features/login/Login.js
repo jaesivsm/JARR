@@ -1,9 +1,9 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux'
 import { Grid, TextField, Button, CircularProgress } from '@material-ui/core';
 import styles from './Login.module.css';
-import { doLogin } from './loginSlice.js';
+import { doLogin } from './userSlice.js';
 
 function mapStateToProps(state) {
     return { isLoading: state.login.loading,
@@ -15,22 +15,23 @@ function mapStateToProps(state) {
 };
 
 const mapDispatchToProps = (dispatch) => ({
-    onSubmit (e) {
-        e.preventDefault();
-        const login = e.target.querySelector("input#jarr-login").value;
-        const password = e.target.querySelector("input#jarr-password").value;
-        return dispatch(doLogin(login, password));
-    },
-    hiddenLogin (login, password) {
-        return dispatch(doLogin(login, password));
-    },
-
+  onSubmit (e) {
+    e.preventDefault();
+    const login = e.target.querySelector("input#jarr-login").value;
+    const password = e.target.querySelector("input#jarr-password").value;
+    return dispatch(doLogin(login, password));
+  },
+  hiddenLogin (login, password) {
+    return dispatch(doLogin(login, password));
+  },
 });
 
 function Login({ isLoading, isLoginError, noToken, savedLogin, savedPassword, loginError, onSubmit, hiddenLogin }) {
-  if (savedLogin && savedPassword && noToken) {
-      hiddenLogin(savedLogin, savedPassword);
-  }
+  useEffect(() => {
+    if (savedLogin && savedPassword && noToken) {
+        hiddenLogin(savedLogin, savedPassword);
+    }
+  });
   let info;
   if (isLoading) {
     info = <CircularProgress />;

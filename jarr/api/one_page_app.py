@@ -6,11 +6,13 @@ from jarr.lib.enums import ReadReason
 
 ACCEPTED_LEVELS = {'success', 'info', 'warning', 'error'}
 default_ns = Namespace('default', path='/')
+feed_model = default_ns.model('Feed',
+    {'title': fields.String(), 'id': fields.Integer()})
 list_feeds_model = default_ns.model('ListFeeds', {
-        'fid': fields.Integer(),
-        'cid': fields.Integer(),
-        'ftitle': fields.String(),
-        'cname': fields.String(),
+        'id': fields.Integer(),
+        'name': fields.String(),
+        'no categ': fields.Boolean(default=False),
+        'feeds': fields.Nested(feed_model),
 })
 unreads_model = default_ns.model('Unreads', {
         'fid': fields.Integer(),
@@ -51,18 +53,13 @@ mark_as_read_parser.add_argument('only_singles', type=bool, default=False,
 class ListFeeds(Resource):
 
     @staticmethod
-    @default_ns.response(200, 'OK', model=[midle_panel_model], as_list=True)
+    @default_ns.response(200, 'OK', model=[list_feeds_model], as_list=True)
     @default_ns.response(401, 'Unauthorized')
     @default_ns.marshal_list_with(list_feeds_model)
     @jwt_required()
     def get():
         """Will list feeds with their category and respective id."""
-        ctrl = FeedController(current_identity.id)
-        result = []
-        fields_name = 'fid', 'cid', 'ftitle', 'cname'
-        for line in ctrl.list_w_categ():
-            result.append(dict(zip(fields_name, line)))
-        return result, 200
+        return list(FeedController(current_identity.id).list_w_categ()), 200
 
 
 @default_ns.route('/unreads')

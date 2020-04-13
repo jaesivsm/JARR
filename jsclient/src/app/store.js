@@ -1,10 +1,12 @@
 import { configureStore, Action } from '@reduxjs/toolkit';
 import thunk, { ThunkAction }from 'redux-thunk';
-import loginReducer from '../features/login/loginSlice';
+import userReducer from '../features/login/userSlice';
+import feedsReducer from '../features/feedlist/feedSlice';
 
 export default configureStore({
   reducer: {
-    login: loginReducer
+    login: userReducer,
+    feeds: feedsReducer,
   },
   middleware: [thunk],
 });
