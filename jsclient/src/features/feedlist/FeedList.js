@@ -30,7 +30,7 @@ function FeedList({ categories, everLoaded, isFoldedFromParent, token, fetchFeed
   return (
     <List>
       {categories.map((category) => (
-        <Category key={category.id}
+        <Category key={"cat-f" + isFoldedFromParent + "-" + category.id}
           name={category.name}
           feeds={category.feeds}
           isFoldedFromParent={isFoldedFromParent}
