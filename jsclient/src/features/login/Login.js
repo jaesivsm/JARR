@@ -8,6 +8,9 @@ import { doLogin } from './loginSlice.js';
 function mapStateToProps(state) {
     return { isLoading: state.login.loading,
              isLoginError: state.login.error !== undefined,
+             noToken: !state.login.loading && state.login.login && state.login.password && !state.login.token,
+             savedLogin: state.login.login,
+             savedPassword: state.login.password,
              loginError: state.login.error };
 };
 
@@ -17,10 +20,17 @@ const mapDispatchToProps = (dispatch) => ({
         const login = e.target.querySelector("input#jarr-login").value;
         const password = e.target.querySelector("input#jarr-password").value;
         return dispatch(doLogin(login, password));
-    }
+    },
+    hiddenLogin (login, password) {
+        return dispatch(doLogin(login, password));
+    },
+
 });
 
-function Login({ isLoading, isLoginError, loginError, onSubmit }) {
+function Login({ isLoading, isLoginError, noToken, savedLogin, savedPassword, loginError, onSubmit, hiddenLogin }) {
+  if (savedLogin && savedPassword && noToken) {
+      hiddenLogin(savedLogin, savedPassword);
+  }
   let info;
   if (isLoading) {
     info = <CircularProgress />;
@@ -56,7 +66,11 @@ function Login({ isLoading, isLoginError, loginError, onSubmit }) {
 Login.propTypes = {
     isLoading: PropTypes.bool.isRequired,
     isLoginError: PropTypes.bool.isRequired,
+    savedLogin: PropTypes.string,
+    savedPassword: PropTypes.string,
+    noToken: PropTypes.bool.isRequired,
     onSubmit: PropTypes.func.isRequired,
+    hiddenLogin: PropTypes.func.isRequired,
     loginError: PropTypes.string,
 }
 

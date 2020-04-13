@@ -2,34 +2,41 @@ import axios from 'axios';
 import { createSlice } from '@reduxjs/toolkit';
 import { apiUrl } from '../../const.js';
 
-const accessTokenStorageKey = 'jarr-access-token';
+const accessTokenStoragePrefix = 'jarr-';
 
 const loginSlice = createSlice({
   name: 'login',
   initialState: { loading: false, error: undefined,
-                  login: undefined, password: undefined,
-                  token: sessionStorage.getItem(accessTokenStorageKey)},
+                  login: localStorage.getItem(accessTokenStoragePrefix + 'login'),
+                  password: localStorage.getItem(accessTokenStoragePrefix + 'password'),
+                  token: sessionStorage.getItem(accessTokenStoragePrefix + 'token')},
   reducers: {
     attemptLogin(state, action) {
         const { login, password } = action.payload;
+        localStorage.setItem(accessTokenStoragePrefix + 'login', login);
+        localStorage.setItem(accessTokenStoragePrefix + 'password', password);
         return { ...state, login, password, loading: true };
     },
     loginFailed(state, action) {
-        return { ...state, loading: false, token: undefined,
+        return { ...state, loading: false, token: null,
                  error: action.payload.error };
     },
     tokenAcquired(state, action) {
-        sessionStorage.setItem(accessTokenStorageKey,
+        sessionStorage.setItem(accessTokenStoragePrefix + 'token',
                                action.payload.data.access_token);
         return { ...state, loading: false,
                  token: action.payload.data.access_token };
     },
     tokenExpire(state, action) {
-        return { ...state, loading: true, token: undefined };
+        sessionStorage.removeItem(accessTokenStoragePrefix + 'token');
+        return { ...state, loading: true, token: null};
     },
     logout() {
+        localStorage.removeItem(accessTokenStoragePrefix + 'login');
+        localStorage.removeItem(accessTokenStoragePrefix + 'password');
+        sessionStorage.removeItem(accessTokenStoragePrefix + 'token');
         return { loading: false, error: undefined,
-                 login: undefined, password: undefined, token: undefined, };
+                 login: null, password: null, token: null, };
     }
   }
 });
