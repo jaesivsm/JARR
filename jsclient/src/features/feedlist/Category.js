@@ -23,7 +23,7 @@ function Category({ id, name, feeds, isFoldedFromParent }) {
     <Collapse key={"collapse-cat-" + id} in={!isFolded}>
       <List component="div" disablePadding>
         {feeds.map((feed) => (
-          <ListItem button>
+          <ListItem key={"feed-" + feed.id} button>
             <ListItemIcon>
               <StarBorder />
             </ListItemIcon>
@@ -36,8 +36,8 @@ function Category({ id, name, feeds, isFoldedFromParent }) {
 }
 
 Category.propTypes = {
-  id: PropTypes.number.isRequired,
-  name: PropTypes.string.isRequired,
+  id: PropTypes.number,
+  name: PropTypes.string,
   feeds: PropTypes.array.isRequired,
   isFoldedFromParent: PropTypes.bool.isRequired,
 };

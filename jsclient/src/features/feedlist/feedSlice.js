@@ -34,7 +34,5 @@ export const doFetchFeeds = (
       { responseType: 'json',
         headers: { 'Authorization': token }},
   );
-  console.log(result);
-    console.log(result.data);
   dispatch(loadedFeeds({ categories: result.data }))
 }

@@ -10,6 +10,7 @@ const userSlice = createSlice({
                   password: storageGet('password'),
                   token: storageGet('token', 'session'),
                   isLeftMenuOpen: storageGet('left-menu-open') !== 'false',
+                  isLeftMenuFolded: storageGet('left-menu-folded') === 'true',
   },
   reducers: {
     attemptLogin(state, action) {
@@ -31,18 +32,21 @@ const userSlice = createSlice({
         storageRemove('token', 'session');
         return { ...state, loading: true, token: null};
     },
-    openLeftMenu(state, action) {
-        storageSet('left-menu-open', 'true');
-        return { ...state, isLeftMenuOpen: true };
+    toggleFolding(state, action) {
+        const newFolding = !state.isLeftMenuFolded;
+        storageSet('left-menu-folded', newFolding);
+        return { ...state, isLeftMenuFolded: newFolding };
     },
-    closeLeftMenu(state, action) {
-        storageSet('left-menu-open', 'false');
-        return { ...state, isLeftMenuOpen: false};
+    toggleLeftMenu(state, action) {
+        const newState = !state.isLeftMenuOpen;
+        storageSet('left-menu-open', newState);
+        return { ...state, isLeftMenuOpen: newState};
     },
     logout() {
         storageRemove('login');
         storageRemove('password');
         storageRemove('left-menu-open');
+        storageRemove('left-menu-folded');
         storageRemove('token', 'session');
         return { loading: false, error: undefined,
                  login: null, password: null, token: null,
@@ -53,7 +57,7 @@ const userSlice = createSlice({
 });
 
 export const { attemptLogin, loginFailed, tokenAcquired, tokenExpire, logout,
-               openLeftMenu, closeLeftMenu,
+               toggleLeftMenu, toggleFolding,
 } = userSlice.actions;
 
 export default userSlice.reducer;

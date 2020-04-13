@@ -10,6 +10,7 @@ import { doFetchFeeds } from './feedSlice';
 function mapStateToProps(state) {
   return { categories: state.feeds.categories,
            everLoaded: state.feeds.everLoaded,
+           isFoldedFromParent: state.login.isLeftMenuFolded,
            token: state.login.token,
   };
 };
@@ -20,7 +21,7 @@ const mapDispatchToProps = (dispatch) => ({
   },
 });
 
-function FeedList({ categories, everLoaded, token, fetchFeed }) {
+function FeedList({ categories, everLoaded, isFoldedFromParent, token, fetchFeed }) {
   useEffect(() => {
     if (!everLoaded) {
       fetchFeed(token);
@@ -32,6 +33,7 @@ function FeedList({ categories, everLoaded, token, fetchFeed }) {
         <Category key={category.id}
           name={category.name}
           feeds={category.feeds}
+          isFoldedFromParent={isFoldedFromParent}
         />
       ))}
     </List>
@@ -41,6 +43,7 @@ function FeedList({ categories, everLoaded, token, fetchFeed }) {
 FeedList.propTypes = {
     categories: PropTypes.array.isRequired,
     everLoaded: PropTypes.bool.isRequired,
+    isFoldedFromParent: PropTypes.bool.isRequired,
     token: PropTypes.string.isRequired,
     fetchFeed: PropTypes.func.isRequired,
 }

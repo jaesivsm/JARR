@@ -5,7 +5,7 @@ import { connect } from 'react-redux'
 import Login from './features/login/Login';
 import FeedList from './features/feedlist/FeedList';
 import ClusterList from './features/clusterlist/ClusterList';
-import { openLeftMenu, closeLeftMenu } from './features/login/userSlice.js';
+import { toggleLeftMenu, toggleFolding } from './features/login/userSlice.js';
 
 import Drawer from '@material-ui/core/Drawer';
 import CssBaseline from '@material-ui/core/CssBaseline';
@@ -16,26 +16,30 @@ import Divider from '@material-ui/core/Divider';
 import IconButton from '@material-ui/core/IconButton';
 import MenuIcon from '@material-ui/icons/Menu';
 import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
-import ChevronRightIcon from '@material-ui/icons/ChevronRight';
+import AddFeedIcon  from '@material-ui/icons/Add';
+import AddCategoryIcon from '@material-ui/icons/LibraryAdd';
+import FoldAllCategoriesIcon from '@material-ui/icons/UnfoldLess';
+import UnFoldAllCategoriesIcon from '@material-ui/icons/UnfoldMore';
 
 function mapStateToProps(state) {
-
-    return { isLogged: !!state.login.token,
-             isLeftMenuOpen: state.login.isLeftMenuOpen,
-    };
+  return { isLogged: !!state.login.token,
+           isLeftMenuOpen: state.login.isLeftMenuOpen,
+           isLeftMenuFolded: state.login.isLeftMenuFolded,
+  };
 }
 
 const mapDispatchToProps = (dispatch) => ({
-    handleDrawerOpen() {
-        return dispatch(openLeftMenu());
-    },
-    handleDrawerClose() {
-        return dispatch(closeLeftMenu());
-    },
+  toggleDrawer() {
+    return dispatch(toggleLeftMenu());
+  },
+  toggleFolder() {
+    return dispatch(toggleFolding());
+  },
 });
 
 
-function App({ isLogged, isLeftMenuOpen, handleDrawerOpen, handleDrawerClose }) {
+function Jarr({ isLogged, isLeftMenuOpen, isLeftMenuFolded,
+                toggleDrawer, toggleFolder }) {
   if (!isLogged) {
     return <Login />;
   }
@@ -47,7 +51,7 @@ function App({ isLogged, isLeftMenuOpen, handleDrawerOpen, handleDrawerClose }) 
           <IconButton
             color="inherit"
             aria-label="open drawer"
-            onClick={handleDrawerOpen}
+            onClick={toggleDrawer}
             edge="start"
           >
             <MenuIcon />
@@ -63,11 +67,19 @@ function App({ isLogged, isLeftMenuOpen, handleDrawerOpen, handleDrawerClose }) 
         open={isLeftMenuOpen}
       >
         <div>
-          <IconButton onClick={handleDrawerClose}>
-            {'ltr' === 'ltr' ? <ChevronLeftIcon /> : <ChevronRightIcon />}
+          <IconButton onClick={toggleDrawer}>
+            <ChevronLeftIcon />
+          </IconButton>
+          <IconButton>
+            <AddFeedIcon />
+          </IconButton>
+          <IconButton>
+            <AddCategoryIcon />
+          </IconButton>
+          <IconButton onClick={toggleFolder}>
+           {isLeftMenuFolded ? <UnFoldAllCategoriesIcon /> : <FoldAllCategoriesIcon />}
           </IconButton>
         </div>
-        <Divider />
         <Divider />
         <FeedList />
       </Drawer>
@@ -76,9 +88,12 @@ function App({ isLogged, isLeftMenuOpen, handleDrawerOpen, handleDrawerClose }) 
   );
 }
 
-App.propTypes = {
+Jarr.propTypes = {
   isLogged: PropTypes.bool.isRequired,
   isLeftMenuOpen: PropTypes.bool.isRequired,
+  isLeftMenuFolded: PropTypes.bool.isRequired,
+  toggleDrawer: PropTypes.func.isRequired,
+  toggleFolder: PropTypes.func.isRequired,
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(App);
+export default connect(mapStateToProps, mapDispatchToProps)(Jarr);
