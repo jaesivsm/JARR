@@ -29,24 +29,21 @@ function Login({ isLoading, isLoginError, loginError, onSubmit }) {
   }
   return (
     <form autoComplete="off" onSubmit={onSubmit}>
-      <Grid container className={styles.loginContainer} spacing={4}>
-        <Grid item xs={6}>
+      <Grid container className={styles.loginContainer} spacing={4} justify="center" direction="column" alignItems="center">
+        <Grid>{info}</Grid>
+        <Grid item>
           <TextField required id="jarr-login" label="Login"
             className={styles.loginInput}
             disabled={isLoading} error={isLoginError} helperText={loginError}
           />
         </Grid>
-
-        <Grid item xs={6}>
-          {info}
-        </Grid>
-        <Grid item xs={6}>
+        <Grid item>
           <TextField required id="jarr-password" label="Password" type="password"
             className={styles.loginInput}
             disabled={isLoading} error={isLoginError}
           />
         </Grid>
-        <Grid item xs={6}>
+        <Grid item>
           <Button align="right" variant="contained" type="submit">
             Login
           </Button>

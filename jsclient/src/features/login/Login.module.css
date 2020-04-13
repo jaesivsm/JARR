@@ -1,7 +1,5 @@
 .loginContainer {
-  top: 45%;
+  top: 15%;
   position: absolute;
-  margin: auto;
-  width: 400px;
 }
-.loginInput {float: right;}
+/* .loginInput {float: right;} */
