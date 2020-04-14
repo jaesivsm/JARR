@@ -45,9 +45,6 @@ function Jarr({ isLogged, isLeftMenuOpen, isLeftMenuFolded,
   if (!isLogged) {
     return <Login />;
   }
-  console.log(isLeftMenuOpen);
-  const key= 'main-with' + (!isLeftMenuOpen ? 'out' : '') + '-menu';
-    console.log(key) ;
   return (
     <div className={classes.root}>
       <CssBaseline />
@@ -80,9 +77,6 @@ function Jarr({ isLogged, isLeftMenuOpen, isLeftMenuFolded,
         }}
       >
         <div className={classes.drawerHeader}>
-          <IconButton onClick={toggleDrawer}>
-            <ChevronLeftIcon />
-          </IconButton>
           <IconButton>
             <AddFeedIcon />
           </IconButton>
@@ -91,6 +85,9 @@ function Jarr({ isLogged, isLeftMenuOpen, isLeftMenuFolded,
           </IconButton>
           <IconButton onClick={toggleFolder}>
            {isLeftMenuFolded ? <UnFoldAllCategoriesIcon /> : <FoldAllCategoriesIcon />}
+          </IconButton>
+          <IconButton onClick={toggleDrawer}>
+            <ChevronLeftIcon />
           </IconButton>
         </div>
         <FeedList />
