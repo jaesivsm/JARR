@@ -1,5 +1,5 @@
 from flask_jwt import current_identity, jwt_required
-from flask_restx import Namespace, Resource, fields
+from flask_restx import Namespace, Resource, fields, inputs
 
 from jarr.controllers import ClusterController, FeedController
 from jarr.lib.enums import ReadReason
@@ -33,9 +33,10 @@ midle_panel_model = default_ns.model('MiddlePanel', {
 filter_parser = default_ns.parser()
 filter_parser.add_argument('search_str', type=str,
         help='if specify will filter list with the specified string')
-filter_parser.add_argument('search_title', type=bool, default=True,
+filter_parser.add_argument('search_title', type=inputs.boolean, default=True,
         help='if True, the search_str will be looked for in title')
-filter_parser.add_argument('search_content', type=bool, default=False,
+filter_parser.add_argument('search_content',
+        type=inputs.boolean, default=False,
         help='if True, the search_str will be looked for in content')
 filter_parser.add_argument('filter', type=str,
         choices=['unread', 'liked'], default='unread',

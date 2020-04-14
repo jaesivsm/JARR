@@ -1,5 +1,5 @@
 from flask_jwt import current_identity, jwt_required
-from flask_restx import Namespace, Resource, fields
+from flask_restx import Namespace, Resource, fields, inputs
 from werkzeug.exceptions import Forbidden, NotFound
 
 from jarr.api.common import parse_meaningful_params
@@ -8,8 +8,8 @@ from jarr.lib.enums import ReadReason
 
 cluster_ns = Namespace('cluster', description='Cluster related operations')
 cluster_parser = cluster_ns.parser()
-cluster_parser.add_argument('liked', type=bool)
-cluster_parser.add_argument('read', type=bool)
+cluster_parser.add_argument('liked', type=inputs.boolean)
+cluster_parser.add_argument('read', type=inputs.boolean)
 article_model = cluster_ns.model('Article', {
     'id': fields.Integer(),
     'link': fields.String(),
