@@ -30,8 +30,8 @@ function ClusterList({ clusters, filters, listClusters, className }) {
       {clusters.map((cluster) => (
         <Cluster key={"c-" + cluster.id}
           id={cluster.id}
-          main_title={cluster.main_title}
-          main_feed_title={cluster.main_feed_title}
+          mainTitle={cluster.main_title}
+          mainFeedTitle={cluster.main_feed_title}
         />
       ))}
     </main>);

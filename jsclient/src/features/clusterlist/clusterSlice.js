@@ -7,7 +7,6 @@ const clusterSlice = createSlice({
   name: 'cluster',
   initialState: { filters: {},
                   loadingClusterList: false,
-                  loadingCluster: false,
                   clusters: [],
                   selected: {},
                   requestedClusterId: null,
@@ -31,21 +30,31 @@ const clusterSlice = createSlice({
                clusters: action.payload.clusters };
     },
     requestedCluster(state, action) {
-      return { ...state, loadingCluster: true,
+      return { ...state,
                requestedClusterId: action.payload.clusterId,
+               loadedCluster: {},
       };
     },
     retrievedCluster(state, action) {
         // TODO remove old cluster
-      return { ...state, loadingCluster: false,
+      return { ...state,
                loadedCluster: action.payload.cluster,
       };
+    },
+    requestedUnreadCluster(state, action) {
+      return { ...state,
+               loadedCluster: {}, requestedClusterId: null,
+      };
+    },
+    retrievedUnreadCluster(state, action) {
+      return state;
     },
   },
 });
 
 export const { requestedClustersList, retrievedClustersList,
                requestedCluster, retrievedCluster,
+               requestedUnreadCluster, retrievedUnreadCluster,
 } = clusterSlice.actions;
 export default clusterSlice.reducer;
 
@@ -70,4 +79,14 @@ export const doReadCluster = (clusterId: number): AppThunk => async (dispatch, g
     headers: { 'Authorization': getState().login.token },
   });
   dispatch(retrievedCluster({ cluster: result.data }))
+}
+
+export const doUnreadCluster = (clusterId: number): AppThunk => async (dispatch, getState) => {
+  dispatch(requestedUnreadCluster({ clusterId }));
+  await axios({
+    method: 'put',
+    url: apiUrl + '/cluster/' + clusterId + '?read=false',
+    headers: { 'Authorization': getState().login.token },
+  });
+  dispatch(retrievedUnreadCluster())
 }

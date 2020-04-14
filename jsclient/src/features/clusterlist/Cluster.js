@@ -9,7 +9,7 @@ import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import CircularProgress from '@material-ui/core/CircularProgress';
 
-import { doReadCluster } from './clusterSlice';
+import { doReadCluster, doUnreadCluster } from './clusterSlice';
 
 function mapStateToProps(state) {
   return { requestedClusterId: state.clusters.requestedClusterId,
@@ -21,9 +21,13 @@ const mapDispatchToProps = (dispatch) => ({
   readCluster(clusterId) {
     return dispatch(doReadCluster(clusterId));
   },
+  unreadCluster(clusterId) {
+    return dispatch(doUnreadCluster(clusterId));
+  },
 });
 
-function Cluster({ id, main_feed_title, main_title, requestedClusterId, loadedCluster, readCluster }) {
+function Cluster({ id, mainFeedTitle, mainTitle, requestedClusterId, loadedCluster,
+                   readCluster, unreadCluster }) {
   const expanded = requestedClusterId === id;
   const loaded = !!loadedCluster && loadedCluster.id === id;
   let content;
@@ -44,7 +48,9 @@ function Cluster({ id, main_feed_title, main_title, requestedClusterId, loadedCl
         onChange={() => {
           if (!expanded) {
             readCluster(id);
-          } //TODO mark as unread
+          } else {
+            unreadCluster(id);
+          }
         }}
       >
         <ExpansionPanelSummary
@@ -54,10 +60,10 @@ function Cluster({ id, main_feed_title, main_title, requestedClusterId, loadedCl
           key={"cs-" + id}
         >
           <Link href="/">
-           {main_feed_title}
+           {mainFeedTitle}
           </Link>
           <Typography>
-           {main_title}
+           {mainTitle}
           </Typography>
         </ExpansionPanelSummary>
         <ExpansionPanelDetails key={"cl-" + id}>
@@ -69,10 +75,12 @@ function Cluster({ id, main_feed_title, main_title, requestedClusterId, loadedCl
 
 Cluster.propTypes = {
   id: PropTypes.number.isRequired,
-  main_title: PropTypes.string.isRequired,
-  main_feed_title: PropTypes.string.isRequired,
+  mainTitle: PropTypes.string.isRequired,
+  mainFeedTitle: PropTypes.string.isRequired,
   requestedClusterId: PropTypes.number,
   loadedCluster: PropTypes.object,
+  readCluster: PropTypes.func.isRequired,
+  unreadCluster: PropTypes.func.isRequired,
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(Cluster);
