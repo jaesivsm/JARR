@@ -5,47 +5,58 @@ import { connect } from 'react-redux'
 import Collapse from '@material-ui/core/Collapse';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
-import InboxIcon from '@material-ui/icons/MoveToInbox';
 import ExpandLess from '@material-ui/icons/ExpandLess';
 import ExpandMore from '@material-ui/icons/ExpandMore';
-import StarBorder from '@material-ui/icons/StarBorder';
 
 import { doFetchClusters } from '../clusterlist/clusterSlice';
 
 const mapDispatchToProps = (dispatch) => ({
   fetchClusters(e, filters) {
     e.stopPropagation();
-    console.log(filters);
     return dispatch(doFetchClusters(filters));
   },
 });
 
-function Category({ id, name, feeds, isFoldedFromParent, fetchClusters }) {
-  const [isFolded, setIsFolded] = useState(isFoldedFromParent);
-  const FoldButton = isFolded ? ExpandMore : ExpandLess;
+function toKey(type, id, selected) {
+  return type + '-' + id + '-' + (id === selected ? 'selected' : '');
+}
+
+function Category(props) {
+  const [isFolded, setIsFolded] = useState(props.isFoldedFromParent);
   const fold = (e) => {
     e.stopPropagation();
     setIsFolded(!isFolded);
   };
+  const isAllCateg = !props.id;
+  const selected = (props.selectedCategoryId === props.id
+                    || (!props.selectedCategoryId
+                        && !props.selectedFeedId
+                        && isAllCateg));
+
+  let foldButton;
+  if (!isAllCateg) {
+    const FoldButton = isFolded ? ExpandMore : ExpandLess;
+    foldButton = <FoldButton onClick={fold} />;
+  }
+  if(isAllCateg && !props.feeds) {
+    return null;
+  }
   return (
     <>
-    <ListItem button key={"button-cat-" + id}
-        onClick={(e) => (fetchClusters(e, { category_id: id }))}>
-      <ListItemIcon><InboxIcon /></ListItemIcon>
-      <ListItemText primary={name} />
-      <FoldButton onClick={fold} />
+    <ListItem button selected={selected}
+        key={toKey('button-cat', props.id, props.selectedCategoryId)}
+        onClick={(e) => (props.fetchClusters(e, { categoryId: props.id }))}>
+      <ListItemText primary={isAllCateg ? 'All' : props.name} />
+      {foldButton}
     </ListItem>
-    <Collapse key={"collapse-cat-" + id} in={!isFolded}>
+    <Collapse key={"collapse-cat-" + props.id} in={isAllCateg || !isFolded}>
       <List component="div" disablePadding>
-        {feeds.map((feed) => (
-          <ListItem key={"feed-" + feed.id} button
-              onClick={(e) => (fetchClusters(e, { feed_id: feed.id }))}
+        {props.feeds.map((feed) => (
+          <ListItem key={toKey("feed-", feed.id, props.selectedFeedId)} button
+              selected={props.selectedFeedId === feed.id}
+              onClick={(e) => (props.fetchClusters(e, { feedId: feed.id }))}
             >
-            <ListItemIcon>
-              <StarBorder />
-            </ListItemIcon>
             <ListItemText primary={feed.title} />
           </ListItem>))}
       </List>
@@ -58,6 +69,8 @@ Category.propTypes = {
   id: PropTypes.number,
   name: PropTypes.string,
   feeds: PropTypes.array.isRequired,
+  selectedCategoryId: PropTypes.number,
+  selectedFeedId: PropTypes.number,
   isFoldedFromParent: PropTypes.bool.isRequired,
   fetchClusters: PropTypes.func.isRequired,
 };

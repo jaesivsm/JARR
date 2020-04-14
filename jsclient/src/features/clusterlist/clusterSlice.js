@@ -8,10 +8,20 @@ const clusterSlice = createSlice({
   initialState: { filters: {},
                   loading: false,
                   clusters: [],
+                  selected: {},
   },
   reducers: {
     askedClusters(state, action) {
-      return { ...state, filters: action.payload.filters, loading: true };
+      const selected = {};
+      const filters = {};
+      if (!!action.payload.filters.feedId) {
+        selected.feedId = filters.feed_id = action.payload.filters.feedId;
+
+      } else if (!!action.payload.filters.categoryId) {
+        selected.categoryId = filters.category_id = action.payload.filters.categoryId;
+      }
+
+      return { ...state, filters, selected, loading: true };
     },
     loadedClusters(state, action) {
       return { ...state, loading: false,
@@ -26,7 +36,7 @@ export default clusterSlice.reducer;
 export const doFetchClusters = (
   filters: object,
 ): AppThunk => async (dispatch, getState) => {
-  dispatch(askedClusters(filters));
+  dispatch(askedClusters({ filters: filters }));
   const params = qs.stringify(getState().clusters.filters);
   const result = await axios({
     method: 'get',
