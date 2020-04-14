@@ -18,33 +18,28 @@ const mapDispatchToProps = (dispatch) => ({
   },
 });
 
-function toKey(type, id, selected) {
-  return type + '-' + id + '-' + (id === selected ? 'selected' : '');
+function toKey(type, id, selectedId) {
+  return type + '-' + id + '-' + (id === selectedId ? 'selected' : '');
 }
 
 function Category(props) {
-  const [isFolded, setIsFolded] = useState(props.isFoldedFromParent);
-  const fold = (e) => {
-    e.stopPropagation();
-    setIsFolded(!isFolded);
-  };
   const isAllCateg = !props.id;
-  const selected = (props.selectedCategoryId === props.id
+  const [isFolded, setIsFolded] = useState(props.isFoldedFromParent);
+  /* do not display the All category if not feeds are without a category */
+  if (isAllCateg && !props.feeds) { return null; }
+  const isSelected = (props.selectedCategoryId === props.id
                     || (!props.selectedCategoryId
                         && !props.selectedFeedId
                         && isAllCateg));
-
+  const fold = (e) => { e.stopPropagation(); setIsFolded(!isFolded); };
   let foldButton;
   if (!isAllCateg) {
     const FoldButton = isFolded ? ExpandMore : ExpandLess;
     foldButton = <FoldButton onClick={fold} />;
   }
-  if(isAllCateg && !props.feeds) {
-    return null;
-  }
   return (
     <>
-    <ListItem button selected={selected}
+    <ListItem button selected={isSelected}
         key={toKey('button-cat', props.id, props.selectedCategoryId)}
         onClick={(e) => (props.fetchClusters(e, { categoryId: props.id }))}>
       <ListItemText primary={isAllCateg ? 'All' : props.name} />
