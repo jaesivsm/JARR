@@ -9,12 +9,12 @@ import ListItemText from '@material-ui/core/ListItemText';
 import ExpandLess from '@material-ui/icons/ExpandLess';
 import ExpandMore from '@material-ui/icons/ExpandMore';
 
-import { doFetchClusters } from '../clusterlist/clusterSlice';
+import { doListClusters } from '../clusterlist/clusterSlice';
 
 const mapDispatchToProps = (dispatch) => ({
-  fetchClusters(e, filters) {
+  listClusters(e, filters) {
     e.stopPropagation();
-    return dispatch(doFetchClusters(filters));
+    return dispatch(doListClusters(filters));
   },
 });
 
@@ -41,7 +41,7 @@ function Category(props) {
     <>
     <ListItem button selected={isSelected}
         key={toKey('button-cat', props.id, props.selectedCategoryId)}
-        onClick={(e) => (props.fetchClusters(e, { categoryId: props.id }))}>
+        onClick={(e) => (props.listClusters(e, { categoryId: props.id }))}>
       <ListItemText primary={isAllCateg ? 'All' : props.name} />
       {foldButton}
     </ListItem>
@@ -50,7 +50,7 @@ function Category(props) {
         {props.feeds.map((feed) => (
           <ListItem key={toKey("feed-", feed.id, props.selectedFeedId)} button
               selected={props.selectedFeedId === feed.id}
-              onClick={(e) => (props.fetchClusters(e, { feedId: feed.id }))}
+              onClick={(e) => (props.listClusters(e, { feedId: feed.id }))}
             >
             <ListItemText primary={feed.title} />
           </ListItem>))}
@@ -67,7 +67,7 @@ Category.propTypes = {
   selectedCategoryId: PropTypes.number,
   selectedFeedId: PropTypes.number,
   isFoldedFromParent: PropTypes.bool.isRequired,
-  fetchClusters: PropTypes.func.isRequired,
+  listClusters: PropTypes.func.isRequired,
 };
 
 export default connect(null, mapDispatchToProps)(Category);

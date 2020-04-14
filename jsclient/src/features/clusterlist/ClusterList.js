@@ -1,14 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux'
-import Typography from '@material-ui/core/Typography';
-import Link from '@material-ui/core/Link';
-import ExpansionPanel from '@material-ui/core/ExpansionPanel';
-import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary';
-import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails';
-import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 
-import { doFetchClusters } from './clusterSlice';
+import Cluster from './Cluster';
+import { doListClusters } from './clusterSlice';
 
 function mapStateToProps(state) {
   return { clusters: state.clusters.clusters,
@@ -17,44 +12,27 @@ function mapStateToProps(state) {
 };
 
 const mapDispatchToProps = (dispatch) => ({
-  fetchClusters(filters) {
-    return dispatch(doFetchClusters(filters));
+  listClusters(filters) {
+    return dispatch(doListClusters(filters));
   },
 });
 
-function ClusterList({ clusters, filters, fetchClusters, className }) {
+function ClusterList({ clusters, filters, listClusters, className }) {
   const [everLoaded, setEverLoaded] = useState(false);
   useEffect(() => {
     if (!everLoaded) {
       setEverLoaded(true);
-      fetchClusters(filters);
+      listClusters(filters);
     }
-  }, [everLoaded, filters, fetchClusters]);
+  }, [everLoaded, filters, listClusters]);
   return (
     <main className={className}>
       {clusters.map((cluster) => (
-      <ExpansionPanel key={"c-" + cluster.id}>
-        <ExpansionPanelSummary
-          expandIcon={<ExpandMoreIcon />}
-          aria-controls="panel1a-content"
-          id="panel1a-header"
-          key={"cs-" + cluster.id}
-        >
-          <Link href="/">
-           {cluster.main_feed_title}
-          </Link>
-          <Typography>
-           {cluster.main_title}
-          </Typography>
-        </ExpansionPanelSummary>
-        <ExpansionPanelDetails
-            key={"cl-" + cluster.id}>
-          <Typography>
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse malesuada lacus ex,
-            sit amet blandit leo lobortis eget.
-          </Typography>
-        </ExpansionPanelDetails>
-      </ExpansionPanel>
+        <Cluster key={"c-" + cluster.id}
+          id={cluster.id}
+          main_title={cluster.main_title}
+          main_feed_title={cluster.main_feed_title}
+        />
       ))}
     </main>);
 }
@@ -62,8 +40,8 @@ function ClusterList({ clusters, filters, fetchClusters, className }) {
 ClusterList.propTypes = {
     clusters: PropTypes.array.isRequired,
     filters: PropTypes.object.isRequired,
-    fetchClusters: PropTypes.func.isRequired,
-    className: PropTypes.object.isRequired,
+    listClusters: PropTypes.func.isRequired,
+    className: PropTypes.string.isRequired,
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(ClusterList);
