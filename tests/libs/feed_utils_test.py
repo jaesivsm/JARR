@@ -87,7 +87,8 @@ class ConstructFeedFromTest(unittest.TestCase):
             'icon_url': 'https://www.instagram.com/static/'
             'images/ico/favicon.ico/36b3ee2d91ed.ico',
             'site_link': 'https://www.instagram.com/jaesivsm/',
-            'title': 'François (@jaesivsm) • Instagram photos and videos'},
+            'title': 'François (@jaesivsm) '
+                     'Instagram profile • 124 photos and videos'},
             insta)
 
     def test_twitter(self):

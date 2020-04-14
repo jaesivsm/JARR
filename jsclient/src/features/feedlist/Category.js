@@ -1,15 +1,15 @@
-import React, { useState } from 'react';
-import PropTypes from 'prop-types';
-import { connect } from 'react-redux'
+import React, { useState } from "react";
+import PropTypes from "prop-types";
+import { connect } from "react-redux";
 
-import Collapse from '@material-ui/core/Collapse';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemText from '@material-ui/core/ListItemText';
-import ExpandLess from '@material-ui/icons/ExpandLess';
-import ExpandMore from '@material-ui/icons/ExpandMore';
+import Collapse from "@material-ui/core/Collapse";
+import List from "@material-ui/core/List";
+import ListItem from "@material-ui/core/ListItem";
+import ListItemText from "@material-ui/core/ListItemText";
+import ExpandLess from "@material-ui/icons/ExpandLess";
+import ExpandMore from "@material-ui/icons/ExpandMore";
 
-import { doListClusters } from '../clusterlist/clusterSlice';
+import { doListClusters } from "../clusterlist/clusterSlice";
 
 const mapDispatchToProps = (dispatch) => ({
   listClusters(e, filters) {
@@ -19,7 +19,7 @@ const mapDispatchToProps = (dispatch) => ({
 });
 
 function toKey(type, id, selectedId) {
-  return type + '-' + id + '-' + (id === selectedId ? 'selected' : '');
+  return type + "-" + id + "-" + (id === selectedId ? "selected" : "");
 }
 
 function Category(props) {
@@ -40,9 +40,9 @@ function Category(props) {
   return (
     <>
     <ListItem button selected={isSelected}
-        key={toKey('button-cat', props.id, props.selectedCategoryId)}
+        key={toKey("button-cat", props.id, props.selectedCategoryId)}
         onClick={(e) => (props.listClusters(e, { categoryId: props.id }))}>
-      <ListItemText primary={isAllCateg ? 'All' : props.name} />
+      <ListItemText primary={isAllCateg ? "All" : props.name} />
       {foldButton}
     </ListItem>
     <Collapse key={"collapse-cat-" + props.id} in={isAllCateg || !isFolded}>

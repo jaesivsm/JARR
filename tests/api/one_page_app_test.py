@@ -23,7 +23,8 @@ class OnePageAppTest(JarrFlaskCommon):
 
     def test_list_feeds(self):
         resp = self.jarr_client('get', 'list-feeds', user=self.user.login)
-        self.assertEqual(6, len(resp.json))
+        self.assertEqual(4, len(resp.json))
+        self.assertEqual(6, sum(len(cat['feeds']) for cat in resp.json))
 
     def test_unreads(self):
         resp = self.jarr_client('get', 'unreads', user=self.user.login)

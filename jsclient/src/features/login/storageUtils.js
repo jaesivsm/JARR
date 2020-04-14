@@ -1,7 +1,7 @@
-const prefix = 'jarr-';
+const prefix = "jarr-";
 
 function getStorage(storage) {
-  if (!storage || storage === 'local') {
+  if (!storage || storage === "local") {
       return localStorage;
   } else {
       return sessionStorage;

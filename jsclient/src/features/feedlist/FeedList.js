@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from 'react';
-import PropTypes from 'prop-types';
-import { connect } from 'react-redux'
+import React, { useState, useEffect } from "react";
+import PropTypes from "prop-types";
+import { connect } from "react-redux";
 
-import List from '@material-ui/core/List';
-import Category from './Category';
+import List from "@material-ui/core/List";
+import Category from "./Category";
 
-import { doFetchFeeds } from './feedSlice';
+import { doFetchFeeds } from "./feedSlice";
 
 function mapStateToProps(state) {
   return { categories: state.feeds.categories,
@@ -13,7 +13,7 @@ function mapStateToProps(state) {
            selectedFeedId: state.clusters.selected.feedId,
            isFoldedFromParent: state.login.isLeftMenuFolded,
   };
-};
+}
 
 const mapDispatchToProps = (dispatch) => ({
   fetchFeed() {
@@ -51,6 +51,6 @@ FeedList.propTypes = {
     fetchFeed: PropTypes.func.isRequired,
     selectedFeedId: PropTypes.number,
     selectedCategoryId: PropTypes.number,
-}
+};
 
 export default connect(mapStateToProps, mapDispatchToProps)(FeedList);

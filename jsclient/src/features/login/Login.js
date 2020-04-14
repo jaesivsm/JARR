@@ -1,18 +1,23 @@
-import React, { useEffect } from 'react';
-import PropTypes from 'prop-types';
-import { connect } from 'react-redux'
-import { Grid, TextField, Button, CircularProgress } from '@material-ui/core';
-import styles from './Login.module.css';
-import { doLogin } from './userSlice.js';
+import React, { useEffect } from "react";
+import PropTypes from "prop-types";
+import { connect } from "react-redux";
+
+import Grid from "@material-ui/core/Grid";
+import TextField from "@material-ui/core/TextField";
+import Button from "@material-ui/core/Button";
+import CircularProgress from "@material-ui/core/CircularProgress";
+
+import styles from "./Login.module.css";
+import { doLogin } from "./userSlice.js";
 
 function mapStateToProps(state) {
     return { isLoading: state.login.loading,
-             isLoginError: state.login.error !== undefined,
+             isLoginError: !!state.login.error,
              noToken: !state.login.loading && state.login.login && state.login.password && !state.login.token,
              savedLogin: state.login.login,
              savedPassword: state.login.password,
              loginError: state.login.error };
-};
+}
 
 const mapDispatchToProps = (dispatch) => ({
   onSubmit (e) {
@@ -73,6 +78,6 @@ Login.propTypes = {
     onSubmit: PropTypes.func.isRequired,
     hiddenLogin: PropTypes.func.isRequired,
     loginError: PropTypes.string,
-}
+};
 
 export default connect(mapStateToProps, mapDispatchToProps)(Login);

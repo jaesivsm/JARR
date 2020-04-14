@@ -1,26 +1,26 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import { connect } from 'react-redux'
-import clsx from 'clsx';
+import React from "react";
+import PropTypes from "prop-types";
+import { connect } from "react-redux";
+import clsx from "clsx";
 
-import Drawer from '@material-ui/core/Drawer';
-import CssBaseline from '@material-ui/core/CssBaseline';
-import AppBar from '@material-ui/core/AppBar';
-import Toolbar from '@material-ui/core/Toolbar';
-import Typography from '@material-ui/core/Typography';
-import IconButton from '@material-ui/core/IconButton';
-import MenuIcon from '@material-ui/icons/Menu';
-import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
-import AddFeedIcon  from '@material-ui/icons/Add';
-import AddCategoryIcon from '@material-ui/icons/LibraryAdd';
-import FoldAllCategoriesIcon from '@material-ui/icons/UnfoldLess';
-import UnFoldAllCategoriesIcon from '@material-ui/icons/UnfoldMore';
+import Drawer from "@material-ui/core/Drawer";
+import CssBaseline from "@material-ui/core/CssBaseline";
+import AppBar from "@material-ui/core/AppBar";
+import Toolbar from "@material-ui/core/Toolbar";
+import Typography from "@material-ui/core/Typography";
+import IconButton from "@material-ui/core/IconButton";
+import MenuIcon from "@material-ui/icons/Menu";
+import ChevronLeftIcon from "@material-ui/icons/ChevronLeft";
+import AddFeedIcon  from "@material-ui/icons/Add";
+import AddCategoryIcon from "@material-ui/icons/LibraryAdd";
+import FoldAllCategoriesIcon from "@material-ui/icons/UnfoldLess";
+import UnFoldAllCategoriesIcon from "@material-ui/icons/UnfoldMore";
 
-import useStyles from './Jarr.styles.js';
-import Login from './features/login/Login';
-import FeedList from './features/feedlist/FeedList';
-import ClusterList from './features/clusterlist/ClusterList';
-import { toggleLeftMenu, toggleFolding } from './features/login/userSlice.js';
+import useStyles from "./Jarr.styles.js";
+import Login from "./features/login/Login";
+import FeedList from "./features/feedlist/FeedList";
+import ClusterList from "./features/clusterlist/ClusterList";
+import { toggleLeftMenu, toggleFolding } from "./features/login/userSlice.js";
 
 function mapStateToProps(state) {
   return { isLogged: !!state.login.token,
@@ -107,6 +107,6 @@ Jarr.propTypes = {
   isLeftMenuFolded: PropTypes.bool.isRequired,
   toggleDrawer: PropTypes.func.isRequired,
   toggleFolder: PropTypes.func.isRequired,
-}
+};
 
 export default connect(mapStateToProps, mapDispatchToProps)(Jarr);

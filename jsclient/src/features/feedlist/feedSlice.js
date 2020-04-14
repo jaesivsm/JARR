@@ -1,9 +1,9 @@
-import axios from 'axios';
-import { createSlice } from '@reduxjs/toolkit';
-import { apiUrl } from '../../const.js';
+import axios from "axios";
+import { createSlice } from "@reduxjs/toolkit";
+import { apiUrl } from "../../const";
 
 const feedSlice = createSlice({
-  name: 'feed',
+  name: "feed",
   initialState: { loading: false,
                   categories: [],
   },
@@ -22,13 +22,12 @@ const feedSlice = createSlice({
 export const { askedFeeds, loadedFeeds } = feedSlice.actions;
 export default feedSlice.reducer;
 
-export const doFetchFeeds = (
-): AppThunk => async (dispatch, getState) => {
+export const doFetchFeeds = (): AppThunk => async (dispatch, getState) => {
   dispatch(askedFeeds());
   const result = await axios({
-    method: 'get',
-    url: apiUrl + '/list-feeds',
-    headers: { 'Authorization': getState().login.token },
+    method: "get",
+    url: apiUrl + "/list-feeds",
+    headers: { "Authorization": getState().login.token },
   });
-  dispatch(loadedFeeds({ categories: result.data }))
-}
+  dispatch(loadedFeeds({ categories: result.data }));
+};

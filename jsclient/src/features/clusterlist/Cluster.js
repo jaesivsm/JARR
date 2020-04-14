@@ -1,21 +1,22 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import { connect } from 'react-redux'
-import Typography from '@material-ui/core/Typography';
-import Link from '@material-ui/core/Link';
-import ExpansionPanel from '@material-ui/core/ExpansionPanel';
-import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary';
-import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails';
-import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
-import CircularProgress from '@material-ui/core/CircularProgress';
+import React from "react";
+import PropTypes from "prop-types";
+import { connect } from "react-redux";
 
-import { doReadCluster, doUnreadCluster } from './clusterSlice';
+import Typography from "@material-ui/core/Typography";
+import Link from "@material-ui/core/Link";
+import ExpansionPanel from "@material-ui/core/ExpansionPanel";
+import ExpansionPanelSummary from "@material-ui/core/ExpansionPanelSummary";
+import ExpansionPanelDetails from "@material-ui/core/ExpansionPanelDetails";
+import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
+import CircularProgress from "@material-ui/core/CircularProgress";
+
+import { doReadCluster, doUnreadCluster } from "./clusterSlice";
 
 function mapStateToProps(state) {
   return { requestedClusterId: state.clusters.requestedClusterId,
            loadedCluster: state.clusters.loadedCluster,
   };
-};
+}
 
 const mapDispatchToProps = (dispatch) => ({
   readCluster(clusterId) {
@@ -71,7 +72,7 @@ function Cluster({ id, mainFeedTitle, mainTitle, requestedClusterId, loadedClust
         </ExpansionPanelDetails>
       </ExpansionPanel>
     );
-};
+}
 
 Cluster.propTypes = {
   id: PropTypes.number.isRequired,

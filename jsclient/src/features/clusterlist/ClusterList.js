@@ -1,15 +1,15 @@
-import React, { useEffect, useState } from 'react';
-import PropTypes from 'prop-types';
-import { connect } from 'react-redux'
+import React, { useEffect, useState } from "react";
+import PropTypes from "prop-types";
+import { connect } from "react-redux";
 
-import Cluster from './Cluster';
-import { doListClusters } from './clusterSlice';
+import Cluster from "./Cluster";
+import { doListClusters } from "./clusterSlice";
 
 function mapStateToProps(state) {
   return { clusters: state.clusters.clusters,
            filters: state.clusters.filters,
   };
-};
+}
 
 const mapDispatchToProps = (dispatch) => ({
   listClusters(filters) {
@@ -42,6 +42,6 @@ ClusterList.propTypes = {
     filters: PropTypes.object.isRequired,
     listClusters: PropTypes.func.isRequired,
     className: PropTypes.string.isRequired,
-}
+};
 
 export default connect(mapStateToProps, mapDispatchToProps)(ClusterList);
