@@ -1,11 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux'
-
-import Login from './features/login/Login';
-import FeedList from './features/feedlist/FeedList';
-import ClusterList from './features/clusterlist/ClusterList';
-import { toggleLeftMenu, toggleFolding } from './features/login/userSlice.js';
+import clsx from 'clsx';
 
 import Drawer from '@material-ui/core/Drawer';
 import CssBaseline from '@material-ui/core/CssBaseline';
@@ -19,6 +15,12 @@ import AddFeedIcon  from '@material-ui/icons/Add';
 import AddCategoryIcon from '@material-ui/icons/LibraryAdd';
 import FoldAllCategoriesIcon from '@material-ui/icons/UnfoldLess';
 import UnFoldAllCategoriesIcon from '@material-ui/icons/UnfoldMore';
+
+import useStyles from './Jarr.styles.js';
+import Login from './features/login/Login';
+import FeedList from './features/feedlist/FeedList';
+import ClusterList from './features/clusterlist/ClusterList';
+import { toggleLeftMenu, toggleFolding } from './features/login/userSlice.js';
 
 function mapStateToProps(state) {
   return { isLogged: !!state.login.token,
@@ -39,19 +41,27 @@ const mapDispatchToProps = (dispatch) => ({
 
 function Jarr({ isLogged, isLeftMenuOpen, isLeftMenuFolded,
                 toggleDrawer, toggleFolder }) {
+  const classes = useStyles();
   if (!isLogged) {
     return <Login />;
   }
+  console.log(isLeftMenuOpen);
+  const key= 'main-with' + (!isLeftMenuOpen ? 'out' : '') + '-menu';
+    console.log(key) ;
   return (
-    <div>
+    <div className={classes.root}>
       <CssBaseline />
-      <AppBar position="fixed">
+      <AppBar position="fixed"
+          className={clsx(classes.appBar, {
+            [classes.appBarShift]: isLeftMenuOpen,
+        })}>
         <Toolbar>
           <IconButton
             color="inherit"
             aria-label="open drawer"
             onClick={toggleDrawer}
             edge="start"
+            className={clsx(classes.menuButton, isLeftMenuOpen && classes.hide)}
           >
             <MenuIcon />
           </IconButton>
@@ -64,8 +74,12 @@ function Jarr({ isLogged, isLeftMenuOpen, isLeftMenuFolded,
         variant="persistent"
         anchor="left"
         open={isLeftMenuOpen}
+        className={classes.drawer}
+        classes={{
+          paper: classes.drawerPaper,
+        }}
       >
-        <div>
+        <div className={classes.drawerHeader}>
           <IconButton onClick={toggleDrawer}>
             <ChevronLeftIcon />
           </IconButton>
@@ -81,7 +95,11 @@ function Jarr({ isLogged, isLeftMenuOpen, isLeftMenuFolded,
         </div>
         <FeedList />
       </Drawer>
-      <ClusterList />
+      <ClusterList
+        className={clsx(classes.content, {
+          [classes.contentShift]: isLeftMenuOpen,
+        })}
+      />
    </div>
   );
 }

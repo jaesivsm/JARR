@@ -22,7 +22,7 @@ const mapDispatchToProps = (dispatch) => ({
   },
 });
 
-function ClusterList({ clusters, filters, fetchClusters }) {
+function ClusterList({ clusters, filters, fetchClusters, className }) {
   const [everLoaded, setEverLoaded] = useState(false);
   useEffect(() => {
     if (!everLoaded) {
@@ -31,7 +31,7 @@ function ClusterList({ clusters, filters, fetchClusters }) {
     }
   }, [everLoaded, filters, fetchClusters]);
   return (
-    <>
+    <main className={className}>
       {clusters.map((cluster) => (
       <ExpansionPanel key={"c-" + cluster.id}>
         <ExpansionPanelSummary
@@ -56,13 +56,14 @@ function ClusterList({ clusters, filters, fetchClusters }) {
         </ExpansionPanelDetails>
       </ExpansionPanel>
       ))}
-    </>);
+    </main>);
 }
 
 ClusterList.propTypes = {
     clusters: PropTypes.array.isRequired,
     filters: PropTypes.object.isRequired,
     fetchClusters: PropTypes.func.isRequired,
+    className: PropTypes.object.isRequired,
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(ClusterList);
