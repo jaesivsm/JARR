@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
+import { connect } from 'react-redux'
 
 import Collapse from '@material-ui/core/Collapse';
 import List from '@material-ui/core/List';
@@ -11,19 +12,37 @@ import ExpandLess from '@material-ui/icons/ExpandLess';
 import ExpandMore from '@material-ui/icons/ExpandMore';
 import StarBorder from '@material-ui/icons/StarBorder';
 
-function Category({ id, name, feeds, isFoldedFromParent }) {
+import { doFetchClusters } from '../clusterlist/clusterSlice';
+
+const mapDispatchToProps = (dispatch) => ({
+  fetchClusters(e, filters) {
+    e.stopPropagation();
+    console.log(filters);
+    return dispatch(doFetchClusters(filters));
+  },
+});
+
+function Category({ id, name, feeds, isFoldedFromParent, fetchClusters }) {
   const [isFolded, setIsFolded] = useState(isFoldedFromParent);
+  const FoldButton = isFolded ? ExpandMore : ExpandLess;
+  const fold = (e) => {
+    e.stopPropagation();
+    setIsFolded(!isFolded);
+  };
   return (
     <>
-    <ListItem button key={"button-cat-" + id} onClick={() => (setIsFolded(!isFolded))}>
+    <ListItem button key={"button-cat-" + id}
+        onClick={(e) => (fetchClusters(e, { category_id: id }))}>
       <ListItemIcon><InboxIcon /></ListItemIcon>
       <ListItemText primary={name} />
-      {!isFolded ? <ExpandLess /> : <ExpandMore />}
+      <FoldButton onClick={fold} />
     </ListItem>
     <Collapse key={"collapse-cat-" + id} in={!isFolded}>
       <List component="div" disablePadding>
         {feeds.map((feed) => (
-          <ListItem key={"feed-" + feed.id} button>
+          <ListItem key={"feed-" + feed.id} button
+              onClick={(e) => (fetchClusters(e, { feed_id: feed.id }))}
+            >
             <ListItemIcon>
               <StarBorder />
             </ListItemIcon>
@@ -40,6 +59,7 @@ Category.propTypes = {
   name: PropTypes.string,
   feeds: PropTypes.array.isRequired,
   isFoldedFromParent: PropTypes.bool.isRequired,
+  fetchClusters: PropTypes.func.isRequired,
 };
 
-export default Category;
+export default connect(null, mapDispatchToProps)(Category);

@@ -6,16 +6,15 @@ const feedSlice = createSlice({
   name: 'feed',
   initialState: { loading: false,
                   categories: [],
-                  everLoaded: false,
   },
   reducers: {
     askedFeeds(state, action) {
-        return { ...state, loading: true, everLoaded: true };
+      return { ...state, loading: true };
     },
     loadedFeeds(state, action) {
-        const categories = action.payload.categories.map((cat) => (
+      const categories = action.payload.categories.map((cat) => (
             { ...cat, isFolded: false }));
-        return { ...state, loading: false, categories };
+      return { ...state, loading: false, categories };
     },
   },
 });
@@ -24,15 +23,12 @@ export const { askedFeeds, loadedFeeds } = feedSlice.actions;
 export default feedSlice.reducer;
 
 export const doFetchFeeds = (
-  token: string,
-): AppThunk => async dispatch => {
+): AppThunk => async (dispatch, getState) => {
   dispatch(askedFeeds());
-  const result = await axios.get(
-      apiUrl + '/list-feeds',
-      {
-        headers: { 'Authorization': token }},
-      { responseType: 'json',
-        headers: { 'Authorization': token }},
-  );
+  const result = await axios({
+    method: 'get',
+    url: apiUrl + '/list-feeds',
+    headers: { 'Authorization': getState().login.token },
+  });
   dispatch(loadedFeeds({ categories: result.data }))
 }

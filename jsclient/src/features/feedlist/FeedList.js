@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux'
 
@@ -9,24 +9,24 @@ import { doFetchFeeds } from './feedSlice';
 
 function mapStateToProps(state) {
   return { categories: state.feeds.categories,
-           everLoaded: state.feeds.everLoaded,
            isFoldedFromParent: state.login.isLeftMenuFolded,
-           token: state.login.token,
   };
 };
 
 const mapDispatchToProps = (dispatch) => ({
-  fetchFeed(token) {
-      return dispatch(doFetchFeeds(token));
+  fetchFeed() {
+    return dispatch(doFetchFeeds());
   },
 });
 
-function FeedList({ categories, everLoaded, isFoldedFromParent, token, fetchFeed }) {
+function FeedList({ categories, isFoldedFromParent, fetchFeed }) {
+  const [everLoaded, setEverLoaded] = useState(false);
   useEffect(() => {
     if (!everLoaded) {
-      fetchFeed(token);
+      fetchFeed();
+      setEverLoaded(true);
     }
-  });
+  }, [everLoaded, fetchFeed ]);
   return (
     <List>
       {categories.map((category) => (
@@ -42,9 +42,7 @@ function FeedList({ categories, everLoaded, isFoldedFromParent, token, fetchFeed
 
 FeedList.propTypes = {
     categories: PropTypes.array.isRequired,
-    everLoaded: PropTypes.bool.isRequired,
     isFoldedFromParent: PropTypes.bool.isRequired,
-    token: PropTypes.string.isRequired,
     fetchFeed: PropTypes.func.isRequired,
 }
 
