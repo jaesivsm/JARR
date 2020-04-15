@@ -21,6 +21,9 @@ export default makeStyles((theme: Theme) =>
         duration: theme.transitions.duration.enteringScreen,
       }),
     },
+    toolbar: {
+      justifyContent: "space-between",
+    },
     menuButton: {
       marginRight: theme.spacing(2),
     },
