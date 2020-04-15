@@ -3,14 +3,14 @@ import logging
 from datetime import timedelta
 from functools import lru_cache
 
-from flask import Flask
+from flask import Flask, got_request_exception, request_tearing_down
+from flask_cors import CORS
 from flask_jwt import JWT, JWTError
 from flask_restx import Api
-from flask_cors import CORS
-
 from sqlalchemy.exc import IntegrityError
 
-from jarr.bootstrap import PARSED_PLATFORM_URL, conf, session
+from jarr.bootstrap import (PARSED_PLATFORM_URL, commit_pending_sql, conf,
+                            rollback_pending_sql, session)
 from jarr.controllers import UserController
 from jarr.lib.utils import default_handler
 
@@ -26,15 +26,6 @@ def get_cached_user(user_id):
 
 def __identity(payload):
     return get_cached_user(payload['identity'])
-
-
-def setup_sqla_binding(application):
-
-    @application.teardown_request
-    def session_clear(exception=None):
-        if exception and session.is_active:
-            session.rollback()
-    return session_clear
 
 
 def setup_jwt(application, api):
@@ -101,7 +92,9 @@ def create_app(testing=False):
     application.config['PREFERRED_URL_SCHEME'] = PARSED_PLATFORM_URL.scheme
     application.config['RESTX_JSON'] = {'default': default_handler}
 
-    setup_sqla_binding(application)
     api = setup_api(application)
     setup_jwt(application, api)
+
+    request_tearing_down.connect(commit_pending_sql, application)
+    got_request_exception.connect(rollback_pending_sql, application)
     return application

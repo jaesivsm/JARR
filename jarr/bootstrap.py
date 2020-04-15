@@ -124,6 +124,14 @@ def init_models():
     return models
 
 
+def commit_pending_sql(*args, **kwargs):
+    session.commit()
+
+
+def rollback_pending_sql(*args, **kwargs):
+    session.rollback()
+
+
 PARSED_PLATFORM_URL = urlparse(conf.platform_url)
 
 engine, session, Base = init_db()
