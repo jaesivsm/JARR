@@ -41,7 +41,7 @@ function Category(props) {
     <>
     <ListItem button selected={isSelected}
         key={toKey("button-cat", props.id, props.selectedCategoryId)}
-        onClick={(e) => (props.listClusters(e, { categoryId: props.id }))}>
+        onClick={(e) => (props.listClusters(e, { categoryId: isAllCateg ? "all" : props.id }))}>
       <ListItemText primary={isAllCateg ? "All" : props.name} />
       {foldButton}
     </ListItem>

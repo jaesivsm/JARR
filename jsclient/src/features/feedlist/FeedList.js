@@ -9,8 +9,8 @@ import { doFetchFeeds } from "./feedSlice";
 
 function mapStateToProps(state) {
   return { categories: state.feeds.categories,
-           selectedCategoryId: state.clusters.selected.categoryId,
-           selectedFeedId: state.clusters.selected.feedId,
+           selectedCategoryId: state.clusters.filters["category_id"],
+           selectedFeedId: state.clusters.filters["feed_id"],
            isFoldedFromParent: state.login.isLeftMenuFolded,
   };
 }

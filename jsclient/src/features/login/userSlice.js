@@ -45,7 +45,7 @@ const userSlice = createSlice({
         storageSet("left-menu-open", newState);
         return { ...state, isLeftMenuOpen: newState};
     },
-    logout() {
+    doLogout() {
         storageRemove("login");
         storageRemove("password");
         storageRemove("left-menu-open");
@@ -59,7 +59,7 @@ const userSlice = createSlice({
   }
 });
 
-export const { attemptLogin, loginFailed, tokenAcquired, tokenExpire, logout,
+export const { attemptLogin, loginFailed, tokenAcquired, tokenExpire, doLogout,
                toggleLeftMenu, toggleFolding,
 } = userSlice.actions;
 

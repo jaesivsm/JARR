@@ -5,28 +5,41 @@ import { apiUrl } from "../../const";
 
 const clusterSlice = createSlice({
   name: "cluster",
-  initialState: { filters: {},
-                  loadingClusterList: false,
+  initialState: { filters: { },
+                  loading: false,
                   clusters: [],
-                  selected: {},
                   requestedClusterId: null,
                   loadedCluster: {},
   },
   reducers: {
     requestedClustersList(state, action) {
-      const selected = {};
-      const filters = {};
+      console.log(action.payload.filters);
+      const filters = { ...state.filters };
+      if (action.payload.filters.feedId
+          || action.payload.filters.categoryId === "all") {
+        delete filters['category_id'];
+      }
       if (action.payload.filters.feedId) {
-        selected.feedId = filters["feed_id"] = action.payload.filters.feedId;
+        filters["feed_id"] = action.payload.filters.feedId;
 
       } else if (action.payload.filters.categoryId) {
-        selected.categoryId = filters["category_id"] = action.payload.filters.categoryId;
+        if (action.payload.filters.categoryId !== "all" ) {
+          filters["category_id"] = action.payload.filters.categoryId;
+        }
+        if (filters["feed_id"]) {
+          delete filters['feed_id'];
+        }
       }
-
-      return { ...state, filters, selected, loadingClusterList: true };
+      if (action.payload.filters.filter) {
+        filters.filter = action.payload.filters.filter;
+      } else if (action.payload.filters.filter === null) {
+        delete filters.filter;
+      }
+      console.log(filters);
+      return { ...state, filters, loading: true};
     },
     retrievedClustersList(state, action) {
-      return { ...state, loadingClusterList: false,
+      return { ...state, loading: false,
                clusters: action.payload.clusters };
     },
     requestedCluster(state, action) {
