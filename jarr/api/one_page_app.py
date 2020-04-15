@@ -39,8 +39,8 @@ filter_parser.add_argument('search_content',
         type=inputs.boolean, default=False,
         help='if True, the search_str will be looked for in content')
 filter_parser.add_argument('filter', type=str,
-        choices=['all', 'liked'], default='all',
-        help='the boolean (all or liked) filter to apply to clusters')
+        choices=['all', 'unread', 'liked'], default='unread',
+        help='the boolean (all, unread or liked) filter to apply to clusters')
 filter_parser.add_argument('feed_id', type=int,
         help='the parent feed id to filter with')
 filter_parser.add_argument('category_id', type=int,
@@ -104,10 +104,10 @@ def _get_filters(in_dict):
             filters = {"__or__": filters}
     else:
         filters = {}
-    filters['read'] = False
-    if in_dict.get('filter') == 'all':
-        del filters['read']
-    elif in_dict.get('filter') == 'liked':
+    filter_ = in_dict.get('filter')
+    if filter_ == 'unread':
+        filters['read'] = False
+    elif filter_ == 'liked':
         filters['liked'] = True
     for key in 'feed_id', 'category_id':
         if in_dict.get(key) is not None:

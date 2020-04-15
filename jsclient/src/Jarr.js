@@ -7,7 +7,6 @@ import Drawer from "@material-ui/core/Drawer";
 import CssBaseline from "@material-ui/core/CssBaseline";
 import AppBar from "@material-ui/core/AppBar";
 import Toolbar from "@material-ui/core/Toolbar";
-import Typography from "@material-ui/core/Typography";
 import IconButton from "@material-ui/core/IconButton";
 import MenuIcon from "@material-ui/icons/Menu";
 import ChevronLeftIcon from "@material-ui/icons/ChevronLeft";
@@ -18,11 +17,10 @@ import UnFoldAllCategoriesIcon from "@material-ui/icons/UnfoldMore";
 import ExitToAppIcon from "@material-ui/icons/ExitToApp";
 import MarkAllAsReadIcon from "@material-ui/icons/LibraryAddCheck";
 import MarkALlNonClusterAsReadIcon from "@material-ui/icons/PlaylistAddCheck";
+import FilterAllOrFavoriteIcon from '@material-ui/icons/StarBorder';
 import FilterFavoriteIcon from "@material-ui/icons/Star";
 import FilterAllIcon from '@material-ui/icons/IndeterminateCheckBox';
 import FilterUnreadIcon from "@material-ui/icons/CheckBoxOutlineBlank";
-
-
 
 import useStyles from "./Jarr.styles.js";
 import Login from "./features/login/Login";
@@ -96,7 +94,7 @@ function Jarr(props) {
               onClick={() => props.filterClusters(props.isFilteringOnLiked ? null : 'liked' )}
               className={clsx(classes.menuButton)}
             >
-              <FilterFavoriteIcon />
+              {props.isFilteringOnLiked ? <FilterFavoriteIcon /> : <FilterAllOrFavoriteIcon />}
             </IconButton>
             <IconButton
               color="inherit"

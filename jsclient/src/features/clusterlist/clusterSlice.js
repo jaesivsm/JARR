@@ -13,7 +13,6 @@ const clusterSlice = createSlice({
   },
   reducers: {
     requestedClustersList(state, action) {
-      console.log(action.payload.filters);
       const filters = { ...state.filters };
       if (action.payload.filters.feedId
           || action.payload.filters.categoryId === "all") {
@@ -35,7 +34,6 @@ const clusterSlice = createSlice({
       } else if (action.payload.filters.filter === null) {
         delete filters.filter;
       }
-      console.log(filters);
       return { ...state, filters, loading: true};
     },
     retrievedClustersList(state, action) {
