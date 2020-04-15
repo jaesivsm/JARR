@@ -17,5 +17,5 @@ export function storageSet(key, value, storage) {
 }
 
 export function storageRemove(key, storage) {
-  return getStorage(storage).remoteItem(prefix + key);
+  return getStorage(storage).removeItem(prefix + key);
 }

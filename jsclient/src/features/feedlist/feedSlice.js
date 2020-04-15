@@ -1,5 +1,5 @@
-import axios from "axios";
 import { createSlice } from "@reduxjs/toolkit";
+import { doRetryOnTokenExpiration } from "../login/userSlice";
 import { apiUrl } from "../../const";
 
 const feedSlice = createSlice({
@@ -24,10 +24,9 @@ export default feedSlice.reducer;
 
 export const doFetchFeeds = (): AppThunk => async (dispatch, getState) => {
   dispatch(askedFeeds());
-  const result = await axios({
+  const result = await doRetryOnTokenExpiration({
     method: "get",
     url: apiUrl + "/list-feeds",
-    headers: { "Authorization": getState().login.token },
-  });
+  }, dispatch, getState);
   dispatch(loadedFeeds({ categories: result.data }));
 };

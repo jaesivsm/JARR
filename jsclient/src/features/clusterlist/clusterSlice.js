@@ -1,4 +1,4 @@
-import axios from "axios";
+import { doRetryOnTokenExpiration } from "../login/userSlice";
 import qs from "qs";
 import { createSlice } from "@reduxjs/toolkit";
 import { apiUrl } from "../../const";
@@ -61,30 +61,27 @@ export default clusterSlice.reducer;
 export const doListClusters = (filters): AppThunk => async (dispatch, getState) => {
   dispatch(requestedClustersList({ filters }));
   const params = qs.stringify(getState().clusters.filters);
-  const result = await axios({
+  const result = await doRetryOnTokenExpiration({
     method: "get",
     url: apiUrl + "/clusters?" + params,
-    headers: { "Authorization": getState().login.token },
-  });
+  }, dispatch, getState);
   dispatch(retrievedClustersList({ clusters: result.data }));
 };
 
 export const doReadCluster = (clusterId): AppThunk => async (dispatch, getState) => {
   dispatch(requestedCluster({ clusterId }));
-  const result = await axios({
+  const result = await doRetryOnTokenExpiration({
     method: "get",
     url: apiUrl + "/cluster/" + clusterId,
-    headers: { "Authorization": getState().login.token },
-  });
+  }, dispatch, getState);
   dispatch(retrievedCluster({ cluster: result.data }));
 };
 
 export const doUnreadCluster = (clusterId): AppThunk => async (dispatch, getState) => {
   dispatch(requestedUnreadCluster({ clusterId }));
-  await axios({
+  await doRetryOnTokenExpiration({
     method: "put",
     url: apiUrl + "/cluster/" + clusterId + "?read=false",
-    headers: { "Authorization": getState().login.token },
-  });
+  }, dispatch, getState);
   dispatch(retrievedUnreadCluster());
 };

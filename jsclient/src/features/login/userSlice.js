@@ -20,7 +20,10 @@ const userSlice = createSlice({
         return { ...state, login, password, loading: true };
     },
     loginFailed(state, action) {
-        return { ...state, loading: false, token: null,
+        storageRemove("login");
+        storageRemove("password");
+        return { ...state, loading: false,
+                 token: null, login: null, password: null,
                  error: action.payload.error };
     },
     tokenAcquired(state, action) {
@@ -76,5 +79,27 @@ export const doLogin = (
     dispatch(tokenAcquired(result));
   } catch (err) {
     dispatch(loginFailed({ error: err.toString() }));
+  }
+};
+
+export const doRetryOnTokenExpiration = async (payload, dispatch, getState) => {
+  const state = getState();
+  payload.headers = { "Authorization": state.login.token };
+  try {
+    return await axios(payload);
+  } catch (err) {
+      if (err.response && err.response.status === 401
+          && err.response.data && err.response.data.message
+          && err.response.data.message === "Invalid token, Signature has expired") {
+      try {
+        const loginResult = await axios.post(apiUrl + "/auth",
+            { login: state.login.login, password: state.login.password });
+        dispatch(tokenAcquired(loginResult));
+        payload.headers = { "Authorization": loginResult.data.access_token };
+        return await axios(payload);
+      } catch (err) {
+        dispatch(loginFailed({ error: err.toString() }));
+      }
+    }
   }
 };
