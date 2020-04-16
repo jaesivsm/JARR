@@ -1,7 +1,7 @@
 import axios from "axios";
 import { createSlice } from "@reduxjs/toolkit";
 import { apiUrl } from "../../const";
-import { storageGet, storageSet, storageRemove } from "./storageUtils";
+import { storageGet, storageSet, storageRemove } from "../../storageUtils";
 
 const userSlice = createSlice({
   name: "user",
@@ -11,7 +11,6 @@ const userSlice = createSlice({
                   token: storageGet("token", "session"),
                   isLeftMenuOpen: storageGet("left-menu-open") !== "false",
                   isRightPanelOpen: false,
-                  isLeftMenuFolded: storageGet("left-menu-folded") === "true",
                   rightPanelObjType: null, // feed, category
                   rightPanelObjId: null,
                   rightPanelJob: null, // edit, add
@@ -39,11 +38,6 @@ const userSlice = createSlice({
       storageRemove("token", "session");
       return { ...state, loading: true, token: null};
     },
-    toggleFolding(state, action) {
-      const newFolding = !state.isLeftMenuFolded;
-      storageSet("left-menu-folded", newFolding);
-      return { ...state, isLeftMenuFolded: newFolding };
-    },
     toggleLeftMenu(state, action) {
       const newState = !state.isLeftMenuOpen;
       storageSet("left-menu-open", newState);
@@ -60,7 +54,6 @@ const userSlice = createSlice({
       storageRemove("login");
       storageRemove("password");
       storageRemove("left-menu-open");
-      storageRemove("left-menu-folded");
       storageRemove("token", "session");
       return { loading: false, error: null,
                login: null, password: null, token: null,
@@ -71,7 +64,7 @@ const userSlice = createSlice({
 });
 
 export const { attemptLogin, loginFailed, tokenAcquired, tokenExpire, doLogout,
-               toggleLeftMenu, toggleRightPanel, toggleFolding,
+               toggleLeftMenu, toggleRightPanel,
 } = userSlice.actions;
 
 export default userSlice.reducer;
