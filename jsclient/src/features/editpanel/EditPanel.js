@@ -1,6 +1,7 @@
 import React from "react";
 import { connect } from "react-redux";
 import PropTypes from "prop-types";
+import Typography from "@material-ui/core/Typography";
 import Drawer from "@material-ui/core/Drawer";
 import Divider from "@material-ui/core/Divider";
 import IconButton from "@material-ui/core/IconButton";
@@ -46,6 +47,9 @@ function EditPanel({ isOpen, job, objType, close }) {
         <IconButton onClick={close}>
           <Close />
         </IconButton>
+        <Typography className={classes.editPanelTitle}>
+          {job.charAt(0).toUpperCase()}{job.slice(1)}ing {objType.charAt(0).toUpperCase()}{objType.slice(1)}
+        </Typography>
       </div>
       <Divider />
       <div>

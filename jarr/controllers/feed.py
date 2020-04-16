@@ -1,8 +1,9 @@
 import logging
+from collections import defaultdict
 from datetime import datetime, timedelta
 
 import dateutil.parser
-from sqlalchemy import and_
+from sqlalchemy import and_, or_
 from sqlalchemy.sql import delete, select, update
 from werkzeug.exceptions import Forbidden
 
@@ -27,24 +28,17 @@ class FeedController(AbstractController):
         return ArticleController(self.user_id)
 
     def list_w_categ(self):
-        current = {'feeds': []}
-        fields = Category.id, Category.name, Feed.id, Feed.title
-        for row in session.query(*fields)\
-                .outerjoin(Category, and_(Feed.category_id == Category.id,
-                                          Category.user_id == self.user_id))\
-                .filter(Feed.user_id == self.user_id,
-                        Feed.status != FeedStatus.to_delete,
-                        Feed.status != FeedStatus.deleting)\
-                .order_by(Category.name.nullsfirst(), Feed.title):
-            if 'id' in current and current['id'] != row[0]:
-                yield current
-                current = {'feeds': []}
-            if 'id' not in current:
-                current['id'] = row[0]
-                current['name'] = row[1]
-                if not row[1]:
-                    current['no categ'] = True
-            current['feeds'].append({'id': row[2], 'title': row[3]})
+        feeds = defaultdict(list)
+        for fid, title, cid in session.query(
+                Feed.id, Feed.title, Feed.category_id)\
+                .filter(Feed.user_id == self.user_id)\
+                .order_by(Feed.title):
+            feeds[cid].append({'id': fid, 'title': title})
+        yield {'id': None, 'name': None, 'feeds': feeds.get(None, [])}
+        for cid, cname in session.query(Category.id, Category.name)\
+                    .filter(Category.user_id == self.user_id)\
+                    .order_by(Category.name.nullsfirst()):
+            yield {'id': cid, 'name': cname, 'feeds': feeds.get(cid, [])}
 
     def get_active_feed(self, **filters):
         filters['error_count__lt'] = conf.feed.error_max

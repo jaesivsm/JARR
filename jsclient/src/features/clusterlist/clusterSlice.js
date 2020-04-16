@@ -1,7 +1,7 @@
-import { doRetryOnTokenExpiration } from "../login/userSlice";
 import qs from "qs";
 import { createSlice } from "@reduxjs/toolkit";
 import { apiUrl } from "../../const";
+import { doRetryOnTokenExpiration } from "../login/userSlice";
 
 const clusterSlice = createSlice({
   name: "cluster",

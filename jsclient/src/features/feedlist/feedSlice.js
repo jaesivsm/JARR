@@ -1,3 +1,4 @@
+import qs from "qs";
 import { createSlice } from "@reduxjs/toolkit";
 import { doRetryOnTokenExpiration } from "../login/userSlice";
 import { apiUrl } from "../../const";
@@ -30,10 +31,18 @@ const feedSlice = createSlice({
       storageSet("left-menu-open", newState);
       return { ...state, isOpen: newState };
     },
+    createdCategory(state, action) {
+      action.payload.category.feeds = [];
+      state.categories.push(action.payload.category);
+      return state;
+    },
   },
 });
 
-export const { askedFeeds, loadedFeeds, toggleMenu, toggleFolding } = feedSlice.actions;
+export const { askedFeeds, loadedFeeds,
+               toggleMenu, toggleFolding,
+               createdCategory,
+} = feedSlice.actions;
 export default feedSlice.reducer;
 
 export const doFetchFeeds = (): AppThunk => async (dispatch, getState) => {
@@ -43,4 +52,14 @@ export const doFetchFeeds = (): AppThunk => async (dispatch, getState) => {
     url: apiUrl + "/list-feeds",
   }, dispatch, getState);
   dispatch(loadedFeeds({ categories: result.data }));
+};
+
+export const doCreateCategory = (category): AppThunk => async (dispatch, getState) => {
+    console.log('doCreateCategory');
+  const result = await doRetryOnTokenExpiration({
+    method: "post",
+    url: apiUrl + "/category?" + qs.stringify(category),
+  }, dispatch, getState);
+    console.log(result);
+  dispatch(createdCategory({ category: result.data }));
 };

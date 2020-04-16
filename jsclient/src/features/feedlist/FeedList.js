@@ -68,7 +68,7 @@ function FeedList(props) {
           <AddCategoryIcon />
         </IconButton>
         <IconButton onClick={props.toggleFolder}>
-         {props.isLeftMenuFolded ? <UnFoldAllCategoriesIcon /> : <FoldAllCategoriesIcon />}
+         {props.isFoldedFromParent ? <UnFoldAllCategoriesIcon /> : <FoldAllCategoriesIcon />}
         </IconButton>
         <IconButton onClick={props.toggleFeedList}>
           <ChevronLeftIcon />

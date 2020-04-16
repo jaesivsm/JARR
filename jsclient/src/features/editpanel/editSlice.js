@@ -3,9 +3,10 @@ import { createSlice } from "@reduxjs/toolkit";
 const editSlice = createSlice({
   name: "feeds",
   initialState: { isOpen: false,
-                  objType: null, // feed, category
+                  isLoading: false,
+                  objType: '', // feed, category
                   objId: null,
-                  job: null, // edit, add
+                  job: '', // edit, add
 
   },
   reducers: {
@@ -18,7 +19,7 @@ const editSlice = createSlice({
     },
     closePanel(state, action) {
       return { ...state, isOpen: false,
-               objType: null, objId: null, job: null,
+               objType: '', objId: null, job: '',
       };
     },
   },
