@@ -31,7 +31,9 @@ class FeedController(AbstractController):
         feeds = defaultdict(list)
         for fid, title, cid in session.query(
                 Feed.id, Feed.title, Feed.category_id)\
-                .filter(Feed.user_id == self.user_id)\
+                .filter(Feed.user_id == self.user_id
+                        Feed.status != FeedStatus.to_delete,
+                        Feed.status != FeedStatus.deleting)\
                 .order_by(Feed.title):
             feeds[cid].append({'id': fid, 'title': title})
         yield {'id': None, 'name': None, 'feeds': feeds.get(None, [])}

@@ -10,13 +10,15 @@ import FormGroup from "@material-ui/core/FormGroup";
 import FormControlLabel from "@material-ui/core/FormControlLabel";
 import FormHelperText from "@material-ui/core/FormHelperText";
 
+import { closePanel } from "./editSlice";
 import { doCreateCategory } from "../feedlist/feedSlice";
 
 const mapDispatchToProps = (dispatch) => ({
   createCategory(e, category) {
     e.preventDefault();
     console.log(category);
-    return dispatch(doCreateCategory(category));
+    dispatch(doCreateCategory(category));
+    return dispatch(closePanel());
   },
 });
 
