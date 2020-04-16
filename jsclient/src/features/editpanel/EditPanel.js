@@ -5,7 +5,7 @@ import Drawer from "@material-ui/core/Drawer";
 import Typography from "@material-ui/core/Typography";
 
 function mapStateToProps(state) {
-  return { isOpen: state.login.isRightPanelOpen,
+  return { isOpen: state.edit.isOpen,
   };
 }
 

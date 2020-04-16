@@ -8,6 +8,7 @@ const feedSlice = createSlice({
   initialState: { loading: false,
                   categories: [],
                   isParentFolded: storageGet("left-menu-folded") === "true",
+                  isOpen: storageGet("left-menu-open") !== "false",
   },
   reducers: {
     askedFeeds(state, action) {
@@ -23,10 +24,16 @@ const feedSlice = createSlice({
             { ...cat, isFolded: false }));
       return { ...state, loading: false, categories };
     },
+    toggleMenu(state, action) {
+      const newState = !state.isOpen;
+      storageSet("left-menu-open", newState);
+        console.log(newState);
+      return { ...state, isOpen: newState };
+    },
   },
 });
 
-export const { askedFeeds, loadedFeeds, toggleFolding } = feedSlice.actions;
+export const { askedFeeds, loadedFeeds, toggleMenu, toggleFolding } = feedSlice.actions;
 export default feedSlice.reducer;
 
 export const doFetchFeeds = (): AppThunk => async (dispatch, getState) => {

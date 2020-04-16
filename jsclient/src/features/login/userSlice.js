@@ -9,11 +9,7 @@ const userSlice = createSlice({
                   login: storageGet("login"),
                   password: storageGet("password"),
                   token: storageGet("token", "session"),
-                  isLeftMenuOpen: storageGet("left-menu-open") !== "false",
                   isRightPanelOpen: false,
-                  rightPanelObjType: null, // feed, category
-                  rightPanelObjId: null,
-                  rightPanelJob: null, // edit, add
   },
   reducers: {
     attemptLogin(state, action) {
@@ -38,18 +34,6 @@ const userSlice = createSlice({
       storageRemove("token", "session");
       return { ...state, loading: true, token: null};
     },
-    toggleLeftMenu(state, action) {
-      const newState = !state.isLeftMenuOpen;
-      storageSet("left-menu-open", newState);
-      return { ...state, isLeftMenuOpen: newState };
-    },
-    toggleRightPanel(state, action) {
-      return { ...state, isRightPanelOpen: true,
-               rightPanelObjType: action.payload.objType,
-               rightPanelObjId: action.payload.objId,
-               rightPanelJob: action.payload.objId ? "edit" : "add",
-      };
-    },
     doLogout() {
       storageRemove("login");
       storageRemove("password");
@@ -57,15 +41,12 @@ const userSlice = createSlice({
       storageRemove("token", "session");
       return { loading: false, error: null,
                login: null, password: null, token: null,
-               isLeftMenuOpen: true,
       };
     }
   }
 });
 
-export const { attemptLogin, loginFailed, tokenAcquired, tokenExpire, doLogout,
-               toggleLeftMenu, toggleRightPanel,
-} = userSlice.actions;
+export const { attemptLogin, loginFailed, tokenAcquired, tokenExpire, doLogout } = userSlice.actions;
 
 export default userSlice.reducer;
 

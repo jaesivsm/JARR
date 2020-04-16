@@ -13,15 +13,15 @@ import FoldAllCategoriesIcon from "@material-ui/icons/UnfoldLess";
 import UnFoldAllCategoriesIcon from "@material-ui/icons/UnfoldMore";
 // jarrs
 import Category from "./Category";
-import { doFetchFeeds, toggleFolding } from "./feedSlice";
-import { toggleLeftMenu, toggleRightPanel } from "../login/userSlice.js";
+import { doFetchFeeds, toggleFolding, toggleMenu } from "./feedSlice";
+import { openPanel } from "../editpanel/editSlice";
 
 function mapStateToProps(state) {
   return { categories: state.feeds.categories,
            selectedCategoryId: state.clusters.filters["category_id"],
            selectedFeedId: state.clusters.filters["feed_id"],
            isFoldedFromParent: state.feeds.isParentFolded,
-           isOpen: state.login.isLeftMenuOpen && !state.login.isRightPanelOpen,
+           isOpen: state.feeds.isOpen && !state.edit.isOpen,
   };
 }
 
@@ -30,10 +30,10 @@ const mapDispatchToProps = (dispatch) => ({
     return dispatch(doFetchFeeds());
   },
   toggleFeedList() {
-    return dispatch(toggleLeftMenu());
+    return dispatch(toggleMenu());
   },
   toggleAddPanel(objType) {
-    return dispatch(toggleRightPanel({ objType }));
+    return dispatch(openPanel({ objType }));
   },
   toggleFolder() {
     return dispatch(toggleFolding());
