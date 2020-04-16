@@ -27,7 +27,7 @@ const mapDispatchToProps = (dispatch) => ({
     return dispatch(doUnreadCluster(clusterId));
   },
   justMarkClusterAsRead(clusterId) {
-    return dispatch(requestedUnreadCluster(clusterId));
+    return dispatch(requestedUnreadCluster({ clusterId }));
   },
 });
 

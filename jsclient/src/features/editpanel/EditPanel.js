@@ -57,8 +57,8 @@ function EditPanel({ isOpen, job, objType, close }) {
 
 EditPanel.propTypes = {
   isOpen: PropTypes.bool.isRequired,
-  job: PropTypes.string.isRequired,
-  objType: PropTypes.string.isRequired,
+  job: PropTypes.string,
+  objType: PropTypes.string,
   close: PropTypes.func.isRequired,
 };
 
