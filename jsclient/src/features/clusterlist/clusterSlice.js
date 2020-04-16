@@ -57,15 +57,19 @@ const clusterSlice = createSlice({
                loadedCluster: {}, requestedClusterId: null,
       };
     },
-    retrievedUnreadCluster(state, action) {
-      return state;
+    // retrievedUnreadCluster(state, action) { return state; },
+    // requestedMarkAllAsRead(state, action) { return state; },
+    markedAllAsRead(state, action) {
+      return { ...state, clusters: [] };
     },
   },
 });
 
 export const { requestedClustersList, retrievedClustersList,
                requestedCluster, retrievedCluster,
-               requestedUnreadCluster, retrievedUnreadCluster,
+               requestedUnreadCluster, // retrievedUnreadCluster,
+               // requestedMarkAllAsRead,
+               markedAllAsRead,
 } = clusterSlice.actions;
 export default clusterSlice.reducer;
 
@@ -94,5 +98,19 @@ export const doUnreadCluster = (clusterId): AppThunk => async (dispatch, getStat
     method: "put",
     url: apiUrl + "/cluster/" + clusterId + "?read=false",
   }, dispatch, getState);
-  dispatch(retrievedUnreadCluster());
+  // dispatch(retrievedUnreadCluster()); // useless for now
+};
+
+export const doMarkAllAsRead = (onlySingles): AppThunk => async (dispatch, getState) => {
+  const params = { ...getState().clusters.filters };
+  if(onlySingles) {
+      params["only_singles"] = true;
+  }
+  // dispatch(requestedMarkAllAsRead({ onlySingles })); // useless for now
+  const stringifiedParams = qs.stringify(params);
+  await doRetryOnTokenExpiration({
+    method: "put",
+    url: apiUrl + "/mark-all-as-read?" + stringifiedParams,
+  }, dispatch, getState);
+  dispatch(markedAllAsRead({ onlySingles }));
 };

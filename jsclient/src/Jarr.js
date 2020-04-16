@@ -27,7 +27,7 @@ import Login from "./features/login/Login";
 import FeedList from "./features/feedlist/FeedList";
 import ClusterList from "./features/clusterlist/ClusterList";
 import { toggleLeftMenu, toggleFolding, doLogout } from "./features/login/userSlice.js";
-import { doListClusters } from "./features/clusterlist/clusterSlice";
+import { doListClusters, doMarkAllAsRead } from "./features/clusterlist/clusterSlice";
 
 function mapStateToProps(state) {
   return { isLogged: !!state.login.token,
@@ -49,9 +49,8 @@ const mapDispatchToProps = (dispatch) => ({
   filterClusters(filterValue) {
     return dispatch(doListClusters({ filter: filterValue }));
   },
-  markAllAsRead() {
-  },
-  markNonClusterAsRead() {
+  markAllAsRead(onlySingles) {
+    return dispatch(doMarkAllAsRead(onlySingles));
   },
   logout() {
     return dispatch(doLogout());
@@ -98,14 +97,14 @@ function Jarr(props) {
             </IconButton>
             <IconButton
               color="inherit"
-              onClick={props.markAllAsRead}
+              onClick={() => props.markAllAsRead(false)}
               className={clsx(classes.menuButton)}
             >
               <MarkAllAsReadIcon />
             </IconButton>
             <IconButton
               color="inherit"
-              onClick={props.markNonClusterAsRead}
+              onClick={() => props.markAllAsRead(true)}
               className={clsx(classes.menuButton)}
             >
               <MarkALlNonClusterAsReadIcon />
@@ -166,7 +165,6 @@ Jarr.propTypes = {
   toggleFolder: PropTypes.func.isRequired,
   filterClusters: PropTypes.func.isRequired,
   markAllAsRead: PropTypes.func.isRequired,
-  markNonClusterAsRead: PropTypes.func.isRequired,
   logout: PropTypes.func.isRequired,
 };
 
