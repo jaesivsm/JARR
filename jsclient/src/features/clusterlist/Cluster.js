@@ -10,11 +10,12 @@ import ExpansionPanelDetails from "@material-ui/core/ExpansionPanelDetails";
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import CircularProgress from "@material-ui/core/CircularProgress";
 
-import { doReadCluster, doUnreadCluster } from "./clusterSlice";
+import { doReadCluster, doUnreadCluster, requestedUnreadCluster } from "./clusterSlice";
 
 function mapStateToProps(state) {
   return { requestedClusterId: state.clusters.requestedClusterId,
            loadedCluster: state.clusters.loadedCluster,
+           unreadOnClose: !state.clusters.filters.filter,
   };
 }
 
@@ -25,10 +26,14 @@ const mapDispatchToProps = (dispatch) => ({
   unreadCluster(clusterId) {
     return dispatch(doUnreadCluster(clusterId));
   },
+  justMarkClusterAsRead(clusterId) {
+    return dispatch(requestedUnreadCluster(clusterId));
+  },
 });
 
-function Cluster({ id, mainFeedTitle, mainTitle, requestedClusterId, loadedCluster,
-                   readCluster, unreadCluster }) {
+function Cluster({ id, mainFeedTitle, mainTitle,
+                   requestedClusterId, loadedCluster, unreadOnClose,
+                   readCluster, unreadCluster, justMarkClusterAsRead }) {
   const expanded = requestedClusterId === id;
   const loaded = !!loadedCluster && loadedCluster.id === id;
   let content;
@@ -49,8 +54,10 @@ function Cluster({ id, mainFeedTitle, mainTitle, requestedClusterId, loadedClust
         onChange={() => {
           if (!expanded) {
             readCluster(id);
-          } else {
+          } else if (unreadOnClose) {
             unreadCluster(id);
+          } else {
+            justMarkClusterAsRead(id);
           }
         }}
       >
@@ -78,10 +85,12 @@ Cluster.propTypes = {
   id: PropTypes.number.isRequired,
   mainTitle: PropTypes.string.isRequired,
   mainFeedTitle: PropTypes.string.isRequired,
+  unreadOnClose: PropTypes.bool.isRequired,
   requestedClusterId: PropTypes.number,
   loadedCluster: PropTypes.object,
   readCluster: PropTypes.func.isRequired,
   unreadCluster: PropTypes.func.isRequired,
+  justMarkClusterAsRead: PropTypes.func.isRequired,
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(Cluster);

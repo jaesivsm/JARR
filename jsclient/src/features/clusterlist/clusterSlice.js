@@ -47,8 +47,14 @@ const clusterSlice = createSlice({
       };
     },
     retrievedCluster(state, action) {
-        // TODO remove old cluster
       return { ...state,
+               // marking read cluster as read
+               clusters: state.clusters.map((cluster) => {
+                 if(cluster.id === action.payload.cluster.id) {
+                    return { ...cluster, read: true };
+                 }
+                 return cluster;
+               }),
                loadedCluster: action.payload.cluster,
       };
     },
@@ -98,7 +104,7 @@ export const doUnreadCluster = (clusterId): AppThunk => async (dispatch, getStat
     method: "put",
     url: apiUrl + "/cluster/" + clusterId + "?read=false",
   }, dispatch, getState);
-  // dispatch(retrievedUnreadCluster()); // useless for now
+  // dispatch(retrievedUnreadCluster());
 };
 
 export const doMarkAllAsRead = (onlySingles): AppThunk => async (dispatch, getState) => {
