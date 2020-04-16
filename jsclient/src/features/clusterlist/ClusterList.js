@@ -4,10 +4,13 @@ import { connect } from "react-redux";
 
 import Cluster from "./Cluster";
 import { doListClusters } from "./clusterSlice";
+import clusterListStyle from "./clusterListStyle";
 
+import clsx from "clsx";
 function mapStateToProps(state) {
   return { clusters: state.clusters.clusters,
            filters: state.clusters.filters,
+           isShifted: state.feeds.isOpen && !state.edit.isOpen,
   };
 }
 
@@ -17,7 +20,9 @@ const mapDispatchToProps = (dispatch) => ({
   },
 });
 
-function ClusterList({ clusters, filters, listClusters, className }) {
+function ClusterList({ clusters, filters, listClusters, isShifted }) {
+  const classes = clusterListStyle();
+  const className = clsx(classes.content, {[classes.contentShift]: isShifted});
   const [everLoaded, setEverLoaded] = useState(false);
   useEffect(() => {
     if (!everLoaded) {
@@ -41,7 +46,6 @@ ClusterList.propTypes = {
     clusters: PropTypes.array.isRequired,
     filters: PropTypes.object.isRequired,
     listClusters: PropTypes.func.isRequired,
-    className: PropTypes.string.isRequired,
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(ClusterList);

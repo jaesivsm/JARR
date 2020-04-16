@@ -13,7 +13,7 @@ import { doLogin } from "./userSlice.js";
 function mapStateToProps(state) {
     return { isLoading: state.login.loading,
              isLoginError: !!state.login.error,
-             noToken: !state.login.loading && state.login.login && state.login.password && !state.login.token,
+             noToken: !state.login.loading && !!state.login.login && !!state.login.password && !state.login.token,
              savedLogin: state.login.login,
              savedPassword: state.login.password,
              loginError: state.login.error };

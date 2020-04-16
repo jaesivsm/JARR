@@ -12,6 +12,7 @@ import AddCategoryIcon from "@material-ui/icons/LibraryAdd";
 import FoldAllCategoriesIcon from "@material-ui/icons/UnfoldLess";
 import UnFoldAllCategoriesIcon from "@material-ui/icons/UnfoldMore";
 // jarrs
+import feedListStyle from "./feedListStyle";
 import Category from "./Category";
 import { doFetchFeeds, toggleFolding, toggleMenu } from "./feedSlice";
 import { openPanel } from "../editpanel/editSlice";
@@ -41,6 +42,7 @@ const mapDispatchToProps = (dispatch) => ({
 });
 
 function FeedList(props) {
+  const classes = feedListStyle();
   const [everLoaded, setEverLoaded] = useState(false);
   useEffect(() => {
     if (!everLoaded) {
@@ -53,12 +55,12 @@ function FeedList(props) {
       variant="persistent"
       anchor="left"
       open={props.isOpen}
-      className={props.classes.drawer}
+      className={classes.drawer}
       classes={{
-        paper: props.classes.drawerPaper,
+        paper: classes.drawerPaper,
       }}
     >
-      <div className={props.classes.drawerHeader}>
+      <div className={classes.drawerHeader}>
         <IconButton onClick={() => props.toggleAddPanel('feed')}>
           <AddFeedIcon />
         </IconButton>

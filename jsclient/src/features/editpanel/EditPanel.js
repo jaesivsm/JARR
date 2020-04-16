@@ -9,20 +9,19 @@ function mapStateToProps(state) {
   };
 }
 
-function EditPanel({ isOpen, classes }) {
+function EditPanel({ isOpen }) {
   return (
-      <Drawer
-        variant="persistent"
-        anchor="right"
-        open={isOpen}
-        className={classes.editionDrawer}
-      >
-        <div className={classes.drawerHeader}>
-          <Typography>
-            Adding stuff
-          </Typography>
-        </div>
-      </Drawer>
+    <Drawer
+      variant="persistent"
+      anchor="right"
+      open={isOpen}
+    >
+      <div>
+        <Typography>
+          Adding stuff
+        </Typography>
+      </div>
+    </Drawer>
   );
 }
 

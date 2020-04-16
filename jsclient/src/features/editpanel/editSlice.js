@@ -10,7 +10,6 @@ const editSlice = createSlice({
   },
   reducers: {
     openPanel(state, action) {
-      console.log('openPanel');
       return { ...state, isOpen: true,
                objType: action.payload.objType,
                objId: action.payload.objId,
