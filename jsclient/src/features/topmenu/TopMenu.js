@@ -25,6 +25,7 @@ import { doListClusters, doMarkAllAsRead } from "../clusterlist/clusterSlice";
 
 function mapStateToProps(state) {
   return { isShifted: state.feeds.isOpen && !state.edit.isOpen,
+           isMenuButtonHidden: state.feeds.isOpen || state.edit.isOpen,
            isFilteringOnAll: state.clusters.filters.filter === "all",
            isFilteringOnLiked: state.clusters.filters.filter === "liked",
   };
@@ -60,7 +61,7 @@ function TopMenu(props) {
             aria-label="open drawer"
             onClick={props.toggleFeedList}
             edge="start"
-            className={clsx(classes.menuButton, props.isShifted && classes.hide)}
+            className={clsx(classes.menuButton, props.isMenuButtonHidden && classes.hide)}
           >
             <MenuIcon />
           </IconButton>
@@ -111,6 +112,7 @@ TopMenu.propTypes = {
   isShifted: PropTypes.bool.isRequired,
   isFilteringOnAll: PropTypes.bool.isRequired,
   isFilteringOnLiked: PropTypes.bool.isRequired,
+  isMenuButtonHidden: PropTypes.bool.isRequired,
   toggleFeedList: PropTypes.func.isRequired,
   filterClusters: PropTypes.func.isRequired,
   markAllAsRead: PropTypes.func.isRequired,

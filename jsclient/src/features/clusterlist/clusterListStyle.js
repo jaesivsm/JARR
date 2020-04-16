@@ -1,4 +1,5 @@
 import { makeStyles, Theme, createStyles } from "@material-ui/core/styles";
+import { feedListWidth, editPanelWidth } from "../../const";
 
 export default makeStyles((theme: Theme) =>
   createStyles({
@@ -10,7 +11,8 @@ export default makeStyles((theme: Theme) =>
         easing: theme.transitions.easing.sharp,
         duration: theme.transitions.duration.leavingScreen,
       }),
-      marginLeft: -240,
+      marginLeft: -feedListWidth,
+      marginRight: -editPanelWidth,
     },
     contentShift: {
       transition: theme.transitions.create("margin", {
@@ -18,6 +20,7 @@ export default makeStyles((theme: Theme) =>
         duration: theme.transitions.duration.enteringScreen,
       }),
       marginLeft: 0,
+      marginRight: -editPanelWidth,
     },
   })
 );

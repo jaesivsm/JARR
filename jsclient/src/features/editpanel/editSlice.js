@@ -3,9 +3,9 @@ import { createSlice } from "@reduxjs/toolkit";
 const editSlice = createSlice({
   name: "feeds",
   initialState: { isOpen: false,
-                  rightPanelObjType: null, // feed, category
-                  rightPanelObjId: null,
-                  rightPanelJob: null, // edit, add
+                  objType: null, // feed, category
+                  objId: null,
+                  job: null, // edit, add
 
   },
   reducers: {
@@ -16,8 +16,13 @@ const editSlice = createSlice({
                job: action.payload.objId ? "edit" : "add",
       };
     },
+    closePanel(state, action) {
+      return { ...state, isOpen: false,
+               objType: null, objId: null, job: null,
+      };
+    },
   },
 });
 
-export const { openPanel } = editSlice.actions;
+export const { openPanel, closePanel } = editSlice.actions;
 export default editSlice.reducer;
