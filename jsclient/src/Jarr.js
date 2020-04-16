@@ -3,6 +3,7 @@ import PropTypes from "prop-types";
 import { connect } from "react-redux";
 import clsx from "clsx";
 
+import Typography from "@material-ui/core/Typography";
 import Drawer from "@material-ui/core/Drawer";
 import CssBaseline from "@material-ui/core/CssBaseline";
 import AppBar from "@material-ui/core/AppBar";
@@ -26,13 +27,15 @@ import useStyles from "./Jarr.styles.js";
 import Login from "./features/login/Login";
 import FeedList from "./features/feedlist/FeedList";
 import ClusterList from "./features/clusterlist/ClusterList";
-import { toggleLeftMenu, toggleFolding, doLogout } from "./features/login/userSlice.js";
+import { toggleLeftMenu, toggleFolding, toggleRightPanel, doLogout
+} from "./features/login/userSlice.js";
 import { doListClusters, doMarkAllAsRead } from "./features/clusterlist/clusterSlice";
 
 function mapStateToProps(state) {
   return { isLogged: !!state.login.token,
-           isLeftMenuOpen: state.login.isLeftMenuOpen,
-           isLeftMenuFolded: state.login.isLeftMenuFolded,
+           isLeftMenuOpen: state.login.isLeftMenuOpen && !state.login.isRightPanelOpen,
+           isRightPanelOpen: state.login.isRightPanelOpen,
+           isLeftMenuFolded: state.login.isLeftMenuFolded && !state.login.isRightPanelOpen,
            currentFilter: state.clusters.filters.filter,
            isFilteringOnAll: state.clusters.filters.filter === 'all',
            isFilteringOnLiked: state.clusters.filters.filter === 'liked',
@@ -40,7 +43,7 @@ function mapStateToProps(state) {
 }
 
 const mapDispatchToProps = (dispatch) => ({
-  toggleDrawer() {
+  toggleFeedList() {
     return dispatch(toggleLeftMenu());
   },
   toggleFolder() {
@@ -51,6 +54,9 @@ const mapDispatchToProps = (dispatch) => ({
   },
   markAllAsRead(onlySingles) {
     return dispatch(doMarkAllAsRead(onlySingles));
+  },
+  toggleAddPanel(objType) {
+    return dispatch(toggleRightPanel({ objType }));
   },
   logout() {
     return dispatch(doLogout());
@@ -75,9 +81,9 @@ function Jarr(props) {
             <IconButton
               color="inherit"
               aria-label="open drawer"
-              onClick={props.toggleDrawer}
+              onClick={props.toggleFeedList}
               edge="start"
-              className={clsx(classes.menuButton, props.isLeftMenuOpen && classes.hide)}
+              className={clsx(classes.menuButton, (props.isLeftMenuOpen || props.isRightPanelOpen) && classes.hide)}
             >
               <MenuIcon />
             </IconButton>
@@ -131,16 +137,16 @@ function Jarr(props) {
         }}
       >
         <div className={classes.drawerHeader}>
-          <IconButton>
+          <IconButton onClick={() => props.toggleAddPanel('feed')}>
             <AddFeedIcon />
           </IconButton>
-          <IconButton>
+          <IconButton onClick={() => props.toggleAddPanel('category')}>
             <AddCategoryIcon />
           </IconButton>
           <IconButton onClick={props.toggleFolder}>
            {props.isLeftMenuFolded ? <UnFoldAllCategoriesIcon /> : <FoldAllCategoriesIcon />}
           </IconButton>
-          <IconButton onClick={props.toggleDrawer}>
+          <IconButton onClick={props.toggleFeedList}>
             <ChevronLeftIcon />
           </IconButton>
         </div>
@@ -151,6 +157,18 @@ function Jarr(props) {
           [classes.contentShift]: props.isLeftMenuOpen,
         })}
       />
+      <Drawer
+        variant="persistent"
+        anchor="right"
+        open={props.isRightPanelOpen}
+        className={classes.editionDrawer}
+      >
+        <div className={classes.drawerHeader}>
+          <Typography>
+            Adding stuff
+          </Typography>
+        </div>
+      </Drawer>
    </div>
   );
 }
@@ -158,10 +176,11 @@ function Jarr(props) {
 Jarr.propTypes = {
   isLogged: PropTypes.bool.isRequired,
   isLeftMenuOpen: PropTypes.bool.isRequired,
+  isRightPanelOpen: PropTypes.bool.isRequired,
   isLeftMenuFolded: PropTypes.bool.isRequired,
   isFilteringOnAll: PropTypes.bool.isRequired,
   isFilteringOnLiked: PropTypes.bool.isRequired,
-  toggleDrawer: PropTypes.func.isRequired,
+  toggleFeedList: PropTypes.func.isRequired,
   toggleFolder: PropTypes.func.isRequired,
   filterClusters: PropTypes.func.isRequired,
   markAllAsRead: PropTypes.func.isRequired,

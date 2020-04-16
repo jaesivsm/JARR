@@ -10,57 +10,68 @@ const userSlice = createSlice({
                   password: storageGet("password"),
                   token: storageGet("token", "session"),
                   isLeftMenuOpen: storageGet("left-menu-open") !== "false",
+                  isRightPanelOpen: false,
                   isLeftMenuFolded: storageGet("left-menu-folded") === "true",
+                  rightPanelObjType: null, // feed, category
+                  rightPanelObjId: null,
+                  rightPanelJob: null, // edit, add
   },
   reducers: {
     attemptLogin(state, action) {
-        const { login, password } = action.payload;
-        storageSet("login", login);
-        storageSet("password", password);
-        return { ...state, login, password, loading: true };
+      const { login, password } = action.payload;
+      storageSet("login", login);
+      storageSet("password", password);
+      return { ...state, login, password, loading: true };
     },
     loginFailed(state, action) {
-        storageRemove("login");
-        storageRemove("password");
-        return { ...state, loading: false,
-                 token: null, login: null, password: null,
-                 error: action.payload.error };
+      storageRemove("login");
+      storageRemove("password");
+      return { ...state, loading: false,
+               token: null, login: null, password: null,
+               error: action.payload.error };
     },
     tokenAcquired(state, action) {
-        const token = action.payload.data.access_token;
-        storageSet("token", token, "session");
-        return { ...state, token, loading: false };
+      const token = action.payload.data.access_token;
+      storageSet("token", token, "session");
+      return { ...state, token, loading: false };
     },
     tokenExpire(state, action) {
-        storageRemove("token", "session");
-        return { ...state, loading: true, token: null};
+      storageRemove("token", "session");
+      return { ...state, loading: true, token: null};
     },
     toggleFolding(state, action) {
-        const newFolding = !state.isLeftMenuFolded;
-        storageSet("left-menu-folded", newFolding);
-        return { ...state, isLeftMenuFolded: newFolding };
+      const newFolding = !state.isLeftMenuFolded;
+      storageSet("left-menu-folded", newFolding);
+      return { ...state, isLeftMenuFolded: newFolding };
     },
     toggleLeftMenu(state, action) {
-        const newState = !state.isLeftMenuOpen;
-        storageSet("left-menu-open", newState);
-        return { ...state, isLeftMenuOpen: newState};
+      const newState = !state.isLeftMenuOpen;
+      storageSet("left-menu-open", newState);
+      return { ...state, isLeftMenuOpen: newState };
+    },
+    toggleRightPanel(state, action) {
+      return { ...state, isRightPanelOpen: true,
+               rightPanelObjType: action.payload.objType,
+               rightPanelObjId: action.payload.objId,
+               rightPanelJob: action.payload.objId ? "edit" : "add",
+      };
     },
     doLogout() {
-        storageRemove("login");
-        storageRemove("password");
-        storageRemove("left-menu-open");
-        storageRemove("left-menu-folded");
-        storageRemove("token", "session");
-        return { loading: false, error: null,
-                 login: null, password: null, token: null,
-                 isLeftMenuOpen: true,
-        };
+      storageRemove("login");
+      storageRemove("password");
+      storageRemove("left-menu-open");
+      storageRemove("left-menu-folded");
+      storageRemove("token", "session");
+      return { loading: false, error: null,
+               login: null, password: null, token: null,
+               isLeftMenuOpen: true,
+      };
     }
   }
 });
 
 export const { attemptLogin, loginFailed, tokenAcquired, tokenExpire, doLogout,
-               toggleLeftMenu, toggleFolding,
+               toggleLeftMenu, toggleRightPanel, toggleFolding,
 } = userSlice.actions;
 
 export default userSlice.reducer;
