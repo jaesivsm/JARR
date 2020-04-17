@@ -6,7 +6,9 @@ import Drawer from "@material-ui/core/Drawer";
 import Divider from "@material-ui/core/Divider";
 import IconButton from "@material-ui/core/IconButton";
 import Close from "@material-ui/icons/Close";
+
 // jarr
+import BuildFeed from "./BuildFeed";
 import AddFeed from "./AddFeed";
 import AddCategory from "./AddCategory";
 import { closePanel } from "./editSlice";
@@ -20,16 +22,25 @@ const mapDispatchToProps = (dispatch) => ({
 
 function mapStateToProps(state) {
   return { isOpen: state.edit.isOpen,
+           isLoading: state.edit.isLoading,
            job: state.edit.job,
            objType: state.edit.objType,
+           buildedFeed: state.edit.buildedFeed,
+           categories: state.feeds.categories.map((cat) => (
+               { id: cat.id, name: cat.name }
+           )),
   };
 }
 
-function EditPanel({ isOpen, job, objType, close }) {
+function EditPanel({ isOpen, isLoading, job, objType, buildedFeed, categories, close }) {
   const classes = editPanelStyle();
   let form = null;
   if(job === "add" && objType === "feed") {
-    form = <AddFeed />;
+    if(buildedFeed) {
+      form = <AddFeed buildedFeed={buildedFeed} categories={categories} />;
+    } else {
+      form = <BuildFeed isLoading={isLoading} />;
+    }
   } else if (job === "add" && objType === "category") {
     form = <AddCategory />
   }
@@ -61,8 +72,11 @@ function EditPanel({ isOpen, job, objType, close }) {
 
 EditPanel.propTypes = {
   isOpen: PropTypes.bool.isRequired,
+  isLoading: PropTypes.bool.isRequired,
+  categories: PropTypes.array,
   job: PropTypes.string,
   objType: PropTypes.string,
+  buildedFeed: PropTypes.object,
   close: PropTypes.func.isRequired,
 };
 

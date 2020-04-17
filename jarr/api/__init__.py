@@ -10,7 +10,7 @@ from flask_restx import Api
 from sqlalchemy.exc import IntegrityError
 
 from jarr.bootstrap import (PARSED_PLATFORM_URL, commit_pending_sql, conf,
-                            rollback_pending_sql, session)
+                            rollback_pending_sql)
 from jarr.controllers import UserController
 from jarr.lib.utils import default_handler
 

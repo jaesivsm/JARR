@@ -61,10 +61,10 @@ function FeedList(props) {
       }}
     >
       <div className={classes.drawerHeader}>
-        <IconButton onClick={() => props.toggleAddPanel('feed')}>
+        <IconButton onClick={() => props.toggleAddPanel("feed")}>
           <AddFeedIcon />
         </IconButton>
-        <IconButton onClick={() => props.toggleAddPanel('category')}>
+        <IconButton onClick={() => props.toggleAddPanel("category")}>
           <AddCategoryIcon />
         </IconButton>
         <IconButton onClick={props.toggleFolder}>

@@ -16,7 +16,6 @@ import { doCreateCategory } from "../feedlist/feedSlice";
 const mapDispatchToProps = (dispatch) => ({
   createCategory(e, category) {
     e.preventDefault();
-    console.log(category);
     dispatch(doCreateCategory(category));
     return dispatch(closePanel());
   },
@@ -27,7 +26,7 @@ function AddCategory({ isOpen, createCategory }) {
                                        "cluster_enabled": true,
                                        "cluster_tfidf_enabled": true,
                                        "cluster_same_category": true,
-                                       "cluster_same_feed": true })
+                                       "cluster_same_feed": true });
 
   const handleChange = (e) => {
     setState({ ...state, [e.target.name]: e.target.checked });

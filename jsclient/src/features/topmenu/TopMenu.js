@@ -12,9 +12,9 @@ import MenuIcon from "@material-ui/icons/Menu";
 import ExitToAppIcon from "@material-ui/icons/ExitToApp";
 import MarkAllAsReadIcon from "@material-ui/icons/LibraryAddCheck";
 import MarkALlNonClusterAsReadIcon from "@material-ui/icons/PlaylistAddCheck";
-import FilterAllOrFavoriteIcon from '@material-ui/icons/StarBorder';
+import FilterAllOrFavoriteIcon from "@material-ui/icons/StarBorder";
 import FilterFavoriteIcon from "@material-ui/icons/Star";
-import FilterAllIcon from '@material-ui/icons/IndeterminateCheckBox';
+import FilterAllIcon from "@material-ui/icons/IndeterminateCheckBox";
 import FilterUnreadIcon from "@material-ui/icons/CheckBoxOutlineBlank";
 // jarr
 import topMenuStyle from "./topMenuStyle";
@@ -67,14 +67,14 @@ function TopMenu(props) {
           </IconButton>
           <IconButton
             color="inherit"
-            onClick={() => props.filterClusters(props.isFilteringOnAll ? null : 'all' )}
+            onClick={() => props.filterClusters(props.isFilteringOnAll ? null : "all" )}
             className={clsx(classes.menuButton)}
           >
             {props.isFilteringOnAll ? <FilterAllIcon /> : <FilterUnreadIcon />}
           </IconButton>
           <IconButton
             color="inherit"
-            onClick={() => props.filterClusters(props.isFilteringOnLiked ? null : 'liked' )}
+            onClick={() => props.filterClusters(props.isFilteringOnLiked ? null : "liked" )}
             className={clsx(classes.menuButton)}
           >
             {props.isFilteringOnLiked ? <FilterFavoriteIcon /> : <FilterAllOrFavoriteIcon />}

@@ -3,7 +3,7 @@ from collections import defaultdict
 from datetime import datetime, timedelta
 
 import dateutil.parser
-from sqlalchemy import and_, or_
+from sqlalchemy import and_
 from sqlalchemy.sql import delete, select, update
 from werkzeug.exceptions import Forbidden
 
@@ -31,7 +31,7 @@ class FeedController(AbstractController):
         feeds = defaultdict(list)
         for fid, title, cid in session.query(
                 Feed.id, Feed.title, Feed.category_id)\
-                .filter(Feed.user_id == self.user_id
+                .filter(Feed.user_id == self.user_id,
                         Feed.status != FeedStatus.to_delete,
                         Feed.status != FeedStatus.deleting)\
                 .order_by(Feed.title):

@@ -36,12 +36,25 @@ const feedSlice = createSlice({
       state.categories.push(action.payload.category);
       return state;
     },
+    createdFeed(state, action) {
+      const newFeed = action.payload.feed;
+      return { ...state,
+               categories: state.categories.map((category) => {
+                 if(newFeed["category_id"] === category.id) {
+
+                   return { ...category,
+                            feeds: [...category.feeds, newFeed]};
+                 }
+                 return category;
+               }),
+      };
+    },
   },
 });
 
 export const { askedFeeds, loadedFeeds,
                toggleMenu, toggleFolding,
-               createdCategory,
+               createdCategory, createdFeed,
 } = feedSlice.actions;
 export default feedSlice.reducer;
 
@@ -55,11 +68,17 @@ export const doFetchFeeds = (): AppThunk => async (dispatch, getState) => {
 };
 
 export const doCreateCategory = (category): AppThunk => async (dispatch, getState) => {
-    console.log('doCreateCategory');
   const result = await doRetryOnTokenExpiration({
     method: "post",
     url: apiUrl + "/category?" + qs.stringify(category),
   }, dispatch, getState);
-    console.log(result);
   dispatch(createdCategory({ category: result.data }));
+};
+
+export const doCreateFeed = (feed): AppThunk => async (dispatch, getState) => {
+  const result = await doRetryOnTokenExpiration({
+    method: "post",
+    url: apiUrl + "/feed?" + qs.stringify(feed),
+  }, dispatch, getState);
+  dispatch(createdFeed({ feed: result.data }));
 };

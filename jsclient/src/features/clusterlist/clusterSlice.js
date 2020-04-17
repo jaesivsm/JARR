@@ -16,7 +16,7 @@ const clusterSlice = createSlice({
       const filters = { ...state.filters };
       if (action.payload.filters.feedId
           || action.payload.filters.categoryId === "all") {
-        delete filters['category_id'];
+        delete filters["category_id"];
       }
       if (action.payload.filters.feedId) {
         filters["feed_id"] = action.payload.filters.feedId;
@@ -26,7 +26,7 @@ const clusterSlice = createSlice({
           filters["category_id"] = action.payload.filters.categoryId;
         }
         if (filters["feed_id"]) {
-          delete filters['feed_id'];
+          delete filters["feed_id"];
         }
       }
       if (action.payload.filters.filter) {

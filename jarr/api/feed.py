@@ -22,6 +22,11 @@ feed_build_model = feed_ns.model('FeedBuilder', {
         'icon_url': fields.String(),
         'title': fields.String(),
         'description': fields.String(),
+        'cluster_enabled': fields.Boolean(default=True, required=True),
+        'cluster_tfidf_enabled': fields.Boolean(default=True, required=True),
+        'cluster_same_category': fields.Boolean(default=True, required=True),
+        'cluster_same_feed': fields.Boolean(default=True, required=True),
+        'cluster_wake_up': fields.Boolean(default=True, required=True),
 })
 feed_model = feed_ns.model('Feed', {
         'id': fields.Integer(readOnly=True),
