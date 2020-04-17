@@ -85,6 +85,8 @@ export const doRetryOnTokenExpiration = async (payload, dispatch, getState) => {
       } catch (err) {
         dispatch(loginFailed({ error: err.toString() }));
       }
+    } else {
+      return err.response;
     }
   }
 };

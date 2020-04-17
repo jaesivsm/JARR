@@ -75,8 +75,7 @@ function AddFeed({ buildedFeed, categories, createFeed }) {
           </MenuItem>
         ))}
       </Select>
-      <Select variant="outlined"
-        value={state["feed_type"]}
+      <Select variant="outlined" value={state["feed_type"]}
         onChange={(e) => (setState({ ...state, "feed_type": e.target.value }))}
       >
         {availableFeedTypes.map((type) => (

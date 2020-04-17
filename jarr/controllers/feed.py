@@ -29,13 +29,14 @@ class FeedController(AbstractController):
 
     def list_w_categ(self):
         feeds = defaultdict(list)
-        for fid, title, cid in session.query(
-                Feed.id, Feed.title, Feed.category_id)\
+        for fid, title, icon_url, cid in session.query(
+                Feed.id, Feed.title, Feed.icon_url, Feed.category_id)\
                 .filter(Feed.user_id == self.user_id,
                         Feed.status != FeedStatus.to_delete,
                         Feed.status != FeedStatus.deleting)\
                 .order_by(Feed.title):
-            feeds[cid].append({'id': fid, 'title': title})
+            feeds[cid].append({'id': fid, 'title': title,
+                               'icon_url': icon_url})
         yield {'id': None, 'name': None, 'feeds': feeds.get(None, [])}
         for cid, cname in session.query(Category.id, Category.name)\
                     .filter(Category.user_id == self.user_id)\

@@ -6,8 +6,9 @@ from jarr.lib.enums import ReadReason
 
 ACCEPTED_LEVELS = {'success', 'info', 'warning', 'error'}
 default_ns = Namespace('default', path='/')
-feed_model = default_ns.model('Feed',
-    {'title': fields.String(), 'id': fields.Integer()})
+feed_model = default_ns.model('Feed', {'title': fields.String(),
+                                       'icon_url': fields.String(),
+                                       'id': fields.Integer()})
 list_feeds_model = default_ns.model('ListFeeds', {
         'id': fields.Integer(),
         'name': fields.String(),

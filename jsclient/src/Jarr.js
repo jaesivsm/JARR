@@ -32,7 +32,7 @@ function Jarr({ isLogged, isLeftMenuOpen }) {
       <FeedList />
       <ClusterList />
       <EditPanel />
-   </div>
+    </div>
   );
 }
 

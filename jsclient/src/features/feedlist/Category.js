@@ -10,6 +10,7 @@ import ExpandLess from "@material-ui/icons/ExpandLess";
 import ExpandMore from "@material-ui/icons/ExpandMore";
 
 import { doListClusters } from "../clusterlist/clusterSlice";
+import feedListStyle from "./feedListStyle";
 
 const mapDispatchToProps = (dispatch) => ({
   listClusters(e, filters) {
@@ -23,6 +24,7 @@ function toKey(type, id, selectedId) {
 }
 
 function Category(props) {
+  const classes = feedListStyle();
   const isAllCateg = !props.id;
   const [isFolded, setIsFolded] = useState(props.isFoldedFromParent);
   /* do not display the All category if not feeds are without a category */
@@ -52,6 +54,7 @@ function Category(props) {
               selected={props.selectedFeedId === feed.id}
               onClick={(e) => (props.listClusters(e, { feedId: feed.id }))}
             >
+            {feed["icon_url"] ? <img className={classes.feedIcon} alt="feed icon" src={feed["icon_url"]} /> : null}
             <ListItemText primary={feed.title} />
           </ListItem>))}
       </List>
