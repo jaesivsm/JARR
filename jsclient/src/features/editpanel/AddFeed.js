@@ -21,18 +21,21 @@ const feedConfs = {"cluster_enabled": "Allow clustering article from this feed",
                    "cluster_same_category": "Allow cluster article inside the same category",
                    "cluster_same_feed": "Allow clustering article inside the same feed",
                    "cluster_wake_up": "Allow clustering to unread an article previously marked as read"};
+
 const mapDispatchToProps = (dispatch) => ({
-  createFeed(e, category) {
+  createFeed(e, feed) {
     e.preventDefault();
-    dispatch(doCreateFeed(category));
+    if (!feed["category_id"]) {
+      delete feed["category_id"];
+    }
+    dispatch(doCreateFeed(feed));
     return dispatch(closePanel());
   },
 });
 
 function FeedTextAttr({ required, label, name, state, setState}) {
   return (
-    <TextField required={!!required}
-      id="outlined-required" variant="outlined"
+    <TextField required={!!required} variant="outlined"
       label={label} name={name} value={state[name]}
       onChange={(e) => (setState({ ...state, [e.target.name]: e.target.value }))} />
   );
@@ -62,8 +65,7 @@ function AddFeed({ buildedFeed, categories, createFeed }) {
         state={state} setState={setState} />
       <FeedTextAttr label="Website link" name="site_link"
         state={state} setState={setState} />
-      <Select
-        id="outlined-required" variant="outlined"
+      <Select variant="outlined"
         value={state["category_id"] ? state["category_id"] : 0}
         onChange={(e) => (setState({ ...state, "category_id": e.target.value }))}
       >
@@ -73,7 +75,7 @@ function AddFeed({ buildedFeed, categories, createFeed }) {
           </MenuItem>
         ))}
       </Select>
-      <Select id="outlined-required" variant="outlined"
+      <Select variant="outlined"
         value={state["feed_type"]}
         onChange={(e) => (setState({ ...state, "feed_type": e.target.value }))}
       >
