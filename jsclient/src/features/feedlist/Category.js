@@ -45,7 +45,7 @@ function Category(props) {
         key={toKey("button-cat", props.id, props.selectedCategoryId)}
         onClick={(e) => (props.listClusters(e, { categoryId: isAllCateg ? "all" : props.id }))}>
       <ListItemText primary={isAllCateg ? "All" : props.name} />
-      {props.unreadCount ? props.unreadCount : null}
+      {props.unreadCount && !isAllCateg ? props.unreadCount : null}
       {foldButton}
     </ListItem>
     <Collapse key={"collapse-cat-" + props.id} in={isAllCateg || !isFolded}>

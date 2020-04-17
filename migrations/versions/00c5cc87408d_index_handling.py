@@ -27,7 +27,7 @@ def upgrade():
                                        sa.Binary(), nullable=True))
     print('%s - updating link_hash values' % datetime.now().isoformat())
     op.get_bind().execute("""UPDATE article
-                             SET link_hash = digest(link, 'sha1');""")
+                             SET link_hash = digest(link, 'SHA1');""")
     print('%s - creating article indexes' % datetime.now().isoformat())
     op.create_index('ix_article_eid_cid_uid', 'article',
                     ['user_id', 'category_id', 'entry_id'], unique=False)
