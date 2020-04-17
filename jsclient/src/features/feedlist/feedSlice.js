@@ -10,7 +10,6 @@ const feedSlice = createSlice({
                   categories: [],
                   isParentFolded: storageGet("left-menu-folded") === "true",
                   isOpen: storageGet("left-menu-open") !== "false",
-                  width: 240,
   },
   reducers: {
     askedFeeds(state, action) {

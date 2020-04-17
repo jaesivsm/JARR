@@ -61,18 +61,22 @@ function FeedList(props) {
       }}
     >
       <div className={classes.drawerHeader}>
-        <IconButton onClick={() => props.toggleAddPanel("feed")}>
-          <AddFeedIcon />
-        </IconButton>
-        <IconButton onClick={() => props.toggleAddPanel("category")}>
-          <AddCategoryIcon />
-        </IconButton>
-        <IconButton onClick={props.toggleFolder}>
-         {props.isFoldedFromParent ? <UnFoldAllCategoriesIcon /> : <FoldAllCategoriesIcon />}
-        </IconButton>
-        <IconButton onClick={props.toggleFeedList}>
-          <ChevronLeftIcon />
-        </IconButton>
+        <div>
+          <IconButton onClick={() => props.toggleAddPanel("feed")}>
+            <AddFeedIcon />
+          </IconButton>
+          <IconButton onClick={() => props.toggleAddPanel("category")}>
+            <AddCategoryIcon />
+          </IconButton>
+          <IconButton onClick={props.toggleFolder}>
+           {props.isFoldedFromParent ? <UnFoldAllCategoriesIcon /> : <FoldAllCategoriesIcon />}
+          </IconButton>
+        </div>
+        <div>
+          <IconButton onClick={props.toggleFeedList}>
+            <ChevronLeftIcon />
+          </IconButton>
+        </div>
       </div>
       <List>
         {props.categories.map((category) => (
