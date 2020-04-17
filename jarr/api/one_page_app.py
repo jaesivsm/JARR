@@ -16,7 +16,8 @@ list_feeds_model = default_ns.model('ListFeeds', {
         'feeds': fields.Nested(feed_model),
 })
 unreads_model = default_ns.model('Unreads', {
-        'fid': fields.Integer(),
+        'category_id': fields.Integer(),
+        'feed_id': fields.Integer(),
         'unread': fields.Integer(default=0),
 })
 midle_panel_model = default_ns.model('MiddlePanel', {
@@ -75,7 +76,7 @@ class Unreads(Resource):
     def get():
         """Return feeds with count of unread clusters."""
         result = []
-        fields_name = 'fid', 'unread'
+        fields_name = 'category_id', 'feed_id', 'unread'
         for line in ClusterController(current_identity.id).get_unreads():
             result.append(dict(zip(fields_name, line)))
         return result, 200

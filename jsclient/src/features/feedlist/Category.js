@@ -45,6 +45,7 @@ function Category(props) {
         key={toKey("button-cat", props.id, props.selectedCategoryId)}
         onClick={(e) => (props.listClusters(e, { categoryId: isAllCateg ? "all" : props.id }))}>
       <ListItemText primary={isAllCateg ? "All" : props.name} />
+      {props.unreadCount ? props.unreadCount : null}
       {foldButton}
     </ListItem>
     <Collapse key={"collapse-cat-" + props.id} in={isAllCateg || !isFolded}>
@@ -56,6 +57,7 @@ function Category(props) {
             >
             {feed["icon_url"] ? <img className={classes.feedIcon} alt="feed icon" src={feed["icon_url"]} /> : null}
             <ListItemText primary={feed.title} />
+            {feed.unreadCount ? feed.unreadCount : null}
           </ListItem>))}
       </List>
     </Collapse>
@@ -67,6 +69,7 @@ Category.propTypes = {
   id: PropTypes.number,
   name: PropTypes.string,
   feeds: PropTypes.array.isRequired,
+  unreadCount: PropTypes.number,
   selectedCategoryId: PropTypes.number,
   selectedFeedId: PropTypes.number,
   isFoldedFromParent: PropTypes.bool.isRequired,

@@ -14,7 +14,8 @@ import UnFoldAllCategoriesIcon from "@material-ui/icons/UnfoldMore";
 // jarrs
 import feedListStyle from "./feedListStyle";
 import Category from "./Category";
-import { doFetchFeeds, toggleFolding, toggleMenu } from "./feedSlice";
+import { doFetchFeeds, doFetchUnreadCount, toggleFolding, toggleMenu
+} from "./feedSlice";
 import { openPanel } from "../editpanel/editSlice";
 
 function mapStateToProps(state) {
@@ -29,6 +30,9 @@ function mapStateToProps(state) {
 const mapDispatchToProps = (dispatch) => ({
   fetchFeed() {
     return dispatch(doFetchFeeds());
+  },
+  fetchUnreadCount() {
+    return dispatch(doFetchUnreadCount());
   },
   toggleFeedList() {
     return dispatch(toggleMenu());
@@ -47,6 +51,7 @@ function FeedList(props) {
   useEffect(() => {
     if (!everLoaded) {
       props.fetchFeed();
+      props.fetchUnreadCount();
       setEverLoaded(true);
     }
   }, [everLoaded, props]);
@@ -84,6 +89,7 @@ function FeedList(props) {
             id={category.id}
             name={category.name}
             feeds={category.feeds}
+            unreadCount={category.unreadCount}
             isFoldedFromParent={props.isFoldedFromParent}
             selectedFeedId={props.selectedFeedId}
             selectedCategoryId={props.selectedCategoryId}

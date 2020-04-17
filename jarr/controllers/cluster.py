@@ -320,9 +320,10 @@ class ClusterController(AbstractController):
                               .group_by(group_on).all())
 
     def get_unreads(self):
-        return session.query(Article.feed_id, func.count(Cluster.id))\
+        return session.query(Article.category_id, Article.feed_id,
+                             func.count(Cluster.id))\
                 .join(Article, and_(Article.cluster_id == Cluster.id,
                                     Article.user_id == self.user_id))\
                 .filter(and_(Cluster.user_id == self.user_id,
                              Cluster.read.__eq__(False)))\
-                .group_by(Article.feed_id)
+                .group_by(Article.category_id, Article.feed_id)

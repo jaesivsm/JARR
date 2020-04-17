@@ -4,16 +4,40 @@ import { doRetryOnTokenExpiration } from "../login/userSlice";
 import { apiUrl } from "../../const";
 import { storageGet, storageSet } from "../../storageUtils";
 
+
+function mergeCategoriesWithUnreads(categories, unreads) {
+  return categories.map((category) => {
+      let catUnreadCount = 0;
+      const mergedCategory = { ...category, isFolded: false,
+                               feeds: category.feeds.map((feed) => {
+                                 const unread = unreads.filter((unread) => {
+                                   return unread["feed_id"] === feed.id;
+                                 });
+                                 const unreadCount = unread && unread[0] ? unread[0].unread : 0;
+                                 catUnreadCount += unreadCount;
+                                 return { ...feed, unreadCount };
+                               }),
+      };
+      mergedCategory.unreadCount = catUnreadCount;
+      return mergedCategory;
+  })
+}
+
 const feedSlice = createSlice({
   name: "feeds",
-  initialState: { loading: false,
+  initialState: { loadingFeeds: false,
+                  loadingUnreadCounts: false,
                   categories: [],
+                  unreads: [],
                   isParentFolded: storageGet("left-menu-folded") === "true",
                   isOpen: storageGet("left-menu-open") !== "false",
   },
   reducers: {
-    askedFeeds(state, action) {
-      return { ...state, loading: true };
+    requestedFeeds(state, action) {
+      return { ...state, loadingFeeds: true };
+    },
+    requestedUnreadCounts(state, action) {
+      return { ...state, loadingUnreadCounts: true };
     },
     toggleFolding(state, action) {
       const newFolding = !state.isParentFolded;
@@ -21,9 +45,17 @@ const feedSlice = createSlice({
       return { ...state, isParentFolded: newFolding };
     },
     loadedFeeds(state, action) {
-      const categories = action.payload.categories.map((cat) => (
-            { ...cat, isFolded: false }));
-      return { ...state, loading: false, categories };
+      return { ...state, loadingFeeds: false,
+               categories: mergeCategoriesWithUnreads(action.payload.categories,
+                                                      state.unreads),
+      };
+    },
+    loadedUnreadCounts(state, action) {
+      return { ...state, loadedUnreadCounts: false,
+               unreads: action.payload.unreads,
+               categories: mergeCategoriesWithUnreads(state.categories,
+                                                      action.payload.unreads),
+      };
     },
     toggleMenu(state, action) {
       const newState = !state.isOpen;
@@ -51,19 +83,29 @@ const feedSlice = createSlice({
   },
 });
 
-export const { askedFeeds, loadedFeeds,
+export const { requestedFeeds, loadedFeeds,
+               requestedUnreadCounts, loadedUnreadCounts,
                toggleMenu, toggleFolding,
                createdCategory, createdFeed,
 } = feedSlice.actions;
 export default feedSlice.reducer;
 
 export const doFetchFeeds = (): AppThunk => async (dispatch, getState) => {
-  dispatch(askedFeeds());
+  dispatch(requestedFeeds());
   const result = await doRetryOnTokenExpiration({
     method: "get",
     url: apiUrl + "/list-feeds",
   }, dispatch, getState);
   dispatch(loadedFeeds({ categories: result.data }));
+};
+
+export const doFetchUnreadCount = (): AppThunk => async (dispatch, getState) => {
+  dispatch(requestedUnreadCounts());
+  const result = await doRetryOnTokenExpiration({
+    method: "get",
+    url: apiUrl + "/unreads",
+  }, dispatch, getState);
+  dispatch(loadedUnreadCounts({ unreads: result.data }));
 };
 
 export const doCreateCategory = (category): AppThunk => async (dispatch, getState) => {
