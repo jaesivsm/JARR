@@ -5,29 +5,22 @@ import { apiUrl } from "../../const";
 import { storageGet, storageSet } from "../../storageUtils";
 
 
-function mergeCategoriesWithUnreads(categories, unreads) {
-  return categories.map((category) => {
-      let catUnreadCount = 0;
-      const mergedCategory = { ...category, isFolded: false,
-                               feeds: category.feeds.map((feed) => {
-                                 const unread = unreads.filter((unread) => {
-                                   return unread["feed_id"] === feed.id;
-                                 });
-                                 const unreadCount = unread && unread[0] ? unread[0].unread : 0;
-                                 catUnreadCount += unreadCount;
-                                 return { ...feed, unreadCount };
-                               }),
-      };
-      mergedCategory.unreadCount = catUnreadCount;
-      return mergedCategory;
-  })
+function mergeCategoriesWithUnreads(feedListRows, unreads,
+                                    isParentFolded) {
+      console.log({ ...unreads});
+  return feedListRows.map((row) => {
+      console.log({ ...row});
+     const unread = unreads[row.categ+"-" + row.id];
+     return { ...row,  unread: unread ? unread : null,
+              folded: row.folded === undefined ? isParentFolded: row.folded };
+  });
 }
 
 const feedSlice = createSlice({
   name: "feeds",
   initialState: { loadingFeeds: false,
                   loadingUnreadCounts: false,
-                  categories: [],
+                  feedListRows: [],
                   unreads: [],
                   isParentFolded: storageGet("left-menu-folded") === "true",
                   isOpen: storageGet("left-menu-open") !== "false",
@@ -39,22 +32,33 @@ const feedSlice = createSlice({
     requestedUnreadCounts(state, action) {
       return { ...state, loadingUnreadCounts: true };
     },
-    toggleFolding(state, action) {
+    toggleAllFolding(state, action) {
       const newFolding = !state.isParentFolded;
       storageSet("left-menu-folded", newFolding);
-      return { ...state, isParentFolded: newFolding };
+      return { ...state,
+               feedListRows: state.feedListRows.map((row) => {
+                 return { ...row, folded: newFolding, };
+               }),
+               isParentFolded: newFolding };
+    },
+    toggleFolding(state, action) {
+      return { ...state, feedListRows: state.feedListRows.map((row) => {
+          return { ...row, folded: action.payload === row["category_id"] || (row["type"] === "categ" && row.id === action.payload) ? !row.folded : row.folded }
+      })};
     },
     loadedFeeds(state, action) {
       return { ...state, loadingFeeds: false,
-               categories: mergeCategoriesWithUnreads(action.payload.categories,
-                                                      state.unreads),
+               feedListRows: mergeCategoriesWithUnreads(action.payload.feedListRows,
+                                                        state.unreads,
+                                                        state.isParentFolded),
       };
     },
     loadedUnreadCounts(state, action) {
       return { ...state, loadedUnreadCounts: false,
                unreads: action.payload.unreads,
-               categories: mergeCategoriesWithUnreads(state.categories,
-                                                      action.payload.unreads),
+               feedListRows: mergeCategoriesWithUnreads(state.feedListRows,
+                                                        state.unreads,
+                                                        state.isParentFolded),
       };
     },
     toggleMenu(state, action) {
@@ -63,21 +67,20 @@ const feedSlice = createSlice({
       return { ...state, isOpen: newState };
     },
     createdCategory(state, action) {
-      action.payload.category.feeds = [];
-      state.categories.push(action.payload.category);
+      const feedListRow = { id: action.payload.category.id,
+                            str: action.payload.category.name,
+                            unread: 0,
+                            type: "categ", };
+      state.feedListRows.push(feedListRow);
       return state;
     },
     createdFeed(state, action) {
-      const newFeed = action.payload.feed;
-      return { ...state,
-               categories: state.categories.map((category) => {
-                 if(newFeed["category_id"] === category.id) {
-
-                   return { ...category,
-                            feeds: [...category.feeds, newFeed]};
-                 }
-                 return category;
-               }),
+      const feedListRow = { id: action.payload.feed.id,
+                            str: action.payload.feed.name,
+                            unread: 0,
+                            type: "feed", };
+      //FIXME insert at good place
+      return { ...state, feedListRows: [ ...state.feedListRows, feedListRow ],
       };
     },
   },
@@ -85,7 +88,7 @@ const feedSlice = createSlice({
 
 export const { requestedFeeds, loadedFeeds,
                requestedUnreadCounts, loadedUnreadCounts,
-               toggleMenu, toggleFolding,
+               toggleMenu, toggleAllFolding, toggleFolding,
                createdCategory, createdFeed,
 } = feedSlice.actions;
 export default feedSlice.reducer;
@@ -96,7 +99,7 @@ export const doFetchFeeds = (): AppThunk => async (dispatch, getState) => {
     method: "get",
     url: apiUrl + "/list-feeds",
   }, dispatch, getState);
-  dispatch(loadedFeeds({ categories: result.data }));
+  dispatch(loadedFeeds({ feedListRows: result.data }));
 };
 
 export const doFetchUnreadCount = (): AppThunk => async (dispatch, getState) => {

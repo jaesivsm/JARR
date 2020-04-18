@@ -35,13 +35,16 @@ class FeedController(AbstractController):
                         Feed.status != FeedStatus.to_delete,
                         Feed.status != FeedStatus.deleting)\
                 .order_by(Feed.title):
-            feeds[cid].append({'id': fid, 'title': title,
-                               'icon_url': icon_url})
-        yield {'id': None, 'name': None, 'feeds': feeds.get(None, [])}
+            feeds[cid].append({'id': fid, 'str': title,
+                               'category_id': cid,
+                               'icon_url': icon_url, 'type': 'feed'})
+        yield {'id': None, 'str': None, 'type': 'all-categ'}
+        yield from feeds.get(None, [])
         for cid, cname in session.query(Category.id, Category.name)\
                     .filter(Category.user_id == self.user_id)\
                     .order_by(Category.name.nullsfirst()):
-            yield {'id': cid, 'name': cname, 'feeds': feeds.get(cid, [])}
+            yield {'id': cid, 'str': cname, 'type': 'categ'}
+            yield from feeds.get(cid, [])
 
     def get_active_feed(self, **filters):
         filters['error_count__lt'] = conf.feed.error_max

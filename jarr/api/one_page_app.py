@@ -6,14 +6,12 @@ from jarr.lib.enums import ReadReason
 
 ACCEPTED_LEVELS = {'success', 'info', 'warning', 'error'}
 default_ns = Namespace('default', path='/')
-feed_model = default_ns.model('Feed', {'title': fields.String(),
-                                       'icon_url': fields.String(),
-                                       'id': fields.Integer()})
 list_feeds_model = default_ns.model('ListFeeds', {
         'id': fields.Integer(),
-        'name': fields.String(),
-        'no categ': fields.Boolean(default=False),
-        'feeds': fields.Nested(feed_model),
+        'category_id': fields.Integer(),
+        'str': fields.String(),
+        'type': fields.String(enum=['feed', 'categ', 'all-categ']),
+        'icon_url': fields.String(),
 })
 unreads_model = default_ns.model('Unreads', {
         'category_id': fields.Integer(),
@@ -75,11 +73,7 @@ class Unreads(Resource):
     @jwt_required()
     def get():
         """Return feeds with count of unread clusters."""
-        result = []
-        fields_name = 'category_id', 'feed_id', 'unread'
-        for line in ClusterController(current_identity.id).get_unreads():
-            result.append(dict(zip(fields_name, line)))
-        return result, 200
+        return ClusterController(current_identity.id).get_unreads(), 200
 
 
 def _get_filters(in_dict):

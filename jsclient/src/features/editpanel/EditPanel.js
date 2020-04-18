@@ -26,9 +26,9 @@ function mapStateToProps(state) {
            job: state.edit.job,
            objType: state.edit.objType,
            buildedFeed: state.edit.buildedFeed,
-           categories: state.feeds.categories.map((cat) => (
-               { id: cat.id, name: cat.name }
-           )),
+           categories: state.feeds.feedListRows.filter((row) => (
+               row.type === "categ" || row.type === "all-categ")
+           ).map((cat) => ({ id: cat.id, name: cat.name })),
   };
 }
 

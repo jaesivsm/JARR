@@ -24,5 +24,13 @@ export default makeStyles((theme: Theme) =>
       maxHeight: 16,
       margin: theme.spacing(1),
     },
+    category: {
+      paddingTop: 2,
+      paddingBottom: 2,
+    },
+    feed: {
+      paddingTop: 2,
+      paddingBottom: 2,
+    },
   }),
 );
