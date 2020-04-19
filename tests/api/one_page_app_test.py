@@ -37,7 +37,10 @@ class OnePageAppTest(JarrFlaskCommon):
         self.assertStatusCode(200, resp)
         result = resp.json
         self.assertEqual(10, len(result))
-        self.assertEqual(18, sum(result.values()))
+        self.assertEqual(12, sum([value for key, value in result.items()
+                                  if "categ" in key]))
+        self.assertEqual(18, sum([value for key, value in result.items()
+                                  if "feed" in key]))
 
         self._mark_as_read(18, {'filter': 'unread'})
 
