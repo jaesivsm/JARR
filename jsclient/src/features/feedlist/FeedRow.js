@@ -6,6 +6,7 @@ import ListItem from "@material-ui/core/ListItem";
 import ListItemText from "@material-ui/core/ListItemText";
 import ExpandLess from "@material-ui/icons/ExpandLess";
 import ChevronRight from '@material-ui/icons/ChevronRight';
+import LinkIcon from '@material-ui/icons/Link';
 
 import { doListClusters } from "../clusterlist/clusterSlice";
 import feedListStyle from "./feedListStyle";
@@ -44,7 +45,8 @@ function FeedRow({ index, style, feedListRows,
           selected={selectedFeedId === obj.id}
           onClick={(e) => (listClusters(e, { feedId: obj.id }))}
         >
-        {obj["icon_url"] ? <img className={classes.feedIcon} alt="feed icon" src={obj["icon_url"]} /> : null}
+        {console.log(obj['icon_url'])}
+        {obj["icon_url"] ? <img className={classes.feedIcon} alt="feed icon" src={obj["icon_url"]} /> : <LinkIcon className={classes.defaultFeedIcon} color="disabled" fontSize="small"/>}
         <ListItemText primary={obj.str} />
         {obj.unread}
       </ListItem>

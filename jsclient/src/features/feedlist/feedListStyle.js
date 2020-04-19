@@ -35,5 +35,8 @@ export default makeStyles((theme: Theme) =>
       paddingTop: 2,
       paddingBottom: 2,
     },
+    defaultFeedIcon: {
+      margin: 6
+    }
   }),
 );
