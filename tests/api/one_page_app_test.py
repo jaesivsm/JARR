@@ -2,8 +2,9 @@ import json
 
 from tests.base import JarrFlaskCommon
 from tests.utils import update_on_all_objs
-from jarr.controllers import (UserController, ClusterController,
-        FeedController, ArticleController)
+from jarr.controllers import (ArticleController, CategoryController,
+                              ClusterController, FeedController,
+                              UserController)
 
 
 class OnePageAppTest(JarrFlaskCommon):
@@ -25,7 +26,7 @@ class OnePageAppTest(JarrFlaskCommon):
         resp = self.jarr_client('get', 'list-feeds', user=self.user.login)
         fcount = FeedController(self.user.id).read().count()
         ccount = CategoryController(self.user.id).read().count()
-        self.assertEqual(fcount + count, len(resp.json))
+        self.assertEqual(fcount + ccount + 1, len(resp.json))
         self.assertEqual(fcount,
                          len([r for r in resp.json if r['type'] == 'feed']))
         self.assertEqual(ccount,
@@ -36,7 +37,10 @@ class OnePageAppTest(JarrFlaskCommon):
         self.assertStatusCode(200, resp)
         result = resp.json
         self.assertEqual(10, len(result))
-        self.assertEqual(18, sum(line['unread'] for line in result.values()))
+        self.assertEqual(12, sum([value for key, value in result.items()
+                                  if "categ" in key]))
+        self.assertEqual(18, sum([value for key, value in result.items()
+                                  if "feed" in key]))
 
         self._mark_as_read(18, {'filter': 'unread'})
 

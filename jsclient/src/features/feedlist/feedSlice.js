@@ -8,7 +8,7 @@ import { storageGet, storageSet } from "../../storageUtils";
 function mergeCategoriesWithUnreads(feedListRows, unreads,
                                     isParentFolded) {
   return feedListRows.map((row) => {
-     const unread = unreads[row.type+"-" + row.id];
+     const unread = unreads[row.type + "-" + row.id];
      return { ...row,  unread: unread ? unread : null,
               folded: row.folded === undefined ? isParentFolded: row.folded };
   });
@@ -41,7 +41,7 @@ const feedSlice = createSlice({
     },
     toggleFolding(state, action) {
       return { ...state, feedListRows: state.feedListRows.map((row) => {
-          return { ...row, folded: action.payload === row["category_id"] || (row["type"] === "categ" && row.id === action.payload) ? !row.folded : row.folded }
+          return { ...row, folded: action.payload === row["category_id"] || (row["type"] === "categ" && row.id === action.payload) ? !row.folded : row.folded };
       })};
     },
     loadedFeeds(state, action) {
@@ -55,7 +55,7 @@ const feedSlice = createSlice({
       return { ...state, loadedUnreadCounts: false,
                unreads: action.payload.unreads,
                feedListRows: mergeCategoriesWithUnreads(state.feedListRows,
-                                                        state.unreads,
+                                                        action.payload.unreads,
                                                         state.isParentFolded),
       };
     },
@@ -111,7 +111,7 @@ export const doCreateObj = (obj, type): AppThunk => async (dispatch, getState) =
     method: "post",
     url: apiUrl + "/" + type + "?" + qs.stringify(obj),
   }, dispatch, getState);
-  dispatch(createdObj({ obj: result.data, type: type }));
+  dispatch(createdObj({ obj: result.data, type }));
 };
 
 export const doEditObj = (id, obj, objType): AppThunk => async (dispatch, getState) => {

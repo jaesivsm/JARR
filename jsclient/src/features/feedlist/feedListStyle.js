@@ -28,9 +28,28 @@ export default makeStyles((theme: Theme) =>
       paddingTop: 2,
       paddingBottom: 2,
     },
+    catItemAll: {
+        marginLeft: 25
+    },
+    feedItem: {
+      lineHeight: 1,
+      overflow: 'hidden',
+      paddingLeft: '32px !important',
+      whiteSpace: 'nowrap'
+    },
+    feetItemText: {
+      marginRight: 10,
+      '& span' : {
+          overflow: 'hidden',
+          maxWidth: 175,  
+      }
+    },
     feed: {
       paddingTop: 2,
       paddingBottom: 2,
     },
+    defaultFeedIcon: {
+      margin: 6
+    }
   }),
 );

@@ -7,6 +7,7 @@ DB_VER = $(shell pipenv run ./manager.py db heads | sed -e 's/ .*//g')
 ENV = dev
 COMPOSE = pipenv run docker-compose --project-name jarr --file Dockerfiles/$(ENV)-env.yml
 TEST = tests/
+DB_NAME = jarr_test
 
 install:
 	pipenv sync --dev
@@ -45,11 +46,11 @@ run-worker:
 
 create-db:
 	$(COMPOSE) exec postgresql su postgres -c \
-		"createuser jarr --no-superuser --createdb --no-createrole"
-	$(COMPOSE) exec postgresql su postgres -c "createdb jarr --no-password"
+		"createuser $(DB_NAME) --no-superuser --createdb --no-createrole"
+	$(COMPOSE) exec postgresql su postgres -c "createdb $(DB_NAME) --no-password"
 
 init-env: export JARR_CONFIG = $(CONF_FILE)
-init-env: create-db
+init-env:
 	pipenv run ./manager.py db_create
 	pipenv run ./manager.py db stamp $(DB_VER)
 

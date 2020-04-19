@@ -61,12 +61,9 @@ const clusterSlice = createSlice({
     requestedUnreadCluster(state, action) {
       return { ...state,
                // marking updated cluster as unread
-               clusters: state.clusters.map((cluster) => {
-                 if(cluster.id === action.payload.clusterId) {
-                    return { ...cluster, read: false};
-                 }
-                 return cluster;
-               }),
+               clusters: state.clusters.map((cluster) => (
+                   { ...cluster, read: cluster.id === action.payload.clusterId ? false : cluster.read }
+               )),
                loadedCluster: {}, requestedClusterId: null,
       };
     },
