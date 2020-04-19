@@ -43,13 +43,19 @@ function FeedRow({ index, style, feedListRows,
   const isSelected = (selectedFeedId === obj.id && obj.type === "feed") || obj.id === selectedCategoryId;
 
   if (obj.type === "feed") {
+    let icon;
+    if(obj["icon_url"]) {
+      icon = <img className={classes.feedIcon} alt="feed icon" src={obj["icon_url"]} />;
+    } else {
+      icon = <LinkIcon className={classes.defaultFeedIcon} color="disabled" fontSize="small"/>;
+    }
     return (
       <ListItem button style={style}
           className={classes.feedItem} 
           selected={selectedFeedId === obj.id}
           onClick={(e) => (listClusters(e, { feedId: obj.id }))}
         >
-        {obj["icon_url"] ? <img className={classes.feedIcon} alt="feed icon" src={obj["icon_url"]} /> : <LinkIcon className={classes.defaultFeedIcon} color="disabled" fontSize="small"/>}
+        {icon}
         <ListItemText primary={obj.str} className={classes.feetItemText}/>
         {obj.unread}
       </ListItem>
@@ -64,8 +70,6 @@ function FeedRow({ index, style, feedListRows,
   return (
     <ListItem button style={style} selected={isSelected}
         onClick={(e) => (listClusters(e, { categoryId: isAllCateg ? "all" : obj.id}, obj.folded ))}>
-      <ListItemText primary={isAllCateg ? "All" : obj.str} />
-      {obj.unread && !isAllCateg ? obj.unread: null}
       {foldButton}
       <ListItemText primary={isAllCateg ? "All" : obj.str} className={isAllCateg ? classes.catItemAll : null} />
       {obj.unread && !isAllCateg ? obj.unread: null}
