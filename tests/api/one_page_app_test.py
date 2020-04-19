@@ -24,8 +24,8 @@ class OnePageAppTest(JarrFlaskCommon):
 
     def test_list_feeds(self):
         resp = self.jarr_client('get', 'list-feeds', user=self.user.login)
-        fcount = len(FeedController(self.user.id).read())
-        ccount = len(CategoryController(self.user.id).read())
+        fcount = FeedController(self.user.id).read().count()
+        ccount = CategoryController(self.user.id).read().count()
         self.assertEqual(fcount + ccount, len(resp.json))
         self.assertEqual(fcount,
                          len([r for r in resp.json if r['type'] == 'feed']))
@@ -36,7 +36,7 @@ class OnePageAppTest(JarrFlaskCommon):
         resp = self.jarr_client('get', 'unreads', user=self.user.login)
         self.assertStatusCode(200, resp)
         result = resp.json
-        self.assertEqual(11, len(result))
+        self.assertEqual(10, len(result))
         self.assertEqual(18, sum(line['unread'] for line in result.values()))
 
         self._mark_as_read(18, {'filter': 'unread'})
