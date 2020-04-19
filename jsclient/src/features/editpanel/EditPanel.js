@@ -45,9 +45,9 @@ function EditPanel({ isOpen, isLoading, job, objType,
       form = <BuildFeed isLoading={isLoading} />;
     }
   } else if (job === "edit" && objType === "feed") {
-    form = <AddEditFeed feed={loadedObj} categories={categories} />
+    form = <AddEditFeed feed={loadedObj} categories={categories} />;
   } else if ((job === "add" || job === "edit") && objType === "category") {
-    form = <AddEditCategory job={job} category={loadedObj} />
+    form = <AddEditCategory job={job} category={loadedObj} />;
   }
   return (
     <Drawer

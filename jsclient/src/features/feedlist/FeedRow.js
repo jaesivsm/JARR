@@ -65,7 +65,7 @@ function FeedRow({ index, style, feedListRows,
   }
   const isAllCateg = obj.type === "all-categ";
   let foldButton;
-  
+
   if (!isAllCateg) {
     const FoldButton = obj.folded ? ChevronRight : ExpandLess;
     foldButton = <FoldButton onClick={(e) => (toggleCatFolding(e, obj.id))} />;
@@ -78,7 +78,7 @@ function FeedRow({ index, style, feedListRows,
       {obj.unread && !isAllCateg ? badge : null}
     </ListItem>
   );
-};
+}
 
 FeedRow.propTypes = {
   index: PropTypes.number.isRequired,

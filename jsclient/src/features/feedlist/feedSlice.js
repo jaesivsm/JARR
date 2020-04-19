@@ -41,7 +41,7 @@ const feedSlice = createSlice({
     },
     toggleFolding(state, action) {
       return { ...state, feedListRows: state.feedListRows.map((row) => {
-          return { ...row, folded: action.payload === row["category_id"] || (row["type"] === "categ" && row.id === action.payload) ? !row.folded : row.folded }
+          return { ...row, folded: action.payload === row["category_id"] || (row["type"] === "categ" && row.id === action.payload) ? !row.folded : row.folded };
       })};
     },
     loadedFeeds(state, action) {
@@ -111,7 +111,7 @@ export const doCreateObj = (obj, type): AppThunk => async (dispatch, getState) =
     method: "post",
     url: apiUrl + "/" + type + "?" + qs.stringify(obj),
   }, dispatch, getState);
-  dispatch(createdObj({ obj: result.data, type: type }));
+  dispatch(createdObj({ obj: result.data, type }));
 };
 
 export const doEditObj = (id, obj, objType): AppThunk => async (dispatch, getState) => {

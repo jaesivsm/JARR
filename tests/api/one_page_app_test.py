@@ -2,8 +2,9 @@ import json
 
 from tests.base import JarrFlaskCommon
 from tests.utils import update_on_all_objs
-from jarr.controllers import (UserController, ClusterController,
-        FeedController, ArticleController)
+from jarr.controllers import (ArticleController, CategoryController,
+                              ClusterController, FeedController,
+                              UserController)
 
 
 class OnePageAppTest(JarrFlaskCommon):
