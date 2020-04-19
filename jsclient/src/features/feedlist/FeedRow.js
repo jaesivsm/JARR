@@ -6,8 +6,8 @@ import ListItem from "@material-ui/core/ListItem";
 import Badge from "@material-ui/core/Badge";
 import ListItemText from "@material-ui/core/ListItemText";
 import ExpandLess from "@material-ui/icons/ExpandLess";
-import ChevronRight from '@material-ui/icons/ChevronRight';
-import LinkIcon from '@material-ui/icons/Link';
+import ChevronRight from "@material-ui/icons/ChevronRight";
+import LinkIcon from "@material-ui/icons/Link";
 
 import { doListClusters } from "../clusterlist/clusterSlice";
 import { toggleFolding } from "./feedSlice";
