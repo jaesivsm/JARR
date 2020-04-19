@@ -26,7 +26,7 @@ class OnePageAppTest(JarrFlaskCommon):
         resp = self.jarr_client('get', 'list-feeds', user=self.user.login)
         fcount = len(FeedController(self.user.id).read())
         ccount = len(CategoryController(self.user.id).read())
-        self.assertEqual(fcount + count, len(resp.json))
+        self.assertEqual(fcount + ccount, len(resp.json))
         self.assertEqual(fcount,
                          len([r for r in resp.json if r['type'] == 'feed']))
         self.assertEqual(ccount,
