@@ -8,7 +8,7 @@ import { storageGet, storageSet } from "../../storageUtils";
 function mergeCategoriesWithUnreads(feedListRows, unreads,
                                     isParentFolded) {
   return feedListRows.map((row) => {
-     const unread = unreads[row.type+"-" + row.id];
+     const unread = unreads[row.type + "-" + row.id];
      return { ...row,  unread: unread ? unread : null,
               folded: row.folded === undefined ? isParentFolded: row.folded };
   });
@@ -55,7 +55,7 @@ const feedSlice = createSlice({
       return { ...state, loadedUnreadCounts: false,
                unreads: action.payload.unreads,
                feedListRows: mergeCategoriesWithUnreads(state.feedListRows,
-                                                        state.unreads,
+                                                        action.payload.unreads,
                                                         state.isParentFolded),
       };
     },

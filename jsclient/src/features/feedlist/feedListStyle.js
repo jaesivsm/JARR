@@ -33,12 +33,16 @@ export default makeStyles((theme: Theme) =>
     },
     feedItem: {
       lineHeight: 1,
+      overflow: 'hidden',
       paddingLeft: '32px !important',
       whiteSpace: 'nowrap'
     },
     feetItemText: {
-      overflow: 'hidden',
-      marginRight: 10
+      marginRight: 10,
+      '& span' : {
+          overflow: 'hidden',
+          maxWidth: 175,  
+      }
     },
     feed: {
       paddingTop: 2,
