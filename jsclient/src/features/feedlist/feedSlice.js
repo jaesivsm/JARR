@@ -7,10 +7,8 @@ import { storageGet, storageSet } from "../../storageUtils";
 
 function mergeCategoriesWithUnreads(feedListRows, unreads,
                                     isParentFolded) {
-      console.log({ ...unreads});
   return feedListRows.map((row) => {
-      console.log({ ...row});
-     const unread = unreads[row.categ+"-" + row.id];
+     const unread = unreads[row.type+"-" + row.id];
      return { ...row,  unread: unread ? unread : null,
               folded: row.folded === undefined ? isParentFolded: row.folded };
   });

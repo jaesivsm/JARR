@@ -21,7 +21,8 @@ function mapStateToProps(state) {
 }
 
 const mapDispatchToProps = (dispatch) => ({
-  toggleCatFolding(catId) {
+  toggleCatFolding(e, catId) {
+    e.stopPropagation();
     return dispatch(toggleFolding(catId));
   },
   listClusters(e, filters) {
@@ -53,7 +54,7 @@ function FeedRow({ index, style, feedListRows,
   let foldButton;
   if (!isAllCateg) {
     const FoldButton = obj.folded ? ExpandMore : ExpandLess;
-    foldButton = <FoldButton onClick={(e) => { e.preventDefault(); toggleCatFolding(obj.id)}} />;
+    foldButton = <FoldButton onClick={(e) => (toggleCatFolding(e, obj.id))} />;
   }
   return (
     <ListItem button style={style} selected={isSelected}

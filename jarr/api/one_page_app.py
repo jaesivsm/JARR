@@ -13,11 +13,6 @@ list_feeds_model = default_ns.model('ListFeeds', {
         'type': fields.String(enum=['feed', 'categ', 'all-categ']),
         'icon_url': fields.String(),
 })
-unreads_model = default_ns.model('Unreads', {
-        'category_id': fields.Integer(),
-        'feed_id': fields.Integer(),
-        'unread': fields.Integer(default=0),
-})
 midle_panel_model = default_ns.model('MiddlePanel', {
         'id': fields.Integer(),
         'feeds_id': fields.List(fields.Integer()),
@@ -67,9 +62,8 @@ class ListFeeds(Resource):
 class Unreads(Resource):
 
     @staticmethod
-    @default_ns.response(200, 'OK', model=[midle_panel_model], as_list=True)
+    @default_ns.response(200, 'OK', as_list=True)
     @default_ns.response(401, 'Unauthorized')
-    @default_ns.marshal_list_with(unreads_model)
     @jwt_required()
     def get():
         """Return feeds with count of unread clusters."""

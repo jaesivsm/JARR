@@ -23,7 +23,7 @@ __returned_keys = ('main_title', 'id', 'liked', 'read', 'main_article_id',
                    'main_feed_title', 'main_date', 'main_link')
 JR_FIELDS = {key: getattr(Cluster, key) for key in __returned_keys}
 JR_SQLA_FIELDS = [getattr(Cluster, key) for key in __returned_keys]
-JR_LENGTH = 1000
+JR_LENGTH = 20
 
 
 def _get_parent_attr(obj, attr):
@@ -330,6 +330,7 @@ class ClusterController(AbstractController):
                 .filter(and_(Cluster.user_id == self.user_id,
                              Cluster.read.__eq__(False)))\
                 .group_by(Article.category_id, Article.feed_id):
-            counters["categ-%d" % (cid if cid else 0)] += unread
+            if cid:
+                counters["categ-%d" % cid] += unread
             counters["feed-%d" % fid] = unread
         return counters

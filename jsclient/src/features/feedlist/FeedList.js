@@ -82,7 +82,7 @@ function FeedList(props) {
           </IconButton>
         </div>
       </div>
-      <FixedSizeList height={500} width={feedListWidth-1} itemCount={props.itemCount} itemSize={34}>
+      <FixedSizeList height={1000} width={feedListWidth-1} itemCount={props.itemCount} itemSize={34}>
         {FeedRow}
       </FixedSizeList>
     </Drawer>
