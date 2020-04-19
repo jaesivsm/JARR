@@ -3,6 +3,7 @@ import PropTypes from "prop-types";
 import { connect } from "react-redux";
 
 import ListItem from "@material-ui/core/ListItem";
+import Badge from "@material-ui/core/Badge";
 import ListItemText from "@material-ui/core/ListItemText";
 import ExpandLess from "@material-ui/icons/ExpandLess";
 import ChevronRight from '@material-ui/icons/ChevronRight';
@@ -45,19 +46,21 @@ function FeedRow({ index, style, feedListRows,
   if (obj.type === "feed") {
     let icon;
     if(obj["icon_url"]) {
-      icon = <img className={classes.feedIcon} alt="feed icon" src={obj["icon_url"]} />;
+      icon = <img className={classes.feedIcon} alt="" src={obj["icon_url"]} />;
     } else {
       icon = <LinkIcon className={classes.defaultFeedIcon} color="disabled" fontSize="small"/>;
     }
     return (
+
       <ListItem button style={style}
-          className={classes.feedItem} 
+          className={classes.feedItem}
           selected={selectedFeedId === obj.id}
           onClick={(e) => (listClusters(e, { feedId: obj.id }))}
         >
         {icon}
-        <ListItemText primary={obj.str} className={classes.feetItemText}/>
-        {obj.unread}
+        <Badge badgeContent={obj.unread} color="primary">
+          <ListItemText primary={obj.str} className={classes.feetItemText}/>
+        </Badge>
       </ListItem>
     );
   }
