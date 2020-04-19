@@ -11,35 +11,52 @@ import FormControlLabel from "@material-ui/core/FormControlLabel";
 import FormHelperText from "@material-ui/core/FormHelperText";
 
 import { closePanel } from "./editSlice";
-import { doCreateCategory } from "../feedlist/feedSlice";
+import { doCreateObj, doEditObj } from "../feedlist/feedSlice";
 
 const mapDispatchToProps = (dispatch) => ({
   createCategory(e, category) {
     e.preventDefault();
-    dispatch(doCreateCategory(category));
+    dispatch(doCreateObj(category, "category"));
+    return dispatch(closePanel());
+  },
+  editCategory(e, id, category) {
+    e.preventDefault();
+    dispatch(doEditObj(id, category, "category"));
     return dispatch(closePanel());
   },
 });
 
-function AddCategory({ isOpen, createCategory }) {
-  const [state, setState] = useState({ "name": "",
-                                       "cluster_enabled": true,
-                                       "cluster_tfidf_enabled": true,
-                                       "cluster_same_category": true,
-                                       "cluster_same_feed": true });
+function defaultTrue(obj, key) {
+  return obj && obj[key] !== undefined && obj[key] !== null ? obj[key] : true;
+}
+
+function AddEditCategory({ isOpen, job, category, createCategory, editCategory }) {
+  const [state, setState] = useState({
+      "name": category && category.name ? category.name : "",
+      "cluster_enabled": defaultTrue(category, "cluster_enabled"),
+      "cluster_tfidf_enabled": defaultTrue(category, "cluster_tfidf_enabled"),
+      "cluster_same_category": defaultTrue(category, "cluster_same_category"),
+      "cluster_same_feed": defaultTrue(category, "cluster_same_feed"),
+  });
 
   const handleChange = (e) => {
     setState({ ...state, [e.target.name]: e.target.checked });
   };
-
   return (
-    <form onSubmit={(e) => createCategory(e, state) }>
+    <form onSubmit={(e) => {
+      if (job === "add") {
+        createCategory(e, state);
+      } else {
+        editCategory(e, category.id, state);
+      }
+    }}>
     <FormControl component="fieldset">
       <TextField
         required
         id="outlined-required"
         label="Category Name"
         variant="outlined"
+        value={state.name}
         onChange={(e) => (setState({ ...state, name: e.target.value }))}
       />
       <FormLabel component="legend">Create a new category</FormLabel>
@@ -70,8 +87,11 @@ function AddCategory({ isOpen, createCategory }) {
   );
 }
 
-AddCategory.propTypes = {
+AddEditCategory.propTypes = {
+  job: PropTypes.string.isRequired,
+  category: PropTypes.object,
   createCategory: PropTypes.func.isRequired,
+  editCategory: PropTypes.func.isRequired,
 };
 
-export default connect(null, mapDispatchToProps)(AddCategory);
+export default connect(null, mapDispatchToProps)(AddEditCategory);

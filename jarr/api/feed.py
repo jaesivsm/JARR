@@ -59,12 +59,12 @@ set_model_n_parser(feed_model, feed_parser, 'cluster_wake_up', bool,
                     'from that feed are added to it')
 set_model_n_parser(feed_model, feed_parser, 'category_id', int)
 set_model_n_parser(feed_model, feed_parser, 'site_link', str)
+set_model_n_parser(feed_model, feed_parser, 'link', str)
 set_model_n_parser(feed_model, feed_parser, 'description', str)
 feed_parser_edit = feed_parser.copy()
 set_model_n_parser(feed_model, feed_parser_edit, 'title', str)
 set_model_n_parser(feed_model, feed_parser_edit, 'status', FeedStatus)
 feed_parser.add_argument('title', type=str, required=True)
-feed_parser.add_argument('link', type=str, required=True)
 feed_parser.add_argument('icon_url', type=str)
 
 
@@ -99,6 +99,16 @@ class ListFeedResource(Resource):
 
 @feed_ns.route('/<int:feed_id>')
 class FeedResource(Resource):
+
+    @staticmethod
+    @feed_ns.response(200, 'OK', model=feed_model)
+    @feed_ns.response(400, 'Validation error')
+    @feed_ns.response(401, 'Authorization needed')
+    @feed_ns.marshal_with(feed_model, code=200, description='OK')
+    @jwt_required()
+    def get(feed_id):
+        """Read an existing feed."""
+        return FeedController(current_identity.id).get(id=feed_id), 200
 
     @staticmethod
     @feed_ns.expect(feed_parser_edit)

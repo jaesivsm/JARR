@@ -10,7 +10,7 @@ import Switch from "@material-ui/core/Switch";
 import FormControlLabel from "@material-ui/core/FormControlLabel";
 
 import { closePanel } from "./editSlice";
-import { doCreateFeed } from "../feedlist/feedSlice";
+import { doCreateObj, doEditObj } from "../feedlist/feedSlice";
 
 const availableFeedTypes = ["classic", "json", "tumblr", "instagram",
                             "soundcloud", "reddit", "fetch", "koreus",
@@ -28,7 +28,12 @@ const mapDispatchToProps = (dispatch) => ({
     if (!feed["category_id"]) {
       delete feed["category_id"];
     }
-    dispatch(doCreateFeed(feed));
+    dispatch(doCreateObj(feed, "category"));
+    return dispatch(closePanel());
+  },
+  editFeed(e, id, feed) {
+    e.preventDefault();
+    dispatch(doEditObj(id, feed, "feed"));
     return dispatch(closePanel());
   },
 });
@@ -41,22 +46,30 @@ function FeedTextAttr({ required, label, name, state, setState}) {
   );
 }
 
-function AddFeed({ buildedFeed, categories, createFeed }) {
-  const feedToCreate = { ...buildedFeed, "category_id": null };
+function defaultTo(obj, key, defaultValue) {
+  if(obj[key] === null || obj[key] === undefined) {
+    obj[key] = defaultValue;
+  }
+}
+
+function AddEditFeed({ feed, categories, createFeed, editFeed }) {
+  const currentFeed = { ...feed };
+  defaultTo(currentFeed, "category_id", null);
+  defaultTo(currentFeed, "feed_type", "classic");
   // putting all conf option to default true
   Object.keys(feedConfs).forEach((option) => {
-    if (feedToCreate[option] === undefined) {
-      feedToCreate[option] = true;
-    }
+    defaultTo(currentFeed, option, true);
   })
 
-  const [state, setState] = useState(feedToCreate);
+  const [state, setState] = useState(currentFeed);
   const handleSwitchChange = (e) => {
     setState({ ...state, [e.target.name]: e.target.checked});
   };
   return (
-    <form onSubmit={(e) => createFeed(e, state) }>
-    <FormControl component="fieldset">
+    <form onSubmit={(e) => {
+      if (!feed.id) { createFeed(e, state); }
+      else {editFeed(e, feed.id, state);}
+    }}>
       <FeedTextAttr required={true} label="Feed title" name="title"
         state={state} setState={setState} />
       <FeedTextAttr label="Feed description" name="description"
@@ -82,26 +95,28 @@ function AddFeed({ buildedFeed, categories, createFeed }) {
           <MenuItem key={"item-" + type} value={type}>{type}</MenuItem>
         ))}
       </Select>
-      {Object.keys(feedConfs).map((option) => (
-        <FormControlLabel key={"fcl-" + option}
-          control={<Switch checked={state[option]} color="primary"
-                           onChange={(e) => (handleSwitchChange(e))}
-                           name={option} />}
-          label={feedConfs[option]}
-        />
-      ))}
+      <FormControl component="fieldset">
+        {Object.keys(feedConfs).map((option) => (
+          <FormControlLabel key={"fcl-" + option}
+            control={<Switch checked={state[option]} color="primary"
+                             onChange={(e) => (handleSwitchChange(e))}
+                             name={option} />}
+            label={feedConfs[option]}
+          />
+        ))}
+      </FormControl>
       <Button variant="contained" color="primary" type="submit">
         Create Feed
       </Button>
-    </FormControl>
     </form>
   );
 }
 
-AddFeed.propTypes = {
-  buildedFeed: PropTypes.object.isRequired,
+AddEditFeed.propTypes = {
+  feed: PropTypes.object.isRequired,
   categories: PropTypes.array.isRequired,
   createFeed: PropTypes.func.isRequired,
+  editFeed: PropTypes.func.isRequired,
 };
 
-export default connect(null, mapDispatchToProps)(AddFeed);
+export default connect(null, mapDispatchToProps)(AddEditFeed);

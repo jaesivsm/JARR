@@ -21,7 +21,7 @@ class EnumField(fields.String):
 def set_model_n_parser(model, parser, name, type_, **kwargs):
     if isinstance(type_, Enum.__class__):
         model[name] = EnumField(type_, **kwargs)
-        kwargs['choices'] = [en.value for en in type_]
+        kwargs['choices'] = [en for en in type_]
     else:
         model[name] = MODEL_PARSER_MAPPING[type_](**kwargs)
     parser.add_argument(name, type=type_, **kwargs,

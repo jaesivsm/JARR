@@ -8,8 +8,8 @@ import ExpandLess from "@material-ui/icons/ExpandLess";
 import ExpandMore from "@material-ui/icons/ExpandMore";
 
 import { doListClusters } from "../clusterlist/clusterSlice";
-import feedListStyle from "./feedListStyle";
 import { toggleFolding } from "./feedSlice";
+import feedListStyle from "./feedListStyle";
 
 function mapStateToProps(state) {
   return { feedListRows: state.feeds.feedListRows.filter((row) => (!row.folded || row.type === "categ" || row.type === "all-categ")),
