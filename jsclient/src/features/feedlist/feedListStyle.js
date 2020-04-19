@@ -31,6 +31,15 @@ export default makeStyles((theme: Theme) =>
     catItemAll: {
         marginLeft: 25
     },
+    feedItem: {
+      lineHeight: 1,
+      paddingLeft: '32px !important',
+      whiteSpace: 'nowrap'
+    },
+    feetItemText: {
+      overflow: 'hidden',
+      marginRight: 10
+    },
     feed: {
       paddingTop: 2,
       paddingBottom: 2,

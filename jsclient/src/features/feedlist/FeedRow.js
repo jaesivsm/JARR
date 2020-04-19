@@ -42,12 +42,12 @@ function FeedRow({ index, style, feedListRows,
   if (obj.type === "feed") {
     return (
       <ListItem button style={style}
+          className={classes.feedItem} 
           selected={selectedFeedId === obj.id}
           onClick={(e) => (listClusters(e, { feedId: obj.id }))}
         >
-        {console.log(obj['icon_url'])}
         {obj["icon_url"] ? <img className={classes.feedIcon} alt="feed icon" src={obj["icon_url"]} /> : <LinkIcon className={classes.defaultFeedIcon} color="disabled" fontSize="small"/>}
-        <ListItemText primary={obj.str} />
+        <ListItemText primary={obj.str} className={classes.feetItemText}/>
         {obj.unread}
       </ListItem>
     );
