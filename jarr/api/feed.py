@@ -30,6 +30,7 @@ feed_build_model = feed_ns.model('FeedBuilder', {
 })
 feed_model = feed_ns.model('Feed', {
         'id': fields.Integer(readOnly=True),
+        'link': fields.String(),
         'error_count': fields.Integer(readOnly=True, default=0,
             description='The number of consecutive error encountered while '
                         'fetching this feed'),
@@ -59,12 +60,12 @@ set_model_n_parser(feed_model, feed_parser, 'cluster_wake_up', bool,
                     'from that feed are added to it')
 set_model_n_parser(feed_model, feed_parser, 'category_id', int)
 set_model_n_parser(feed_model, feed_parser, 'site_link', str)
-set_model_n_parser(feed_model, feed_parser, 'link', str)
 set_model_n_parser(feed_model, feed_parser, 'description', str)
 feed_parser_edit = feed_parser.copy()
 set_model_n_parser(feed_model, feed_parser_edit, 'title', str)
 set_model_n_parser(feed_model, feed_parser_edit, 'status', FeedStatus)
 feed_parser.add_argument('title', type=str, required=True)
+feed_parser.add_argument('link', type=str, required=True)
 feed_parser.add_argument('icon_url', type=str)
 
 
