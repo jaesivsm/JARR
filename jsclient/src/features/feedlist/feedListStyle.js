@@ -28,6 +28,9 @@ export default makeStyles((theme: Theme) =>
       paddingTop: 2,
       paddingBottom: 2,
     },
+    catItemAll: {
+        marginLeft: 25
+    },
     feed: {
       paddingTop: 2,
       paddingBottom: 2,

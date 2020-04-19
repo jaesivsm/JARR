@@ -5,7 +5,7 @@ import { connect } from "react-redux";
 import ListItem from "@material-ui/core/ListItem";
 import ListItemText from "@material-ui/core/ListItemText";
 import ExpandLess from "@material-ui/icons/ExpandLess";
-import ExpandMore from "@material-ui/icons/ExpandMore";
+import ChevronRight from '@material-ui/icons/ChevronRight';
 
 import { doListClusters } from "../clusterlist/clusterSlice";
 import feedListStyle from "./feedListStyle";
@@ -53,15 +53,15 @@ function FeedRow({ index, style, feedListRows,
   const isAllCateg = obj.type === "all-categ";
   let foldButton;
   if (!isAllCateg) {
-    const FoldButton = obj.folded ? ExpandMore : ExpandLess;
+    const FoldButton = obj.folded ? ChevronRight : ExpandLess;
     foldButton = <FoldButton onClick={(e) => (toggleCatFolding(e, obj.id))} />;
   }
   return (
     <ListItem button style={style} selected={isSelected}
         onClick={(e) => (listClusters(e, { categoryId: isAllCateg ? "all" : obj.id, isFolded : obj.folded }))}>
-      <ListItemText primary={isAllCateg ? "All" : obj.str} />
-      {obj.unread && !isAllCateg ? obj.unread: null}
       {foldButton}
+      <ListItemText primary={isAllCateg ? "All" : obj.str} className={isAllCateg ? classes.catItemAll : null} />
+      {obj.unread && !isAllCateg ? obj.unread: null}
     </ListItem>
   );
 };
