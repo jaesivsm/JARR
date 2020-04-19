@@ -15,7 +15,7 @@ from the_conf import TheConf
 
 
 DEFAULT_UI_PORT = 8000
-DEFAULT_URL = 'http://0.0.0.0:%d/' % DEFAULT_UI_PORT
+DEFAULT_URL = 'http://192.168.43.91:%d/' % DEFAULT_UI_PORT
 
 conf = TheConf({'config_files': ['/etc/jarr/jarr.json', '~/.config/jarr.json'],
         'config_file_environ': ['JARR_CONFIG'],

@@ -6,11 +6,11 @@ import Drawer from "@material-ui/core/Drawer";
 import Divider from "@material-ui/core/Divider";
 import IconButton from "@material-ui/core/IconButton";
 import Close from "@material-ui/icons/Close";
-
+import CircularProgress from "@material-ui/core/CircularProgress";
 // jarr
 import BuildFeed from "./BuildFeed";
-import AddFeed from "./AddFeed";
-import AddCategory from "./AddCategory";
+import AddEditFeed from "./AddEditFeed";
+import AddEditCategory from "./AddEditCategory";
 import { closePanel } from "./editSlice";
 import editPanelStyle from "./editPanelStyle";
 
@@ -28,21 +28,26 @@ function mapStateToProps(state) {
            buildedFeed: state.edit.buildedFeed,
            categories: state.feeds.feedListRows.filter((row) => (
                row.type === "categ" || row.type === "all-categ")
-           ).map((cat) => ({ id: cat.id, name: cat.name })),
+           ).map((cat) => ({ id: cat.id, name: cat.str })),
+           loadedObj: state.edit.loadedObj,
   };
 }
 
-function EditPanel({ isOpen, isLoading, job, objType, buildedFeed, categories, close }) {
+function EditPanel({ isOpen, isLoading, job, objType,
+                     buildedFeed, loadedObj, categories,
+                     close }) {
   const classes = editPanelStyle();
-  let form = null;
+  let form = <CircularProgress />;
   if(job === "add" && objType === "feed") {
     if(buildedFeed) {
-      form = <AddFeed buildedFeed={buildedFeed} categories={categories} />;
+      form = <AddEditFeed feed={buildedFeed} categories={categories} />;
     } else {
       form = <BuildFeed isLoading={isLoading} />;
     }
-  } else if (job === "add" && objType === "category") {
-    form = <AddCategory />
+  } else if (job === "edit" && objType === "feed") {
+    form = <AddEditFeed feed={loadedObj} categories={categories} />
+  } else if ((job === "add" || job === "edit") && objType === "category") {
+    form = <AddEditCategory job={job} category={loadedObj} />
   }
   return (
     <Drawer
@@ -77,6 +82,7 @@ EditPanel.propTypes = {
   job: PropTypes.string,
   objType: PropTypes.string,
   buildedFeed: PropTypes.object,
+  loadedObj: PropTypes.object,
   close: PropTypes.func.isRequired,
 };
 

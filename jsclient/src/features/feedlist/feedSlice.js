@@ -64,22 +64,19 @@ const feedSlice = createSlice({
       storageSet("left-menu-open", newState);
       return { ...state, isOpen: newState };
     },
-    createdCategory(state, action) {
-      const feedListRow = { id: action.payload.category.id,
-                            str: action.payload.category.name,
-                            unread: 0,
-                            type: "categ", };
-      state.feedListRows.push(feedListRow);
-      return state;
-    },
-    createdFeed(state, action) {
-      const feedListRow = { id: action.payload.feed.id,
-                            str: action.payload.feed.name,
-                            unread: 0,
-                            type: "feed", };
+    createdObj(state, action) {
+      const feedListRow = { unread: 0, id: action.payload.data.id };
+      if(action.payload.type === "category") {
+        feedListRow.str = action.payload.data.name;
+        feedListRow.type = "categ";
+        state.feedListRows.push(feedListRow);
+      } else {
+        feedListRow.str = action.payload.data.title;
+        feedListRow.type = "feed";
+        state.feedListRows.push(feedListRow);
+      }
       //FIXME insert at good place
-      return { ...state, feedListRows: [ ...state.feedListRows, feedListRow ],
-      };
+      return { ...state, feedListRows: [ ...state.feedListRows, feedListRow ], };
     },
   },
 });
@@ -87,7 +84,7 @@ const feedSlice = createSlice({
 export const { requestedFeeds, loadedFeeds,
                requestedUnreadCounts, loadedUnreadCounts,
                toggleMenu, toggleAllFolding, toggleFolding,
-               createdCategory, createdFeed,
+               createdObj,
 } = feedSlice.actions;
 export default feedSlice.reducer;
 
@@ -109,18 +106,19 @@ export const doFetchUnreadCount = (): AppThunk => async (dispatch, getState) => 
   dispatch(loadedUnreadCounts({ unreads: result.data }));
 };
 
-export const doCreateCategory = (category): AppThunk => async (dispatch, getState) => {
+export const doCreateObj = (obj, type): AppThunk => async (dispatch, getState) => {
   const result = await doRetryOnTokenExpiration({
     method: "post",
-    url: apiUrl + "/category?" + qs.stringify(category),
+    url: apiUrl + "/" + type + "?" + qs.stringify(obj),
   }, dispatch, getState);
-  dispatch(createdCategory({ category: result.data }));
+  dispatch(createdObj({ obj: result.data, type: type }));
 };
 
-export const doCreateFeed = (feed): AppThunk => async (dispatch, getState) => {
+export const doEditObj = (id, obj, objType): AppThunk => async (dispatch, getState) => {
   const result = await doRetryOnTokenExpiration({
-    method: "post",
-    url: apiUrl + "/feed?" + qs.stringify(feed),
+    method: "put",
+    url: apiUrl + "/" + objType + "/" + id,
+    data: obj,
   }, dispatch, getState);
-  dispatch(createdFeed({ feed: result.data }));
+  return result;
 };

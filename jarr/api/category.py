@@ -65,6 +65,16 @@ class ListCategoryResource(Resource):
 class CategoryResource(Resource):
 
     @staticmethod
+    @category_ns.response(200, 'OK', model=model)
+    @category_ns.response(401, 'Authorization needed')
+    @category_ns.marshal_with(model, code=200, description='OK')
+    @jwt_required()
+    def get(category_id):
+        """Read an existing category."""
+        return CategoryController(current_identity.id).get(id=category_id), \
+                200
+
+    @staticmethod
     @category_ns.expect(parser_edit, validate=True)
     @category_ns.response(204, 'Updated')
     @category_ns.response(400, 'Validation error')

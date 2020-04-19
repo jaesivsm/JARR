@@ -9,8 +9,8 @@ import ChevronRight from '@material-ui/icons/ChevronRight';
 import LinkIcon from '@material-ui/icons/Link';
 
 import { doListClusters } from "../clusterlist/clusterSlice";
-import feedListStyle from "./feedListStyle";
 import { toggleFolding } from "./feedSlice";
+import feedListStyle from "./feedListStyle";
 
 function mapStateToProps(state) {
   return { feedListRows: state.feeds.feedListRows.filter((row) => (!row.folded || row.type === "categ" || row.type === "all-categ")),
@@ -26,9 +26,12 @@ const mapDispatchToProps = (dispatch) => ({
     e.stopPropagation();
     return dispatch(toggleFolding(catId));
   },
-  listClusters(e, filters) {
+  listClusters(e, filters, isFolded) {
     e.stopPropagation();
-    return filters.isFolded ? dispatch(toggleFolding(filters.categoryId)) : dispatch(doListClusters(filters));
+    if(isFolded && filters.categoryId){
+      dispatch(toggleFolding(filters.categoryId));
+    }
+    return dispatch(doListClusters(filters));
   },
 });
 
@@ -60,7 +63,9 @@ function FeedRow({ index, style, feedListRows,
   }
   return (
     <ListItem button style={style} selected={isSelected}
-        onClick={(e) => (listClusters(e, { categoryId: isAllCateg ? "all" : obj.id, isFolded : obj.folded }))}>
+        onClick={(e) => (listClusters(e, { categoryId: isAllCateg ? "all" : obj.id}, obj.folded ))}>
+      <ListItemText primary={isAllCateg ? "All" : obj.str} />
+      {obj.unread && !isAllCateg ? obj.unread: null}
       {foldButton}
       <ListItemText primary={isAllCateg ? "All" : obj.str} className={isAllCateg ? classes.catItemAll : null} />
       {obj.unread && !isAllCateg ? obj.unread: null}
