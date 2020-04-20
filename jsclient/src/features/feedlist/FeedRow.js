@@ -16,9 +16,7 @@ import feedListStyle from "./feedListStyle";
 import { apiUrl } from "../../const";
 
 function mapStateToProps(state) {
-  return { feedListRows: state.feeds.feedListRows.filter((row) => (
-             !row.folded || row.type === "categ" || row.type === "all-categ"
-           )),
+  return { feedListRows: state.feeds.feedListRows.filter(state.feeds.feedListFilter),
            isFoldedFromParent: state.feeds.isParentFolded,
            selectedCategoryId: state.clusters.filters["category_id"],
            selectedFeedId: state.clusters.filters["feed_id"],

@@ -14,14 +14,17 @@ function mergeCategoriesWithUnreads(feedListRows, unreads,
   });
 }
 
+const defaultFilter = (row) => !row.folded || row.type === "categ" || row.type === "all-categ";
 const feedSlice = createSlice({
   name: "feeds",
   initialState: { loadingFeeds: false,
                   loadingUnreadCounts: false,
                   feedListRows: [],
                   unreads: [],
+
                   isParentFolded: storageGet("left-menu-folded") === "true",
                   isOpen: storageGet("left-menu-open") !== "false",
+                  feedListFilter: defaultFilter,
   },
   reducers: {
     requestedFeeds(state, action) {
@@ -29,6 +32,17 @@ const feedSlice = createSlice({
     },
     requestedUnreadCounts(state, action) {
       return { ...state, loadingUnreadCounts: true };
+    },
+    setSearchFilter(state, action) {
+      if (!action.payload || action.payload.length < 3) {
+        return { ...state, feedListFilter: defaultFilter, };
+      }
+      const feedSearchStr = action.payload.toLowerCase();
+      return { ...state,
+               feedListFilter: (row) => (
+                 row.type !== "categ" && row.type !== "all-categ" && row.str.toLowerCase().includes(feedSearchStr)
+               ),
+      };
     },
     toggleAllFolding(state, action) {
       const newFolding = !state.isParentFolded;
@@ -84,7 +98,7 @@ const feedSlice = createSlice({
 export const { requestedFeeds, loadedFeeds,
                requestedUnreadCounts, loadedUnreadCounts,
                toggleMenu, toggleAllFolding, toggleFolding,
-               createdObj,
+               createdObj, setSearchFilter,
 } = feedSlice.actions;
 export default feedSlice.reducer;
 
