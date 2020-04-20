@@ -1,6 +1,7 @@
 import React from "react";
 import PropTypes from "prop-types";
 import { connect } from "react-redux";
+import qs from "qs";
 
 import ListItem from "@material-ui/core/ListItem";
 import Badge from "@material-ui/core/Badge";
@@ -12,9 +13,12 @@ import LinkIcon from "@material-ui/icons/Link";
 import { doListClusters } from "../clusterlist/clusterSlice";
 import { toggleFolding } from "./feedSlice";
 import feedListStyle from "./feedListStyle";
+import { apiUrl } from "../../const";
 
 function mapStateToProps(state) {
-  return { feedListRows: state.feeds.feedListRows.filter((row) => (!row.folded || row.type === "categ" || row.type === "all-categ")),
+  return { feedListRows: state.feeds.feedListRows.filter((row) => (
+             !row.folded || row.type === "categ" || row.type === "all-categ"
+           )),
            isFoldedFromParent: state.feeds.isParentFolded,
            selectedCategoryId: state.clusters.filters["category_id"],
            selectedFeedId: state.clusters.filters["feed_id"],
@@ -46,12 +50,12 @@ function FeedRow({ index, style, feedListRows,
   if (obj.type === "feed") {
     let icon;
     if(obj["icon_url"]) {
-      icon = <img className={classes.feedIcon} alt="" src={obj["icon_url"]} />;
+      icon = <img className={classes.feedIcon} alt="" src={
+          apiUrl + "/feed/icon?" + qs.stringify({ url: obj["icon_url"]})} />;
     } else {
       icon = <LinkIcon className={classes.defaultFeedIcon} color="disabled" fontSize="small"/>;
     }
     return (
-
       <ListItem button style={style}
           className={classes.feedItem}
           selected={selectedFeedId === obj.id}
