@@ -29,9 +29,11 @@ const mapDispatchToProps = (dispatch) => ({
     e.stopPropagation();
     return dispatch(toggleFolding(catId));
   },
-  listClusters(e, filters, isFolded) {
+  listClusters(e, filters, isFolded, selectedCategoryId) {
     e.stopPropagation();
     if(isFolded && filters.categoryId){
+      dispatch(toggleFolding(filters.categoryId));
+    } else if (!isFolded && filters.categoryId && filters.categoryId === selectedCategoryId) {
       dispatch(toggleFolding(filters.categoryId));
     }
     return dispatch(doListClusters(filters));
@@ -74,7 +76,7 @@ function FeedRow({ index, style, feedListRows,
   }
   return (
     <ListItem button style={style} selected={isSelected}
-        onClick={(e) => (listClusters(e, { categoryId: isAllCateg ? "all" : obj.id}, obj.folded ))}>
+        onClick={(e) => (listClusters(e, { categoryId: isAllCateg ? "all" : obj.id}, obj.folded, selectedCategoryId ))}>
       {foldButton}
       <ListItemText primary={isAllCateg ? "All" : obj.str} className={isAllCateg ? classes.catItemAll : null} />
       {obj.unread && !isAllCateg ? badge : null}
