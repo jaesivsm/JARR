@@ -11,6 +11,7 @@ import CircularProgress from "@material-ui/core/CircularProgress";
 import BuildFeed from "./BuildFeed";
 import AddEditFeed from "./AddEditFeed";
 import AddEditCategory from "./AddEditCategory";
+import SettingsPanel from "./SettingsPanel";
 import { closePanel } from "./editSlice";
 import editPanelStyle from "./editPanelStyle";
 
@@ -48,6 +49,8 @@ function EditPanel({ isOpen, isLoading, job, objType,
     form = <AddEditFeed feed={loadedObj} categories={categories} />;
   } else if ((job === "add" || job === "edit") && objType === "category") {
     form = <AddEditCategory job={job} category={loadedObj} />;
+  } else if (job === "edit" && objType === "user") {
+    form = <SettingsPanel user={loadedObj} />
   }
   return (
     <Drawer

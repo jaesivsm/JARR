@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import PropTypes from "prop-types";
 import { connect } from "react-redux";
+// material components
 import Button from "@material-ui/core/Button";
 import TextField from "@material-ui/core/TextField";
 import Switch from "@material-ui/core/Switch";
@@ -9,7 +10,7 @@ import FormLabel from "@material-ui/core/FormLabel";
 import FormGroup from "@material-ui/core/FormGroup";
 import FormControlLabel from "@material-ui/core/FormControlLabel";
 import FormHelperText from "@material-ui/core/FormHelperText";
-
+// jarr
 import { closePanel } from "./editSlice";
 import { doCreateObj, doEditObj } from "../feedlist/feedSlice";
 

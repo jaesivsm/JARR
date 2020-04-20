@@ -58,9 +58,9 @@ export const doBuildFeed = (url): AppThunk => async (dispatch, getState) => {
 
 export const doFetchObjForEdit = (type, id): AppThunk => async (dispatch, getState) => {
   dispatch(openPanel({ job: "loading", objId: id, objType: type, }));
+  const url = apiUrl + "/" + type + (id ? "/" + id : "");
   const result = await doRetryOnTokenExpiration({
-    method: "get",
-    url: apiUrl + "/" + type + "/" + id,
+    method: "get", url,
   }, dispatch, getState);
   return dispatch(loadedObjToEdit({ data: result.data }));
 };

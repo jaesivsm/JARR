@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import PropTypes from "prop-types";
 import { connect } from "react-redux";
 import Button from "@material-ui/core/Button";
-import TextField from "@material-ui/core/TextField";
 import FormControl from "@material-ui/core/FormControl";
 import Select from "@material-ui/core/Select";
 import MenuItem from "@material-ui/core/MenuItem";
@@ -11,6 +10,7 @@ import FormControlLabel from "@material-ui/core/FormControlLabel";
 
 import { closePanel } from "./editSlice";
 import { doCreateObj, doEditObj } from "../feedlist/feedSlice";
+import { defaultTo, StateTextInput } from "./common";
 
 const availableFeedTypes = ["classic", "json", "tumblr", "instagram",
                             "soundcloud", "reddit", "fetch", "koreus",
@@ -38,19 +38,6 @@ const mapDispatchToProps = (dispatch) => ({
   },
 });
 
-function FeedTextAttr({ required, label, name, state, setState}) {
-  return (
-    <TextField required={!!required} variant="outlined"
-      label={label} name={name} value={state[name]}
-      onChange={(e) => (setState({ ...state, [e.target.name]: e.target.value }))} />
-  );
-}
-
-function defaultTo(obj, key, defaultValue) {
-  if(obj[key] === null || obj[key] === undefined) {
-    obj[key] = defaultValue;
-  }
-}
 
 function AddEditFeed({ feed, categories, createFeed, editFeed }) {
   const currentFeed = { ...feed };
@@ -70,13 +57,13 @@ function AddEditFeed({ feed, categories, createFeed, editFeed }) {
       if (!feed.id) { createFeed(e, state); }
       else {editFeed(e, feed.id, state);}
     }}>
-      <FeedTextAttr required={true} label="Feed title" name="title"
+      <StateTextInput required={true} label="Feed title" name="title"
         state={state} setState={setState} />
-      <FeedTextAttr label="Feed description" name="description"
+      <StateTextInput label="Feed description" name="description"
         state={state} setState={setState} />
-      <FeedTextAttr required={true} label="Feed link" name="link"
+      <StateTextInput required={true} label="Feed link" name="link"
         state={state} setState={setState} />
-      <FeedTextAttr label="Website link" name="site_link"
+      <StateTextInput label="Website link" name="site_link"
         state={state} setState={setState} />
       <Select variant="outlined"
         value={state["category_id"] ? state["category_id"] : 0}
