@@ -58,8 +58,16 @@ class InitPasswordRecovery(Resource):
                 {'email': email}, {'renew_password_token': token})
         if not changed:
             raise BadRequest("No user with %r was found" % email)
+
+        if conf.api.scheme == 'https' and conf.api.port == 443 \
+                or conf.api.scheme == 'http' and conf.api.port == 80:
+            platform_url = '%s://%s' % (conf.api.scheme, conf.api.addr)
+        else:
+            platform_url = '%s://%s:%d' % (conf.api.scheme, conf.api.addr,
+                                           conf.api.port)
+
         plaintext = render_template('mail_password_recovery.txt',
-                plateform=conf.platform_url, email=email, token=token)
+                plateform=platform_url, email=email, token=token)
         emails.send(to=email, bcc=conf.notification.email,
                     subject="[jarr] Password renew", plaintext=plaintext)
         return None, 204

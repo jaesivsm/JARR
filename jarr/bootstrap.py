@@ -14,21 +14,21 @@ from sqlalchemy.orm import sessionmaker, scoped_session
 from the_conf import TheConf
 
 
-DEFAULT_UI_PORT = 8000
-DEFAULT_URL = 'http://192.168.43.91:%d/' % DEFAULT_UI_PORT
-
 conf = TheConf({'config_files': ['/etc/jarr/jarr.json', '~/.config/jarr.json'],
         'config_file_environ': ['JARR_CONFIG'],
         'source_order': ['env', 'files'],
         'parameters': [
             {'jarr_testing': {'default': False, 'type': bool}},
+            {'debug': {'default': True, 'type': bool}},
             {'cluster_default': [
                 {'time_delta': {'default': 7, 'type': int}},
                 {'tfidf_enabled': {'default': True, 'type': bool}},
                 {'tfidf_min_sample_size': {'default': 10, 'type': int}},
                 {'tfidf_min_score': {'default': .75, 'type': float}}]},
             {'timezone': {'default': 'Europe/Paris', 'type': str}},
-            {'platform_url': {'default': DEFAULT_URL}},
+            {'api': [{'scheme': {'default': 'http'}},
+                     {'addr': {'default': '0.0.0.0'}},
+                     {'port': {'default': 8000, 'type': int}}]},
             {'db': [{'pg_uri': {'default': 'postgresql://postgresql/jarr'}},
                     {'redis': [{'host': {'default': 'redis'}},
                                {'db': {'default': 0, 'type': int}},
@@ -80,14 +80,11 @@ conf = TheConf({'config_files': ['/etc/jarr/jarr.json', '~/.config/jarr.json'],
                       {'min_expires': {'type': int, 'default': 60 * 10}},
                       {'max_expires': {'type': int, 'default': 60 * 60 * 4}},
                       {'stop_fetch': {'default': 30, 'type': int}}]},
-            {'webserver': [{'host': {'default': '0.0.0.0'}},
-                           {'port': {'default': DEFAULT_UI_PORT,
-                                     'type': int}}]},
                       ]})
 
 
 def is_secure_served():
-    return PARSED_PLATFORM_URL.scheme == 'https'
+    return conf.api.scheme == 'https'
 
 
 def init_logging(log_path=None, log_level=logging.INFO, modules=(),
@@ -131,8 +128,6 @@ def commit_pending_sql(*args, **kwargs):
 def rollback_pending_sql(*args, **kwargs):
     session.rollback()
 
-
-PARSED_PLATFORM_URL = urlparse(conf.platform_url)
 
 engine, session, Base = init_db()
 init_models()

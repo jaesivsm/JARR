@@ -9,7 +9,7 @@ from flask_jwt import JWT, JWTError
 from flask_restx import Api
 from sqlalchemy.exc import IntegrityError
 
-from jarr.bootstrap import (PARSED_PLATFORM_URL, commit_pending_sql, conf,
+from jarr.bootstrap import (commit_pending_sql, conf,
                             rollback_pending_sql)
 from jarr.controllers import UserController
 from jarr.lib.utils import default_handler
@@ -87,9 +87,9 @@ def create_app(testing=False):
         application.config['PRESERVE_CONTEXT_ON_EXCEPTION'] = False
     else:
         application.debug = conf.log.level <= logging.DEBUG
-    application.config['PLATFORM_URL'] = conf.platform_url
-    application.config['SERVER_NAME'] = PARSED_PLATFORM_URL.netloc
-    application.config['PREFERRED_URL_SCHEME'] = PARSED_PLATFORM_URL.scheme
+    application.config['SERVER_NAME'] = "%s:%s" % (conf.api.addr,
+                                                   conf.api.port)
+    application.config['PREFERRED_URL_SCHEME'] = conf.api.scheme
     application.config['RESTX_JSON'] = {'default': default_handler}
 
     api = setup_api(application)
