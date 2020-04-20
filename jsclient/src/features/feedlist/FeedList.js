@@ -66,8 +66,8 @@ function FeedList(props) {
   let searchBar;
   if (displaySearch) {
     searchBar = (
-      <div>
-        <InputBase placeholder="Search…" onChange={(e) => props.setSearchFilter(e.target.value)} />
+      <div className={classes.drawerHeader}>
+        <InputBase placeholder="Search feed…" onChange={(e) => props.setSearchFilter(e.target.value)} />
         <IconButton onClick={() => {props.setSearchFilter(null); setDisplaySearch(false)}}>
           <Close />
         </IconButton>
@@ -95,7 +95,10 @@ function FeedList(props) {
           <IconButton onClick={props.toggleFolder}>
            {props.isFoldedFromParent ? <UnFoldAllCategoriesIcon /> : <FoldAllCategoriesIcon />}
           </IconButton>
-          <IconButton onClick={() => setDisplaySearch(!displaySearch)}>
+          <IconButton onClick={() => {
+            if(displaySearch) { props.setSearchFilter(null); }
+            setDisplaySearch(!displaySearch);
+          }}>
             <SearchIcon />
           </IconButton>
         </div>

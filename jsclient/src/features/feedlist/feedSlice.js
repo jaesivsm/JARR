@@ -44,7 +44,7 @@ const feedSlice = createSlice({
       return { ...state, loadingUnreadCounts: true };
     },
     setSearchFilter(state, action) {
-      if (!action.payload || action.payload.length < 3) {
+      if (!action.payload) {
         return { ...state, feedListFilter: defaultFilter, };
       }
       const feedSearchStr = action.payload.toLowerCase();
