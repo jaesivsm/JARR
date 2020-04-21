@@ -16,11 +16,13 @@ import FilterAllOrFavoriteIcon from "@material-ui/icons/StarBorder";
 import FilterFavoriteIcon from "@material-ui/icons/Star";
 import FilterAllIcon from "@material-ui/icons/IndeterminateCheckBox";
 import FilterUnreadIcon from "@material-ui/icons/CheckBoxOutlineBlank";
+import SettingsIcon from "@material-ui/icons/Settings";
 // jarr
 import topMenuStyle from "./topMenuStyle";
 import { doLogout } from "../login/userSlice";
 import { toggleMenu } from "../feedlist/feedSlice";
 import { doListClusters, doMarkAllAsRead } from "../clusterlist/clusterSlice";
+import { doFetchObjForEdit } from "../editpanel/editSlice";
 
 
 function mapStateToProps(state) {
@@ -40,6 +42,9 @@ const mapDispatchToProps = (dispatch) => ({
   },
   toggleFeedList() {
     return dispatch(toggleMenu());
+  },
+  openEditPanel() {
+    return dispatch(doFetchObjForEdit("user"));
   },
   logout() {
     return dispatch(doLogout());
@@ -96,10 +101,10 @@ function TopMenu(props) {
         </div>
         <Typography>JARR</Typography>
         <div>
-          <IconButton
-            color="inherit"
-            onClick={props.logout}
-          >
+          <IconButton color="inherit" onClick={props.openEditPanel}>
+            <SettingsIcon />
+          </IconButton>
+          <IconButton color="inherit" onClick={props.logout}>
             <ExitToAppIcon />
           </IconButton>
         </div>

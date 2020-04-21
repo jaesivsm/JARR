@@ -14,22 +14,22 @@ model = category_ns.model('Category', {
 })
 suffix = "(if your global settings " \
         "and the article's feed settings allows it)"
-set_model_n_parser(model, parser, 'cluster_enabled', bool,
+set_model_n_parser(model, parser, 'cluster_enabled', bool, nullable=True,
         description="will allow article in your feeds and categories to be "
                     "clusterized" + suffix)
-set_model_n_parser(model, parser, 'cluster_tfidf_enabled', bool,
+set_model_n_parser(model, parser, 'cluster_tfidf_enabled', bool, nullable=True,
         description="will allow article in your feeds and categories to be "
                     "clusterized through document comparison" + suffix)
-set_model_n_parser(model, parser, 'cluster_same_category', bool,
+set_model_n_parser(model, parser, 'cluster_same_category', bool, nullable=True,
         description="will allow article in your feeds and categories to be "
                     "clusterized while beloning to the same category" + suffix)
-set_model_n_parser(model, parser, 'cluster_same_feed', bool,
+set_model_n_parser(model, parser, 'cluster_same_feed', bool, nullable=True,
         description="will allow article in your feeds and categories to be "
                     "clusterized while beloning to the same feed" + suffix)
 
 parser_edit = parser.copy()
-parser.add_argument('name', type=str, required=True)
-set_model_n_parser(model, parser_edit, 'name', str)
+parser.add_argument('name', type=str, required=True, nullable=False)
+set_model_n_parser(model, parser_edit, 'name', str, nullable=False)
 
 
 @category_ns.route('y')

@@ -141,7 +141,7 @@ export const doCreateObj = (obj, type): AppThunk => async (dispatch, getState) =
 export const doEditObj = (id, obj, objType): AppThunk => async (dispatch, getState) => {
   const result = await doRetryOnTokenExpiration({
     method: "put",
-    url: apiUrl + "/" + objType + "/" + id,
+    url: apiUrl + "/" + objType + (id ? "/" + id : ""),
     data: obj,
   }, dispatch, getState);
   return result;

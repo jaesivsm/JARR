@@ -23,10 +23,10 @@ class User(Base):
     timezone = Column(String, default=conf.timezone)
 
     # clustering control
-    cluster_enabled = Column(Boolean, default=True)
-    cluster_tfidf_enabled = Column(Boolean, default=True)
-    cluster_same_category = Column(Boolean, default=True)
-    cluster_same_feed = Column(Boolean, default=True)
+    cluster_enabled = Column(Boolean, default=True, nullable=False)
+    cluster_tfidf_enabled = Column(Boolean, default=True, nullable=False)
+    cluster_same_category = Column(Boolean, default=True, nullable=False)
+    cluster_same_feed = Column(Boolean, default=True, nullable=False)
     cluster_conf = Column(PickleType, default={})
 
     # user rights
