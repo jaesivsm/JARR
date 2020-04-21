@@ -8,8 +8,8 @@ from jarr.lib.enums import ReadReason
 
 cluster_ns = Namespace('cluster', description='Cluster related operations')
 cluster_parser = cluster_ns.parser()
-cluster_parser.add_argument('liked', type=inputs.boolean)
-cluster_parser.add_argument('read', type=inputs.boolean)
+cluster_parser.add_argument('liked', type=inputs.boolean, nullable=False)
+cluster_parser.add_argument('read', type=inputs.boolean, nullable=False)
 article_model = cluster_ns.model('Article', {
     'id': fields.Integer(),
     'link': fields.String(),
