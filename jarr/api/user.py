@@ -8,23 +8,27 @@ user_ns = Namespace('user', description="User related operations (update, "
         "delete and password management)")
 user_model = user_ns.model('User', {})
 user_parser = user_ns.parser()
-set_model_n_parser(user_model, user_parser, 'login', str)
-set_model_n_parser(user_model, user_parser, 'email', str)
-set_model_n_parser(user_model, user_parser, 'timezone', str)
+set_model_n_parser(user_model, user_parser, 'login', str, nullable=False)
+set_model_n_parser(user_model, user_parser, 'email', str, nullable=False)
+set_model_n_parser(user_model, user_parser, 'timezone', str, nullable=False)
 suffix = "(if the article feed's and category's settings allows it)"
 set_model_n_parser(user_model, user_parser, 'cluster_enabled', bool,
+        nullable=False,
         description="will allow article in your feeds and categories to be "
                     "clusterized" + suffix)
 set_model_n_parser(user_model, user_parser, 'cluster_tfidf_enabled', bool,
+        nullable=False,
         description="will allow article in your feeds and categories to be "
                     "clusterized through document comparison" + suffix)
 set_model_n_parser(user_model, user_parser, 'cluster_same_category', bool,
+        nullable=False,
         description="will allow article in your feeds and categories to be "
                     "clusterized while beloning to the same category" + suffix)
 set_model_n_parser(user_model, user_parser, 'cluster_same_feed', bool,
+        nullable=False,
         description="will allow article in your feeds and categories to be "
                     "clusterized while beloning to the same feed" + suffix)
-user_parser.add_argument('password', type=str)
+user_parser.add_argument('password', type=str, nullable=False)
 
 
 @user_ns.route('')

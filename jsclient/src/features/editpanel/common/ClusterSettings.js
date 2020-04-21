@@ -14,7 +14,7 @@ const clusteringConfOptions = {
 
 const optionValues = [
     { value: 0, label: 'Desactived', trueVal: false },
-    { value: 1, label: 'From Parent', trueVal: null },
+    { value: 1, label: 'Default (from parent)', trueVal: null },
     { value: 2, label: 'Activated', trueVal: true },
 ];
 
@@ -27,32 +27,25 @@ const getVal = (val) => {
 }
 
 function ClusterSettings({ state, level, setState }) {
-  function getHandleChange(key) {
-    return (e, newVal) => {
-        console.log({ ...state });
-        console.log(key, newVal, getVal(newVal));
-        setState({ ...state, [key]: getVal(newVal)})
-        console.log({ ...state });
-    };
-  }
+  const getHandleChange = (key) => (e, newVal) => setState({ ...state, [key]: getVal(newVal)});
   return (
     <>
       {Object.keys(clusteringConfOptions)
-             .filter((swtch) => (
-               !clusteringConfOptions[swtch].only_for || clusteringConfOptions[swtch].only_for === level))
-             .map((swtch) => (
-        <FormControlLabel key={"fcl-" + swtch}
+             .filter((opt) => (
+               !clusteringConfOptions[opt].only_for || clusteringConfOptions[opt].only_for === level))
+             .map((opt) => (
+        <FormControlLabel key={"fcl-" + opt}
           control={<Slider
-                     value={getVal(state[swtch])}
+                     value={getVal(state[opt])}
                      getAriaValueText={getValLbl}
-                     marks={optionValues}
+                     marks={level === "user" ? [optionValues[0], optionValues[2]] : optionValues}
                      aria-labelledby="discrete-slider-always"
                      step={null} min={0} max={2}
                      valueLabelDisplay="off"
-                     name={swtch}
-                     onChange={getHandleChange(swtch)}
+                     name={opt}
+                     onChange={getHandleChange(opt)}
                    />}
-          label={clusteringConfOptions[swtch].label}
+          label={clusteringConfOptions[opt].label}
         />
       ))}
     </>

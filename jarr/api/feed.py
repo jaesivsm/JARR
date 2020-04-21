@@ -12,7 +12,7 @@ from jarr.lib.enums import FeedStatus, FeedType
 
 feed_ns = Namespace('feed', description='Feed related operations')
 url_parser = feed_ns.parser()
-url_parser.add_argument('url', type=str, required=True)
+url_parser.add_argument('url', type=str, required=True, nullable=False)
 feed_parser = feed_ns.parser()
 feed_build_model = feed_ns.model('FeedBuilder', {
         'link': fields.String(),
@@ -44,28 +44,34 @@ feed_model = feed_ns.model('Feed', {
 suffix = "(if your global settings " \
         "and the article's category settings allows it)"
 set_model_n_parser(feed_model, feed_parser, 'cluster_enabled', bool,
+        nullable=True,
         description="will allow article in your feeds and categories to be "
                     "clusterized" + suffix)
 set_model_n_parser(feed_model, feed_parser, 'cluster_tfidf_enabled', bool,
+        nullable=True,
         description="will allow article in your feeds and categories to be "
                     "clusterized through document comparison" + suffix)
 set_model_n_parser(feed_model, feed_parser, 'cluster_same_category', bool,
+        nullable=True,
         description="will allow article in your feeds and categories to be "
                     "clusterized while beloning to the same category" + suffix)
 set_model_n_parser(feed_model, feed_parser, 'cluster_same_feed', bool,
+        nullable=True,
         description="will allow article in your feeds and categories to be "
                     "clusterized while beloning to the same feed" + suffix)
 set_model_n_parser(feed_model, feed_parser, 'cluster_wake_up', bool,
+        nullable=True,
         description='will unread cluster when article '
                     'from that feed are added to it')
-set_model_n_parser(feed_model, feed_parser, 'category_id', int)
-set_model_n_parser(feed_model, feed_parser, 'site_link', str)
-set_model_n_parser(feed_model, feed_parser, 'description', str)
+set_model_n_parser(feed_model, feed_parser, 'category_id', int, nullable=False)
+set_model_n_parser(feed_model, feed_parser, 'site_link', str, nullable=False)
+set_model_n_parser(feed_model, feed_parser, 'description', str, nullable=False)
 feed_parser_edit = feed_parser.copy()
-set_model_n_parser(feed_model, feed_parser_edit, 'title', str)
-set_model_n_parser(feed_model, feed_parser_edit, 'status', FeedStatus)
-feed_parser.add_argument('title', type=str, required=True)
-feed_parser.add_argument('link', type=str, required=True)
+set_model_n_parser(feed_model, feed_parser_edit, 'title', str, nullable=False)
+set_model_n_parser(feed_model, feed_parser_edit, 'status', FeedStatus,
+                   nullable=False)
+feed_parser.add_argument('title', type=str, required=True, nullable=False)
+feed_parser.add_argument('link', type=str, required=True, nullable=False)
 feed_parser.add_argument('icon_url', type=str)
 
 
