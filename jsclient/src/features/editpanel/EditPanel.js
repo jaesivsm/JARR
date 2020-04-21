@@ -41,12 +41,12 @@ function EditPanel({ isOpen, isLoading, job, objType,
   let form = <CircularProgress />;
   if(job === "add" && objType === "feed") {
     if(buildedFeed) {
-      form = <AddEditFeed feed={buildedFeed} categories={categories} />;
+      form = <AddEditFeed job={job} feed={buildedFeed} categories={categories} />;
     } else {
       form = <BuildFeed isLoading={isLoading} />;
     }
   } else if (job === "edit" && objType === "feed") {
-    form = <AddEditFeed feed={loadedObj} categories={categories} />;
+    form = <AddEditFeed job={job} feed={loadedObj} categories={categories} />;
   } else if ((job === "add" || job === "edit") && objType === "category") {
     form = <AddEditCategory job={job} category={loadedObj} />;
   } else if (job === "edit" && objType === "user") {

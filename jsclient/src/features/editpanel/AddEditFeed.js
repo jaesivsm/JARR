@@ -1,26 +1,21 @@
 import React, { useState } from "react";
 import PropTypes from "prop-types";
 import { connect } from "react-redux";
+// material components
 import Button from "@material-ui/core/Button";
-import FormControl from "@material-ui/core/FormControl";
 import Select from "@material-ui/core/Select";
 import MenuItem from "@material-ui/core/MenuItem";
-import Switch from "@material-ui/core/Switch";
-import FormControlLabel from "@material-ui/core/FormControlLabel";
-
+import FormControl from "@material-ui/core/FormControl";
+// jarr
 import { closePanel } from "./editSlice";
 import { doCreateObj, doEditObj } from "../feedlist/feedSlice";
-import { defaultTo, StateTextInput } from "./common";
+import { defaultTo } from "./common";
+import StateTextInput from "./common/StateTextInput";
+import ClusterSettings from "./common/ClusterSettings";
 
 const availableFeedTypes = ["classic", "json", "tumblr", "instagram",
                             "soundcloud", "reddit", "fetch", "koreus",
                             "twitter"];
-
-const feedConfs = {"cluster_enabled": "Allow clustering article from this feed",
-                   "cluster_tfidf_enabled": "Allow clustering article by analysing its content through TFIDF",
-                   "cluster_same_category": "Allow cluster article inside the same category",
-                   "cluster_same_feed": "Allow clustering article inside the same feed",
-                   "cluster_wake_up": "Allow clustering to unread an article previously marked as read"};
 
 const mapDispatchToProps = (dispatch) => ({
   createFeed(e, feed) {
@@ -32,6 +27,7 @@ const mapDispatchToProps = (dispatch) => ({
     return dispatch(closePanel());
   },
   editFeed(e, id, feed) {
+      console.log(feed);
     e.preventDefault();
     dispatch(doEditObj(id, feed, "feed"));
     return dispatch(closePanel());
@@ -39,24 +35,19 @@ const mapDispatchToProps = (dispatch) => ({
 });
 
 
-function AddEditFeed({ feed, categories, createFeed, editFeed }) {
+function AddEditFeed({ job, feed, categories, createFeed, editFeed }) {
   const currentFeed = { ...feed };
   defaultTo(currentFeed, "category_id", null);
   defaultTo(currentFeed, "feed_type", "classic");
   // putting all conf option to default true
-  Object.keys(feedConfs).forEach((option) => {
-    defaultTo(currentFeed, option, true);
-  })
 
   const [state, setState] = useState(currentFeed);
-  const handleSwitchChange = (e) => {
-    setState({ ...state, [e.target.name]: e.target.checked});
-  };
   return (
     <form onSubmit={(e) => {
       if (!feed.id) { createFeed(e, state); }
       else {editFeed(e, feed.id, state);}
     }}>
+    <FormControl component="fieldset">
       <StateTextInput required={true} label="Feed title" name="title"
         state={state} setState={setState} />
       <StateTextInput label="Feed description" name="description"
@@ -82,24 +73,17 @@ function AddEditFeed({ feed, categories, createFeed, editFeed }) {
           <MenuItem key={"item-" + type} value={type}>{type}</MenuItem>
         ))}
       </Select>
-      <FormControl component="fieldset">
-        {Object.keys(feedConfs).map((option) => (
-          <FormControlLabel key={"fcl-" + option}
-            control={<Switch checked={state[option]} color="primary"
-                             onChange={(e) => (handleSwitchChange(e))}
-                             name={option} />}
-            label={feedConfs[option]}
-          />
-        ))}
-      </FormControl>
+      <ClusterSettings level="feed" state={state} setState={setState} />
       <Button variant="contained" color="primary" type="submit">
-        Create Feed
+        {job === "add" ? "Create" : "Edit"} Feed
       </Button>
+    </FormControl>
     </form>
   );
 }
 
 AddEditFeed.propTypes = {
+  job: PropTypes.string.isRequired,
   feed: PropTypes.object.isRequired,
   categories: PropTypes.array.isRequired,
   createFeed: PropTypes.func.isRequired,
