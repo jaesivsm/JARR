@@ -100,7 +100,6 @@ export const doReadCluster = (clusterId): AppThunk => async (dispatch, getState)
     url: apiUrl + "/cluster/" + clusterId,
   }, dispatch, getState);
   dispatch(retrievedCluster({ cluster: result.data }));
-  // TODO change unread counts
 };
 
 export const doUnreadCluster = (clusterId): AppThunk => async (dispatch, getState) => {
@@ -109,6 +108,4 @@ export const doUnreadCluster = (clusterId): AppThunk => async (dispatch, getStat
     method: "put",
     url: apiUrl + "/cluster/" + clusterId + "?read=false",
   }, dispatch, getState);
-  // dispatch(retrievedUnreadCluster({ clusterId }));
-  // TODO change unread counts
 };

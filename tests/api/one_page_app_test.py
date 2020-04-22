@@ -1,5 +1,3 @@
-import json
-
 from tests.base import JarrFlaskCommon
 from tests.utils import update_on_all_objs
 from jarr.controllers import (ArticleController, CategoryController,
@@ -13,13 +11,22 @@ class OnePageAppTest(JarrFlaskCommon):
         super().setUp()
         self.user = UserController().get(id=2)
 
-    def assertClusterCount(self, count, filters=None):
+    def assertClusterCount(self, count, filters=None, expected_payload=None):
         filters = filters or {}
         resp = self.jarr_client('get', 'clusters',
                 data=filters, user=self.user.login)
         self.assertStatusCode(200, resp)
         clusters = resp.json
         self.assertEqual(count, len(clusters))
+        if expected_payload is not None:
+            for cluster in clusters:
+                differing_keys = [key for key in expected_payload
+                                  if expected_payload[key] != cluster[key]]
+                err_msg = "got differing values for:" + ','.join(
+                        ["%s (%r!=%r)" % (key, expected_payload[key],
+                                          cluster[key])
+                         for key in differing_keys])
+                self.assertEqual([], differing_keys, err_msg)
         return clusters
 
     def test_list_feeds(self):
@@ -51,15 +58,18 @@ class OnePageAppTest(JarrFlaskCommon):
 
     def test_cluster_listing(self):
         clusters = self.assertClusterCount(18)
+        self.assertEqual(12, len([cluster for cluster in clusters
+                                  if cluster['categories_id'] != [0]]),
+                         'not enough categories_id in %r' % clusters)
         self.assertClusterCount(18, {'filter': 'unread'})
         self.assertClusterCount(0, {'filter': 'liked'})
         self.jarr_client('put', 'cluster', clusters[0]['id'],
-                  data={'liked': True}, user=self.user.login)
+                         data={'liked': True}, user=self.user.login)
         self.assertClusterCount(1, {'filter': 'liked'})
-        self.assertClusterCount(3, {'feed_id': 1})
-        self.assertClusterCount(3, {'feed_id': 2})
-        self.assertClusterCount(3, {'category_id': 1})
-        self.assertClusterCount(6, {'category_id': 0})
+        self.assertClusterCount(3, {'feed_id': 1}, {"feeds_id": [1]})
+        self.assertClusterCount(3, {'feed_id': 2}, {"feeds_id": [2]})
+        self.assertClusterCount(3, {'category_id': 1}, {"categories_id": [1]})
+        self.assertClusterCount(6, {'category_id': 0}, {"categories_id": [0]})
 
     def test_search(self):
         self.assertClusterCount(0, {'search_str': 'test'})

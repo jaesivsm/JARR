@@ -1,7 +1,8 @@
 from flask_jwt import current_identity, jwt_required
 from flask_restx import Namespace, Resource, fields, inputs
 
-from jarr.controllers import ClusterController, FeedController
+from jarr.controllers import FeedController
+from jarr.controllers.cluster import JR_PAGE_LENGTH, ClusterController
 from jarr.lib.enums import ReadReason
 
 ACCEPTED_LEVELS = {'success', 'info', 'warning', 'error'}
@@ -40,6 +41,8 @@ filter_parser.add_argument('feed_id', type=int,
         help='the parent feed id to filter with')
 filter_parser.add_argument('category_id', type=int,
         help='the parent category id to filter with')
+filter_parser.add_argument('page', type=int, default=0,
+                           help='to handle pagination')
 mark_as_read_parser = filter_parser.copy()
 mark_as_read_parser.add_argument('only_singles', type=bool, default=False,
         help="set to true to mark as read only cluster with one article")
@@ -117,8 +120,13 @@ class Clusters(Resource):
     def get():
         """Will list all cluster extract for the middle pannel."""
         attrs = filter_parser.parse_args()
+        offset, limit = 0, JR_PAGE_LENGTH
+        if attrs.get('page'):
+            offset = attrs['page'] * JR_PAGE_LENGTH
+            limit = (attrs['page'] + 1) * JR_PAGE_LENGTH
         clu_ctrl = ClusterController(current_identity.id)
-        return list(clu_ctrl.join_read(**_get_filters(attrs)))
+        return list(clu_ctrl.join_read(offset=offset, limit=limit,
+                                       **_get_filters(attrs)))
 
 
 @default_ns.route('/mark-all-as-read')
@@ -135,7 +143,7 @@ class MarkClustersAsRead(Resource):
         attrs = mark_as_read_parser.parse_args()
         filters = _get_filters(attrs)
         clu_ctrl = ClusterController(current_identity.id)
-        clusters = [clu for clu in clu_ctrl.join_read(**filters)
+        clusters = [clu for clu in clu_ctrl.join_read(limit=None, **filters)
                     if not attrs.get('only_singles')
                         or len(clu['feeds_id']) == 1]
         if clusters:

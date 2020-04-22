@@ -21,7 +21,7 @@ import SettingsIcon from "@material-ui/icons/Settings";
 import topMenuStyle from "./topMenuStyle";
 import { doLogout } from "../login/userSlice";
 import { toggleMenu, doMarkAllAsRead } from "../feedlist/feedSlice";
-import { doListClusters } from "../clusterlist/clusterSlice";
+import { doListClusters, markedAllAsRead } from "../clusterlist/clusterSlice";
 import { doFetchObjForEdit } from "../editpanel/editSlice";
 
 
@@ -38,7 +38,8 @@ const mapDispatchToProps = (dispatch) => ({
     return dispatch(doListClusters({ filter: filterValue }));
   },
   markAllAsRead(onlySingles) {
-    return dispatch(doMarkAllAsRead(onlySingles));
+    dispatch(doMarkAllAsRead(onlySingles));
+    return dispatch(markedAllAsRead());
   },
   toggleFeedList() {
     return dispatch(toggleMenu());
