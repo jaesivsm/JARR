@@ -26,13 +26,28 @@ const getVal = (val) => {
   return val === row.trueVal ? row.value : row.trueVal;
 }
 
+const filterOption = (level) => ((opt) => (
+  !clusteringConfOptions[opt].only_for || clusteringConfOptions[opt].only_for === level)
+);
+
+export function fillMissingClusterOption(obj, level, def=null) {
+  const filledObj = { ...obj };
+  Object.keys(clusteringConfOptions)
+        .filter(filterOption(level))
+        .forEach((opt) => {
+    if(filledObj[opt] === undefined) {
+      filledObj[opt] = def;
+    }
+  });
+  return filledObj;
+}
+
 function ClusterSettings({ state, level, setState }) {
   const getHandleChange = (key) => (e, newVal) => setState({ ...state, [key]: getVal(newVal)});
   return (
     <>
       {Object.keys(clusteringConfOptions)
-             .filter((opt) => (
-               !clusteringConfOptions[opt].only_for || clusteringConfOptions[opt].only_for === level))
+             .filter(filterOption(level))
              .map((opt) => (
         <FormControlLabel key={"fcl-" + opt}
           control={<Slider

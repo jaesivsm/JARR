@@ -8,7 +8,7 @@ import FormControl from "@material-ui/core/FormControl";
 // jarr
 import { closePanel } from "./editSlice";
 import { doCreateObj, doEditObj } from "../feedlist/feedSlice";
-import ClusterSettings from "./common/ClusterSettings";
+import ClusterSettings, { fillMissingClusterOption } from "./common/ClusterSettings";
 
 const mapDispatchToProps = (dispatch) => ({
   createCategory(e, category) {
@@ -24,7 +24,8 @@ const mapDispatchToProps = (dispatch) => ({
 });
 
 function AddEditCategory({ isOpen, job, category, createCategory, editCategory }) {
-  const [state, setState] = useState({  ...category,
+  const [state, setState] = useState({
+      ...fillMissingClusterOption(category, "category", null),
       "name": category && category.name ? category.name : "",
   });
 

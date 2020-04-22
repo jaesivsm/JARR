@@ -11,7 +11,7 @@ import { closePanel } from "./editSlice";
 import { doCreateObj, doEditObj } from "../feedlist/feedSlice";
 import { defaultTo } from "./common";
 import StateTextInput from "./common/StateTextInput";
-import ClusterSettings from "./common/ClusterSettings";
+import ClusterSettings, { fillMissingClusterOption } from "./common/ClusterSettings";
 
 const availableFeedTypes = ["classic", "json", "tumblr", "instagram",
                             "soundcloud", "reddit", "fetch", "koreus",
@@ -36,7 +36,7 @@ const mapDispatchToProps = (dispatch) => ({
 
 
 function AddEditFeed({ job, feed, categories, createFeed, editFeed }) {
-  const currentFeed = { ...feed };
+  const currentFeed = fillMissingClusterOption(feed, "feed", null);
   defaultTo(currentFeed, "category_id", null);
   defaultTo(currentFeed, "feed_type", "classic");
   // putting all conf option to default true

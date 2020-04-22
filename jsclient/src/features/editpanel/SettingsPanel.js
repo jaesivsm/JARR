@@ -9,7 +9,7 @@ import FormControl from "@material-ui/core/FormControl";
 import TextField from "@material-ui/core/TextField";
 // jarr
 import StateTextInput from "./common/StateTextInput";
-import ClusterSettings from "./common/ClusterSettings";
+import ClusterSettings, { fillMissingClusterOption } from "./common/ClusterSettings";
 import { closePanel } from "./editSlice";
 import { doEditObj } from "../feedlist/feedSlice";
 
@@ -25,7 +25,7 @@ const mapDispatchToProps = (dispatch) => ({
 });
 
 function SettingsPanel({ user, editSettings }) {
-  const [state, setState] = useState(user);
+  const [state, setState] = useState(fillMissingClusterOption(user, "user", null));
   const [pwdVal, setPwd] = useState(null);
   const [pwdConfirm, setPwdConfirm] = useState(null);
   const [showPasswd, setShowPasswd] = useState(false);
