@@ -42,7 +42,7 @@ class OnePageAppTest(JarrFlaskCommon):
         self.assertEqual(18, sum([value for key, value in result.items()
                                   if "feed" in key]))
 
-        self._mark_as_read(18, {'filter': 'unread'})
+        self._mark_as_read(0, {'filter': 'unread'})
 
         resp = self.jarr_client('get', 'unreads', user=self.user.login)
         self.assertStatusCode(200, resp)
@@ -85,44 +85,48 @@ class OnePageAppTest(JarrFlaskCommon):
         for cluster in clusters:
             self.assertIn(feed_id, cluster['feeds_id'])
 
-    def _mark_as_read(self, read_count, filters=None):
+    def _mark_as_read(self, expected_unread_count, filters=None):
         filters = filters or {}
         resp = self.jarr_client('put', 'mark-all-as-read', data=filters,
                                 user=self.user.login)
         self.assertStatusCode(200, resp)
-        self.assertEqual(read_count, len(json.loads(resp.data.decode('utf8'))))
+        unread_count = sum(v for k, v in resp.json.items() if 'feed' in k)
+        self.assertEqual(expected_unread_count, unread_count,
+                         "expected %d unread clusters, got %d"
+                         % (expected_unread_count, unread_count))
 
     def test_MarkClustersAsRead_put(self):
         self.assertClusterCount(18, {'filter': 'unread'})
-        self._mark_as_read(0, {'filter': 'liked'})
+        self._mark_as_read(18, {'filter': 'liked'})
         self.assertClusterCount(18, {'filter': 'unread'})
-        self._mark_as_read(18, {'filter': 'unread'})
+        self._mark_as_read(0, {'filter': 'unread'})
         self.assertClusterCount(0, {'filter': 'unread'})
 
     def test_MarkClustersAsRead_put_only_singles(self):
         feed = FeedController(self.user.id).read()[0]
         update_on_all_objs(feeds=[feed],
-                cluster_same_feed=True, cluster_enabled=True)
+                           cluster_same_feed=True, cluster_enabled=True)
         # creating a new article that will cluster
         ArticleController(self.user.id).create(entry_id='new entry_id',
                 title='new title', content='new content',
                 feed_id=feed.id, link=feed.articles[0].link)
         ClusterController.clusterize_pending_articles()
         self.assertClusterCount(18, {'filter': 'unread'})
-        self._mark_as_read(17, {'only_singles': True, 'filter': 'unread'})
+        # one per feed
+        self._mark_as_read(2, {'only_singles': True, 'filter': 'unread'})
         self.assertClusterCount(1, {'filter': 'unread'})
 
     def test_MarkClustersAsRead_put_one_feed(self):
         self.assertClusterCount(18, {'filter': 'unread'})
-        self._mark_as_read(3, {'filter': 'unread', 'feed_id': 1})
+        self._mark_as_read(15, {'filter': 'unread', 'feed_id': 1})
         self.assertClusterCount(15, {'filter': 'unread'})
 
     def test_MarkClustersAsRead_put_one_category(self):
         self.assertClusterCount(18, {'filter': 'unread'})
-        self._mark_as_read(3, {'filter': 'unread', 'category_id': 1})
+        self._mark_as_read(15, {'filter': 'unread', 'category_id': 1})
         self.assertClusterCount(15, {'filter': 'unread'})
 
     def test_MarkClustersAsRead_put_null_category(self):
         self.assertClusterCount(18, {'filter': 'unread'})
-        self._mark_as_read(6, {'filter': 'unread', 'category_id': 0})
+        self._mark_as_read(12, {'filter': 'unread', 'category_id': 0})
         self.assertClusterCount(12, {'filter': 'unread'})
