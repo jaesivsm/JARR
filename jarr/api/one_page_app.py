@@ -128,8 +128,7 @@ class MarkClustersAsRead(Resource):
     @default_ns.expect(mark_as_read_parser)
     @default_ns.response(401, 'Unauthorized')
     @default_ns.response(200, 'Clusters in filter marked as read',
-                         model=[midle_panel_model], as_list=True)
-    @default_ns.marshal_list_with(midle_panel_model)
+                         as_list=True)
     @jwt_required()
     def put():
         """Will mark all clusters selected by the filter as read."""
@@ -143,4 +142,4 @@ class MarkClustersAsRead(Resource):
             clu_ctrl.update({'id__in': [clu['id'] for clu in clusters]},
                             {'read': True,
                              'read_reason': ReadReason.mass_marked})
-        return clusters, 200
+        return ClusterController(current_identity.id).get_unreads(), 200

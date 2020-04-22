@@ -112,17 +112,3 @@ export const doUnreadCluster = (clusterId): AppThunk => async (dispatch, getStat
   // dispatch(retrievedUnreadCluster({ clusterId }));
   // TODO change unread counts
 };
-
-export const doMarkAllAsRead = (onlySingles): AppThunk => async (dispatch, getState) => {
-  const params = { ...getState().clusters.filters };
-  if(onlySingles) {
-      params["only_singles"] = true;
-  }
-  // dispatch(requestedMarkAllAsRead({ onlySingles })); // useless for now
-  const stringifiedParams = qs.stringify(params);
-  await doRetryOnTokenExpiration({
-    method: "put",
-    url: apiUrl + "/mark-all-as-read?" + stringifiedParams,
-  }, dispatch, getState);
-  dispatch(markedAllAsRead({ onlySingles }));
-};

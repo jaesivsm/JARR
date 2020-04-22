@@ -165,3 +165,17 @@ export const doEditObj = (id, obj, objType): AppThunk => async (dispatch, getSta
   }, dispatch, getState);
   return result;
 };
+
+export const doMarkAllAsRead = (onlySingles): AppThunk => async (dispatch, getState) => {
+  const params = { ...getState().clusters.filters };
+  if(onlySingles) {
+      params["only_singles"] = true;
+  }
+  // dispatch(requestedMarkAllAsRead({ onlySingles })); // useless for now
+  const stringifiedParams = qs.stringify(params);
+  const result = await doRetryOnTokenExpiration({
+    method: "put",
+    url: apiUrl + "/mark-all-as-read?" + stringifiedParams,
+  }, dispatch, getState);
+  dispatch(loadedUnreadCounts({ unreads: result.data }));
+};
