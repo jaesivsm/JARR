@@ -56,9 +56,11 @@ function FeedRow({ index, style, feedListRows,
       icon = <LinkIcon className={classes.defaultFeedIcon} color="disabled" fontSize="small"/>;
     }
     return (
-      <ListItem button style={style}
+      <ListItem button
+          key={"f" + obj.id + (isSelected ? "s" : "") + obj.unread}
+          style={style}
           className={classes.feedItem}
-          selected={selectedFeedId === obj.id}
+          selected={isSelected}
           onClick={(e) => (listClusters(e, { feedId: obj.id }))}
         >
         {icon}
@@ -75,7 +77,9 @@ function FeedRow({ index, style, feedListRows,
     foldButton = <FoldButton onClick={(e) => (toggleCatFolding(e, obj.id))} />;
   }
   return (
-    <ListItem button style={style} selected={isSelected}
+    <ListItem button
+        key={"c" + obj.id + (isSelected ? "s" : "") + obj.unread}
+        style={style} selected={isSelected}
         onClick={(e) => (listClusters(e, { categoryId: isAllCateg ? "all" : obj.id}, obj.folded, selectedCategoryId ))}>
       {foldButton}
       <ListItemText primary={isAllCateg ? "All" : obj.str} className={isAllCateg ? classes.catItemAll : null} />

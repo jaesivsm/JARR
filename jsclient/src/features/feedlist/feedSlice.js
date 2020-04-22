@@ -30,8 +30,7 @@ const feedSlice = createSlice({
   initialState: { loadingFeeds: false,
                   loadingUnreadCounts: false,
                   feedListRows: [],
-                  unreads: [],
-
+                  unreads: {},
                   isParentFolded: storageGet("left-menu-folded") === "true",
                   isOpen: storageGet("left-menu-open") !== "false",
                   feedListFilter: defaultFilter,
@@ -102,6 +101,25 @@ const feedSlice = createSlice({
       //FIXME insert at good place
       return { ...state, feedListRows: [ ...state.feedListRows, feedListRow ], };
     },
+    readClusters(state, action) {
+      const unreads = { ...state.unreads };
+      const readChange = action.payload.action === "unread" ? 1 : -1;
+      action.payload.clusters.forEach((cluster) => {
+        cluster["feeds_id"].forEach((feedId) => (
+          unreads["feed-" + feedId] += readChange
+        ));
+        if(cluster["categories_id"]) {
+          cluster["categories_id"].forEach((catId) => (
+            unreads["categ-" + catId] += readChange
+          ));
+        }
+      });
+      return { ...state, unreads,
+               feedListRows: mergeCategoriesWithUnreads(state.feedListRows,
+                                                        unreads,
+                                                        state.isParentFolded),
+      };
+    },
   },
 });
 
@@ -109,6 +127,7 @@ export const { requestedFeeds, loadedFeeds,
                requestedUnreadCounts, loadedUnreadCounts,
                toggleMenu, toggleAllFolding, toggleFolding,
                createdObj, setSearchFilter,
+               readClusters,
 } = feedSlice.actions;
 export default feedSlice.reducer;
 

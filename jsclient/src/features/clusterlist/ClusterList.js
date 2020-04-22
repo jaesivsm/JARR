@@ -71,6 +71,7 @@ function ClusterList({ clusters, filters, listClusters, openEditPanel,
         </Card>
       );
   }
+
   return (
     <main className={className}>
       {card}
@@ -88,6 +89,8 @@ function ClusterList({ clusters, filters, listClusters, openEditPanel,
            id={cluster.id}
            mainTitle={cluster.main_title}
            mainFeedTitle={cluster.main_feed_title}
+           feedsId={cluster["feeds_id"]}
+           categoriesId={cluster["categories_id"]}
          />
       ))}
     </main>

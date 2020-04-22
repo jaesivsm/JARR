@@ -20,7 +20,7 @@ import SettingsIcon from "@material-ui/icons/Settings";
 // jarr
 import topMenuStyle from "./topMenuStyle";
 import { doLogout } from "../login/userSlice";
-import { toggleMenu } from "../feedlist/feedSlice";
+import { toggleMenu, doFetchUnreadCount } from "../feedlist/feedSlice";
 import { doListClusters, doMarkAllAsRead } from "../clusterlist/clusterSlice";
 import { doFetchObjForEdit } from "../editpanel/editSlice";
 
@@ -38,7 +38,8 @@ const mapDispatchToProps = (dispatch) => ({
     return dispatch(doListClusters({ filter: filterValue }));
   },
   markAllAsRead(onlySingles) {
-    return dispatch(doMarkAllAsRead(onlySingles));
+    dispatch(doMarkAllAsRead(onlySingles));
+    return dispatch(doFetchUnreadCount());
   },
   toggleFeedList() {
     return dispatch(toggleMenu());

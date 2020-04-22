@@ -11,6 +11,7 @@ import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import CircularProgress from "@material-ui/core/CircularProgress";
 
 import { doReadCluster, doUnreadCluster, requestedUnreadCluster } from "./clusterSlice";
+import { readClusters } from "../feedlist/feedSlice";
 
 function mapStateToProps(state) {
   return { requestedClusterId: state.clusters.requestedClusterId,
@@ -20,18 +21,28 @@ function mapStateToProps(state) {
 }
 
 const mapDispatchToProps = (dispatch) => ({
-  readCluster(clusterId) {
-    return dispatch(doReadCluster(clusterId));
+  readCluster(clusterId, feedsId, categoriesId) {
+      console.log(clusterId, feedsId, categoriesId);
+    dispatch(doReadCluster(clusterId));
+    return dispatch(readClusters(
+        { clusters: [{ "feeds_id": feedsId,
+                       "categories_id": categoriesId }],
+          action: "read", }));
   },
-  unreadCluster(clusterId) {
-    return dispatch(doUnreadCluster(clusterId));
+  unreadCluster(clusterId, feedsId, categoriesId) {
+    dispatch(doUnreadCluster(clusterId));
+    return dispatch(readClusters(
+        { clusters: [{ "feeds_id": feedsId,
+                       "categories_id": categoriesId }],
+          action: "unread", }));
   },
   justMarkClusterAsRead(clusterId) {
     return dispatch(requestedUnreadCluster({ clusterId }));
   },
 });
 
-function Cluster({ id, mainFeedTitle, mainTitle,
+function Cluster({ id, feedsId, categoriesId,
+                   mainFeedTitle, mainTitle,
                    requestedClusterId, loadedCluster, unreadOnClose,
                    readCluster, unreadCluster, justMarkClusterAsRead }) {
   const expanded = requestedClusterId === id;
@@ -53,9 +64,9 @@ function Cluster({ id, mainFeedTitle, mainTitle,
         expanded={expanded}
         onChange={() => {
           if (!expanded) {
-            readCluster(id);
+            readCluster(id, feedsId, categoriesId);
           } else if (unreadOnClose) {
-            unreadCluster(id);
+            unreadCluster(id, feedsId, categoriesId);
           } else {
             justMarkClusterAsRead(id);
           }
@@ -83,6 +94,8 @@ function Cluster({ id, mainFeedTitle, mainTitle,
 
 Cluster.propTypes = {
   id: PropTypes.number.isRequired,
+  feedsId: PropTypes.array.isRequired,
+  categoriesId: PropTypes.array,
   mainTitle: PropTypes.string.isRequired,
   mainFeedTitle: PropTypes.string.isRequired,
   unreadOnClose: PropTypes.bool.isRequired,
