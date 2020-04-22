@@ -26,8 +26,8 @@ const mapDispatchToProps = (dispatch) => ({
 
 function SettingsPanel({ user, editSettings }) {
   const [state, setState] = useState(fillMissingClusterOption(user, "user", null));
-  const [pwdVal, setPwd] = useState(null);
-  const [pwdConfirm, setPwdConfirm] = useState(null);
+  const [pwdVal, setPwd] = useState("");
+  const [pwdConfirm, setPwdConfirm] = useState("");
   const [showPasswd, setShowPasswd] = useState(false);
   return (
     <form onSubmit={(e) => {
@@ -38,7 +38,7 @@ function SettingsPanel({ user, editSettings }) {
     }}>
     <FormControl component="fieldset">
       {["login", "email", "timezone"].map((key) => (
-          <StateTextInput label={key} name={key} state={state} setState={setState} disabled={key === "login"} />
+          <StateTextInput key={key} label={key} name={key} state={state} setState={setState} disabled={key === "login"} />
        ))}
       <ClusterSettings level="user" state={state} setState={setState} />
       <TextField label="Password" variant="outlined"
