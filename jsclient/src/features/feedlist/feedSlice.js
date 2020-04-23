@@ -92,11 +92,9 @@ const feedSlice = createSlice({
       if(action.payload.type === "category") {
         feedListRow.str = action.payload.data.name;
         feedListRow.type = "categ";
-        state.feedListRows.push(feedListRow);
       } else {
         feedListRow.str = action.payload.data.title;
         feedListRow.type = "feed";
-        state.feedListRows.push(feedListRow);
       }
       //FIXME insert at good place
       return { ...state, feedListRows: [ ...state.feedListRows, feedListRow ], };
@@ -121,6 +119,7 @@ const feedSlice = createSlice({
       };
     },
     deletedObj(state, action) {
+        console.log({ ...action.payload} );
       let type;
       if (action.payload.objType === "feed") {
         type = "feed";
@@ -172,7 +171,7 @@ export const doCreateObj = (obj, type): AppThunk => async (dispatch, getState) =
     method: "post",
     url: apiUrl + "/" + type + "?" + qs.stringify(obj),
   }, dispatch, getState);
-  dispatch(createdObj({ obj: result.data, type }));
+  dispatch(createdObj({ data: result.data, type }));
 };
 
 export const doEditObj = (id, obj, objType): AppThunk => async (dispatch, getState) => {

@@ -138,7 +138,7 @@ function AddEditFeed({ job, feed, categories,
       <Button variant="contained" color="primary" type="submit">
         {job === "add" ? "Create" : "Edit"} Feed
       </Button>
-      <DeleteButton id={feed.id} text="Feed" deleteFunc={deleteFeed} />
+      <DeleteButton id={feed.id} type="feed" deleteFunc={deleteFeed} />
     </FormControl>
     </form>
   );

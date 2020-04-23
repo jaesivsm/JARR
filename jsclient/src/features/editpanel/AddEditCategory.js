@@ -7,8 +7,10 @@ import TextField from "@material-ui/core/TextField";
 import FormControl from "@material-ui/core/FormControl";
 // jarr
 import { closePanel } from "./editSlice";
-import { doCreateObj, doEditObj } from "../feedlist/feedSlice";
+import { doCreateObj, doEditObj, doDeleteObj } from "../feedlist/feedSlice";
+import { doListClusters } from "../clusterlist/clusterSlice";
 import ClusterSettings, { fillMissingClusterOption } from "./common/ClusterSettings";
+import DeleteButton from "./common/DeleteButton";
 
 const mapDispatchToProps = (dispatch) => ({
   createCategory(e, category) {
@@ -21,9 +23,16 @@ const mapDispatchToProps = (dispatch) => ({
     dispatch(doEditObj(id, category, "category"));
     return dispatch(closePanel());
   },
+  deleteCategory(e, id) {
+    e.preventDefault();
+    dispatch(doDeleteObj(id, "category"));
+    dispatch(doListClusters({ categoryId: "all" }));
+    return dispatch(closePanel());
+  },
 });
 
-function AddEditCategory({ isOpen, job, category, createCategory, editCategory }) {
+function AddEditCategory({ isOpen, job, category,
+                           createCategory, editCategory, deleteCategory }) {
   const [state, setState] = useState({
       ...fillMissingClusterOption(category, "category", null),
       "name": category && category.name ? category.name : "",
@@ -50,6 +59,8 @@ function AddEditCategory({ isOpen, job, category, createCategory, editCategory }
       <Button variant="contained" color="primary" type="submit">
         {job === "add" ? "Create" : "Edit"} Category
       </Button>
+      <DeleteButton id={job === "edit" ? category.id : null}
+         type="category" deleteFunc={deleteCategory} />
     </FormControl>
     </form>
   );
@@ -60,6 +71,7 @@ AddEditCategory.propTypes = {
   category: PropTypes.object,
   createCategory: PropTypes.func.isRequired,
   editCategory: PropTypes.func.isRequired,
+  deleteCategory: PropTypes.func.isRequired,
 };
 
 export default connect(null, mapDispatchToProps)(AddEditCategory);

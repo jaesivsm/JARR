@@ -11,7 +11,7 @@ function DeleteButton({ id, type, deleteFunc }) {
     <Button variant="contained" color="secondary" type="submit"
       onClick={(e) => deleteFunc(e, id)}>
       <WarningIcon />
-      Delete this feed
+      Delete this {type}
     </Button>
   );
 }
