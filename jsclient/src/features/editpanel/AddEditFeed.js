@@ -9,10 +9,12 @@ import FormControl from "@material-ui/core/FormControl";
 import FormHelperText from "@material-ui/core/FormHelperText";
 // jarr
 import { closePanel } from "./editSlice";
-import { doCreateObj, doEditObj } from "../feedlist/feedSlice";
+import { doCreateObj, doEditObj, doDeleteObj } from "../feedlist/feedSlice";
+import { doListClusters } from "../clusterlist/clusterSlice";
 import { defaultTo } from "./common";
 import StateTextInput from "./common/StateTextInput";
 import ClusterSettings, { fillMissingClusterOption } from "./common/ClusterSettings";
+import DeleteButton from "./common/DeleteButton";
 
 const availableFeedTypes = ["classic", "json", "tumblr", "instagram",
                             "soundcloud", "reddit", "fetch", "koreus",
@@ -28,9 +30,14 @@ const mapDispatchToProps = (dispatch) => ({
     return dispatch(closePanel());
   },
   editFeed(e, id, feed) {
-      console.log(feed);
     e.preventDefault();
     dispatch(doEditObj(id, feed, "feed"));
+    return dispatch(closePanel());
+  },
+  deleteFeed(e, id) {
+    e.preventDefault();
+    dispatch(doDeleteObj(id, "feed"));
+    dispatch(doListClusters({ categoryId: "all" }));
     return dispatch(closePanel());
   },
 });
@@ -58,7 +65,8 @@ ProposedLinks.propTypes = {
 };
 
 
-function AddEditFeed({ job, feed, categories, createFeed, editFeed }) {
+function AddEditFeed({ job, feed, categories,
+                       createFeed, editFeed, deleteFeed }) {
   const currentFeed = fillMissingClusterOption(feed, "feed", null);
   defaultTo(currentFeed, "category_id", null);
   defaultTo(currentFeed, "feed_type", "classic");
@@ -76,7 +84,7 @@ function AddEditFeed({ job, feed, categories, createFeed, editFeed }) {
   } else if (!feed.link) {
     warning = (
       <FormHelperText>
-        Provided URL doesn't look like a feed we support and we couldn't find a correct one
+        Provided URL doesn't look like a feed we support and we couldn't find a correct one.
       </FormHelperText>
     );
   }
@@ -130,6 +138,7 @@ function AddEditFeed({ job, feed, categories, createFeed, editFeed }) {
       <Button variant="contained" color="primary" type="submit">
         {job === "add" ? "Create" : "Edit"} Feed
       </Button>
+      <DeleteButton id={feed.id} text="Feed" deleteFunc={deleteFeed} />
     </FormControl>
     </form>
   );

@@ -120,6 +120,23 @@ const feedSlice = createSlice({
                                                         state.isParentFolded),
       };
     },
+    deletedObj(state, action) {
+      let type;
+      if (action.payload.objType === "feed") {
+        type = "feed";
+      } else if (action.payload.objType === "cateogry") {
+        type = "categ";
+      }
+      if (type) {
+        return { ...state,
+                 feedListRows: mergeCategoriesWithUnreads(
+                     state.feedListRows.filter((row) => (
+                         row.type !== type || row.id !== action.payload.id)),
+                     state.unreads, state.isParentFolded),
+                 };
+      }
+      return state;
+    },
   },
 });
 
@@ -128,6 +145,7 @@ export const { requestedFeeds, loadedFeeds,
                toggleMenu, toggleAllFolding, toggleFolding,
                createdObj, setSearchFilter,
                readClusters,
+               deletedObj,
 } = feedSlice.actions;
 export default feedSlice.reducer;
 
@@ -164,6 +182,14 @@ export const doEditObj = (id, obj, objType): AppThunk => async (dispatch, getSta
     data: obj,
   }, dispatch, getState);
   return result;
+};
+
+export const doDeleteObj = (id, objType): AppThunk => async (dispatch, getState) => {
+  await doRetryOnTokenExpiration({
+    method: "delete",
+    url: apiUrl + "/" + objType + (id ? "/" + id : ""),
+  }, dispatch, getState);
+  dispatch(deletedObj({ id, objType }));
 };
 
 export const doMarkAllAsRead = (onlySingles): AppThunk => async (dispatch, getState) => {
