@@ -62,9 +62,25 @@ function AddEditFeed({ job, feed, categories, createFeed, editFeed }) {
   const currentFeed = fillMissingClusterOption(feed, "feed", null);
   defaultTo(currentFeed, "category_id", null);
   defaultTo(currentFeed, "feed_type", "classic");
-  // putting all conf option to default true
+  delete currentFeed.links;
+  delete currentFeed["same_link_count"];
 
   const [state, setState] = useState(currentFeed);
+  let warning;
+  if(feed["same_link_count"]) {
+    warning = (
+      <FormHelperText>
+        You have already {feed["same_link_count"]} feed with that link.
+      </FormHelperText>
+    );
+  } else if (!feed.link) {
+    warning = (
+      <FormHelperText>
+        Provided URL doesn't look like a feed we support and we couldn't find a correct one
+      </FormHelperText>
+    );
+  }
+
   let proposedLinks = null;
   if (feed.links) {
     proposedLinks = <ProposedLinks link={feed.link} links={feed.links}
@@ -77,6 +93,7 @@ function AddEditFeed({ job, feed, categories, createFeed, editFeed }) {
       else {editFeed(e, feed.id, state);}
     }}>
     <FormControl component="fieldset">
+      {warning}
       <StateTextInput required={true} label="Feed title" name="title"
         state={state} setState={setState} />
       <StateTextInput label="Feed description" name="description"

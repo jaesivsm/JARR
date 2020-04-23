@@ -27,6 +27,8 @@ feed_build_model = feed_ns.model('FeedBuilder', {
         'cluster_same_category': fields.Boolean(default=True, required=True),
         'cluster_same_feed': fields.Boolean(default=True, required=True),
         'cluster_wake_up': fields.Boolean(default=True, required=True),
+        'same_link_count': fields.Integer(default=0, required=True,
+            help='number of feed with same link existing for that user'),
 })
 feed_model = feed_ns.model('Feed', {
         'id': fields.Integer(readOnly=True),
@@ -168,9 +170,13 @@ class FeedBuilder(Resource):
             plus alternative links found during parsing
 
         """
+        code = 406
         url = url_parser.parse_args()['url']
         feed = FeedBuilderController(url).construct()
-        return feed, 200 if feed.get('link') else 406
+        if feed.get('link'):
+            code = 200
+            feed['same_link_count'] = FeedController(current_identity.id).read(link=feed.get('link')).count()
+        return feed, code
 
 
 @feed_ns.route('/icon')
