@@ -14,9 +14,14 @@ FEED = {'link': 'https://1pxsolidblack.pl/feeds/all.atom.xml',
 
 class FeedApiTest(JarrFlaskCommon):
 
-    def _get(self, id_, user):
+    def _get(self, id_, user='user1'):
         return next(feed for feed in self.jarr_client('get', 'feeds',
-                    user='user1').json if feed['id'] == id_)
+                    user=user).json if feed['id'] == id_)
+
+    @property
+    def valid_filters(self):
+        return [{"action": "mark as read", "pattern": " pattern ",
+                 "action on": "match", "type": "simple match"}]
 
     def test_NewFeedResource_post(self):
         cats = self.jarr_client('get', 'categories', user='user1').json
@@ -31,8 +36,13 @@ class FeedApiTest(JarrFlaskCommon):
         self.assertStatusCode(400, resp)
 
         resp = self.jarr_client('post', 'feed',
-                data={'title': 'my new feed', 'link': 'my link'}, user='user1')
+                data={'title': 'my new feed', 'filters': self.valid_filters,
+                      'link': 'my link'}, user='user1')
         self.assertStatusCode(201, resp)
+        feed = self._get(resp.json['id'], 'user1')
+        self.assertEqual(self.valid_filters, feed['filters'])
+        self.assertEqual('my new feed', feed['title'])
+        self.assertEqual('my link', feed['link'])
 
         resp = self.jarr_client('post', 'feed',
                 data={'title': 'my new feed',
@@ -83,25 +93,40 @@ class FeedApiTest(JarrFlaskCommon):
         self.assertEqual(json['last_retrieved'], now.isoformat())
 
     def test_FeedResource_put(self):
+        # testing rights
         resp = self.jarr_client('put', 'feed', 1)
         self.assertStatusCode(401, resp)
+        # fetching first feed
         feeds_resp = self.jarr_client('get', 'feeds', user='user1')
         self.assertStatusCode(200, feeds_resp)
-        existing_feed = feeds_resp.json[0]
+        feed_id = feeds_resp.json[0]['id']
+        # changing title un-logged
+        resp = self.jarr_client('put', 'feed', feed_id,
+                                data={'title': 'changed'})
+        self.assertStatusCode(401, resp)
+        # changing title wrong user
+        resp = self.jarr_client('put', 'feed', feed_id,
+                                data={'title': 'changed'}, user='user2')
+        self.assertStatusCode(403, resp)
+        # changing feed attributes
+        resp = self.jarr_client('put', 'feed', feed_id,
+                                data={'filters': self.valid_filters,
+                                      'title': 'changed'}, user='user1')
+        self.assertStatusCode(204, resp)
+        feed = self.jarr_client('get', 'feed', feed_id, user='user1').json
+        self.assertEqual('changed', feed['title'])
+        self.assertEqual(self.valid_filters, feed['filters'])
+        resp = self.jarr_client('put', 'feed', feed_id,
+                                data={'title': 'changed2'}, user='user1')
+        self.assertStatusCode(204, resp)
+        feed = self.jarr_client('get', 'feed', feed_id, user='user1').json
+        self.assertEqual('changed2', feed['title'])
+        # changing to other user category
         categories_resp = self.jarr_client('get', 'categories', user='user2')
         self.assertStatusCode(200, categories_resp)
         category = categories_resp.json[0]
-        resp = self.jarr_client('put', 'feed', existing_feed['id'],
-                data={'title': 'changed'})
-        self.assertStatusCode(401, resp)
-        resp = self.jarr_client('put', 'feed', existing_feed['id'],
-                data={'title': 'changed'}, user='user2')
-        self.assertStatusCode(403, resp)
-        resp = self.jarr_client('put', 'feed', existing_feed['id'],
-                data={'title': 'changed'}, user='user1')
-        self.assertStatusCode(204, resp)
-        resp = self.jarr_client('put', 'feed', existing_feed['id'],
-                data={'category_id': category['id']}, user='user1')
+        resp = self.jarr_client('put', 'feed', feed_id, user='user1',
+                                data={'category_id': category['id']})
         self.assertStatusCode(403, resp)
 
     def test_FeedResource_delete(self):
@@ -161,6 +186,7 @@ class FeedApiTest(JarrFlaskCommon):
                       'http://feeds.feedburner.com/Koreus-podcasts-audio',
                       'http://feeds.feedburner.com/Koreus-podcasts-video',
                       'http://feeds.feedburner.com/Koreus-forums'],
+            'same_link_count': 0,
             'site_link': 'https://www.koreus.com/',
             'title': 'Koreus.com - Articles'}, resp.json)
 

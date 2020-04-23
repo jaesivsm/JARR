@@ -9,10 +9,17 @@ from jarr.api.common import (EnumField, parse_meaningful_params,
 from jarr.controllers import (FeedBuilderController, FeedController,
                               IconController)
 from jarr.lib.enums import FeedStatus, FeedType
+from jarr.lib.filter import FiltersType, FiltersAction, FiltersTrigger
 
 feed_ns = Namespace('feed', description='Feed related operations')
 url_parser = feed_ns.parser()
 url_parser.add_argument('url', type=str, required=True, nullable=False)
+filter_model = feed_ns.model('Filter', {
+        'action': EnumField(FiltersAction),
+        'pattern': fields.String(),
+        'action on': EnumField(FiltersTrigger),
+        'type': EnumField(FiltersType),
+})
 feed_parser = feed_ns.parser()
 feed_build_model = feed_ns.model('FeedBuilder', {
         'link': fields.String(),
@@ -42,6 +49,7 @@ feed_model = feed_ns.model('Feed', {
             description='The last error encountered when fetching this feed'),
         'last_retrieved': fields.DateTime(readOnly=True,
             description='Date of the last time this feed was fetched'),
+        'filters': fields.Nested(filter_model, as_list=True),
 })
 suffix = "(if your global settings " \
         "and the article's category settings allows it)"
@@ -65,6 +73,7 @@ set_model_n_parser(feed_model, feed_parser, 'cluster_wake_up', bool,
         nullable=True,
         description='will unread cluster when article '
                     'from that feed are added to it')
+feed_parser.add_argument('filters', type=list, location='json')
 set_model_n_parser(feed_model, feed_parser, 'category_id', int, nullable=False)
 set_model_n_parser(feed_model, feed_parser, 'site_link', str, nullable=False)
 set_model_n_parser(feed_model, feed_parser, 'description', str, nullable=False)
@@ -175,7 +184,8 @@ class FeedBuilder(Resource):
         feed = FeedBuilderController(url).construct()
         if feed.get('link'):
             code = 200
-            feed['same_link_count'] = FeedController(current_identity.id).read(link=feed.get('link')).count()
+            fctrl = FeedController(current_identity.id)
+            feed['same_link_count'] = fctrl.read(link=feed.get('link')).count()
         return feed, code
 
 

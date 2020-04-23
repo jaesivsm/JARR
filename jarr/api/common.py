@@ -15,7 +15,7 @@ class EnumField(fields.String):
         super().__init__(enum=[e.value for e in enum], **kwargs)
 
     def format(self, value):
-        return super().format(value.value)
+        return super().format(getattr(value, 'value', value))
 
 
 def set_model_n_parser(model, parser, name, type_, **kwargs):

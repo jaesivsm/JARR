@@ -142,28 +142,32 @@ class ClusterController(AbstractController):
         session.commit()
         return cluster
 
-    def clusterize(self, article, cluster_read=None, cluster_liked=False):
+    def clusterize(self, article, filter_result=None):
         """Will add given article to a fitting cluster or create a cluster
         fitting that article."""
-        if _get_parent_attr(article, 'cluster_enabled'):
+        filter_result = filter_result or {}
+        allow_clutering = filter_result.get('clustering', True)
+        filter_read = filter_result.get('read')
+        filter_liked = filter_result.get('liked')
+        if allow_clutering and _get_parent_attr(article, 'cluster_enabled'):
             cluster = self._get_cluster_by_link(article)
             if not cluster \
                     and _get_parent_attr(article, 'cluster_tfidf_enabled'):
                 cluster = self._get_cluster_by_similarity(article)
             if cluster:
                 return self.enrich_cluster(cluster, article,
-                                           cluster_read, cluster_liked)
-        return self._create_from_article(article, cluster_read, cluster_liked)
+                                           filter_read, filter_liked)
+        return self._create_from_article(article, filter_read, filter_liked)
 
     @classmethod
     def clusterize_pending_articles(cls):
         results = []
         for article in ArticleController().read(cluster_id=None):
-            _, read, liked = process_filters(article.feed.filters,
-                    {'tags': article.tags,
-                     'title': article.title,
-                     'link': article.link})
-            result = cls(article.user_id).clusterize(article, read, liked).id
+            filter_result = process_filters(article.feed.filters,
+                                            {'tags': article.tags,
+                                             'title': article.title,
+                                             'link': article.link})
+            result = cls(article.user_id).clusterize(article, filter_result).id
             results.append(result)
         return results
 
