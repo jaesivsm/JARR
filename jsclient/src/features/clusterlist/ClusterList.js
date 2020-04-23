@@ -2,12 +2,13 @@ import React, { useEffect, useState } from "react";
 import clsx from "clsx";
 import PropTypes from "prop-types";
 import { connect } from "react-redux";
-
+// material ui components
 import Card from "@material-ui/core/Card";
 import CardActions from "@material-ui/core/CardActions";
 import CardContent from "@material-ui/core/CardContent";
 import Button from "@material-ui/core/Button";
-
+import CircularProgress from "@material-ui/core/CircularProgress";
+// jarr
 import Cluster from "./Cluster";
 import { doListClusters } from "./clusterSlice";
 import { doFetchObjForEdit } from "../editpanel/editSlice";
@@ -26,6 +27,7 @@ function mapStateToProps(state) {
   }
   return { clusters: state.clusters.clusters,
            filters: state.clusters.filters,
+           loading: state.clusters.loading,
            selectedClusterId: state.clusters.requestedClusterId,
            isShifted: state.feeds.isOpen && !state.edit.isOpen,
            selectedFilterObj,
@@ -41,8 +43,22 @@ const mapDispatchToProps = (dispatch) => ({
   },
 });
 
-function ClusterList({ clusters, filters, listClusters, openEditPanel,
-                       isShifted, selectedClusterId, selectedFilterObj }) {
+
+const filterClusters = (selectedClusterId, filter) => (cluster) => (
+    // is selected cluster
+    (selectedClusterId && selectedClusterId === cluster.id)
+     // filters is on all
+     || filter === "all"
+     // cluster is not read and no filter
+     || (!cluster.read && !filter)
+     // cluster is liked and filtering on liked
+     || (cluster.liked && filter === "liked"));
+
+function ClusterList({ clusters, filters,
+                       loading, isShifted,
+                       selectedFilterObj, selectedClusterId,
+                       listClusters, openEditPanel,
+                       }) {
   const classes = clusterListStyle();
   const className = clsx(classes.content, {[classes.contentShift]: isShifted});
   const [everLoaded, setEverLoaded] = useState(false);
@@ -52,7 +68,6 @@ function ClusterList({ clusters, filters, listClusters, openEditPanel,
       listClusters(filters);
     }
   }, [everLoaded, filters, listClusters]);
-
   let card = null;
   if(selectedFilterObj) {
       const objType = selectedFilterObj.type === "feed" ? "feed" : "category";
@@ -71,35 +86,29 @@ function ClusterList({ clusters, filters, listClusters, openEditPanel,
         </Card>
       );
   }
+  let content;
+  if (loading) {
+    content = <CircularProgress />;
+  } else {
+    content = clusters
+        .filter(filterClusters(selectedFilterObj, filters.filter))
+        .map((cluster) => (<Cluster key={"c-" + cluster.id}
+                             id={cluster.id}
+                             mainTitle={cluster.main_title}
+                             mainFeedTitle={cluster.main_feed_title}
+                             feedsId={cluster["feeds_id"]}
+                             categoriesId={cluster["categories_id"]}
+                           />)
+    );
+  }
 
-  return (
-    <main className={className}>
-      {card}
-      {clusters.filter((cluster) => {
-        return (// is selected cluster
-                (selectedClusterId && selectedClusterId === cluster.id)
-                // filters is on all
-                || filters.filter === "all"
-                // cluster is not read and no filter
-                || (!cluster.read && !filters.filter)
-                // cluster is liked and filtering on liked
-                || (cluster.liked && filters.filter === "liked"));
-       }).map((cluster) => (
-         <Cluster key={"c-" + cluster.id}
-           id={cluster.id}
-           mainTitle={cluster.main_title}
-           mainFeedTitle={cluster.main_feed_title}
-           feedsId={cluster["feeds_id"]}
-           categoriesId={cluster["categories_id"]}
-         />
-      ))}
-    </main>
-  );
+  return <main className={className}>{card}{content}</main>;
 }
 
 ClusterList.propTypes = {
   clusters: PropTypes.array.isRequired,
   filters: PropTypes.object.isRequired,
+  loading: PropTypes.bool.isRequired,
   selectedClusterId: PropTypes.number,
   listClusters: PropTypes.func.isRequired,
   openEditPanel: PropTypes.func.isRequired,

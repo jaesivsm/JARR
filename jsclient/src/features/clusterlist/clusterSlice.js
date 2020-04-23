@@ -34,7 +34,7 @@ const clusterSlice = createSlice({
       } else if (action.payload.filters.filter === null) {
         delete filters.filter;
       }
-      return { ...state, filters, loading: true};
+      return { ...state, filters, loading: true, clusters: [] };
     },
     retrievedClustersList(state, action) {
       return { ...state, loading: false,
