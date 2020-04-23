@@ -6,6 +6,7 @@ import Button from "@material-ui/core/Button";
 import Select from "@material-ui/core/Select";
 import MenuItem from "@material-ui/core/MenuItem";
 import FormControl from "@material-ui/core/FormControl";
+import FormHelperText from "@material-ui/core/FormHelperText";
 // jarr
 import { closePanel } from "./editSlice";
 import { doCreateObj, doEditObj } from "../feedlist/feedSlice";
@@ -34,6 +35,28 @@ const mapDispatchToProps = (dispatch) => ({
   },
 });
 
+function ProposedLinks({ link, links, onChange }) {
+  return (
+      <FormControl>
+        <FormHelperText>Other possible feed link have been found :</FormHelperText>
+        <Select variant="outlined" value={link}
+            onChange={onChange}
+        >
+            {links.map((proposedLink) => (
+              <MenuItem key={"l" + links.indexOf(proposedLink)}
+                value={proposedLink}>{proposedLink}</MenuItem>
+            ))}
+        </Select>
+      </FormControl>
+  );
+}
+
+ProposedLinks.propTypes = {
+  link: PropTypes.string.isRequired,
+  links: PropTypes.array.isRequired,
+  onChange: PropTypes.func.isRequired,
+};
+
 
 function AddEditFeed({ job, feed, categories, createFeed, editFeed }) {
   const currentFeed = fillMissingClusterOption(feed, "feed", null);
@@ -42,6 +65,12 @@ function AddEditFeed({ job, feed, categories, createFeed, editFeed }) {
   // putting all conf option to default true
 
   const [state, setState] = useState(currentFeed);
+  let proposedLinks = null;
+  if (feed.links) {
+    proposedLinks = <ProposedLinks link={feed.link} links={feed.links}
+                        onChange={(e) => setState({ ...state, link: e.target.value})}
+                    />;
+  }
   return (
     <form onSubmit={(e) => {
       if (!feed.id) { createFeed(e, state); }
@@ -54,25 +83,32 @@ function AddEditFeed({ job, feed, categories, createFeed, editFeed }) {
         state={state} setState={setState} />
       <StateTextInput required={true} label="Feed link" name="link"
         state={state} setState={setState} />
+      {proposedLinks}
       <StateTextInput label="Website link" name="site_link"
         state={state} setState={setState} />
-      <Select variant="outlined"
-        value={state["category_id"] ? state["category_id"] : 0}
-        onChange={(e) => (setState({ ...state, "category_id": e.target.value }))}
-      >
-        {categories.map((cat) => (
-          <MenuItem key={"cat-" + cat.id} value={cat.id ? cat.id: 0}>
-            {cat.id ? cat.name : "All"}
-          </MenuItem>
-        ))}
-      </Select>
-      <Select variant="outlined" value={state["feed_type"]}
-        onChange={(e) => (setState({ ...state, "feed_type": e.target.value }))}
-      >
-        {availableFeedTypes.map((type) => (
-          <MenuItem key={"item-" + type} value={type}>{type}</MenuItem>
-        ))}
-      </Select>
+      <FormControl>
+        <FormHelperText>Here you can change the category of the feed :</FormHelperText>
+        <Select variant="outlined"
+          value={state["category_id"] ? state["category_id"] : 0}
+          onChange={(e) => (setState({ ...state, "category_id": e.target.value }))}
+        >
+          {categories.map((cat) => (
+            <MenuItem key={"cat-" + cat.id} value={cat.id ? cat.id: 0}>
+              {cat.id ? cat.name : "All"}
+            </MenuItem>
+          ))}
+        </Select>
+      </FormControl>
+      <FormControl>
+        <FormHelperText>A type has been selected for that feed, but you can change it to your liking:</FormHelperText>
+        <Select variant="outlined" value={state["feed_type"]}
+          onChange={(e) => (setState({ ...state, "feed_type": e.target.value }))}
+        >
+          {availableFeedTypes.map((type) => (
+            <MenuItem key={"item-" + type} value={type}>{type}</MenuItem>
+          ))}
+        </Select>
+      </FormControl>
       <ClusterSettings level="feed" state={state} setState={setState} />
       <Button variant="contained" color="primary" type="submit">
         {job === "add" ? "Create" : "Edit"} Feed

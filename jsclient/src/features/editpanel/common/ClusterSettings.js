@@ -1,6 +1,8 @@
 import React from "react";
 import PropTypes from "prop-types";
+// meterial components
 import FormControlLabel from "@material-ui/core/FormControlLabel";
+import FormControl from "@material-ui/core/FormControl";
 import Slider from "@material-ui/core/Slider";
 
 const clusteringConfOptions = {
@@ -45,7 +47,7 @@ export function fillMissingClusterOption(obj, level, def=null) {
 function ClusterSettings({ state, level, setState }) {
   const getHandleChange = (key) => (e, newVal) => setState({ ...state, [key]: getVal(newVal)});
   return (
-    <>
+    <FormControl>
       {Object.keys(clusteringConfOptions)
              .filter(filterOption(level))
              .map((opt) => (
@@ -63,7 +65,7 @@ function ClusterSettings({ state, level, setState }) {
           label={clusteringConfOptions[opt].label}
         />
       ))}
-    </>
+    </FormControl>
   );
 }
 
