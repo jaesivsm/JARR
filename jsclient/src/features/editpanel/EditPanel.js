@@ -71,7 +71,7 @@ function EditPanel({ isOpen, isLoading, job, objType,
         </Typography>
       </div>
       <Divider />
-      <div>
+      <div className={classes.editPanelForm}>
         {form}
       </div>
     </Drawer>

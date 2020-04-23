@@ -21,5 +21,22 @@ export default makeStyles((theme: Theme) =>
     editPanelTitle: {
       padding: theme.spacing(0, 1),
     },
+    editPanelForm: {
+      '& fieldset': {
+          width: '100%'
+      },
+      padding: '20px 8px',
+    },
+    editPanelInput: {
+      marginBottom : 30
+    },
+    editPanelSlide: {
+      marginLeft : 15,
+      marginRight: 15,
+      marginBottom: 20      
+    },
+    editPanelSubmit: {
+      marginTop: 20
+    }
   }),
 );

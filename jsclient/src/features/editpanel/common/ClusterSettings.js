@@ -4,6 +4,7 @@ import PropTypes from "prop-types";
 import FormControlLabel from "@material-ui/core/FormControlLabel";
 import FormControl from "@material-ui/core/FormControl";
 import Slider from "@material-ui/core/Slider";
+import editPanelStyle from "../editPanelStyle";
 
 const clusteringConfOptions = {
     "cluster_enabled": { "label": "Allow clustering article from this feed" },
@@ -15,9 +16,9 @@ const clusteringConfOptions = {
 };
 
 const optionValues = [
-    { value: 0, label: 'Desactived', trueVal: false },
+    { value: 0, label: 'Off', trueVal: false },
     { value: 1, label: 'Default (from parent)', trueVal: null },
-    { value: 2, label: 'Activated', trueVal: true },
+    { value: 2, label: 'On', trueVal: true },
 ];
 
 
@@ -46,24 +47,30 @@ export function fillMissingClusterOption(obj, level, def=null) {
 
 function ClusterSettings({ state, level, setState }) {
   const getHandleChange = (key) => (e, newVal) => setState({ ...state, [key]: getVal(newVal)});
+  const classes = editPanelStyle();
   return (
     <FormControl>
       {Object.keys(clusteringConfOptions)
              .filter(filterOption(level))
              .map((opt) => (
-        <FormControlLabel key={"fcl-" + opt}
-          control={<Slider
-                     value={getVal(state[opt])}
-                     getAriaValueText={getValLbl}
-                     marks={level === "user" ? [optionValues[0], optionValues[2]] : optionValues}
-                     aria-labelledby="discrete-slider-always"
-                     step={null} min={0} max={2}
-                     valueLabelDisplay="off"
-                     name={opt}
-                     onChange={getHandleChange(opt)}
-                   />}
-          label={clusteringConfOptions[opt].label}
-        />
+        <>
+          <div className={classes.editPanelSlideLabel}>
+            {clusteringConfOptions[opt].label}
+          </div>
+          <FormControlLabel key={"fcl-" + opt} 
+            className={classes.editPanelSlide}
+            control={<Slider
+                      value={getVal(state[opt])}
+                      getAriaValueText={getValLbl}
+                      marks={level === "user" ? [optionValues[0], optionValues[2]] : optionValues}
+                      aria-labelledby="discrete-slider-always"
+                      step={null} min={0} max={2}
+                      valueLabelDisplay="off"
+                      name={opt}
+                      onChange={getHandleChange(opt)}
+                    />}
+          />
+        </>
       ))}
     </FormControl>
   );
