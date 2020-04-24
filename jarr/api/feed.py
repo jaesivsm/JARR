@@ -83,7 +83,7 @@ set_model_n_parser(feed_model, feed_parser_edit, 'status', FeedStatus,
                    nullable=False)
 feed_parser.add_argument('title', type=str, required=True, nullable=False)
 feed_parser.add_argument('link', type=str, required=True, nullable=False)
-feed_parser.add_argument('icon_url', type=str)
+feed_parser.add_argument('icon_url', type=str, required=False, nullable=True)
 
 
 @feed_ns.route('')

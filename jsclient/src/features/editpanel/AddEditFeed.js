@@ -26,7 +26,7 @@ const mapDispatchToProps = (dispatch) => ({
     if (!feed["category_id"]) {
       delete feed["category_id"];
     }
-    dispatch(doCreateObj(feed, "category"));
+    dispatch(doCreateObj(feed, "feed"));
     return dispatch(closePanel());
   },
   editFeed(e, id, feed) {

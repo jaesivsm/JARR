@@ -94,10 +94,14 @@ const feedSlice = createSlice({
         feedListRow.type = "categ";
       } else {
         feedListRow.str = action.payload.data.title;
+        feedListRow["category_id"] = action.payload.data["category_id"];
         feedListRow.type = "feed";
-      }
-      //FIXME insert at good place
-      return { ...state, feedListRows: [ ...state.feedListRows, feedListRow ], };
+      };
+      return { ...state,
+               feedListRows: mergeCategoriesWithUnreads(
+                   [ ...state.feedListRows, feedListRow ],
+                   state.unreads, state.isParentFolded),
+      };
     },
     readClusters(state, action) {
       const unreads = { ...state.unreads };
