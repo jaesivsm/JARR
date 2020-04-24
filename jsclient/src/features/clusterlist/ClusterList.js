@@ -14,6 +14,19 @@ import { doListClusters } from "./clusterSlice";
 import { doFetchObjForEdit } from "../editpanel/editSlice";
 import clusterListStyle from "./clusterListStyle";
 
+
+const filterClusters = (state) => (cluster) => (
+    // is selected cluster
+    (state.clusters.requestedClusterId
+        && state.clusters.requestedClusterId === cluster.id)
+     // filters is on all
+     || state.clusters.filters.filter === "all"
+     // cluster is not read and no filter
+     || (!cluster.read && !state.clusters.filters.filter)
+     // cluster is liked and filtering on liked
+     || (cluster.liked && state.clusters.filters.filter === "liked"));
+
+
 function mapStateToProps(state) {
   let selectedFilterObj;
   if(state.clusters.filters["feed_id"]) {
@@ -25,10 +38,16 @@ function mapStateToProps(state) {
       row.type === "categ" && row.id === state.clusters.filters["category_id"]
     ))[0];
   }
-  return { clusters: state.clusters.clusters,
+
+    console.log(state.clusters.requestedClusterId,
+                state.clusters.filters.filter);
+  let clusters = [];
+  if (!state.clusters.loading) {
+    clusters = state.clusters.clusters.filter(filterClusters(state));
+  }
+  return { clusters,
            filters: state.clusters.filters,
            loading: state.clusters.loading,
-           selectedClusterId: state.clusters.requestedClusterId,
            isShifted: state.feeds.isOpen && !state.edit.isOpen,
            selectedFilterObj,
   };
@@ -44,19 +63,9 @@ const mapDispatchToProps = (dispatch) => ({
 });
 
 
-const filterClusters = (selectedClusterId, filter) => (cluster) => (
-    // is selected cluster
-    (selectedClusterId && selectedClusterId === cluster.id)
-     // filters is on all
-     || filter === "all"
-     // cluster is not read and no filter
-     || (!cluster.read && !filter)
-     // cluster is liked and filtering on liked
-     || (cluster.liked && filter === "liked"));
-
 function ClusterList({ clusters, filters,
                        loading, isShifted,
-                       selectedFilterObj, selectedClusterId,
+                       selectedFilterObj,
                        listClusters, openEditPanel,
                        }) {
   const classes = clusterListStyle();
@@ -90,15 +99,15 @@ function ClusterList({ clusters, filters,
   if (loading) {
     content = <CircularProgress />;
   } else {
-    content = clusters
-        .filter(filterClusters(selectedFilterObj, filters.filter))
-        .map((cluster) => (<Cluster key={"c-" + cluster.id}
-                             id={cluster.id}
-                             mainTitle={cluster.main_title}
-                             mainFeedTitle={cluster.main_feed_title}
-                             feedsId={cluster["feeds_id"]}
-                             categoriesId={cluster["categories_id"]}
-                           />)
+    content = clusters.map((cluster) => (
+        <Cluster key={"c-" + cluster.id}
+          id={cluster.id}
+          mainTitle={cluster.main_title}
+          mainLink={cluster.main_link}
+          mainFeedTitle={cluster.main_feed_title}
+          feedsId={cluster["feeds_id"]}
+          categoriesId={cluster["categories_id"]}
+        />)
     );
   }
 
@@ -109,7 +118,6 @@ ClusterList.propTypes = {
   clusters: PropTypes.array.isRequired,
   filters: PropTypes.object.isRequired,
   loading: PropTypes.bool.isRequired,
-  selectedClusterId: PropTypes.number,
   listClusters: PropTypes.func.isRequired,
   openEditPanel: PropTypes.func.isRequired,
   selectedFilterObj: PropTypes.object,

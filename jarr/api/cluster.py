@@ -93,22 +93,3 @@ class ClusterResource(Resource):
                 raise Forbidden()
             raise
         return None, 204
-
-
-@cluster_ns.route('/redirect/<int:cluster_id>')
-class ClusterRedirectResource(Resource):
-
-    @staticmethod
-    @cluster_ns.response(301, 'Redirect to article')
-    @cluster_ns.response(401, 'Authorization needed')
-    @cluster_ns.response(403, 'Forbidden')
-    @cluster_ns.response(404, 'Not found')
-    @jwt_required()
-    def get(cluster_id):
-        cluster = ClusterController().get(id=cluster_id)
-        if cluster.user_id != current_identity.id:
-            raise Forbidden()
-        ClusterController(current_identity.id).update(
-                {'id': cluster_id},
-                {'read': True, 'read_reason': ReadReason.consulted})
-        return None, 301, {'Location': cluster.main_link}

@@ -41,6 +41,7 @@ const clusterSlice = createSlice({
                clusters: action.payload.clusters };
     },
     requestedCluster(state, action) {
+        console.log(action.payload.clusterId);
       return { ...state,
                requestedClusterId: action.payload.clusterId,
                loadedCluster: {},
@@ -93,7 +94,7 @@ export const doListClusters = (filters): AppThunk => async (dispatch, getState) 
   dispatch(retrievedClustersList({ clusters: result.data }));
 };
 
-export const doReadCluster = (clusterId): AppThunk => async (dispatch, getState) => {
+export const doFetchCluster = (clusterId): AppThunk => async (dispatch, getState) => {
   dispatch(requestedCluster({ clusterId }));
   const result = await doRetryOnTokenExpiration({
     method: "get",
@@ -102,10 +103,11 @@ export const doReadCluster = (clusterId): AppThunk => async (dispatch, getState)
   dispatch(retrievedCluster({ cluster: result.data }));
 };
 
-export const doUnreadCluster = (clusterId): AppThunk => async (dispatch, getState) => {
-  dispatch(requestedUnreadCluster({ clusterId }));
+export const doChangeReadState = (clusterId, isRead, reason): AppThunk => async (dispatch, getState) => {
+  dispatch(requestedUnreadCluster({ clusterId, isRead }));
   await doRetryOnTokenExpiration({
     method: "put",
-    url: apiUrl + "/cluster/" + clusterId + "?read=false",
+    url: apiUrl + "/cluster/" + clusterId,
+    data: { read: isRead, "read_reason": reason },
   }, dispatch, getState);
 };

@@ -103,7 +103,7 @@ const feedSlice = createSlice({
                    state.unreads, state.isParentFolded),
       };
     },
-    readClusters(state, action) {
+    changeReadCount(state, action) {
       const unreads = { ...state.unreads };
       const readChange = action.payload.action === "unread" ? 1 : -1;
       action.payload.clusters.forEach((cluster) => {
@@ -147,7 +147,7 @@ export const { requestedFeeds, loadedFeeds,
                requestedUnreadCounts, loadedUnreadCounts,
                toggleMenu, toggleAllFolding, toggleFolding,
                createdObj, setSearchFilter,
-               readClusters,
+               changeReadCount,
                deletedObj,
 } = feedSlice.actions;
 export default feedSlice.reducer;
