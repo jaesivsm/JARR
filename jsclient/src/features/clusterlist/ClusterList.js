@@ -3,15 +3,11 @@ import clsx from "clsx";
 import PropTypes from "prop-types";
 import { connect } from "react-redux";
 // material ui components
-import Card from "@material-ui/core/Card";
-import CardActions from "@material-ui/core/CardActions";
-import CardContent from "@material-ui/core/CardContent";
-import Button from "@material-ui/core/Button";
 import CircularProgress from "@material-ui/core/CircularProgress";
 // jarr
-import Cluster from "./Cluster";
+import Cluster from "./components/Cluster";
+import SelectedObjCard from "./components/SelectedObjCard";
 import { doListClusters } from "./clusterSlice";
-import { doFetchObjForEdit } from "../editpanel/editSlice";
 import clusterListStyle from "./clusterListStyle";
 
 
@@ -58,9 +54,6 @@ const mapDispatchToProps = (dispatch) => ({
   listClusters(filters) {
     return dispatch(doListClusters(filters));
   },
-  openEditPanel(objType, objId) {
-    return dispatch(doFetchObjForEdit(objType, objId));
-  },
 });
 
 
@@ -78,24 +71,6 @@ function ClusterList({ clusters, filters,
       listClusters(filters);
     }
   }, [everLoaded, filters, listClusters]);
-  let card = null;
-  if(selectedFilterObj) {
-      const objType = selectedFilterObj.type === "feed" ? "feed" : "category";
-      card = (
-        <Card variant="outlined">
-          <CardContent>
-            {selectedFilterObj.str}
-          </CardContent>
-          <CardActions>
-            <Button size="small"
-              onClick={() => openEditPanel(objType, selectedFilterObj.id)}
-          >
-              Edit {objType}
-            </Button>
-          </CardActions>
-        </Card>
-      );
-  }
   let content;
   if (loading) {
     content = <CircularProgress />;
@@ -114,7 +89,20 @@ function ClusterList({ clusters, filters,
     );
   }
 
-  return <main className={className}>{card}{content}</main>;
+  return (
+    <main className={className}>
+      {selectedFilterObj ?
+         <SelectedObjCard
+           id={selectedFilterObj.id}
+           str={selectedFilterObj.str}
+           type={selectedFilterObj.type}
+           iconUrl={selectedFilterObj["icon_url"]}
+           errorCount={selectedFilterObj["error_count"]}
+           lastRetrieved={selectedFilterObj["last_retrieved"]}
+         /> : null}
+      {content}
+    </main>
+  );
 }
 
 ClusterList.propTypes = {

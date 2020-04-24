@@ -9,10 +9,13 @@ ACCEPTED_LEVELS = {'success', 'info', 'warning', 'error'}
 default_ns = Namespace('default', path='/')
 list_feeds_model = default_ns.model('ListFeeds', {
         'id': fields.Integer(),
-        'category_id': fields.Integer(),
         'str': fields.String(),
-        'type': fields.String(enum=['feed', 'categ', 'all-categ']),
+        'category_id': fields.Integer(),
         'icon_url': fields.String(),
+        'last_retrieved': fields.DateTime(),
+        'error_count': fields.Integer(),
+        'last_error': fields.String(),
+        'type': fields.String(enum=['feed', 'categ', 'all-categ']),
 })
 midle_panel_model = default_ns.model('MiddlePanel', {
         'id': fields.Integer(),

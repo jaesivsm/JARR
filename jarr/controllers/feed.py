@@ -1,5 +1,5 @@
 import logging
-from collections import defaultdict
+from collections import defaultdict, OrderedDict
 from datetime import datetime, timedelta
 
 import dateutil.parser
@@ -17,6 +17,14 @@ from jarr.lib.enums import FeedStatus
 DEFAULT_LIMIT = 0
 DEFAULT_ART_SPAN_TIME = timedelta(seconds=conf.feed.max_expires)
 logger = logging.getLogger(__name__)
+LIST_W_CATEG_MAPPING = OrderedDict((('id', Feed.id),
+                                    ('str', Feed.title),
+                                    ('icon_url', Feed.icon_url),
+                                    ('category_id', Feed.category_id),
+                                    ('last_retrieved', Feed.last_retrieved),
+                                    ('error_count', Feed.error_count),
+                                    ('last_error', Feed.last_error),
+                                    ))
 
 
 class FeedController(AbstractController):
@@ -29,15 +37,14 @@ class FeedController(AbstractController):
 
     def list_w_categ(self):
         feeds = defaultdict(list)
-        for fid, title, icon_url, cid in session.query(
-                Feed.id, Feed.title, Feed.icon_url, Feed.category_id)\
+        for row in session.query(*LIST_W_CATEG_MAPPING.values())\
                 .filter(Feed.user_id == self.user_id,
                         Feed.status != FeedStatus.to_delete,
                         Feed.status != FeedStatus.deleting)\
                 .order_by(Feed.title):
-            feeds[cid].append({'id': fid, 'str': title,
-                               'category_id': cid,
-                               'icon_url': icon_url, 'type': 'feed'})
+            row = dict(zip(LIST_W_CATEG_MAPPING, row))
+            row['type'] = 'feed'
+            feeds[row['category_id']].append(row)
         yield {'id': None, 'str': None, 'type': 'all-categ'}
         yield from feeds.get(None, [])
         for cid, cname in session.query(Category.id, Category.name)\

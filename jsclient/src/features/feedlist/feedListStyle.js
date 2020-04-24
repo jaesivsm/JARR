@@ -19,11 +19,6 @@ export default makeStyles((theme: Theme) =>
       ...theme.mixins.toolbar,
       justifyContent: "space-between",
     },
-    feedIcon: {
-      maxWidth: 16,
-      maxHeight: 16,
-      margin: theme.spacing(1),
-    },
     category: {
       paddingTop: 2,
       paddingBottom: 2,
@@ -48,8 +43,5 @@ export default makeStyles((theme: Theme) =>
       paddingTop: 2,
       paddingBottom: 2,
     },
-    defaultFeedIcon: {
-      margin: 6
-    }
   }),
 );

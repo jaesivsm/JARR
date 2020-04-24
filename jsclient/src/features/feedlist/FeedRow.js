@@ -1,19 +1,17 @@
 import React from "react";
 import PropTypes from "prop-types";
 import { connect } from "react-redux";
-import qs from "qs";
-
+// material ui component
 import ListItem from "@material-ui/core/ListItem";
 import Badge from "@material-ui/core/Badge";
 import ListItemText from "@material-ui/core/ListItemText";
 import ExpandLess from "@material-ui/icons/ExpandLess";
 import ChevronRight from "@material-ui/icons/ChevronRight";
-import LinkIcon from "@material-ui/icons/Link";
-
+// jarr
 import { doListClusters } from "../clusterlist/clusterSlice";
 import { toggleFolding } from "./feedSlice";
 import feedListStyle from "./feedListStyle";
-import { apiUrl } from "../../const";
+import FeedIcon from "../../components/FeedIcon";
 
 function mapStateToProps(state) {
   return { feedListRows: state.feeds.feedListRows.filter(state.feeds.feedListFilter),
@@ -48,13 +46,7 @@ function FeedRow({ index, style, feedListRows,
   const isSelected = (selectedFeedId === obj.id && obj.type === "feed") || obj.id === selectedCategoryId;
   const badge = <Badge badgeContent={obj.unread} color="primary"></Badge>;
   if (obj.type === "feed") {
-    let icon;
-    if(obj["icon_url"]) {
-      icon = <img className={classes.feedIcon} alt="" src={
-          apiUrl + "/feed/icon?" + qs.stringify({ url: obj["icon_url"]})} />;
-    } else {
-      icon = <LinkIcon className={classes.defaultFeedIcon} color="disabled" fontSize="small"/>;
-    }
+    const icon = <FeedIcon iconUrl={obj["icon_url"]} />;
     return (
       <ListItem button
           key={"f" + obj.id + (isSelected ? "s" : "") + obj.unread}

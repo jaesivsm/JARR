@@ -16,8 +16,8 @@ import LikedIconBorder from '@material-ui/icons/StarBorder';
 // jarr
 import { doFetchCluster, doEditCluster, removeClusterSelection,
          updateClusterAttrs,
-} from "./clusterSlice";
-import { changeReadCount } from "../feedlist/feedSlice";
+} from "../clusterSlice";
+import { changeReadCount } from "../../feedlist/feedSlice";
 
 function mapStateToProps(state) {
   return { requestedClusterId: state.clusters.requestedClusterId,
