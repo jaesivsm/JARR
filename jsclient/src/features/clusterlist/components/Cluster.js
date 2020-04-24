@@ -31,18 +31,6 @@ function mapStateToProps(state) {
 const mapDispatchToProps = (dispatch) => ({
   handleClickOnPanel(e, clusterId, feedsId, categoriesId,
                      unreadOnClose, expanded) {
-    // that is very ugly, didn't find a better way yet
-    // ignoring link click
-    if (e.target.attributes.ignoreonpanel
-        && e.target.attributes.ignoreonpanel.nodeValue === "true") {
-      return;
-    }
-    // ignoring command click
-    const targetName = e.target.attributes.name;
-    if (targetName && (targetName.nodeValue === "read"
-                       || targetName.nodeValue === "liked")) {
-      return;
-    }
     if (!expanded) {
       // panel is folded, we fetch the cluster
       dispatch(doFetchCluster(clusterId));
@@ -77,7 +65,8 @@ const mapDispatchToProps = (dispatch) => ({
     e.stopPropagation();
     return dispatch(doEditCluster(clusterId, { liked: e.target.checked }));
   },
-  readOnRedirect(clusterId, feedsId, categoriesId) {
+  readOnRedirect(e, clusterId, feedsId, categoriesId) {
+    e.stopPropagation();
     dispatch(updateClusterAttrs({ clusterId, read: true }));
     return dispatch(changeReadCount({ feedsId, categoriesId, action: "read" }));
   },
@@ -107,6 +96,7 @@ function Cluster({ id, read, liked, feedsId, categoriesId,
         expanded={expanded}
         onChange={(e) => handleClickOnPanel(e, id, feedsId, categoriesId,
                                             unreadOnClose, expanded)}
+        TransitionProps={{ unmountOnExit: true }}
         key={"c"
              + (expanded ? "e" : "")
              + (read ? "r" : "")
@@ -119,23 +109,31 @@ function Cluster({ id, read, liked, feedsId, categoriesId,
           id="panel1a-header"
           key={"cs-" + id}
         >
+          <Link href={mainLink} target="_blank"
+            aria-label="link to the resource"
+            onFocus={(e) => e.stopPropagation()}
+            onClick={(e) => readOnRedirect(e, id, feedsId, categoriesId)}>
+            {[ ...new Set(feedsId)].filter((feedId) => icons[feedId])
+                    .map((feedId) => <FeedIcon
+                                        key={"i" + id + "f" + feedId}
+                                        iconUrl={icons[feedId]} />
+                         )
+            }
+           {mainFeedTitle}
+          </Link>
           <Checkbox checked={read} key={"c" + id + "r"}
             name="read" size="small" color="primary"
+            aria-label="toggle read"
+            onClick={(e) => e.stopPropagation()}
+            onFocus={(e) => e.stopPropagation()}
             onChange={(e) => toggleRead(e, id, feedsId, categoriesId)} />
           <Checkbox checked={liked} key={"c" + id + "l"}
             name="liked" size="small" color="primary"
+            aria-label="toggle read"
             icon={<LikedIconBorder />} checkedIcon={<LikedIcon />}
+            onClick={(e) => e.stopPropagation()}
+            onFocus={(e) => e.stopPropagation()}
             onChange={(e) => toggleLiked(e, id)} />
-          {[ ...new Set(feedsId)].filter((feedId) => icons[feedId])
-                  .map((feedId) => <FeedIcon
-                                      key={"i" + id + "f" + feedId}
-                                      iconUrl={icons[feedId]} />
-                       )
-          }
-          <Link href={mainLink} target="_blank" ignoreonpanel="true"
-            onClick={() => readOnRedirect(id, feedsId, categoriesId)}>
-           {mainFeedTitle}
-          </Link>
           <Typography>
            {mainTitle}
           </Typography>
