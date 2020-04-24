@@ -106,16 +106,12 @@ const feedSlice = createSlice({
     changeReadCount(state, action) {
       const unreads = { ...state.unreads };
       const readChange = action.payload.action === "unread" ? 1 : -1;
-      action.payload.clusters.forEach((cluster) => {
-        cluster["feeds_id"].forEach((feedId) => (
-          unreads["feed-" + feedId] += readChange
-        ));
-        if(cluster["categories_id"]) {
-          cluster["categories_id"].forEach((catId) => (
-            unreads["categ-" + catId] += readChange
-          ));
-        }
-      });
+      action.payload.feedsId.forEach((feedId) => (
+        unreads["feed-" + feedId] += readChange
+      ));
+      action.payload.categoriesId.forEach((categoryId) => (
+        unreads["categ-" + categoryId] += readChange
+      ));
       return { ...state, unreads,
                feedListRows: mergeCategoriesWithUnreads(state.feedListRows,
                                                         unreads,
@@ -123,7 +119,6 @@ const feedSlice = createSlice({
       };
     },
     deletedObj(state, action) {
-        console.log({ ...action.payload} );
       let type;
       if (action.payload.objType === "feed") {
         type = "feed";

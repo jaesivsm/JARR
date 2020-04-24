@@ -15,16 +15,16 @@ import { doFetchObjForEdit } from "../editpanel/editSlice";
 import clusterListStyle from "./clusterListStyle";
 
 
-const filterClusters = (state) => (cluster) => (
+const filterClusters = (requestedClusterId, filter) => (cluster) => (
     // is selected cluster
-    (state.clusters.requestedClusterId
-        && state.clusters.requestedClusterId === cluster.id)
+    (requestedClusterId && requestedClusterId === cluster.id)
      // filters is on all
-     || state.clusters.filters.filter === "all"
+     || filter === "all"
      // cluster is not read and no filter
-     || (!cluster.read && !state.clusters.filters.filter)
+     || (!cluster.read && !filter)
      // cluster is liked and filtering on liked
-     || (cluster.liked && state.clusters.filters.filter === "liked"));
+     || (cluster.liked && filter === "liked")
+);
 
 
 function mapStateToProps(state) {
@@ -39,11 +39,12 @@ function mapStateToProps(state) {
     ))[0];
   }
 
-    console.log(state.clusters.requestedClusterId,
-                state.clusters.filters.filter);
   let clusters = [];
   if (!state.clusters.loading) {
-    clusters = state.clusters.clusters.filter(filterClusters(state));
+    clusters = state.clusters.clusters.filter(
+        filterClusters(state.clusters.requestedClusterId,
+                       state.clusters.filters.filter)
+    );
   }
   return { clusters,
            filters: state.clusters.filters,
@@ -102,6 +103,8 @@ function ClusterList({ clusters, filters,
     content = clusters.map((cluster) => (
         <Cluster key={"c-" + cluster.id}
           id={cluster.id}
+          read={cluster.read}
+          liked={cluster.liked}
           mainTitle={cluster.main_title}
           mainLink={cluster.main_link}
           mainFeedTitle={cluster.main_feed_title}

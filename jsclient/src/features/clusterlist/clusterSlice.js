@@ -41,7 +41,6 @@ const clusterSlice = createSlice({
                clusters: action.payload.clusters };
     },
     requestedCluster(state, action) {
-        console.log(action.payload.clusterId);
       return { ...state,
                requestedClusterId: action.payload.clusterId,
                loadedCluster: {},
@@ -59,17 +58,23 @@ const clusterSlice = createSlice({
                loadedCluster: action.payload.cluster,
       };
     },
-    requestedUnreadCluster(state, action) {
+    updateClusterAttrs(state, action) {
+      const alterCluster = (cluster) => {
+        if (cluster.id === action.payload.clusterId) {
+          return { ...cluster,
+                   read: action.payload.read === undefined ? cluster.read : action.payload.read,
+                   liked: action.payload.liked === undefined ? cluster.liked : action.payload.liked };
+          }
+          return cluster;
+      };
       return { ...state,
                // marking updated cluster as unread
-               clusters: state.clusters.map((cluster) => (
-                   { ...cluster, read: cluster.id === action.payload.clusterId ? false : cluster.read }
-               )),
-               loadedCluster: {}, requestedClusterId: null,
+               clusters: state.clusters.map(alterCluster),
       };
     },
-    // retrievedUnreadCluster(state, action) { return { ...state, }; },
-    // requestedMarkAllAsRead(state, action) { return state; },
+    removeClusterSelection(state, action) {
+      return { ...state, loadedCluster: {}, requestedClusterId: null };
+    },
     markedAllAsRead(state, action) {
       return { ...state, clusters: [] };
     },
@@ -78,8 +83,8 @@ const clusterSlice = createSlice({
 
 export const { requestedClustersList, retrievedClustersList,
                requestedCluster, retrievedCluster,
-               requestedUnreadCluster, // retrievedUnreadCluster,
-               // requestedMarkAllAsRead,
+               updateClusterAttrs,
+               removeClusterSelection,
                markedAllAsRead,
 } = clusterSlice.actions;
 export default clusterSlice.reducer;
@@ -103,11 +108,11 @@ export const doFetchCluster = (clusterId): AppThunk => async (dispatch, getState
   dispatch(retrievedCluster({ cluster: result.data }));
 };
 
-export const doChangeReadState = (clusterId, isRead, reason): AppThunk => async (dispatch, getState) => {
-  dispatch(requestedUnreadCluster({ clusterId, isRead }));
+export const doEditCluster = (clusterId, payload): AppThunk => async (dispatch, getState) => {
+  dispatch(updateClusterAttrs({ clusterId, ...payload }));
   await doRetryOnTokenExpiration({
     method: "put",
     url: apiUrl + "/cluster/" + clusterId,
-    data: { read: isRead, "read_reason": reason },
+    data: payload,
   }, dispatch, getState);
 };
