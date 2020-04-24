@@ -119,13 +119,19 @@ function Cluster({ id, read, liked, feedsId, categoriesId,
           id="panel1a-header"
           key={"cs-" + id}
         >
-          <Checkbox checked={read} name="read" size="small" color="primary"
+          <Checkbox checked={read} key={"c" + id + "r"}
+            name="read" size="small" color="primary"
             onChange={(e) => toggleRead(e, id, feedsId, categoriesId)} />
-          <Checkbox checked={liked} name="liked" size="small" color="primary"
+          <Checkbox checked={liked} key={"c" + id + "l"}
+            name="liked" size="small" color="primary"
             icon={<LikedIconBorder />} checkedIcon={<LikedIcon />}
             onChange={(e) => toggleLiked(e, id)} />
-          {feedsId.filter((feedId) => icons[feedId])
-                  .map((feedId) => <FeedIcon iconUrl={icons[feedId]} /> )}
+          {[ ...new Set(feedsId)].filter((feedId) => icons[feedId])
+                  .map((feedId) => <FeedIcon
+                                      key={"i" + id + "f" + feedId}
+                                      iconUrl={icons[feedId]} />
+                       )
+          }
           <Link href={mainLink} target="_blank" ignoreonpanel="true"
             onClick={() => readOnRedirect(id, feedsId, categoriesId)}>
            {mainFeedTitle}
