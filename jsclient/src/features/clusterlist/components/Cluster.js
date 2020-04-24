@@ -17,6 +17,7 @@ import LikedIconBorder from '@material-ui/icons/StarBorder';
 import { doFetchCluster, doEditCluster, removeClusterSelection,
          updateClusterAttrs,
 } from "../clusterSlice";
+import makeStyles from "./clusterStyle";
 import { changeReadCount } from "../../feedlist/feedSlice";
 import FeedIcon from "../../../components/FeedIcon";
 
@@ -78,6 +79,7 @@ function Cluster({ id, read, liked, feedsId, categoriesId,
                    readOnRedirect, toggleRead, toggleLiked,
                    handleClickOnPanel,
 }) {
+  const classes = makeStyles();
   const loaded = !!loadedCluster && loadedCluster.id === id;
   let content;
   if (id === requestedClusterId) {
@@ -108,35 +110,42 @@ function Cluster({ id, read, liked, feedsId, categoriesId,
           aria-controls="panel1a-content"
           id="panel1a-header"
           key={"cs-" + id}
+          className={classes.summary}
         >
-          <Link href={mainLink} target="_blank"
-            aria-label="link to the resource"
-            onFocus={(e) => e.stopPropagation()}
-            onClick={(e) => readOnRedirect(e, id, feedsId, categoriesId)}>
-            {[ ...new Set(feedsId)].filter((feedId) => icons[feedId])
-                    .map((feedId) => <FeedIcon
-                                        key={"i" + id + "f" + feedId}
-                                        iconUrl={icons[feedId]} />
-                         )
-            }
-           {mainFeedTitle}
-          </Link>
-          <Checkbox checked={read} key={"c" + id + "r"}
-            name="read" size="small" color="primary"
-            aria-label="toggle read"
-            onClick={(e) => e.stopPropagation()}
-            onFocus={(e) => e.stopPropagation()}
-            onChange={(e) => toggleRead(e, id, feedsId, categoriesId)} />
-          <Checkbox checked={liked} key={"c" + id + "l"}
-            name="liked" size="small" color="primary"
-            aria-label="toggle read"
-            icon={<LikedIconBorder />} checkedIcon={<LikedIcon />}
-            onClick={(e) => e.stopPropagation()}
-            onFocus={(e) => e.stopPropagation()}
-            onChange={(e) => toggleLiked(e, id)} />
-          <Typography>
-           {mainTitle}
-          </Typography>
+          <div className={classes.link}>
+            <Link href={mainLink} target="_blank"
+              aria-label="link to the resource"
+              onFocus={(e) => e.stopPropagation()}
+              onClick={(e) => readOnRedirect(e, id, feedsId, categoriesId)}>
+              {[ ...new Set(feedsId)].filter((feedId) => icons[feedId])
+                      .map((feedId) => <FeedIcon
+                                          key={"i" + id + "f" + feedId}
+                                          iconUrl={icons[feedId]} />
+                           )
+              }
+             {mainFeedTitle}
+            </Link>
+          </div>
+          <div className={classes.title}>
+            <Checkbox checked={read} key={"c" + id + "r"}
+              className={classes.titleAction}
+              name="read" size="small" color="primary"
+              aria-label="toggle read"
+              onClick={(e) => e.stopPropagation()}
+              onFocus={(e) => e.stopPropagation()}
+              onChange={(e) => toggleRead(e, id, feedsId, categoriesId)} />
+            <Checkbox checked={liked} key={"c" + id + "l"}
+              className={classes.titleAction}
+              name="liked" size="small" color="primary"
+              aria-label="toggle read"
+              icon={<LikedIconBorder />} checkedIcon={<LikedIcon />}
+              onClick={(e) => e.stopPropagation()}
+              onFocus={(e) => e.stopPropagation()}
+              onChange={(e) => toggleLiked(e, id)} />
+            <Typography className={classes.mainTitle}>
+             {mainTitle}
+            </Typography>
+          </div>
         </ExpansionPanelSummary>
         <ExpansionPanelDetails key={"cl-" + id}>
           {content}
