@@ -18,11 +18,13 @@ import { doFetchCluster, doEditCluster, removeClusterSelection,
          updateClusterAttrs,
 } from "../clusterSlice";
 import { changeReadCount } from "../../feedlist/feedSlice";
+import FeedIcon from "../../../components/FeedIcon";
 
 function mapStateToProps(state) {
   return { requestedClusterId: state.clusters.requestedClusterId,
            loadedCluster: state.clusters.loadedCluster,
            unreadOnClose: !state.clusters.filters.filter,
+           icons: state.feeds.icons,
   };
 }
 
@@ -83,7 +85,7 @@ const mapDispatchToProps = (dispatch) => ({
 
 function Cluster({ id, read, liked, feedsId, categoriesId,
                    mainFeedTitle, mainTitle, mainLink,
-                   requestedClusterId, loadedCluster, unreadOnClose,
+                   icons, requestedClusterId, loadedCluster, unreadOnClose,
                    readOnRedirect, toggleRead, toggleLiked,
                    handleClickOnPanel,
 }) {
@@ -122,6 +124,8 @@ function Cluster({ id, read, liked, feedsId, categoriesId,
           <Checkbox checked={liked} name="liked" size="small" color="primary"
             icon={<LikedIconBorder />} checkedIcon={<LikedIcon />}
             onChange={(e) => toggleLiked(e, id)} />
+          {feedsId.filter((feedId) => icons[feedId])
+                  .map((feedId) => <FeedIcon iconUrl={icons[feedId]} /> )}
           <Link href={mainLink} target="_blank" ignoreonpanel="true"
             onClick={() => readOnRedirect(id, feedsId, categoriesId)}>
            {mainFeedTitle}
@@ -142,6 +146,7 @@ Cluster.propTypes = {
   read: PropTypes.bool.isRequired,
   liked: PropTypes.bool.isRequired,
   feedsId: PropTypes.array.isRequired,
+  icons: PropTypes.object.isRequired,
   categoriesId: PropTypes.array,
   mainTitle: PropTypes.string.isRequired,
   mainLink: PropTypes.string.isRequired,

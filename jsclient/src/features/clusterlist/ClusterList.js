@@ -110,7 +110,6 @@ ClusterList.propTypes = {
   filters: PropTypes.object.isRequired,
   loading: PropTypes.bool.isRequired,
   listClusters: PropTypes.func.isRequired,
-  openEditPanel: PropTypes.func.isRequired,
   selectedFilterObj: PropTypes.object,
 };
 

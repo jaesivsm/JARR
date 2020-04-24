@@ -34,6 +34,7 @@ const feedSlice = createSlice({
                   isParentFolded: storageGet("left-menu-folded") === "true",
                   isOpen: storageGet("left-menu-open") !== "false",
                   feedListFilter: defaultFilter,
+                  icons: {},
   },
   reducers: {
     requestedFeeds(state, action) {
@@ -49,7 +50,8 @@ const feedSlice = createSlice({
       const feedSearchStr = action.payload.toLowerCase();
       return { ...state,
                feedListFilter: (row) => (
-                 row.type !== "categ" && row.type !== "all-categ" && row.str.toLowerCase().includes(feedSearchStr)
+                 row.type !== "categ" && row.type !== "all-categ"
+                 && row.str.toLowerCase().includes(feedSearchStr)
                ),
       };
     },
@@ -68,7 +70,14 @@ const feedSlice = createSlice({
       })};
     },
     loadedFeeds(state, action) {
-      return { ...state, loadingFeeds: false,
+
+      const icons = {};
+      action.payload.feedListRows.forEach((row) => {
+        if(row.type === "feed" && row["icon_url"]) {
+          icons[row.id] = row["icon_url"];
+        }
+      });
+      return { ...state, icons, loadingFeeds: false,
                feedListRows: mergeCategoriesWithUnreads(action.payload.feedListRows,
                                                         state.unreads,
                                                         state.isParentFolded),
