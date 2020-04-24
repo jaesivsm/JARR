@@ -96,7 +96,7 @@ const feedSlice = createSlice({
         feedListRow.str = action.payload.data.title;
         feedListRow["category_id"] = action.payload.data["category_id"];
         feedListRow.type = "feed";
-      };
+      }
       return { ...state,
                feedListRows: mergeCategoriesWithUnreads(
                    [ ...state.feedListRows, feedListRow ],

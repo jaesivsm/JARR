@@ -68,7 +68,7 @@ function FeedList(props) {
     searchBar = (
       <div className={classes.drawerHeader}>
         <InputBase placeholder="Search feed…" onChange={(e) => props.setSearchFilter(e.target.value)} />
-        <IconButton onClick={() => {props.setSearchFilter(null); setDisplaySearch(false)}}>
+        <IconButton onClick={() => {props.setSearchFilter(null); setDisplaySearch(false);} }>
           <Close />
         </IconButton>
       </div>

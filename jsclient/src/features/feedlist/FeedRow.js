@@ -46,7 +46,7 @@ function FeedRow({ index, style, feedListRows,
   const classes = feedListStyle();
   const obj = feedListRows[index];
   const isSelected = (selectedFeedId === obj.id && obj.type === "feed") || obj.id === selectedCategoryId;
-  const badge = <Badge badgeContent={obj.unread} color="primary"></Badge>
+  const badge = <Badge badgeContent={obj.unread} color="primary"></Badge>;
   if (obj.type === "feed") {
     let icon;
     if(obj["icon_url"]) {
