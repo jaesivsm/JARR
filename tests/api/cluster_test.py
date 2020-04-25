@@ -62,22 +62,3 @@ class ClusterApiTest(JarrFlaskCommon):
         self.assertEqual(0, ClusterController().read(id=cluster.id).count())
         self.assertEqual(0,
                 ArticleController().read(cluster_id=cluster.id).count())
-
-    def test_ClusterRedirectResource_get(self):
-        user = UserController().get(login='user1')
-        cluster = ClusterController(user.id).read().first()
-        resp = self.jarr_client('get', 'cluster', 'redirect', cluster.id)
-        self.assertStatusCode(401, resp)
-        resp = self.jarr_client('get', 'cluster', 'redirect',
-                cluster.id, user='user2')
-        self.assertStatusCode(403, resp)
-        resp = self.jarr_client('get', 'cluster', 'redirect', cluster.id,
-                user=user.login)
-        self.assertStatusCode(301, resp)
-        self.assertEqual(cluster.main_link, resp.headers['Location'])
-        resp = self.jarr_client('get', 'cluster', cluster.id, user=user.login)
-        self.assertStatusCode(200, resp)
-
-        self.assertTrue(resp.json['read'])
-        self.assertEqual('consulted',
-                ClusterController().get(id=cluster.id).read_reason.value)
