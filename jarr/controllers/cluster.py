@@ -293,7 +293,7 @@ class ClusterController(AbstractController):
         # grouping all the fields so that agreg works on distant ids
         yield from self._iter_on_query(
                 query.group_by(*JR_SQLA_FIELDS).filter(*processed_filters)
-                     .order_by(Cluster.main_date.desc())\
+                     .order_by(Cluster.main_date.desc())
                      .offset(offset).limit(limit))
 
     def delete(self, obj_id, delete_articles=True):

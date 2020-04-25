@@ -107,7 +107,7 @@ export default makeStyles((theme: Theme) =>
       marginLeft: theme.spacing(2),
       padding: theme.spacing(2),
       '& *': {
-        maxWidth: "100%",
+        maxWidth: "97%",
       },
     },
     contentPanelShifted: {
