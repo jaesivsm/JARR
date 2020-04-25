@@ -9,6 +9,7 @@ import ExpansionPanel from "@material-ui/core/ExpansionPanel";
 import ExpansionPanelSummary from "@material-ui/core/ExpansionPanelSummary";
 import ExpansionPanelDetails from "@material-ui/core/ExpansionPanelDetails";
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
+import ChevronRight from "@material-ui/icons/ChevronRight";
 import Checkbox from "@material-ui/core/Checkbox";
 // material ui icons
 import LikedIcon from "@material-ui/icons/Star";
@@ -95,6 +96,7 @@ function Cluster({ cluster,
         expanded={expanded}
         onChange={(e) => handleClickOnPanel(e, cluster,
                                             unreadOnClose, expanded)}
+        elevation={expanded ? 10: 2}
         TransitionProps={{ unmountOnExit: true }}
         key={"c"
              + (expanded ? "e" : "")
@@ -103,7 +105,7 @@ function Cluster({ cluster,
              + cluster.id}
       >
         <ExpansionPanelSummary
-          expandIcon={<ExpandMoreIcon />}
+          expandIcon={splitedMode? <ChevronRight /> : <ExpandMoreIcon />}
           aria-controls="panel1a-content"
           id="panel1a-header"
           key={"cs-" + cluster.id}
