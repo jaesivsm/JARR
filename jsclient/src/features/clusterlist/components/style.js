@@ -21,11 +21,14 @@ export default makeStyles((theme: Theme) =>
       margin: 0,
       "& .MuiExpansionPanelSummary-content": {
         flexDirection: "column",
-        padding: "6px 10px",
+        padding: "6px 0 6px 10px",
         margin: 0,
         maxWidth: "100%",
         overflow: "hidden",
         whiteSpace: "nowrap",
+      },
+      "& .MuiExpansionPanelSummary-expandIcon": {
+        padding: 6,
       },
     },
     link: {
