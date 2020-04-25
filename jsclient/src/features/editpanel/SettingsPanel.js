@@ -59,8 +59,6 @@ function SettingsPanel({ user, editSettings }) {
         checked={showPasswd}
         onChange={() => setShowPasswd(!showPasswd)}
         color="primary"
-        name="checkedB"
-        inputProps={{ 'aria-label': 'primary checkbox' }}
       />} label="Show password" />
       <Button variant="contained" color="primary" type="submit" className={classes.editPanelBtn}>
         Edit settings
