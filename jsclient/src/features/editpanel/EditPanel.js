@@ -62,16 +62,19 @@ function EditPanel({ isOpen, isLoading, job, objType,
         paper: classes.editPanelPaper,
       }}
     >
-      <div className={classes.editPanelHeader}>
-        <IconButton onClick={close}>
-          <Close />
-        </IconButton>
-        <Typography className={classes.editPanelTitle}>
-          {job.charAt(0).toUpperCase()}{job.slice(1)}ing {objType.charAt(0).toUpperCase()}{objType.slice(1)}
-        </Typography>
+      <div className={classes.editPanelHeaderSticky}>
+        <div className={classes.editPanelHeader}>
+          <IconButton onClick={close}>
+            <Close />
+          </IconButton>
+          {isLoading ? <CircularProgress /> : null}
+          <Typography className={classes.editPanelTitle}>
+            {job.charAt(0).toUpperCase()}{job.slice(1)}ing {objType.charAt(0).toUpperCase()}{objType.slice(1)}
+          </Typography>
+        </div>
       </div>
       <Divider />
-      <div>
+      <div className={classes.editPanelForm}>
         {form}
       </div>
     </Drawer>

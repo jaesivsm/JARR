@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import PropTypes from "prop-types";
 import { connect } from "react-redux";
 // material components
+import Alert from '@material-ui/lab/Alert';
 import Button from "@material-ui/core/Button";
 import Select from "@material-ui/core/Select";
 import MenuItem from "@material-ui/core/MenuItem";
@@ -15,6 +16,8 @@ import { defaultTo } from "./common";
 import StateTextInput from "./common/StateTextInput";
 import ClusterSettings, { fillMissingClusterOption } from "./common/ClusterSettings";
 import DeleteButton from "./common/DeleteButton";
+
+import editPanelStyle from "./editPanelStyle";
 
 const availableFeedTypes = ["classic", "json", "tumblr", "instagram",
                             "soundcloud", "reddit", "fetch", "koreus",
@@ -74,18 +77,20 @@ function AddEditFeed({ job, feed, categories,
   delete currentFeed["same_link_count"];
 
   const [state, setState] = useState(currentFeed);
+  const classes = editPanelStyle();
+
   let warning;
   if(feed["same_link_count"]) {
     warning = (
-      <FormHelperText>
+      <Alert severity="info">
         You have already {feed["same_link_count"]} feed with that link.
-      </FormHelperText>
+      </Alert>
     );
   } else if (!feed.link) {
     warning = (
-      <FormHelperText>
+      <Alert severity="error">
         Provided URL doesn't look like a feed we support and we couldn't find a correct one.
-      </FormHelperText>
+      </Alert>
     );
   }
 
@@ -103,19 +108,20 @@ function AddEditFeed({ job, feed, categories,
     <FormControl component="fieldset">
       {warning}
       <StateTextInput required={true} label="Feed title" name="title"
-        state={state} setState={setState} />
+        state={state} setState={setState} className={classes.editPanelInput}/>
       <StateTextInput label="Feed description" name="description"
-        state={state} setState={setState} />
+        state={state} setState={setState} className={classes.editPanelInput} />
       <StateTextInput required={true} label="Feed link" name="link"
-        state={state} setState={setState} />
+        state={state} setState={setState} className={classes.editPanelInput}/>
       {proposedLinks}
       <StateTextInput label="Website link" name="site_link"
-        state={state} setState={setState} />
+        state={state} setState={setState} className={classes.editPanelInput} />
       <FormControl>
         <FormHelperText>Here you can change the category of the feed :</FormHelperText>
         <Select variant="outlined"
           value={state["category_id"] ? state["category_id"] : 0}
           onChange={(e) => (setState({ ...state, "category_id": e.target.value }))}
+          className={classes.editPanelSelect}
         >
           {categories.map((cat) => (
             <MenuItem key={"cat-" + cat.id} value={cat.id ? cat.id: 0}>
@@ -128,6 +134,7 @@ function AddEditFeed({ job, feed, categories,
         <FormHelperText>A type has been selected for that feed, but you can change it to your liking:</FormHelperText>
         <Select variant="outlined" value={state["feed_type"]}
           onChange={(e) => (setState({ ...state, "feed_type": e.target.value }))}
+          className={classes.editPanelSelect}
         >
           {availableFeedTypes.map((type) => (
             <MenuItem key={"item-" + type} value={type}>{type}</MenuItem>
@@ -135,10 +142,12 @@ function AddEditFeed({ job, feed, categories,
         </Select>
       </FormControl>
       <ClusterSettings level="feed" state={state} setState={setState} />
-      <Button variant="contained" color="primary" type="submit">
-        {job === "add" ? "Create" : "Edit"} Feed
-      </Button>
-      <DeleteButton id={feed.id} type="feed" deleteFunc={deleteFeed} />
+      <div className={classes.editPanelButtons}>
+        <Button className={classes.editPanelBtn} variant="contained" color="primary" type="submit">
+          {job === "add" ? "Create" : "Edit"} Feed
+        </Button>
+        <DeleteButton id={feed.id} type="feed" deleteFunc={deleteFeed} className={classes.editPanelBtn}/>
+      </div>
     </FormControl>
     </form>
   );

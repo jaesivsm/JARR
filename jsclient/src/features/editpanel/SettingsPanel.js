@@ -12,6 +12,7 @@ import StateTextInput from "./common/StateTextInput";
 import ClusterSettings, { fillMissingClusterOption } from "./common/ClusterSettings";
 import { closePanel } from "./editSlice";
 import { doEditObj } from "../feedlist/feedSlice";
+import editPanelStyle from "./editPanelStyle";
 
 const mapDispatchToProps = (dispatch) => ({
   editSettings(e, settings, password) {
@@ -29,6 +30,7 @@ function SettingsPanel({ user, editSettings }) {
   const [pwdVal, setPwd] = useState("");
   const [pwdConfirm, setPwdConfirm] = useState("");
   const [showPasswd, setShowPasswd] = useState(false);
+  const classes = editPanelStyle();
   return (
     <form onSubmit={(e) => {
       e.preventDefault();
@@ -38,15 +40,17 @@ function SettingsPanel({ user, editSettings }) {
     }}>
     <FormControl component="fieldset">
       {["login", "email", "timezone"].map((key) => (
-          <StateTextInput key={key} label={key} name={key} state={state} setState={setState} disabled={key === "login"} />
+          <StateTextInput key={key} label={key} name={key} state={state} setState={setState} disabled={key === "login"}  className={classes.editPanelInput}  />
        ))}
       <ClusterSettings level="user" state={state} setState={setState} />
       <TextField label="Password" variant="outlined"
+        className={classes.editPanelInput}
         value={pwdVal}
         error={pwdConfirm !== pwdVal}
         type={showPasswd ? "text" : "password"}
         onChange={(e) => setPwd(e.target.value)} />
       <TextField label="Password confirmation" variant="outlined"
+        className={classes.editPanelInput}
         value={pwdConfirm}
         error={pwdConfirm !== pwdVal}
         type={showPasswd ? "text" : "password"}
@@ -58,7 +62,7 @@ function SettingsPanel({ user, editSettings }) {
         name="checkedB"
         inputProps={{ 'aria-label': 'primary checkbox' }}
       />} label="Show password" />
-      <Button variant="contained" color="primary" type="submit">
+      <Button variant="contained" color="primary" type="submit" className={classes.editPanelBtn}>
         Edit settings
       </Button>
     </FormControl>
