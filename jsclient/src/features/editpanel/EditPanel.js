@@ -67,6 +67,7 @@ function EditPanel({ isOpen, isLoading, job, objType,
           <IconButton onClick={close}>
             <Close />
           </IconButton>
+          {isLoading ? <CircularProgress /> : null}
           <Typography className={classes.editPanelTitle}>
             {job.charAt(0).toUpperCase()}{job.slice(1)}ing {objType.charAt(0).toUpperCase()}{objType.slice(1)}
           </Typography>

@@ -5,7 +5,6 @@ import Button from "@material-ui/core/Button";
 import TextField from "@material-ui/core/TextField";
 import FormControl from "@material-ui/core/FormControl";
 import FormHelperText from "@material-ui/core/FormHelperText";
-import CircularProgress from "@material-ui/core/CircularProgress";
 import editPanelStyle from "./editPanelStyle";
 
 import { doBuildFeed } from "./editSlice";
@@ -38,7 +37,6 @@ function BuildFeed({ isLoading, doBuildFeed }) {
           variant="contained" color="primary" type="submit">
         Build feed from URL
       </Button>
-      {isLoading ? <CircularProgress /> : null}
     </FormControl>
     </form>
   );
