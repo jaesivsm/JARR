@@ -7,6 +7,15 @@ import makeStyles from "./articleStyle";
 
 function Article({ article, hidden }) {
   const classes = makeStyles();
+  let comments;
+  if (article.comments) {
+    comments = (<p><span>Comments</span>
+                   <Link
+                     key={`ac-${article.id}`}
+                     href={article.comments}>
+                     {article.comments}
+                   </Link></p>);
+  }
   return (
     <div className={classes.article}>
       <p>
@@ -17,14 +26,7 @@ function Article({ article, hidden }) {
           {article.link}
         </Link>
       </p>
-      <p>
-        <span>Comments</span>
-        <Link
-          key={`ac-${article.id}`}
-          href={article.comments}>
-          {article.comments}
-        </Link>
-      </p>
+      {comments}
       <Typography
         hidden={!!hidden}
         dangerouslySetInnerHTML={{__html: article.content}}

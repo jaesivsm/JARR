@@ -3,6 +3,7 @@ import clsx from "clsx";
 import PropTypes from "prop-types";
 import { connect } from "react-redux";
 // material ui components
+import useMediaQuery from "@material-ui/core/useMediaQuery";
 import CircularProgress from "@material-ui/core/CircularProgress";
 // jarr
 import Cluster from "./components/Cluster";
@@ -72,20 +73,15 @@ function ClusterList({ clusters, filters,
     }
   }, [everLoaded, filters, listClusters]);
   let content;
+
+  const splitedMode = false;
   if (loading) {
     content = <CircularProgress />;
   } else {
     content = clusters.map((cluster) => (
         <Cluster key={"c-" + cluster.id}
-          id={cluster.id}
-          read={cluster.read}
-          liked={cluster.liked}
-          mainTitle={cluster["main_title"]}
-          mainLink={cluster["main_link"]}
-          mainDate={cluster["main_date"]}
-          mainFeedTitle={cluster.main_feed_title}
-          feedsId={cluster["feeds_id"]}
-          categoriesId={cluster["categories_id"]}
+          cluster={cluster}
+          splitedMode={splitedMode}
         />)
     );
   }
