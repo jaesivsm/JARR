@@ -29,11 +29,9 @@ function Articles({ articles, icons }) {
       </Tabs>
       {articles.map((article, index) =>
          <Article
-            key={`a-${index}-${index !== currentIndex ? 'h' : ''}`}
+            key={`a-${index}-${index !== currentIndex ? "h" : ""}`}
             id={`a-${index}`}
-            link={article.link}
-            comments={article.comments}
-            content={article.content}
+            article={article}
             aria-labelledby={`t-${index}`}
             index={index}
             hidden={index !== currentIndex}

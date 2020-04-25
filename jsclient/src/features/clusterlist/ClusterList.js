@@ -80,8 +80,9 @@ function ClusterList({ clusters, filters,
           id={cluster.id}
           read={cluster.read}
           liked={cluster.liked}
-          mainTitle={cluster.main_title}
-          mainLink={cluster.main_link}
+          mainTitle={cluster["main_title"]}
+          mainLink={cluster["main_link"]}
+          mainDate={cluster["main_date"]}
           mainFeedTitle={cluster.main_feed_title}
           feedsId={cluster["feeds_id"]}
           categoriesId={cluster["categories_id"]}

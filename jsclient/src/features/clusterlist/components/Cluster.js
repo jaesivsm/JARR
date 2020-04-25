@@ -76,7 +76,7 @@ const mapDispatchToProps = (dispatch) => ({
 });
 
 function Cluster({ id, read, liked, feedsId, categoriesId,
-                   mainFeedTitle, mainTitle, mainLink,
+                   mainFeedTitle, mainTitle, mainLink, mainDate,
                    icons, requestedClusterId, loadedCluster, unreadOnClose,
                    readOnRedirect, toggleRead, toggleLiked,
                    handleClickOnPanel,
@@ -88,7 +88,10 @@ function Cluster({ id, read, liked, feedsId, categoriesId,
     if (!loaded) {
       content = <CircularProgress />;
     } else if (loadedCluster.articles.length === 1) {
-      content = <Article content={loadedCluster.articles[0].content} />;
+      content = <Article
+                   article={loadedCluster.articles[0]}
+                   hidden={false}
+                 />;
     } else {
       content = <Articles
                    articles={loadedCluster.articles}
@@ -129,6 +132,7 @@ function Cluster({ id, read, liked, feedsId, categoriesId,
               }
              {mainFeedTitle}
             </Link>
+            <span>{mainDate}</span>
           </div>
           <div>
             <Checkbox checked={read} key={"c" + id + "r"}
@@ -170,6 +174,7 @@ Cluster.propTypes = {
   mainTitle: PropTypes.string.isRequired,
   mainLink: PropTypes.string.isRequired,
   mainFeedTitle: PropTypes.string.isRequired,
+  mainDate: PropTypes.string.isRequired,
   unreadOnClose: PropTypes.bool.isRequired,
   requestedClusterId: PropTypes.number,
   loadedCluster: PropTypes.object,

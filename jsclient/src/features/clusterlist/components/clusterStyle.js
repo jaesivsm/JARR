@@ -6,7 +6,7 @@ export default makeStyles((theme: Theme) =>
       padding: 0,
       paddingRight: 15,
       margin: 0,
-      '& .MuiExpansionPanelSummary-content': {
+      "& .MuiExpansionPanelSummary-content": {
         flexDirection: "column",
         padding: "6px 10px",
         margin: 0,
@@ -15,13 +15,15 @@ export default makeStyles((theme: Theme) =>
     },
     link: {
       verticalAlign: "middle",
+      display: "flex",
+      justifyContent: "space-between",
       marginBottom: 4,
-      '& a': {
+      "& a": {
         lineHeight: 1,
         whiteSpace: "nowrap",
         overflow: "hidden",
       },
-      '& img': {
+      "& img": {
         position: "relative",
         top: 4,
         margin: "0 6px 0 1px",
