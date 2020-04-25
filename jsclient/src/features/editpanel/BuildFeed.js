@@ -4,9 +4,9 @@ import { connect } from "react-redux";
 import Button from "@material-ui/core/Button";
 import TextField from "@material-ui/core/TextField";
 import FormControl from "@material-ui/core/FormControl";
-import FormLabel from "@material-ui/core/FormLabel";
 import FormHelperText from "@material-ui/core/FormHelperText";
 import CircularProgress from "@material-ui/core/CircularProgress";
+import editPanelStyle from "./editPanelStyle";
 
 import { doBuildFeed } from "./editSlice";
 
@@ -20,10 +20,10 @@ const mapDispatchToProps = (dispatch) => ({
 
 function BuildFeed({ isLoading, doBuildFeed }) {
   const [feedUrl, setFeedUrl] = useState(null);
+  const classes = editPanelStyle();
   return (
     <form onSubmit={(e) => doBuildFeed(e, feedUrl) }>
     <FormControl component="fieldset">
-      <FormLabel component="legend">Create a new category</FormLabel>
       <TextField
         required
         id="outlined-required"
@@ -31,6 +31,7 @@ function BuildFeed({ isLoading, doBuildFeed }) {
         variant="outlined"
         disabled={isLoading}
         onChange={(e) => (setFeedUrl(e.target.value))}
+        className={classes.editPanelInput}
       />
       <FormHelperText>Feed url</FormHelperText>
       <Button disabled={isLoading}

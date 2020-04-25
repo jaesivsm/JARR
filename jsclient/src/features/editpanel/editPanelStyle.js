@@ -25,14 +25,20 @@ export default makeStyles((theme: Theme) =>
       '& fieldset': {
           width: '100%'
       },
-      padding: '20px 8px',
+      '& .MuiAlert-root': {
+        marginBottom: 25
+      },
+      padding: 20,
     },
     editPanelInput: {
       marginBottom : 30
     },
+    editPanelSelect: {
+      marginBottom: 20
+    },
     editPanelSlide: {
-      marginLeft : 15,
-      marginRight: 15,
+      marginLeft : '15px !important',
+      marginRight: '15px !important',
       marginBottom: 20      
     },
     editPanelSubmit: {
