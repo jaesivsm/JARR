@@ -41,8 +41,14 @@ export default makeStyles((theme: Theme) =>
       marginRight: '15px !important',
       marginBottom: 20      
     },
-    editPanelSubmit: {
-      marginTop: 20
+    editPanelButtons: {
+      display: 'flex',
+      justifyContent: 'space-between'
+    },
+    editPanelBtn: {
+      marginTop: 20,
+      marginBottom: 20
     }
+    
   }),
 );

@@ -60,11 +60,13 @@ function AddEditCategory({ isOpen, job, category,
         className={classes.editPanelSelect}
       />
       <ClusterSettings level="category" state={state} setState={setState} />
-      <Button variant="contained" color="primary" type="submit">
-        {job === "add" ? "Create" : "Edit"} Category
-      </Button>
-      <DeleteButton id={job === "edit" ? category.id : null}
-         type="category" deleteFunc={deleteCategory} />
+      <div className={classes.editPanelButtons}>
+        <Button className={classes.editPanelBtn} variant="contained" color="primary" type="submit">
+          {job === "add" ? "Create" : "Edit"} Category
+        </Button>
+        <DeleteButton id={job === "edit" ? category.id : null}
+           type="category" deleteFunc={deleteCategory} className={classes.editPanelBtn}/>
+      </div>
     </FormControl>
     </form>
   );

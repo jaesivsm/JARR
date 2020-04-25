@@ -40,7 +40,7 @@ function SettingsPanel({ user, editSettings }) {
     }}>
     <FormControl component="fieldset">
       {["login", "email", "timezone"].map((key) => (
-          <StateTextInput key={key} label={key} name={key} state={state} setState={setState} disabled={key === "login"}  elemClass={classes.editPanelInput}  />
+          <StateTextInput key={key} label={key} name={key} state={state} setState={setState} disabled={key === "login"}  className={classes.editPanelInput}  />
        ))}
       <ClusterSettings level="user" state={state} setState={setState} />
       <TextField label="Password" variant="outlined"
@@ -62,7 +62,7 @@ function SettingsPanel({ user, editSettings }) {
         name="checkedB"
         inputProps={{ 'aria-label': 'primary checkbox' }}
       />} label="Show password" />
-      <Button variant="contained" color="primary" type="submit" className={classes.editPanelSubmit}>
+      <Button variant="contained" color="primary" type="submit" className={classes.editPanelBtn}>
         Edit settings
       </Button>
     </FormControl>

@@ -108,14 +108,14 @@ function AddEditFeed({ job, feed, categories,
     <FormControl component="fieldset">
       {warning}
       <StateTextInput required={true} label="Feed title" name="title"
-        state={state} setState={setState} elemClass={classes.editPanelInput}/>
+        state={state} setState={setState} className={classes.editPanelInput}/>
       <StateTextInput label="Feed description" name="description"
-        state={state} setState={setState} elemClass={classes.editPanelInput} />
+        state={state} setState={setState} className={classes.editPanelInput} />
       <StateTextInput required={true} label="Feed link" name="link"
-        state={state} setState={setState} elemClass={classes.editPanelInput}/>
+        state={state} setState={setState} className={classes.editPanelInput}/>
       {proposedLinks}
       <StateTextInput label="Website link" name="site_link"
-        state={state} setState={setState} elemClass={classes.editPanelInput} />
+        state={state} setState={setState} className={classes.editPanelInput} />
       <FormControl>
         <FormHelperText>Here you can change the category of the feed :</FormHelperText>
         <Select variant="outlined"
