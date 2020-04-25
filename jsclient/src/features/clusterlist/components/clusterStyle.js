@@ -32,8 +32,6 @@ export default makeStyles((theme: Theme) =>
       },
 
     },
-    title: {
-    },
     mainTitle: {
       paddingLeft: 5,
       display: "inline",
@@ -44,6 +42,10 @@ export default makeStyles((theme: Theme) =>
     titleAction: {
       padding: 0,
       margin: 0,
+    },
+    content: {
+      display: "block",
+      maxWidth: "100%",
     },
   })
 );

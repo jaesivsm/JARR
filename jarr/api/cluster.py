@@ -13,6 +13,7 @@ cluster_parser.add_argument('read', type=inputs.boolean, nullable=False)
 article_model = cluster_ns.model('Article', {
     'id': fields.Integer(),
     'link': fields.String(),
+    'feed_id': fields.Integer(),
     'title': fields.String(),
     'content': fields.String(),
     'comments': fields.String(),

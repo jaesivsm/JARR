@@ -10,7 +10,7 @@ import ExpansionPanelDetails from "@material-ui/core/ExpansionPanelDetails";
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import CircularProgress from "@material-ui/core/CircularProgress";
 import Checkbox from "@material-ui/core/Checkbox";
-
+// material ui icons
 import LikedIcon from '@material-ui/icons/Star';
 import LikedIconBorder from '@material-ui/icons/StarBorder';
 // jarr
@@ -18,6 +18,8 @@ import { doFetchCluster, doEditCluster, removeClusterSelection,
          updateClusterAttrs,
 } from "../clusterSlice";
 import makeStyles from "./clusterStyle";
+import Articles from "./Articles";
+import Article from "./Article";
 import { changeReadCount } from "../../feedlist/feedSlice";
 import FeedIcon from "../../../components/FeedIcon";
 
@@ -85,11 +87,13 @@ function Cluster({ id, read, liked, feedsId, categoriesId,
   if (id === requestedClusterId) {
     if (!loaded) {
       content = <CircularProgress />;
-    } else if (loaded) {
-      content = (
-        <Typography
-          dangerouslySetInnerHTML={{__html: loadedCluster.articles[0].content}} />
-      );
+    } else if (loadedCluster.articles.length === 1) {
+      content = <Article content={loadedCluster.articles[0].content} />;
+    } else {
+      content = <Articles
+                   articles={loadedCluster.articles}
+                   icons={icons}
+                 />;
     }
   }
   const expanded = requestedClusterId === id;
@@ -126,7 +130,7 @@ function Cluster({ id, read, liked, feedsId, categoriesId,
              {mainFeedTitle}
             </Link>
           </div>
-          <div className={classes.title}>
+          <div>
             <Checkbox checked={read} key={"c" + id + "r"}
               className={classes.titleAction}
               name="read" size="small" color="primary"
@@ -147,7 +151,9 @@ function Cluster({ id, read, liked, feedsId, categoriesId,
             </Typography>
           </div>
         </ExpansionPanelSummary>
-        <ExpansionPanelDetails key={"cl-" + id}>
+        <ExpansionPanelDetails
+           className={classes.content}
+           key={"cl-" + id}>
           {content}
         </ExpansionPanelDetails>
       </ExpansionPanel>
