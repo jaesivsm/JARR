@@ -12,6 +12,8 @@ import { doListClusters } from "../clusterlist/clusterSlice";
 import ClusterSettings, { fillMissingClusterOption } from "./common/ClusterSettings";
 import DeleteButton from "./common/DeleteButton";
 
+import editPanelStyle from "./editPanelStyle";
+
 const mapDispatchToProps = (dispatch) => ({
   createCategory(e, category) {
     e.preventDefault();
@@ -37,6 +39,7 @@ function AddEditCategory({ isOpen, job, category,
       ...fillMissingClusterOption(category, "category", null),
       "name": category && category.name ? category.name : "",
   });
+  const classes = editPanelStyle();
 
   return (
     <form onSubmit={(e) => {
@@ -54,6 +57,7 @@ function AddEditCategory({ isOpen, job, category,
         variant="outlined"
         value={state.name}
         onChange={(e) => (setState({ ...state, name: e.target.value }))}
+        className={classes.editPanelSelect}
       />
       <ClusterSettings level="category" state={state} setState={setState} />
       <Button variant="contained" color="primary" type="submit">
