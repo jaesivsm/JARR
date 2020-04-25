@@ -142,10 +142,12 @@ function AddEditFeed({ job, feed, categories,
         </Select>
       </FormControl>
       <ClusterSettings level="feed" state={state} setState={setState} />
-      <Button variant="contained" color="primary" type="submit">
-        {job === "add" ? "Create" : "Edit"} Feed
-      </Button>
-      <DeleteButton id={feed.id} type="feed" deleteFunc={deleteFeed} />
+      <div className={classes.editPanelButtons}>
+        <Button className={classes.editPanelBtn} variant="contained" color="primary" type="submit">
+          {job === "add" ? "Create" : "Edit"} Feed
+        </Button>
+        <DeleteButton id={feed.id} type="feed" deleteFunc={deleteFeed} className={classes.editPanelBtn}/>
+      </div>
     </FormControl>
     </form>
   );
