@@ -146,11 +146,11 @@ function Cluster({ cluster,
             </Typography>
           </div>
         </ExpansionPanelSummary>
-        <ExpansionPanelDetails
+    {!splitedMode ? (<ExpansionPanelDetails
            className={classes.content}
            key={"cl-" + cluster.id}>
-           {!splitedMode ? <Content clusterId={cluster.id} />: null}
-        </ExpansionPanelDetails>
+           <Content clusterId={cluster.id} />
+        </ExpansionPanelDetails>): null}
       </ExpansionPanel>
     );
 }
