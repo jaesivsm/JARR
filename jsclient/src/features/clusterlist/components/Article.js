@@ -2,8 +2,9 @@ import React from "react";
 import PropTypes from "prop-types";
 import Typography from "@material-ui/core/Typography";
 import Link from "@material-ui/core/Link";
+import Divider from "@material-ui/core/Divider";
 
-import makeStyles from "./articleStyle";
+import makeStyles from "./style";
 
 function Article({ article, hidden }) {
   const classes = makeStyles();
@@ -27,6 +28,7 @@ function Article({ article, hidden }) {
         </Link>
       </p>
       {comments}
+      <Divider />
       <Typography
         hidden={!!hidden}
         dangerouslySetInnerHTML={{__html: article.content}}

@@ -4,7 +4,7 @@ import Tab from "@material-ui/core/Tab";
 import Tabs from "@material-ui/core/Tabs";
 
 import Article from "./Article";
-import makeStyles from "./articlesStyle";
+import makeStyles from "./style";
 import FeedIcon from "../../../components/FeedIcon";
 
 function Articles({ articles, icons }) {

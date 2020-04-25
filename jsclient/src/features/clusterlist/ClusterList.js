@@ -3,13 +3,16 @@ import clsx from "clsx";
 import PropTypes from "prop-types";
 import { connect } from "react-redux";
 // material ui components
+import { useTheme } from "@material-ui/core/styles";
 import useMediaQuery from "@material-ui/core/useMediaQuery";
 import CircularProgress from "@material-ui/core/CircularProgress";
+import Paper from "@material-ui/core/Paper";
 // jarr
 import Cluster from "./components/Cluster";
+import Content from "./components/Content";
 import SelectedObjCard from "./components/SelectedObjCard";
 import { doListClusters } from "./clusterSlice";
-import clusterListStyle from "./clusterListStyle";
+import makeStyles from "./components/style";
 
 
 const filterClusters = (requestedClusterId, filter) => (cluster) => (
@@ -44,6 +47,7 @@ function mapStateToProps(state) {
     );
   }
   return { clusters,
+           loadedCluster: state.clusters.loadedCluster,
            filters: state.clusters.filters,
            loading: state.clusters.loading,
            isShifted: state.feeds.isOpen && !state.edit.isOpen,
@@ -58,13 +62,17 @@ const mapDispatchToProps = (dispatch) => ({
 });
 
 
-function ClusterList({ clusters, filters,
+function ClusterList({ clusters, filters, loadedCluster,
                        loading, isShifted,
                        selectedFilterObj,
                        listClusters, openEditPanel,
                        }) {
-  const classes = clusterListStyle();
-  const className = clsx(classes.content, {[classes.contentShift]: isShifted});
+  const theme = useTheme();
+  const classes = makeStyles();
+  const splitedMode = useMediaQuery(theme.breakpoints.up("md"));
+  const contentClassName = clsx(classes.main,
+    {[classes.mainShifted]: isShifted,
+     [classes.mainSplitted]: splitedMode});
   const [everLoaded, setEverLoaded] = useState(false);
   useEffect(() => {
     if (!everLoaded) {
@@ -72,32 +80,48 @@ function ClusterList({ clusters, filters,
       listClusters(filters);
     }
   }, [everLoaded, filters, listClusters]);
-  let content;
 
-  const splitedMode = false;
+  let list;
   if (loading) {
-    content = <CircularProgress />;
+    list = <CircularProgress />;
   } else {
-    content = clusters.map((cluster) => (
+    list = clusters.map((cluster) => (
         <Cluster key={"c-" + cluster.id}
           cluster={cluster}
           splitedMode={splitedMode}
         />)
     );
   }
-
+  let card;
+  if (selectedFilterObj) {
+    card = <SelectedObjCard
+              id={selectedFilterObj.id}
+              str={selectedFilterObj.str}
+              type={selectedFilterObj.type}
+              iconUrl={selectedFilterObj["icon_url"]}
+              errorCount={selectedFilterObj["error_count"]}
+              lastRetrieved={selectedFilterObj["last_retrieved"]}
+            />;
+  }
+  if (!splitedMode) {
+    return (
+      <main className={contentClassName}>
+        {card}
+        {list}
+      </main>
+    );
+  }
   return (
-    <main className={className}>
-      {selectedFilterObj ?
-         <SelectedObjCard
-           id={selectedFilterObj.id}
-           str={selectedFilterObj.str}
-           type={selectedFilterObj.type}
-           iconUrl={selectedFilterObj["icon_url"]}
-           errorCount={selectedFilterObj["error_count"]}
-           lastRetrieved={selectedFilterObj["last_retrieved"]}
-         /> : null}
-      {content}
+    <main className={contentClassName}>
+      <div className={clsx(classes.clusterList,
+                           {[classes.clusterListShifted]: isShifted,})}>
+        {card}
+        {list}
+      </div>
+      <Paper className={clsx(classes.contentPanel,
+                           {[classes.contentPanelShifted]: isShifted,})}>
+         <Content clusterId={loadedCluster.id} />
+      </Paper>
     </main>
   );
 }
