@@ -8,7 +8,18 @@ export default makeStyles((theme: Theme) =>
       flexShrink: 0,
     },
     editPanelPaper: {
+      overflow: 'hidden',
       width: editPanelWidth,
+    },
+    editPanelHeaderSticky: {
+      backgroundColor: '#ffffff',
+      borderBottom: '1px solid lightgray',
+      display: 'block',
+      position: 'fixed',
+      opacity: 1,
+      transition: 'none',
+      width: editPanelWidth,
+      zIndex: 99,
     },
     editPanelHeader: {
       display: "flex",
@@ -28,6 +39,8 @@ export default makeStyles((theme: Theme) =>
       '& .MuiAlert-root': {
         marginBottom: 25
       },
+      overflowY: 'auto',
+      marginTop: 70,
       padding: 20,
     },
     editPanelInput: {
