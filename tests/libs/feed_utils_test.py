@@ -40,7 +40,7 @@ class ConstructFeedFromTest(unittest.TestCase):
                  'link': 'https://lesjoiesducode.fr/feed',
                  'site_link': 'https://lesjoiesducode.fr',
                  'title': 'Les Joies du Code – Humour de développeurs '
-                 ': gifs, memes'}, joi)
+                 ': gifs, memes, blagues'}, joi)
 
     def test_apod_from_site(self):
         nasa = FBC('http://apod.nasa.gov/').construct()
