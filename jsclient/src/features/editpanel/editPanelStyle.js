@@ -78,7 +78,10 @@ export default makeStyles((theme: Theme) =>
     },
     editPanelClusterSelect: {
       marginBottom: 10, 
-      marginTop: '0 !important',     
+      marginTop: '0 !important',  
+      '& .MuiSelect-select': {
+        width: 150
+      }
     },
     editPanelClusterLabel: {
       textAlign: 'left',
