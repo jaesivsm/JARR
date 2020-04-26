@@ -53,7 +53,7 @@ const clusterSlice = createSlice({
       };
     },
     retrievedCluster(state, action) {
-      if (state.requestedClusterId !== action.cluster.id) {
+      if (state.requestedClusterId !== action.payload.cluster.id) {
         return state; // not the object that was asked for last, ignoring
       }
       return { ...state,
