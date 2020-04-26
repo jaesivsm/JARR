@@ -6,6 +6,7 @@ import { FixedSizeList } from "react-window";
 import Drawer from "@material-ui/core/Drawer";
 import InputBase from "@material-ui/core/InputBase";
 import IconButton from "@material-ui/core/IconButton";
+import Tooltip from '@material-ui/core/Tooltip';
 // icons
 import ChevronLeftIcon from "@material-ui/icons/ChevronLeft";
 import AddFeedIcon  from "@material-ui/icons/Add";
@@ -74,6 +75,7 @@ function FeedList(props) {
       </div>
     );
   }
+
   return (
     <Drawer
       variant="persistent"
@@ -86,26 +88,36 @@ function FeedList(props) {
     >
       <div className={classes.drawerHeader}>
         <div>
-          <IconButton onClick={() => props.toggleAddPanel("feed")}>
-            <AddFeedIcon />
-          </IconButton>
-          <IconButton onClick={() => props.toggleAddPanel("category")}>
-            <AddCategoryIcon />
-          </IconButton>
-          <IconButton onClick={props.toggleFolder}>
-           {props.isFoldedFromParent ? <UnFoldAllCategoriesIcon /> : <FoldAllCategoriesIcon />}
-          </IconButton>
-          <IconButton onClick={() => {
-            if(displaySearch) { props.setSearchFilter(null); }
-            setDisplaySearch(!displaySearch);
-          }}>
-            <SearchIcon />
-          </IconButton>
+          <Tooltip title="Add new feed">
+            <IconButton onClick={() => props.toggleAddPanel("feed")}>
+              <AddFeedIcon />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title="Add new category">
+            <IconButton onClick={() => props.toggleAddPanel("category")}>
+              <AddCategoryIcon />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title={props.isFoldedFromParent ? "Unfold categories" : "Fold categories"}>
+            <IconButton onClick={props.toggleFolder}>
+             {props.isFoldedFromParent ? <UnFoldAllCategoriesIcon /> : <FoldAllCategoriesIcon />}
+            </IconButton>
+          </Tooltip>
+          <Tooltip title="Search through feed list">
+            <IconButton onClick={() => {
+              if(displaySearch) { props.setSearchFilter(null); }
+              setDisplaySearch(!displaySearch);
+            }}>
+              <SearchIcon />
+            </IconButton>
+          </Tooltip>
         </div>
         <div>
-          <IconButton onClick={props.toggleFeedList}>
-            <ChevronLeftIcon />
-          </IconButton>
+          <Tooltip title="Hide feed list">
+            <IconButton onClick={props.toggleFeedList}>
+              <ChevronLeftIcon />
+            </IconButton>
+          </Tooltip>
         </div>
       </div>
       {displaySearch ? <Divider /> : null }

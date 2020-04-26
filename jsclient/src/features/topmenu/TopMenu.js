@@ -5,6 +5,7 @@ import clsx from "clsx";
 // material components
 import AppBar from "@material-ui/core/AppBar";
 import Toolbar from "@material-ui/core/Toolbar";
+import Tooltip from '@material-ui/core/Tooltip';
 import IconButton from "@material-ui/core/IconButton";
 import Typography from "@material-ui/core/Typography";
 // material icons
@@ -62,6 +63,7 @@ function TopMenu(props) {
     <AppBar position="fixed" className={className}>
       <Toolbar className={clsx(classes.toolbar)}>
         <div>
+        <Tooltip title="Show feed list">
           <IconButton
             color="inherit"
             aria-label="open drawer"
@@ -71,6 +73,8 @@ function TopMenu(props) {
           >
             <MenuIcon />
           </IconButton>
+        </Tooltip>
+        <Tooltip title={props.isFilteringOnAll ? "Show unread articles" : "Show all"}>
           <IconButton
             color="inherit"
             onClick={() => props.filterClusters(props.isFilteringOnAll ? null : "all" )}
@@ -78,6 +82,8 @@ function TopMenu(props) {
           >
             {props.isFilteringOnAll ? <FilterAllIcon /> : <FilterUnreadIcon />}
           </IconButton>
+        </Tooltip>
+        <Tooltip title={props.isFilteringOnLiked ? "Show all" : "Show only liked articles"}>
           <IconButton
             color="inherit"
             onClick={() => props.filterClusters(props.isFilteringOnLiked ? null : "liked" )}
@@ -85,6 +91,8 @@ function TopMenu(props) {
           >
             {props.isFilteringOnLiked ? <FilterFavoriteIcon /> : <FilterAllOrFavoriteIcon />}
           </IconButton>
+        </Tooltip>
+        <Tooltip title="Mark all as read">
           <IconButton
             color="inherit"
             onClick={() => props.markAllAsRead(false)}
@@ -92,6 +100,8 @@ function TopMenu(props) {
           >
             <MarkAllAsReadIcon />
           </IconButton>
+        </Tooltip>
+        <Tooltip title="Mark all non cluster as read">
           <IconButton
             color="inherit"
             onClick={() => props.markAllAsRead(true)}
@@ -99,15 +109,20 @@ function TopMenu(props) {
           >
             <MarkALlNonClusterAsReadIcon />
           </IconButton>
+        </Tooltip>
         </div>
         <Typography>JARR</Typography>
         <div>
-          <IconButton color="inherit" onClick={props.openEditPanel}>
-            <SettingsIcon />
-          </IconButton>
-          <IconButton color="inherit" onClick={props.logout}>
-            <ExitToAppIcon />
-          </IconButton>
+          <Tooltip title="Settings">
+            <IconButton color="inherit" onClick={props.openEditPanel}>
+              <SettingsIcon />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title="Logout">
+            <IconButton color="inherit" onClick={props.logout}>
+              <ExitToAppIcon />
+            </IconButton>
+          </Tooltip>
         </div>
       </Toolbar>
     </AppBar>
