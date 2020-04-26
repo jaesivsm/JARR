@@ -91,7 +91,7 @@ function ClusterList({ clusters, filters, loadedCluster,
   if (loading) {
     list = <CircularProgress />;
 
-  } else {
+  } else if (clusters.length) {
     list = clusters.map((cluster) => (
         <Cluster key={"c-" + cluster.id}
           cluster={cluster}
@@ -103,6 +103,8 @@ function ClusterList({ clusters, filters, loadedCluster,
         <AddIcon />
       </Fab>
     );
+  } else {
+    list = "no cluster, try adding more feeds or come back later!";
   }
   let card;
   if (selectedFilterObj) {
