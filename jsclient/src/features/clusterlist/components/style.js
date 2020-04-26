@@ -80,7 +80,7 @@ export default makeStyles((theme: Theme) =>
       }),
       marginLeft: -feedListWidth,
       marginRight: -editPanelWidth,
-      maxWidth: `100%-${editPanelWidth}`,
+      maxWidth: `100%`,
     },
     mainShifted: {
       transition: theme.transitions.create("margin", {
@@ -88,6 +88,7 @@ export default makeStyles((theme: Theme) =>
         duration: theme.transitions.duration.enteringScreen,
       }),
       marginLeft: 0,
+      maxWidth: `calc(100% - ${feedListWidth}px)`,
     },
     mainSplitted: {
       display: "flex",
