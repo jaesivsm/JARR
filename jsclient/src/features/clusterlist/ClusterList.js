@@ -4,14 +4,16 @@ import PropTypes from "prop-types";
 import { connect } from "react-redux";
 // material ui components
 import { useTheme } from "@material-ui/core/styles";
+import Fab from "@material-ui/core/Fab";
 import useMediaQuery from "@material-ui/core/useMediaQuery";
 import CircularProgress from "@material-ui/core/CircularProgress";
 import Paper from "@material-ui/core/Paper";
+import AddIcon from "@material-ui/icons/Add";
 // jarr
 import Cluster from "./components/Cluster";
 import Content from "./components/Content";
 import SelectedObjCard from "./components/SelectedObjCard";
-import { doListClusters } from "./clusterSlice";
+import { doListClusters, doLoadMoreClusters } from "./clusterSlice";
 import makeStyles from "./components/style";
 
 
@@ -59,13 +61,16 @@ const mapDispatchToProps = (dispatch) => ({
   listClusters(filters) {
     return dispatch(doListClusters(filters));
   },
+  loadMoreClusters() {
+    return dispatch(doLoadMoreClusters());
+  },
 });
 
 
 function ClusterList({ clusters, filters, loadedCluster,
                        loading, isShifted,
                        selectedFilterObj,
-                       listClusters, openEditPanel,
+                       listClusters, loadMoreClusters, openEditPanel,
                        }) {
   const theme = useTheme();
   const classes = makeStyles();
@@ -82,14 +87,21 @@ function ClusterList({ clusters, filters, loadedCluster,
   }, [everLoaded, filters, listClusters]);
 
   let list;
+  let loadMoreButton;
   if (loading) {
     list = <CircularProgress />;
+
   } else {
     list = clusters.map((cluster) => (
         <Cluster key={"c-" + cluster.id}
           cluster={cluster}
           splitedMode={splitedMode}
         />)
+    );
+    loadMoreButton = (
+      <Fab color="primary" className={classes.fab} onClick={loadMoreClusters}>
+        <AddIcon />
+      </Fab>
     );
   }
   let card;
@@ -103,11 +115,13 @@ function ClusterList({ clusters, filters, loadedCluster,
               lastRetrieved={selectedFilterObj["last_retrieved"]}
             />;
   }
+
   if (!splitedMode) {
     return (
       <main className={contentClassName}>
         {card}
         {list}
+        {loadMoreButton}
       </main>
     );
   }
@@ -117,6 +131,7 @@ function ClusterList({ clusters, filters, loadedCluster,
                            {[classes.clusterListShifted]: isShifted,})}>
         {card}
         {list}
+        {loadMoreButton}
       </div>
       <Paper className={clsx(classes.contentPanel,
                            {[classes.contentPanelShifted]: isShifted,})}>

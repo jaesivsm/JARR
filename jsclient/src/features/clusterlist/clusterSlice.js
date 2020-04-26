@@ -15,6 +15,9 @@ const clusterSlice = createSlice({
   reducers: {
     requestedClustersList(state, action) {
       const filters = { ...state.filters };
+      if (filters["from_date"]) {
+        delete filters["from_date"];
+      }
       if (action.payload.filters.feedId
           || action.payload.filters.categoryId === "all") {
         delete filters["category_id"];
@@ -38,10 +41,22 @@ const clusterSlice = createSlice({
                requestedFilter: qs.stringify(filters),
       };
     },
+    requestedMoreCLusters(state, action) {
+      const filters = { ...state.filters,
+                        "from_date": state.clusters[state.clusters.length - 1].main_date };
+      return { ...state, filters,
+               requestedFilter: qs.stringify(filters),
+      };
+    },
     retrievedClustersList(state, action) {
       if (action.payload.requestedFilter !== state.requestedFilter) {
         // dispatch from an earlier request that has been ignored
         return state;  // ignoring
+      }
+      if (action.payload.strat === "append") {
+        return { ...state, loading: false,
+                 clusters: [ ...state.clusters, ...action.payload.clusters],
+        };
       }
       return { ...state, loading: false,
                clusters: action.payload.clusters };
@@ -92,6 +107,7 @@ const clusterSlice = createSlice({
 
 export const { requestedClustersList, retrievedClustersList,
                requestedCluster, retrievedCluster,
+               requestedMoreCLusters,
                updateClusterAttrs,
                removeClusterSelection,
                markedAllAsRead,
@@ -105,7 +121,19 @@ export const doListClusters = (filters): AppThunk => async (dispatch, getState) 
     method: "get",
     url: apiUrl + "/clusters?" + requestedFilter,
   }, dispatch, getState);
-  dispatch(retrievedClustersList({ requestedFilter, clusters: result.data }));
+  dispatch(retrievedClustersList({ requestedFilter, clusters: result.data,
+                                   strat: "replace" }));
+};
+
+export const doLoadMoreClusters = (): AppThunk => async (dispatch, getState) => {
+  dispatch(requestedMoreCLusters());
+  const requestedFilter = getState().clusters.requestedFilter;
+  const result = await doRetryOnTokenExpiration({
+    method: "get",
+    url: apiUrl + "/clusters?" + requestedFilter,
+  }, dispatch, getState);
+  dispatch(retrievedClustersList({ requestedFilter, clusters: result.data,
+                                   strat: "append" }));
 };
 
 export const doFetchCluster = (clusterId): AppThunk => async (dispatch, getState) => {

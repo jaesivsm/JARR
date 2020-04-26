@@ -94,8 +94,6 @@ function Cluster({ cluster,
   return (
       <ExpansionPanel
         expanded={expanded}
-        onChange={(e) => handleClickOnPanel(e, cluster,
-                                            unreadOnClose, expanded)}
         elevation={expanded ? 10: 2}
         TransitionProps={{ unmountOnExit: true }}
         key={"c"
