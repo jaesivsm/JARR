@@ -1,9 +1,10 @@
 import React from "react";
 import PropTypes from "prop-types";
 // meterial components
-import FormControlLabel from "@material-ui/core/FormControlLabel";
 import FormControl from "@material-ui/core/FormControl";
-import Slider from "@material-ui/core/Slider";
+import Select from '@material-ui/core/Select';
+import MenuItem from '@material-ui/core/MenuItem';
+import InputLabel from '@material-ui/core/InputLabel';
 import editPanelStyle from "../editPanelStyle";
 
 const clusteringConfOptions = {
@@ -14,20 +15,6 @@ const clusteringConfOptions = {
     "cluster_wake_up": { "label": "Allow clustering to unread an article previously marked as read",
                          "only_for": "feed" }
 };
-
-const optionValues = [
-    { value: 0, label: 'Off', trueVal: false },
-    { value: 1, label: 'Default (from parent)', trueVal: null },
-    { value: 2, label: 'On', trueVal: true },
-];
-
-
-const getValLbl = (val) => optionValues.filter((opt) => opt.value === val)[0].label;
-
-const getVal = (val) => {
-  const row = optionValues.filter((row) => val === row.value || val === row.trueVal)[0];
-  return val === row.trueVal ? row.value : row.trueVal;
-}
 
 const filterOption = (level) => ((opt) => (
   !clusteringConfOptions[opt].only_for || clusteringConfOptions[opt].only_for === level)
@@ -46,33 +33,30 @@ export function fillMissingClusterOption(obj, level, def=null) {
 }
 
 function ClusterSettings({ state, level, setState }) {
-  const getHandleChange = (key) => (e, newVal) => setState({ ...state, [key]: getVal(newVal)});
-  const classes = editPanelStyle();
+  
+  const getHandleChange = (key) => (e, newVal) => {
+    setState({ ...state, [key]: e.target.value});
+    console.log(e.target.value);
+  }
+
+
   return (
-    <FormControl>
+    <>
       {Object.keys(clusteringConfOptions)
              .filter(filterOption(level))
              .map((opt) => (
-        <>
-          <div className={classes.editPanelSlideLabel}>
-            {clusteringConfOptions[opt].label}
-          </div>
-          <FormControlLabel key={"fcl-" + opt} 
-            className={classes.editPanelSlide}
-            control={<Slider
-                      value={getVal(state[opt])}
-                      getAriaValueText={getValLbl}
-                      marks={level === "user" ? [optionValues[0], optionValues[2]] : optionValues}
-                      aria-labelledby="discrete-slider-always"
-                      step={null} min={0} max={2}
-                      valueLabelDisplay="off"
-                      name={opt}
-                      onChange={getHandleChange(opt)}
-                    />}
-          />
-        </>
+        <FormControl key={opt}> 
+          <InputLabel id={`${'label-'+opt}`}>{clusteringConfOptions[opt].label}</InputLabel>
+          <Select labelId={`${'label-'+opt}`} id={`${'select-'+opt}`} 
+            value={`${state[opt] === null && level === 'user' ? true : state[opt]}`} 
+            onChange={getHandleChange(opt)}>
+            {level !== 'user' ? <MenuItem value={null}>Default from parent</MenuItem> : null }
+            <MenuItem value={true}>Activated</MenuItem>
+            <MenuItem value={false}>Deactivated</MenuItem>
+          </Select>
+        </FormControl>
       ))}
-    </FormControl>
+    </>
   );
 }
 
