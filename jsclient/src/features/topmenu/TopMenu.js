@@ -10,14 +10,15 @@ import IconButton from "@material-ui/core/IconButton";
 import Typography from "@material-ui/core/Typography";
 // material icons
 import MenuIcon from "@material-ui/icons/Menu";
-import ExitToAppIcon from "@material-ui/icons/ExitToApp";
-import MarkAllAsReadIcon from "@material-ui/icons/LibraryAddCheck";
-import MarkALlNonClusterAsReadIcon from "@material-ui/icons/PlaylistAddCheck";
 import FilterAllOrFavoriteIcon from "@material-ui/icons/StarBorder";
 import FilterFavoriteIcon from "@material-ui/icons/Star";
 import FilterAllIcon from "@material-ui/icons/IndeterminateCheckBox";
 import FilterUnreadIcon from "@material-ui/icons/CheckBoxOutlineBlank";
+import MarkAllAsReadIcon from "@material-ui/icons/LibraryAddCheck";
+import MarkALlNonClusterAsReadIcon from "@material-ui/icons/PlaylistAddCheck";
+import MenuOpenIcon from "@material-ui/icons/MenuOpen";
 import SettingsIcon from "@material-ui/icons/Settings";
+import ExitToAppIcon from "@material-ui/icons/ExitToApp";
 // jarr
 import topMenuStyle from "./topMenuStyle";
 import { doLogout } from "../login/userSlice";

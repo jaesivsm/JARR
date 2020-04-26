@@ -23,7 +23,7 @@ __returned_keys = ('main_title', 'id', 'liked', 'read', 'main_article_id',
                    'main_feed_title', 'main_date', 'main_link')
 JR_FIELDS = {key: getattr(Cluster, key) for key in __returned_keys}
 JR_SQLA_FIELDS = [getattr(Cluster, key) for key in __returned_keys]
-JR_PAGE_LENGTH = 20
+JR_PAGE_LENGTH = 30
 
 
 def _get_parent_attr(obj, attr):
@@ -230,14 +230,14 @@ class ClusterController(AbstractController):
             yield row
 
     def _light_no_filter_query(self, processed_filters,
-                               offset=0, limit=JR_PAGE_LENGTH):
+                               limit=JR_PAGE_LENGTH):
         """If there's no filter to shorten the query (eg we're just selecting
         all feed with no category) we make a request more adapted to the task.
         """
         sub_query = session.query(*JR_SQLA_FIELDS)\
                            .filter(*processed_filters)\
                            .order_by(Cluster.main_date.desc())\
-                           .offset(offset).limit(limit).cte('clu')
+                           .limit(limit).cte('clu')
 
         aggreg_feed = func.array_agg(Article.feed_id).label('feeds_id')
         aggreg_cat = func.array_agg(Article.category_id).label('categories_id')
@@ -247,8 +247,7 @@ class ClusterController(AbstractController):
         yield from self._iter_on_query(query.group_by(*sub_query.c)
                 .order_by(sub_query.c.main_date.desc()))
 
-    def join_read(self, feed_id=None, offset=0, limit=JR_PAGE_LENGTH,
-                  **filters):
+    def join_read(self, feed_id=None, **filters):
         filter_on_cat = 'category_id' in filters
         cat_id = filters.pop('category_id', None)
         if self.user_id:
@@ -263,7 +262,7 @@ class ClusterController(AbstractController):
         if feed_id is None and not filter_on_cat:
             # no filter with an interesting index to use, using another query
             yield from self._light_no_filter_query(processed_filters,
-                                                   offset, limit)
+                                                   JR_PAGE_LENGTH)
             return
 
         art_feed_alias, art_cat_alias = aliased(Article), aliased(Article)
@@ -294,7 +293,7 @@ class ClusterController(AbstractController):
         yield from self._iter_on_query(
                 query.group_by(*JR_SQLA_FIELDS).filter(*processed_filters)
                      .order_by(Cluster.main_date.desc())
-                     .offset(offset).limit(limit))
+                     .limit(JR_PAGE_LENGTH))
 
     def delete(self, obj_id, delete_articles=True):
         self.update({'id': obj_id}, {'main_article_id': None}, commit=False)
