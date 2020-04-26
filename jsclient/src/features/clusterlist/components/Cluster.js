@@ -101,6 +101,8 @@ function Cluster({ cluster,
              + (cluster.read ? "r" : "")
              + (cluster.liked ? "l" : "")
              + cluster.id}
+        onChange={(e) => handleClickOnPanel(e, cluster,
+                                            unreadOnClose, expanded)}
       >
         <ExpansionPanelSummary
           expandIcon={splitedMode? <ChevronRight /> : <ExpandMoreIcon />}
