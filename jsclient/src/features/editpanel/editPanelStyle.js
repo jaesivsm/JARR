@@ -61,7 +61,32 @@ export default makeStyles((theme: Theme) =>
     editPanelBtn: {
       marginTop: 20,
       marginBottom: 20
+    },
+    editPanelCluster: {
+      marginBottom: 30
+    },
+    editPanelClusterHeader: {
+
+    }, 
+    editPanelClusterSettings: {
+      display: 'flex',
+      flexDirection: 'column'
+    },
+    editPanelClusterCtrl: {
+      justifyContent: 'space-between',
+      flexDirection: 'row'
+    },
+    editPanelClusterSelect: {
+      marginBottom: 10, 
+      marginTop: '0 !important',     
+    },
+    editPanelClusterLabel: {
+      textAlign: 'left',
+      display: 'block',
+      paddingTop: 10,
+      position: 'relative',
+      transformOrigin: 'top left',
+      width: '100%'
     }
-    
   }),
 );
