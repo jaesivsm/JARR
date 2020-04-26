@@ -6,6 +6,7 @@ import { doRetryOnTokenExpiration } from "../login/userSlice";
 const clusterSlice = createSlice({
   name: "cluster",
   initialState: { filters: { },
+                  requestedFilter: "",
                   loading: false,
                   clusters: [],
                   requestedClusterId: null,
@@ -20,7 +21,6 @@ const clusterSlice = createSlice({
       }
       if (action.payload.filters.feedId) {
         filters["feed_id"] = action.payload.filters.feedId;
-
       } else if (action.payload.filters.categoryId) {
         if (action.payload.filters.categoryId !== "all" ) {
           filters["category_id"] = action.payload.filters.categoryId;
@@ -34,9 +34,15 @@ const clusterSlice = createSlice({
       } else if (action.payload.filters.filter === null) {
         delete filters.filter;
       }
-      return { ...state, filters, loading: true, clusters: [] };
+      return { ...state, filters, loading: true, clusters: [],
+               requestedFilter: qs.stringify(filters),
+      };
     },
     retrievedClustersList(state, action) {
+      if (action.payload.requestedFilter !== state.requestedFilter) {
+        // dispatch from an earlier request that has been ignored
+        return state;  // ignoring
+      }
       return { ...state, loading: false,
                clusters: action.payload.clusters };
     },
@@ -47,6 +53,9 @@ const clusterSlice = createSlice({
       };
     },
     retrievedCluster(state, action) {
+      if (state.requestedClusterId !== action.cluster.id) {
+        return state; // not the object that was asked for last, ignoring
+      }
       return { ...state,
                // marking retrived cluster as read
                clusters: state.clusters.map((cluster) => {
@@ -91,12 +100,12 @@ export default clusterSlice.reducer;
 
 export const doListClusters = (filters): AppThunk => async (dispatch, getState) => {
   dispatch(requestedClustersList({ filters }));
-  const params = qs.stringify(getState().clusters.filters);
+  const requestedFilter = getState().clusters.requestedFilter;
   const result = await doRetryOnTokenExpiration({
     method: "get",
-    url: apiUrl + "/clusters?" + params,
+    url: apiUrl + "/clusters?" + requestedFilter,
   }, dispatch, getState);
-  dispatch(retrievedClustersList({ clusters: result.data }));
+  dispatch(retrievedClustersList({ requestedFilter, clusters: result.data }));
 };
 
 export const doFetchCluster = (clusterId): AppThunk => async (dispatch, getState) => {

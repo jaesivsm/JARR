@@ -28,6 +28,10 @@ const editSlice = createSlice({
       };
     },
     loadedObjToEdit(state, action) {
+      if (state.objId !== action.payload.data.id) {
+        // not the object that was asked for last, ignoring
+        return state;
+      }
       return { ...state, isOpen: true, job: "edit",
                loadedObj: action.payload.data, };
     },
