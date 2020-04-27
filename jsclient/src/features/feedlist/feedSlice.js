@@ -1,6 +1,6 @@
 import qs from "qs";
 import { createSlice } from "@reduxjs/toolkit";
-import { doRetryOnTokenExpiration } from "../login/userSlice";
+import { doRetryOnTokenExpiration } from "../../authSlice";
 import { apiUrl } from "../../const";
 import { storageGet, storageSet } from "../../storageUtils";
 

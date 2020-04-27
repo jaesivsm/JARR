@@ -5,7 +5,7 @@ from jarr.api.common import parse_meaningful_params, set_model_n_parser
 from jarr.controllers import UserController
 
 user_ns = Namespace('user', description="User related operations (update, "
-        "delete and password management)")
+                                        "delete and password management)")
 user_model = user_ns.model('User', {})
 user_parser = user_ns.parser()
 set_model_n_parser(user_model, user_parser, 'login', str, nullable=False)
@@ -13,21 +13,24 @@ set_model_n_parser(user_model, user_parser, 'email', str, nullable=False)
 set_model_n_parser(user_model, user_parser, 'timezone', str, nullable=False)
 suffix = "(if the article feed's and category's settings allows it)"
 set_model_n_parser(user_model, user_parser, 'cluster_enabled', bool,
-        nullable=False,
-        description="will allow article in your feeds and categories to be "
-                    "clusterized" + suffix)
+                   nullable=False,
+                   description="will allow article in your feeds and "
+                               "categories to be clusterized" + suffix)
 set_model_n_parser(user_model, user_parser, 'cluster_tfidf_enabled', bool,
-        nullable=False,
-        description="will allow article in your feeds and categories to be "
-                    "clusterized through document comparison" + suffix)
+                   nullable=False,
+                   description="will allow article in your feeds and "
+                               "categories to be clusterized through "
+                               "document comparison" + suffix)
 set_model_n_parser(user_model, user_parser, 'cluster_same_category', bool,
-        nullable=False,
-        description="will allow article in your feeds and categories to be "
-                    "clusterized while beloning to the same category" + suffix)
+                   nullable=False,
+                   description="will allow article in your feeds and "
+                               "categories to be clusterized while beloning to"
+                               " the same category" + suffix)
 set_model_n_parser(user_model, user_parser, 'cluster_same_feed', bool,
-        nullable=False,
-        description="will allow article in your feeds and categories to be "
-                    "clusterized while beloning to the same feed" + suffix)
+                   nullable=False,
+                   description="will allow article in your feeds and "
+                               "categories to be clusterized while beloning to"
+                               " the same feed" + suffix)
 user_parser.add_argument('password', type=str, nullable=False)
 
 
@@ -42,6 +45,13 @@ class UserResource(Resource):
     def get():
         user = UserController(current_identity.id).get(id=current_identity.id)
         return user, 200
+
+    @staticmethod
+    @user_ns.response(201, 'Created', model=user_model)
+    @user_ns.marshal_with(user_model)
+    def post():
+        attrs = parse_meaningful_params(user_parser)
+        return UserController().create(**attrs), 201
 
     @staticmethod
     @user_ns.expect(user_parser)

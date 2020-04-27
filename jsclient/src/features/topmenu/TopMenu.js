@@ -16,12 +16,11 @@ import FilterAllIcon from "@material-ui/icons/IndeterminateCheckBox";
 import FilterUnreadIcon from "@material-ui/icons/CheckBoxOutlineBlank";
 import MarkAllAsReadIcon from "@material-ui/icons/LibraryAddCheck";
 import MarkALlNonClusterAsReadIcon from "@material-ui/icons/PlaylistAddCheck";
-import MenuOpenIcon from "@material-ui/icons/MenuOpen";
 import SettingsIcon from "@material-ui/icons/Settings";
 import ExitToAppIcon from "@material-ui/icons/ExitToApp";
 // jarr
 import topMenuStyle from "./topMenuStyle";
-import { doLogout } from "../login/userSlice";
+import { doLogout } from "../../authSlice";
 import { toggleMenu, doMarkAllAsRead } from "../feedlist/feedSlice";
 import { doListClusters, markedAllAsRead } from "../clusterlist/clusterSlice";
 import { doFetchObjForEdit } from "../editpanel/editSlice";

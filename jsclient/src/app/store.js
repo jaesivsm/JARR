@@ -1,13 +1,15 @@
 import { configureStore, Action } from "@reduxjs/toolkit";
 import thunk, { ThunkAction }from "redux-thunk";
-import userReducer from "../features/login/userSlice";
+import authReducer from "../authSlice";
+import noAuthReducer from "../features/noauth/noAuthSlice";
 import feedsReducer from "../features/feedlist/feedSlice";
 import clustersReducer from "../features/clusterlist/clusterSlice";
 import editReducer from "../features/editpanel/editSlice";
 
 export default configureStore({
   reducer: {
-    login: userReducer,
+    auth: authReducer,
+    noauth: noAuthReducer,
     feeds: feedsReducer,
     clusters: clustersReducer,
     edit: editReducer,
