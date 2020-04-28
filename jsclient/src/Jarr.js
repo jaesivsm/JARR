@@ -1,6 +1,7 @@
 import React from "react";
 import PropTypes from "prop-types";
 import { connect } from "react-redux";
+import { BrowserRouter } from "react-router-dom";
 
 import CssBaseline from "@material-ui/core/CssBaseline";
 
@@ -19,10 +20,12 @@ function Jarr({ isLogged, isLeftMenuOpen }) {
   const classes = useStyles();
   if (!isLogged) {
     return (
-       <div className={classes.root}>
-         <CssBaseline />
-         <NoAuth />;
-       </div>
+      <BrowserRouter>
+        <div className={classes.root}>
+          <CssBaseline />
+          <NoAuth />
+        </div>
+      </BrowserRouter>
     );
   }
   return (

@@ -3,26 +3,25 @@ import { createSlice } from "@reduxjs/toolkit";
 import { apiUrl } from "../../const";
 import { attemptLogin, tokenAcquired, loginFailed } from "../../authSlice";
 
+const INITIAL_STATE = { loading: false,
+                        loginError: null,
+                        passwordError: null,
+                        creationError: null,
+                        recovery: null,
+};
+
 const noAuthSlice = createSlice({
   name: "noauth",
-  initialState: { loading: false,
-                  loginError: null,
-                  passwordError: null,
-                  creationError: null,
-  },
+  initialState: { ...INITIAL_STATE },
   reducers: {
     requestSent(state, action) {
       return { ...state, loading: true };
     },
     responseRecieved(state, action) {
-      return { ...state, loading: false };
+      return { ...INITIAL_STATE, ...action.payload };
     },
     authError(state, action) {
-      state =  { loading: false,
-                 loginError: null,
-                 passwordError: null,
-                 creationError: null,
-      };
+      state = { ...INITIAL_STATE };
       if (action.payload.statusText === "CONFLICT") {
         state.creationError = "Already in use. Please choose another login.";
       } else if (action.payload.statusText === "FORBIDDEN") {
@@ -84,4 +83,41 @@ export const doSignUp = (
   } catch (err) {
     return dispatch(authError(err.response));
   }
-}
+};
+
+export const doInitRecovery = (
+  login: string,
+  email: string,
+): AppThunk => async (dispatch) => {
+  dispatch(requestSent());
+  try {
+    const result = await axios({
+      method: 'post',
+      url: apiUrl + '/auth/recovery',
+      data: { login, email },
+    });
+    return dispatch(responseRecieved({ recovery: result }));
+  } catch (err) {
+    return dispatch(responseRecieved({ recovery: err.response }));
+  }
+};
+
+export const doRecovery = (
+  login: string,
+  email: string,
+  token: string,
+  password: string
+): AppThunk => async (dispatch) => {
+  dispatch(requestSent());
+  try {
+    await axios({
+      method: 'put',
+      url: apiUrl + '/auth/recovery',
+      data: { login, email, token, password },
+    });
+    dispatch(responseRecieved());
+    return dispatch(attemptLogin({ login, password }));
+  } catch (err) {
+    return dispatch(responseRecieved({ recovery: err.response }));
+  }
+};

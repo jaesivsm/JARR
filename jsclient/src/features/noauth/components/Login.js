@@ -30,6 +30,7 @@ function Login({ isLoading, loginError, passwordError, logIn }) {
     <form autoComplete="off" onSubmit={logIn}>
       <Grid item>
         <TextField required id="jarr-login" label="Login"
+          className={classes.loginInput}
           disabled={isLoading}
           error={!!loginError}
           helperText={loginError}
@@ -37,6 +38,7 @@ function Login({ isLoading, loginError, passwordError, logIn }) {
       </Grid>
       <Grid item>
         <TextField required id="jarr-password" label="Password" type="password"
+          className={classes.loginInput}
           disabled={isLoading}
           error={!!passwordError}
           helperText={passwordError}

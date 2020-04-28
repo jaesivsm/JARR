@@ -39,10 +39,9 @@ export function fillMissingClusterOption(obj, level, def=null) {
 }
 
 function ClusterSettings({ state, level, setState }) {
-  
+
   const getHandleChange = (key) => (e, newVal) => {
     setState({ ...state, [key]: e.target.value});
-    console.log(e.target.value);
   }
 
   const classes = editPanelStyle();
@@ -60,11 +59,11 @@ function ClusterSettings({ state, level, setState }) {
         {Object.keys(clusteringConfOptions)
                .filter(filterOption(level))
                .map((opt) => (
-          <FormControl key={opt} className={classes.editPanelClusterCtrl}> 
+          <FormControl key={opt} className={classes.editPanelClusterCtrl}>
             <InputLabel id={`${'label-'+opt}`} className={classes.editPanelClusterLabel}>{clusteringConfOptions[opt].label}</InputLabel>
-            <Select labelId={`${'label-'+opt}`} id={`${'select-'+opt}`} 
+            <Select labelId={`${'label-'+opt}`} id={`${'select-'+opt}`}
               className={classes.editPanelClusterSelect}
-              value={`${state[opt] === null && level === 'user' ? true : state[opt]}`} 
+              value={`${state[opt] === null && level === 'user' ? true : state[opt]}`}
               onChange={getHandleChange(opt)}>
               {level !== 'user' ? <MenuItem value={null}>Default from parent</MenuItem> : null }
               <MenuItem value={true}>Activated</MenuItem>

@@ -247,7 +247,7 @@ class ClusterController(AbstractController):
         yield from self._iter_on_query(query.group_by(*sub_query.c)
                 .order_by(sub_query.c.main_date.desc()))
 
-    def join_read(self, feed_id=None, **filters):
+    def join_read(self, feed_id=None, limit=JR_PAGE_LENGTH, **filters):
         filter_on_cat = 'category_id' in filters
         cat_id = filters.pop('category_id', None)
         if self.user_id:
@@ -293,7 +293,7 @@ class ClusterController(AbstractController):
         yield from self._iter_on_query(
                 query.group_by(*JR_SQLA_FIELDS).filter(*processed_filters)
                      .order_by(Cluster.main_date.desc())
-                     .limit(JR_PAGE_LENGTH))
+                     .limit(limit))
 
     def delete(self, obj_id, delete_articles=True):
         self.update({'id': obj_id}, {'main_article_id': None}, commit=False)

@@ -11,7 +11,6 @@ function Articles({ articles, icons }) {
   const [currentIndex, setCurrentIndex] = useState(0)
   const classes = makeStyles();
   const isOnlyOneTitle = [...new Set(articles.map((a) => a.title))].length === 1;
-    console.log(articles);
   return (
     <>
       <Tabs indicatorColor="primary" textColor="primary"

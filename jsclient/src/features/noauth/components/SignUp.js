@@ -5,6 +5,9 @@ import { connect } from "react-redux";
 import Grid from "@material-ui/core/Grid";
 import TextField from "@material-ui/core/TextField";
 import Button from "@material-ui/core/Button";
+import IconButton from "@material-ui/core/IconButton";
+import VisibilityIcon from "@material-ui/icons/Visibility";
+import VisibilityOffIcon from "@material-ui/icons/VisibilityOff";
 // jarr
 import { doSignUp } from "../noAuthSlice";
 import makeStyles from "./style";
@@ -23,47 +26,51 @@ const mapDispatchToProps = (dispatch) => ({
 
 function SignUp({ isLoading, error, signUp }) {
   const classes = makeStyles();
-  const [formData, setFormData] = useState({
-    login: "test", password: "test",
-    passwordConf: "test", email: "test@test.com",
+  const [formData, setFormData] = useState({ login: "", password: "",
+                                             passwordConf: "", email: "",
   });
   const passwdNoMatch = formData.password !== formData.passwordConf;
+  const [pwdType, setPwdType] = useState("password");
   return (
     <form autoComplete="off" onSubmit={(e) => signUp(e, formData)}>
       <Grid item>
         <TextField required label="Login"
           variant="outlined"
-          value="test"
+          className={classes.loginInput}
           disabled={isLoading}
           error={!!error}
           helperText={error}
           onChange={(e) => setFormData({ ...formData, login: e.target.value })}
         />
       </Grid>
-      <Grid item>
-        <TextField required label="Password" type="password"
+      <Grid item className={classes.passwordGridInput}>
+        <TextField required label="Password" type={pwdType}
           variant="outlined"
-          value="test"
           disabled={isLoading} error={passwdNoMatch}
           helperText={passwdNoMatch ? "Passwords don't match !" : ""}
           onChange={(e) => setFormData({ ...formData, password: e.target.value })}
         />
+        <IconButton variant="contained"
+          onClick={() => setPwdType(pwdType === "text" ? "password": "text")}>
+          {pwdType === "text" ? <VisibilityOffIcon /> : <VisibilityIcon />}
+        </IconButton>
       </Grid>
       <Grid item>
-        <TextField required label="Password confirmation" type="password"
+        <TextField required label="Password confirmation" type={pwdType}
           variant="outlined"
-          value="test"
+          className={classes.loginInput}
           disabled={isLoading} error={passwdNoMatch}
-          helperText={passwdNoMatch ? "Passwords don't match !" : ""}
+          helperText={passwdNoMatch ? "Should match above !" : ""}
           onChange={(e) => setFormData({ ...formData, passwordConf: e.target.value })}
         />
       </Grid>
       <Grid item>
         <TextField label="Email" type="email"
+          className={classes.loginInput}
           variant="outlined"
-          value="test@test.com"
           disabled={isLoading}
           onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+          helperText="Not required, but useful for password recovery"
         />
       </Grid>
       <Grid item className={classes.loginButton}>

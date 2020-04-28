@@ -1,0 +1,59 @@
+import React, { useState } from "react";
+import PropTypes from "prop-types";
+import { connect } from "react-redux";
+// material ui components
+import Grid from "@material-ui/core/Grid";
+import TextField from "@material-ui/core/TextField";
+import Button from "@material-ui/core/Button";
+// jarr
+import { doInitRecovery } from "../noAuthSlice";
+import makeStyles from "./style";
+
+function mapStateToProps(state) {
+  return { isLoading: state.noauth.loading };
+}
+
+const mapDispatchToProps = (dispatch) => ({
+  initRecovery(e, login, email) {
+    e.preventDefault();
+    return dispatch(doInitRecovery(login, email));
+  },
+});
+
+function PasswordRecover({ isLoading, initRecovery }) {
+  const classes = makeStyles();
+  const [login, setLogin] = useState("");
+  const [email, setEmail] = useState("");
+  return (
+    <form autoComplete="off" onSubmit={(e) => {
+        initRecovery(e, login, email);
+    }}>
+      <Grid item>
+        <TextField label="Login" type="text" variant="outlined"
+          className={classes.loginInput}
+          disabled={isLoading}
+          onChange={(e) => setLogin(e.target.value)}
+        />
+      </Grid>
+      <Grid item>
+        <TextField label="Email" type="email" variant="outlined"
+          className={classes.loginInput}
+          disabled={isLoading}
+          onChange={(e) => setEmail(e.target.value)}
+        />
+      </Grid>
+      <Grid item className={classes.loginButton}>
+        <Button variant="contained" type="submit">
+          Genereate Recovery Token
+        </Button>
+      </Grid>
+    </form>
+  );
+}
+
+PasswordRecover.propTypes = {
+  isLoading: PropTypes.bool.isRequired,
+  initRecovery: PropTypes.func.isRequired,
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(PasswordRecover);
