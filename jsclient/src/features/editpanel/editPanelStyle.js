@@ -4,7 +4,7 @@ import { editPanelWidth } from "../../const";
 export default makeStyles((theme: Theme) =>
   createStyles({
     editPanel: {
-      width: editPanelWidth,
+      maxWidth: editPanelWidth,
       flexShrink: 0,
     },
     editPanelPaper: {

@@ -29,10 +29,12 @@ function Article({ article, hidden }) {
       </p>
       {comments}
       <Divider />
-      <Typography
-        hidden={!!hidden}
-        dangerouslySetInnerHTML={{__html: article.content}}
-      />
+      <div className={classes.articleInner}>
+        <Typography
+          hidden={!!hidden}
+          dangerouslySetInnerHTML={{__html: article.content}}
+        />
+        </div>
     </div>
   );
 }
