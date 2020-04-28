@@ -7,6 +7,7 @@ export default makeStyles((theme: Theme) =>
       maxWidth: "100%",
     },
     article: {
+      padding: '16px', 
       "& p": {
         maxWidth: 800,
         "& span": {
@@ -14,6 +15,9 @@ export default makeStyles((theme: Theme) =>
           fontStyle: "bold",
         },
       },
+      '& img': {
+        maxWidth: '100%'
+      }
     },
     summary: {
       padding: 0,
@@ -73,7 +77,6 @@ export default makeStyles((theme: Theme) =>
     main: {
       flexGrow: 1,
       paddingTop: 64+ theme.spacing(2),
-      padding: theme.spacing(2),
       transition: theme.transitions.create("margin", {
         easing: theme.transitions.easing.sharp,
         duration: theme.transitions.duration.leavingScreen,
@@ -98,6 +101,12 @@ export default makeStyles((theme: Theme) =>
       display: "block",
       width: "45%",
     },
+    clusterListInner: {
+      maxHeight: 'calc(100vh - (64px + 32px))',
+      maxWidth: '100%',
+      overflow: 'auto',
+      padding: '0 16px'
+    },
     clusterListShifted: {
       display: "block",
       width: "40%",
@@ -106,10 +115,15 @@ export default makeStyles((theme: Theme) =>
       display: "block",
       width: "55%",
       marginLeft: theme.spacing(2),
-      padding: theme.spacing(2),
-      '& *': {
+      marginRight: theme.spacing(2),
+      /* '& *': {
         maxWidth: "97%",
-      },
+      }, */
+    },
+    contentPanelInner: {
+      maxHeight: 'calc(100vh - (64px + 32px))',
+      maxWidth: '100%',
+      overflow: 'auto',
     },
     contentPanelShifted: {
       display: "block",

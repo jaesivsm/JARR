@@ -130,14 +130,18 @@ function ClusterList({ clusters, filters, loadedCluster,
   return (
     <main className={contentClassName}>
       <div className={clsx(classes.clusterList,
-                           {[classes.clusterListShifted]: isShifted,})}>
-        {card}
-        {list}
-        {loadMoreButton}
+                          {[classes.clusterListShifted]: isShifted,})}>
+        <div className={classes.clusterListInner}>
+          {card}
+          {list}
+          {loadMoreButton}
+        </div>
       </div>
       <Paper className={clsx(classes.contentPanel,
                            {[classes.contentPanelShifted]: isShifted,})}>
+        <div className={classes.contentPanelInner}>
          <Content clusterId={loadedCluster.id} />
+        </div>
       </Paper>
     </main>
   );
