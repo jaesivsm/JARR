@@ -68,7 +68,7 @@ class InitPasswordRecovery(Resource):
                                           {"renew_password_token": token})
         if not changed:
             raise BadRequest("No user with %r was found" % attrs)
-        BASE_PATH = '%s/autb/recovery/%s/%s/%s'
+        BASE_PATH = '%s/auth/recovery/%s/%s/%s'
         split = urlsplit(conf.app.url)
         split = SplitResult(scheme=split.scheme,
                             netloc=split.netloc,
