@@ -10,12 +10,14 @@ import CircularProgress from "@material-ui/core/CircularProgress";
 import IconButton from "@material-ui/core/IconButton";
 import Close from "@material-ui/icons/Close";
 // jarr
+import { apiUrl } from "../../const";
 import { doLogin, responseRecieved } from "./noAuthSlice";
 import makeStyles from "./components/style";
 import Login from "./components/Login";
 import SignUp from "./components/SignUp";
 import InitPasswordRecovery from "./components/InitPasswordRecovery";
 import PasswordRecovery from "./components/PasswordRecovery";
+import OAuthLogin from "./components/OAuthLogin";
 
 function mapStateToProps(state) {
   return { isLoading: state.noauth.loading,
@@ -63,6 +65,14 @@ function NoAuth({ isLoading, noToken, savedLogin, savedPassword, recovery, hidde
     form = <Login isLoading={isLoading} />;
     footer = (
       <>
+        <Divider />
+        <Grid item className={classes.loginButton}>
+          <form method="get" action={apiUrl + "/oauth/google"}>
+            <Button variant="contained" type="submit" color="secondary">
+              Login with Google
+            </Button>
+          </form>
+        </Grid>
         <Divider />
         <Grid item className={classes.loginButton}>
           <div>No account ?</div>
@@ -123,6 +133,9 @@ function NoAuth({ isLoading, noToken, savedLogin, savedPassword, recovery, hidde
           <PasswordRecovery />
           {recovery === "NOT FOUND" ? <Grid item>Could not find your user</Grid> : null}
           {recovery === "FORBIDDEN" ? <Grid item>Password NOT updated, token is expired. Please generate a new one.</Grid>: null}
+        </Route>
+        <Route path="/oauth/:provider">
+          <OAuthLogin />
         </Route>
         <Route path="/">
           {header}

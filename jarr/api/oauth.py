@@ -1,12 +1,14 @@
 import json
-from flask import url_for, session, current_app
+
+from flask import current_app, session
 from flask_restx import Namespace, Resource
-from werkzeug.exceptions import BadRequest, NotFound, UnprocessableEntity
 from rauth import OAuth1Service, OAuth2Service
+from werkzeug.exceptions import BadRequest, NotFound, UnprocessableEntity
+
+from jarr.api.auth import model
+from jarr.api.common import get_ui_url
 from jarr.bootstrap import conf
 from jarr.controllers import UserController
-from jarr.api.auth import model
-
 
 oauth_ns = Namespace('oauth', description="OAuth related operations")
 oauth_callback_parser = oauth_ns.parser()
@@ -37,7 +39,7 @@ class OAuthSignInMixin(Resource):  # pragma: no cover
 
     @classmethod
     def get_callback_url(cls):
-        return url_for('oauth_%s_callback' % cls.provider, _external=True)
+        return get_ui_url("/oauth/%s" % cls.provider)
 
     @classmethod
     def process_ids(cls, social_id, username, email):  # pragma: no cover
@@ -51,13 +53,16 @@ class OAuthSignInMixin(Resource):  # pragma: no cover
         if not user and not conf.oauth.allow_signup:
             BadRequest('Account creation is not allowed through OAuth.')
         elif not user:
+            if username and not ucontr.read(login=username).count():
+                login = username
+            else:
+                login = '%s_%s' % (cls.provider, username or social_id)
             user = ucontr.create(**{'%s_identity' % cls.provider: social_id,
-                                    'login': '%s_%s' % (cls.provider,
-                                                        username or social_id),
-                                    'email': email})
+                                    'login': login, 'email': email})
         jwt_ext = current_app.extensions['jwt']
         access_token = jwt_ext.jwt_encode_callback(user).decode('utf8')
-        return {'access_token': access_token}
+        return {"access_token": "%s %s" % (conf.auth.jwt_header_prefix,
+                                           access_token)}, 200
 
 
 class GoogleSignInMixin(OAuthSignInMixin):
@@ -67,7 +72,7 @@ class GoogleSignInMixin(OAuthSignInMixin):
     authorize_url = 'https://accounts.google.com/o/oauth2/auth'
 
 
-@oauth_ns.route('/authorize/google')
+@oauth_ns.route('/google')
 class GoogleAuthorizeUrl(GoogleSignInMixin):
 
     @oauth_ns.response(301, 'Redirect to provider authorize URL')
@@ -85,7 +90,7 @@ class GoogleCallback(GoogleSignInMixin):
     @oauth_ns.response(400, "Identification ended up creating an account "
                             "and current configuration doesn't allow it")
     @oauth_ns.response(422, "Auth provider didn't send identity")
-    def get(self):
+    def post(self):
         code = oauth_callback_parser.parse_args()['code']
         oauth_session = self.service.get_auth_session(
                 data={'code': code,
@@ -134,7 +139,7 @@ class TwitterCallback(TwitterSignInMixin):
     @oauth_ns.response(400, "Identification ended up creating an account "
                             "and current configuration doesn't allow it")
     @oauth_ns.response(422, "Auth provider didn't send identity")
-    def get(self):
+    def post(self):
         oauth_verifier = oauth_callback_parser.parse_args()['oauth_verifier']
         request_token = session.pop('request_token')
         oauth_session = self.service.get_auth_session(
@@ -173,7 +178,7 @@ class FacebookCallback(FacebookSignInMixin):
     @oauth_ns.response(400, "Identification ended up creating an account "
                             "and current configuration doesn't allow it")
     @oauth_ns.response(422, "Auth provider didn't send identity")
-    def get(self):
+    def post(self):
         code = oauth_callback_parser.parse_args()['code']
         oauth_session = self.service.get_auth_session(
                 data={'code': code,
@@ -213,7 +218,7 @@ class LinuxfrCallback(LinuxFrSignInMixin):
     @oauth_ns.response(400, "Identification ended up creating an account "
                             "and current configuration doesn't allow it")
     @oauth_ns.response(422, "Auth provider didn't send identity")
-    def get(self):
+    def post(self):
         code = oauth_callback_parser.parse_args()['code']
         oauth_session = self.service.get_auth_session(
                 data={'code': code,

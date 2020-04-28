@@ -1,10 +1,11 @@
 import random
-from urllib.parse import SplitResult, urlsplit, urlunsplit
 
 from flask import current_app, render_template
+from flask_jwt import current_identity, jwt_required
 from flask_restx import Namespace, Resource, fields
 from werkzeug.exceptions import BadRequest, Forbidden
 
+from jarr.api.common import get_ui_url
 from jarr.bootstrap import conf
 from jarr.controllers import UserController
 from jarr.lib import emails
@@ -16,8 +17,8 @@ model = auth_ns.model("Login", {
                                               "in the Authorization header"),
 })
 login_parser = auth_ns.parser()
-login_parser.add_argument("login", type=str, required=True)
-login_parser.add_argument("password", type=str, required=True)
+login_parser.add_argument("login", type=str)
+login_parser.add_argument("password", type=str)
 login_init_recovery_parser = auth_ns.parser()
 login_init_recovery_parser.add_argument("login", type=str, required=True)
 login_init_recovery_parser.add_argument("email", type=str, required=True)
@@ -41,12 +42,30 @@ class LoginResource(Resource):
         user = jwt.authentication_callback(attrs["login"], attrs["password"])
         if not user:
             raise Forbidden()
-        access_token = jwt.jwt_encode_callback(user)
+        access_token = jwt.jwt_encode_callback(user).decode("utf8")
         UserController(user.id).update({"id": user.id},
                                        {"last_connection": utc_now(),
                                         "renew_password_token": ""})
         return {"access_token": "%s %s" % (conf.auth.jwt_header_prefix,
-                                           access_token.decode("utf8"))}, 200
+                                           access_token)}, 200
+
+
+@auth_ns.route("/refresh")
+class Refresh(Resource):
+
+    @staticmethod
+    @auth_ns.response(200, "OK", model=model)
+    @auth_ns.response(403, "Forbidden")
+    @jwt_required()
+    def get():
+        """Given valid credentials, will provide a token to request the API."""
+        jwt = current_app.extensions["jwt"]
+        user = UserController(current_identity.id).get(id=current_identity.id)
+        access_token = jwt.jwt_encode_callback(user).decode("utf8")
+        return {"access_token": "%s %s" % (conf.auth.jwt_header_prefix,
+                                           access_token)}, 200
+
+
 
 
 @auth_ns.route("/recovery")
@@ -68,17 +87,13 @@ class InitPasswordRecovery(Resource):
                                           {"renew_password_token": token})
         if not changed:
             raise BadRequest("No user with %r was found" % attrs)
-        BASE_PATH = '%s/auth/recovery/%s/%s/%s'
-        split = urlsplit(conf.app.url)
-        split = SplitResult(scheme=split.scheme,
-                            netloc=split.netloc,
-                            path=BASE_PATH % (split.path, attrs["login"],
-                                              attrs["email"], token),
-                            query=split.query, fragment=split.fragment)
+        BASE_PATH = 'auth/recovery/%s/%s/%s'
+        landing_url = get_ui_url(BASE_PATH % (attrs["login"],
+                                              attrs["email"], token))
 
         plaintext = render_template("mail_password_recovery.txt",
                                     plateform=conf.app.url,
-                                    landing_url=urlunsplit(split))
+                                    landing_url=landing_url)
         emails.send(to=attrs["email"], bcc=conf.notification.email,
                     subject="[jarr] Password renew", plaintext=plaintext)
         return None, 204

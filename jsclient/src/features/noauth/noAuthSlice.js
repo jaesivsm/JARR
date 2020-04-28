@@ -28,6 +28,8 @@ const noAuthSlice = createSlice({
         state.passwordError = "Wrong password.";
       } else if (action.payload.statusText === "NOT FOUND") {
         state.loginError = "User does not exist.";
+      } else if (action.payload.statusText === "EXPIRED") {
+        state.loginError = "Your session has expired, please log in again"
       } else {
         state.loginError = "Unknown error.";
         state.creationError = "Unknown error.";
@@ -120,4 +122,19 @@ export const doRecovery = (
   } catch (err) {
     return dispatch(responseRecieved({ recovery: err.response }));
   }
+};
+
+export const doValidOAuth = (code): AppThunk => async (dispatch) => {
+  try {
+    const result = await axios({
+      method: "post",
+      url: apiUrl + "/oauth/callback/google",
+      data: { code },
+    });
+    dispatch(responseRecieved());
+    dispatch(tokenAcquired(result));
+  } catch (err) {
+    dispatch(authError(err.response));
+  }
+  window.location.href = "/";
 };

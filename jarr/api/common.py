@@ -1,7 +1,10 @@
 import logging
 from enum import Enum
+from urllib.parse import SplitResult, urlsplit, urlunsplit
 
 from flask_restx import fields
+
+from jarr.bootstrap import conf
 
 logger = logging.getLogger(__name__)
 
@@ -32,3 +35,12 @@ def parse_meaningful_params(parser):
     nullable_keys = {arg.name for arg in parser.args if arg.nullable}
     return {key: value for key, value in parser.parse_args().items()
             if value is not None or key in nullable_keys}
+
+
+def get_ui_url(path_extention):
+    split = urlsplit(conf.app.url)
+    split = SplitResult(scheme=split.scheme,
+                        netloc=split.netloc,
+                        path=split.path + path_extention,
+                        query=split.query, fragment=split.fragment)
+    return urlunsplit(split)
