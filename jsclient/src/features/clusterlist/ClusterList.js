@@ -134,7 +134,9 @@ function ClusterList({ clusters, filters, loadedCluster,
         <div className={classes.clusterListInner}>
           {card}
           {list}
-          {loadMoreButton}
+          <div className={classes.clusterLoadMore}>
+            {loadMoreButton}
+          </div>
         </div>
       </div>
       <Paper className={clsx(classes.contentPanel,

@@ -7,7 +7,7 @@ export default makeStyles((theme: Theme) =>
       maxWidth: "100%",
     },
     article: {
-      padding: '16px', 
+      overflowX: 'hidden',
       "& p": {
         maxWidth: 800,
         "& span": {
@@ -104,12 +104,18 @@ export default makeStyles((theme: Theme) =>
     clusterListInner: {
       maxHeight: 'calc(100vh - (64px + 32px))',
       maxWidth: '100%',
-      overflow: 'auto',
+      overflowY: 'auto',
+      overflowX: 'hidden',
       padding: '0 16px'
     },
     clusterListShifted: {
       display: "block",
       width: "40%",
+    },
+    clusterLoadMore: {
+      width: '100%',
+      textAlign: 'center',
+      padding: '20px 0',
     },
     contentPanel: {
       display: "block",
@@ -123,11 +129,15 @@ export default makeStyles((theme: Theme) =>
     contentPanelInner: {
       maxHeight: 'calc(100vh - (64px + 32px))',
       maxWidth: '100%',
-      overflow: 'auto',
+      overflowY: 'auto',
+      overflowX: 'hidden',
+      padding: '16px', 
     },
     contentPanelShifted: {
       display: "block",
       width: "60%",
+      overflowY: 'auto',
+      overflowX: 'hidden',
     },
   })
 );
