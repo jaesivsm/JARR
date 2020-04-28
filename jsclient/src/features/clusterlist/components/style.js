@@ -19,6 +19,9 @@ export default makeStyles((theme: Theme) =>
         maxWidth: '100%'
       }
     },
+    articleInner: {
+      padding: '16px 0'
+    },
     summary: {
       padding: 0,
       paddingRight: 15,
