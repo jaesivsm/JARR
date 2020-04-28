@@ -117,6 +117,29 @@ export default makeStyles((theme: Theme) =>
       textAlign: 'center',
       padding: '20px 0',
     },
+    clusterListCard: {
+      display: 'flex',
+      justifyContent: 'space-between',
+      marginBottom: 30
+    },
+    clusterListCardTitle: {
+      display: 'flex',
+      alignItems: 'center',
+      paddingLeft: '10px !important',
+      '& img': {
+        margin: '0 8px 0 0'
+      }
+    },
+    clusterListCardActions: {
+      display: 'flex',
+      '& svg': {
+        height: 15,
+        width: 15,
+      }
+    },
+    clusterListCardActionBtn: {
+      padding: 0
+    },
     contentPanel: {
       display: "block",
       width: "55%",
