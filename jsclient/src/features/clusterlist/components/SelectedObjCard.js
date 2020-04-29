@@ -6,9 +6,9 @@ import IconButton from "@material-ui/core/IconButton";
 import Card from "@material-ui/core/Card";
 import CardActions from "@material-ui/core/CardActions";
 import CardContent from "@material-ui/core/CardContent";
-import SettingsIcon from '@material-ui/icons/Build';
+import SettingsIcon from "@material-ui/icons/Build";
 import Typography from "@material-ui/core/Typography";
-import DeleteIcon from '@material-ui/icons/Delete';
+import DeleteIcon from "@material-ui/icons/Delete";
 // jarr
 import { doFetchObjForEdit } from "../../editpanel/editSlice";
 import { doDeleteObj } from "../../feedlist/feedSlice";

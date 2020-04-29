@@ -4,11 +4,10 @@ import { connect } from "react-redux";
 import { Switch, Route } from "react-router-dom";
 // material ui components
 import Grid from "@material-ui/core/Grid";
-import Button from "@material-ui/core/Button";
-import Divider from "@material-ui/core/Divider";
-import CircularProgress from "@material-ui/core/CircularProgress";
 import IconButton from "@material-ui/core/IconButton";
-import Close from "@material-ui/icons/Close";
+import CircularProgress from "@material-ui/core/CircularProgress";
+import Button from "@material-ui/core/Button";
+import ArrowBackIcon from "@material-ui/icons/ArrowBack";
 // jarr
 import { apiUrl } from "../../const";
 import { doLogin, responseRecieved } from "./noAuthSlice";
@@ -18,6 +17,7 @@ import SignUp from "./components/SignUp";
 import InitPasswordRecovery from "./components/InitPasswordRecovery";
 import PasswordRecovery from "./components/PasswordRecovery";
 import OAuthLogin from "./components/OAuthLogin";
+
 
 function mapStateToProps(state) {
   return { isLoading: state.noauth.loading,
@@ -65,36 +65,28 @@ function NoAuth({ isLoading, noToken, savedLogin, savedPassword, recovery, hidde
     form = <Login isLoading={isLoading} />;
     footer = (
       <>
-        <Divider />
-        <Grid item className={classes.loginButton}>
+        <Grid item className={classes.recoverButton}>
+          <span onClick={(e) => setFormType("recover")}>Forgotten password ?</span>
+        </Grid>
+        <Grid item className={classes.googleButton}>
           <form method="get" action={apiUrl + "/oauth/google"}>
             <Button variant="contained" type="submit" color="secondary">
               Login with Google
             </Button>
           </form>
         </Grid>
-        <Divider />
-        <Grid item className={classes.loginButton}>
-          <div>No account ?</div>
-          <Button variant="contained" onClick={(e) => setFormType("signup")}>
-            Sign up
-          </Button>
-        </Grid>
-        <Divider />
-        <Grid item className={classes.loginButton}>
-          <div>Forgotten password ?</div>
-          <Button variant="contained" onClick={(e) => setFormType("recover")}>
-            Recover
-          </Button>
+        <Grid item className={classes.signupButton}>
+          <span>Don't have an account ?</span>
+          <span className={classes.signupLink} variant="contained" onClick={(e) => setFormType("signup")}>Sign up</span>
         </Grid>
       </>
     );
   } else if (formType === "signup") {
     form = <SignUp isLoading={isLoading} />;
     header = (
-      <Grid item className={classes.loginButton}>
+      <Grid item className={classes.headerButton}>
          <IconButton onClick={closeLoginSubPage}>
-           <Close />
+           <ArrowBackIcon />
          </IconButton>
          {isLoading ? <CircularProgress /> : <span>Sign Up !</span>}
        </Grid>
@@ -102,9 +94,9 @@ function NoAuth({ isLoading, noToken, savedLogin, savedPassword, recovery, hidde
   } else if (formType === "recover") {
     form = <InitPasswordRecovery />;
     header = (
-      <Grid item className={classes.loginButton}>
+      <Grid item className={classes.headerButton}>
          <IconButton onClick={closeLoginSubPage}>
-           <Close />
+           <ArrowBackIcon />
          </IconButton>
          {isLoading ? <CircularProgress /> : <span>Password recovery</span>}
        </Grid>

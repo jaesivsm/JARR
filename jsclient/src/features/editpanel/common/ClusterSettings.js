@@ -1,15 +1,15 @@
 import React from "react";
 import PropTypes from "prop-types";
 // meterial components
-import ExpansionPanel from '@material-ui/core/ExpansionPanel';
-import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary';
-import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails';
-import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+import ExpansionPanel from "@material-ui/core/ExpansionPanel";
+import ExpansionPanelSummary from "@material-ui/core/ExpansionPanelSummary";
+import ExpansionPanelDetails from "@material-ui/core/ExpansionPanelDetails";
+import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import FormControl from "@material-ui/core/FormControl";
-import InputLabel from '@material-ui/core/InputLabel';
-import MenuItem from '@material-ui/core/MenuItem';
-import Typography from '@material-ui/core/Typography';
-import Select from '@material-ui/core/Select';
+import InputLabel from "@material-ui/core/InputLabel";
+import MenuItem from "@material-ui/core/MenuItem";
+import Typography from "@material-ui/core/Typography";
+import Select from "@material-ui/core/Select";
 
 import editPanelStyle from "../editPanelStyle";
 
@@ -42,7 +42,7 @@ function ClusterSettings({ state, level, setState }) {
 
   const getHandleChange = (key) => (e, newVal) => {
     setState({ ...state, [key]: e.target.value});
-  }
+  };
 
   const classes = editPanelStyle();
 
@@ -60,12 +60,12 @@ function ClusterSettings({ state, level, setState }) {
                .filter(filterOption(level))
                .map((opt) => (
           <FormControl key={opt} className={classes.editPanelClusterCtrl}>
-            <InputLabel id={`${'label-'+opt}`} className={classes.editPanelClusterLabel}>{clusteringConfOptions[opt].label}</InputLabel>
-            <Select labelId={`${'label-'+opt}`} id={`${'select-'+opt}`}
+            <InputLabel id={`${"label-"+opt}`} className={classes.editPanelClusterLabel}>{clusteringConfOptions[opt].label}</InputLabel>
+            <Select labelId={`${"label-"+opt}`} id={`${"select-"+opt}`}
               className={classes.editPanelClusterSelect}
-              value={`${state[opt] === null && level === 'user' ? true : state[opt]}`}
+              value={`${state[opt] === null && level === "user" ? true : state[opt]}`}
               onChange={getHandleChange(opt)}>
-              {level !== 'user' ? <MenuItem value={null}>Default from parent</MenuItem> : null }
+              {level !== "user" ? <MenuItem value={null}>Default from parent</MenuItem> : null }
               <MenuItem value={true}>Activated</MenuItem>
               <MenuItem value={false}>Deactivated</MenuItem>
             </Select>

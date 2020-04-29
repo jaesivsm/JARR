@@ -7,7 +7,7 @@ export default makeStyles((theme: Theme) =>
       maxWidth: "100%",
     },
     article: {
-      overflowX: 'hidden',
+      overflowX: "hidden",
       "& p": {
         maxWidth: 800,
         "& span": {
@@ -15,12 +15,12 @@ export default makeStyles((theme: Theme) =>
           fontStyle: "bold",
         },
       },
-      '& img': {
-        maxWidth: '100%'
+      "& img": {
+        maxWidth: "100%"
       }
     },
     articleInner: {
-      padding: '16px 0'
+      padding: "16px 0"
     },
     summary: {
       padding: 0,
@@ -105,37 +105,37 @@ export default makeStyles((theme: Theme) =>
       width: "45%",
     },
     clusterListInner: {
-      maxHeight: 'calc(100vh - (64px + 32px))',
-      maxWidth: '100%',
-      overflowY: 'auto',
-      overflowX: 'hidden',
-      padding: '0 16px'
+      maxHeight: "calc(100vh - (64px + 32px))",
+      maxWidth: "100%",
+      overflowY: "auto",
+      overflowX: "hidden",
+      padding: "0 16px"
     },
     clusterListShifted: {
       display: "block",
       width: "40%",
     },
     clusterLoadMore: {
-      width: '100%',
-      textAlign: 'center',
-      padding: '20px 0',
+      width: "100%",
+      textAlign: "center",
+      padding: "20px 0",
     },
     clusterListCard: {
-      display: 'flex',
-      justifyContent: 'space-between',
+      display: "flex",
+      justifyContent: "space-between",
       marginBottom: 30
     },
     clusterListCardTitle: {
-      display: 'flex',
-      alignItems: 'center',
-      paddingLeft: '10px !important',
-      '& img': {
-        margin: '0 8px 0 0'
+      display: "flex",
+      alignItems: "center",
+      paddingLeft: "10px !important",
+      "& img": {
+        margin: "0 8px 0 0"
       }
     },
     clusterListCardActions: {
-      display: 'flex',
-      '& svg': {
+      display: "flex",
+      "& svg": {
         height: 15,
         width: 15,
       }
@@ -148,22 +148,22 @@ export default makeStyles((theme: Theme) =>
       width: "55%",
       marginLeft: theme.spacing(2),
       marginRight: theme.spacing(2),
-      /* '& *': {
+      /* "& *": {
         maxWidth: "97%",
       }, */
     },
     contentPanelInner: {
-      maxHeight: 'calc(100vh - (64px + 32px))',
-      maxWidth: '100%',
-      overflowY: 'auto',
-      overflowX: 'hidden',
-      padding: '16px', 
+      maxHeight: "calc(100vh - (64px + 32px))",
+      maxWidth: "100%",
+      overflowY: "auto",
+      overflowX: "hidden",
+      padding: "16px",
     },
     contentPanelShifted: {
       display: "block",
       width: "60%",
-      overflowY: 'auto',
-      overflowX: 'hidden',
+      overflowY: "auto",
+      overflowX: "hidden",
     },
   })
 );

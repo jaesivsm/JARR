@@ -35,7 +35,6 @@ function SignUp({ isLoading, error, signUp }) {
     <form autoComplete="off" onSubmit={(e) => signUp(e, formData)}>
       <Grid item>
         <TextField required label="Login"
-          variant="outlined"
           className={classes.loginInput}
           disabled={isLoading}
           error={!!error}
@@ -45,7 +44,6 @@ function SignUp({ isLoading, error, signUp }) {
       </Grid>
       <Grid item className={classes.passwordGridInput}>
         <TextField required label="Password" type={pwdType}
-          variant="outlined"
           disabled={isLoading} error={passwdNoMatch}
           helperText={passwdNoMatch ? "Passwords don't match !" : ""}
           onChange={(e) => setFormData({ ...formData, password: e.target.value })}
@@ -57,7 +55,6 @@ function SignUp({ isLoading, error, signUp }) {
       </Grid>
       <Grid item>
         <TextField required label="Password confirmation" type={pwdType}
-          variant="outlined"
           className={classes.loginInput}
           disabled={isLoading} error={passwdNoMatch}
           helperText={passwdNoMatch ? "Should match above !" : ""}
@@ -67,7 +64,6 @@ function SignUp({ isLoading, error, signUp }) {
       <Grid item>
         <TextField label="Email" type="email"
           className={classes.loginInput}
-          variant="outlined"
           disabled={isLoading}
           onChange={(e) => setFormData({ ...formData, email: e.target.value })}
           helperText="Not required, but useful for password recovery"
