@@ -4,9 +4,10 @@ import { connect } from "react-redux";
 import { Switch, Route } from "react-router-dom";
 // material ui components
 import Grid from "@material-ui/core/Grid";
-import CircularProgress from "@material-ui/core/CircularProgress";
-import ArrowBackIcon from '@material-ui/icons/ArrowBack';
 import IconButton from "@material-ui/core/IconButton";
+import CircularProgress from "@material-ui/core/CircularProgress";
+import Button from "@material-ui/core/Button";
+import ArrowBackIcon from "@material-ui/icons/ArrowBack";
 // jarr
 import { apiUrl } from "../../const";
 import { doLogin, responseRecieved } from "./noAuthSlice";
@@ -16,8 +17,6 @@ import SignUp from "./components/SignUp";
 import InitPasswordRecovery from "./components/InitPasswordRecovery";
 import PasswordRecovery from "./components/PasswordRecovery";
 import OAuthLogin from "./components/OAuthLogin";
-
-import Button from "@material-ui/core/Button";
 
 
 function mapStateToProps(state) {
