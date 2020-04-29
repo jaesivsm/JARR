@@ -50,7 +50,7 @@ function EditPanel({ isOpen, isLoading, job, objType,
   } else if ((job === "add" || job === "edit") && objType === "category") {
     form = <AddEditCategory job={job} category={loadedObj} />;
   } else if (job === "edit" && objType === "user") {
-    form = <SettingsPanel user={loadedObj} />
+    form = <SettingsPanel user={loadedObj} />;
   }
   return (
     <Drawer

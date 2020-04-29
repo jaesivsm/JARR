@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import PropTypes from "prop-types";
 import { connect } from "react-redux";
 // material components
-import Alert from '@material-ui/lab/Alert';
+import Alert from "@material-ui/lab/Alert";
 import Button from "@material-ui/core/Button";
 import Select from "@material-ui/core/Select";
 import MenuItem from "@material-ui/core/MenuItem";
@@ -89,7 +89,7 @@ function AddEditFeed({ job, feed, categories,
   } else if (!feed.link) {
     warning = (
       <Alert severity="error">
-        Provided URL doesn't look like a feed we support and we couldn't find a correct one.
+        Provided URL doesn"t look like a feed we support and we couldn"t find a correct one.
       </Alert>
     );
   }

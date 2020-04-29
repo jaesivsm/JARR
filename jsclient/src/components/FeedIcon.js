@@ -26,7 +26,8 @@ function FeedIcon({ iconUrl }) {
   }
   return <LinkIcon className={classes.defaultFeedIcon}
             color="disabled" fontSize="small"/>;
-};
+}
+
 FeedIcon.propTypes = {
   iconUrl: PropTypes.string
 };

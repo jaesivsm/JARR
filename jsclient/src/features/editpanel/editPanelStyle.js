@@ -8,16 +8,16 @@ export default makeStyles((theme: Theme) =>
       flexShrink: 0,
     },
     editPanelPaper: {
-      overflow: 'hidden',
+      overflow: "hidden",
       width: editPanelWidth,
     },
     editPanelHeaderSticky: {
-      backgroundColor: '#ffffff',
-      borderBottom: '1px solid lightgray',
-      display: 'block',
-      position: 'fixed',
+      backgroundColor: "#ffffff",
+      borderBottom: "1px solid lightgray",
+      display: "block",
+      position: "fixed",
       opacity: 1,
-      transition: 'none',
+      transition: "none",
       width: editPanelWidth,
       zIndex: 99,
     },
@@ -33,13 +33,13 @@ export default makeStyles((theme: Theme) =>
       padding: theme.spacing(0, 1),
     },
     editPanelForm: {
-      '& fieldset': {
-          width: '100%'
+      "& fieldset": {
+          width: "100%"
       },
-      '& .MuiAlert-root': {
+      "& .MuiAlert-root": {
         marginBottom: 25
       },
-      overflowY: 'auto',
+      overflowY: "auto",
       marginTop: 70,
       padding: 20,
     },
@@ -50,13 +50,13 @@ export default makeStyles((theme: Theme) =>
       marginBottom: 20
     },
     editPanelSlide: {
-      marginLeft : '15px !important',
-      marginRight: '15px !important',
-      marginBottom: 20      
+      marginLeft : "15px !important",
+      marginRight: "15px !important",
+      marginBottom: 20
     },
     editPanelButtons: {
-      display: 'flex',
-      justifyContent: 'space-between'
+      display: "flex",
+      justifyContent: "space-between"
     },
     editPanelBtn: {
       marginTop: 20,
@@ -67,29 +67,29 @@ export default makeStyles((theme: Theme) =>
     },
     editPanelClusterHeader: {
 
-    }, 
+    },
     editPanelClusterSettings: {
-      display: 'flex',
-      flexDirection: 'column'
+      display: "flex",
+      flexDirection: "column"
     },
     editPanelClusterCtrl: {
-      justifyContent: 'space-between',
-      flexDirection: 'row'
+      justifyContent: "space-between",
+      flexDirection: "row"
     },
     editPanelClusterSelect: {
-      marginBottom: 10, 
-      marginTop: '0 !important',  
-      '& .MuiSelect-select': {
+      marginBottom: 10,
+      marginTop: "0 !important",
+      "& .MuiSelect-select": {
         width: 150
       }
     },
     editPanelClusterLabel: {
-      textAlign: 'left',
-      display: 'block',
+      textAlign: "left",
+      display: "block",
       paddingTop: 10,
-      position: 'relative',
-      transformOrigin: 'top left',
-      width: '100%'
+      position: "relative",
+      transformOrigin: "top left",
+      width: "100%"
     }
   }),
 );

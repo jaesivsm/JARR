@@ -76,8 +76,8 @@ export const doSignUp = (
   dispatch(requestSent());
   try {
     await axios({
-      method: 'post',
-      url: apiUrl + '/user',
+      method: "post",
+      url: apiUrl + "/user",
       data: { login, password, email },
     });
     dispatch(responseRecieved());
@@ -94,8 +94,8 @@ export const doInitRecovery = (
   dispatch(requestSent());
   try {
     const result = await axios({
-      method: 'post',
-      url: apiUrl + '/auth/recovery',
+      method: "post",
+      url: apiUrl + "/auth/recovery",
       data: { login, email },
     });
     return dispatch(responseRecieved({ recovery: result }));
@@ -113,8 +113,8 @@ export const doRecovery = (
   dispatch(requestSent());
   try {
     await axios({
-      method: 'put',
-      url: apiUrl + '/auth/recovery',
+      method: "put",
+      url: apiUrl + "/auth/recovery",
       data: { login, email, token, password },
     });
     dispatch(responseRecieved());

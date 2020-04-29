@@ -8,7 +8,7 @@ import makeStyles from "./style";
 import FeedIcon from "../../../components/FeedIcon";
 
 function Articles({ articles, icons }) {
-  const [currentIndex, setCurrentIndex] = useState(0)
+  const [currentIndex, setCurrentIndex] = useState(0);
   const classes = makeStyles();
   const isOnlyOneTitle = [...new Set(articles.map((a) => a.title))].length === 1;
   return (
