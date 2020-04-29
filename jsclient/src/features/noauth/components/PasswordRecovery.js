@@ -38,7 +38,6 @@ function PasswordRecovery({ isLoading, recovery }) {
     <form autoComplete="off" onSubmit={(e) => recovery(e, params, password) }>
       <Grid item className={classes.passwordGridInput}>
         <TextField required label="Password" type={pwdType}
-          variant="outlined"
           disabled={isLoading} error={passwdNoMatch}
           helperText={passwdNoMatch ? "Passwords don't match !" : ""}
           onChange={(e) => setPassword(e.target.value)}
@@ -50,7 +49,6 @@ function PasswordRecovery({ isLoading, recovery }) {
       </Grid>
       <Grid item>
         <TextField required label="Password confirmation" type={pwdType}
-          variant="outlined"
           className={classes.loginInput}
           disabled={isLoading} error={passwdNoMatch}
           helperText={passwdNoMatch ? "Should match above !" : ""}

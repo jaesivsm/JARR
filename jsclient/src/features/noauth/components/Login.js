@@ -27,7 +27,7 @@ const mapDispatchToProps = (dispatch) => ({
 function Login({ isLoading, loginError, passwordError, logIn }) {
   const classes = makeStyles();
   return (
-    <form autoComplete="off" onSubmit={logIn}>
+    <form autoComplete="off" onSubmit={logIn} className={classes.loginForm}>
       <Grid item>
         <TextField required id="jarr-login" label="Login"
           className={classes.loginInput}

@@ -29,14 +29,14 @@ function PasswordRecover({ isLoading, initRecovery }) {
         initRecovery(e, login, email);
     }}>
       <Grid item>
-        <TextField label="Login" type="text" variant="outlined"
+        <TextField label="Login" type="text"
           className={classes.loginInput}
           disabled={isLoading}
           onChange={(e) => setLogin(e.target.value)}
         />
       </Grid>
       <Grid item>
-        <TextField label="Email" type="email" variant="outlined"
+        <TextField label="Email" type="email"
           className={classes.loginInput}
           disabled={isLoading}
           onChange={(e) => setEmail(e.target.value)}
