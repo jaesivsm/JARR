@@ -119,7 +119,7 @@ class TwitterSignInMixin(OAuthSignInMixin):
         )
 
 
-@oauth_ns.route('/authorize/twitter')
+@oauth_ns.route('/twitter')
 class TwitterAuthorizeURL(TwitterSignInMixin):
 
     @oauth_ns.response(301, 'Redirect to provider authorize URL')
@@ -131,7 +131,7 @@ class TwitterAuthorizeURL(TwitterSignInMixin):
                 'Location': self.service.get_authorize_url(request_token[0])}
 
 
-@oauth_ns.route('/callback/twitter')
+@oauth_ns.route('/twitter')
 class TwitterCallback(TwitterSignInMixin):
 
     @oauth_ns.expect(oauth_callback_parser, validate=True)
@@ -160,7 +160,7 @@ class FacebookSignInMixin(OAuthSignInMixin):
     access_token_url = 'https://graph.facebook.com/oauth/access_token'
 
 
-@oauth_ns.route('/authorize/facebook')
+@oauth_ns.route('/facebook')
 class FacebookAuthorizeUrl(FacebookSignInMixin):
 
     @oauth_ns.response(301, 'Redirect to provider authorize URL')
@@ -170,7 +170,7 @@ class FacebookAuthorizeUrl(FacebookSignInMixin):
                 redirect_uri=self.get_callback_url())}
 
 
-@oauth_ns.route('/callback/facebook')
+@oauth_ns.route('/facebook')
 class FacebookCallback(FacebookSignInMixin):
 
     @oauth_ns.expect(oauth_callback_parser, validate=True)
@@ -200,7 +200,7 @@ class LinuxFrSignInMixin(OAuthSignInMixin):  # pragma: no cover
     access_token_url = 'https://linuxfr.org/api/oauth/token'
 
 
-@oauth_ns.route('/authorize/linuxfr')
+@oauth_ns.route('/linuxfr')
 class LinuxfrAuthorizeURL(LinuxFrSignInMixin):
 
     @oauth_ns.response(301, 'Redirect to provider authorize URL')
@@ -210,7 +210,7 @@ class LinuxfrAuthorizeURL(LinuxFrSignInMixin):
                 redirect_uri=self.get_callback_url())}
 
 
-@oauth_ns.route('/callback/linuxfr')
+@oauth_ns.route('/linuxfr')
 class LinuxfrCallback(LinuxFrSignInMixin):
 
     @oauth_ns.expect(oauth_callback_parser, validate=True)

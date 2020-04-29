@@ -66,8 +66,6 @@ class Refresh(Resource):
                                            access_token)}, 200
 
 
-
-
 @auth_ns.route("/recovery")
 class InitPasswordRecovery(Resource):
 

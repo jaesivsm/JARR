@@ -1,0 +1,11 @@
+FROM node:12.16.1 as build-deps
+WORKDIR /jarr
+RUN yarn global add serve
+COPY jsclient/package.json jsclient/yarn.lock ./
+RUN yarn
+COPY jsclient/src/ /jarr/src
+COPY jsclient/public/ /jarr/public
+RUN yarn build
+RUN rm -rf src public node_modules
+EXPOSE 80
+CMD ["serve", "-p", "80", "-s", "/jarr/build"]
