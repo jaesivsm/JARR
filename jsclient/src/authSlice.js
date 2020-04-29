@@ -54,26 +54,36 @@ export const doRetryOnTokenExpiration = async (payload, dispatch, getState) => {
   const state = getState();
   if (!state.auth.refreshedAt
       || (now.getTime() - state.auth.refreshedAt) > refreshDelay) {
-    const result = await axios({
-      method: "get",
-      url: apiUrl + "/auth/refresh",
-      headers: { "Authorization": state.auth.token }
-    });
-    dispatch(tokenAcquired(result));
-    payload.headers = { "Authorization": result.data["access_token"] };
+    // token has expired, trying to refresh it
+    try {
+      const result = await axios({
+        method: "get",
+        url: apiUrl + "/auth/refresh",
+        headers: { "Authorization": state.auth.token }
+      });
+      dispatch(tokenAcquired(result));
+      payload.headers = { "Authorization": result.data["access_token"] };
+    } catch (err) { // failed to refresh it, logging out
+      dispatch(loginFailed());
+      dispatch(authError({ statusText: "EXPIRED" }));
+      throw err;
+    }
   } else {
     payload.headers = { "Authorization": state.auth.token };
   }
   try {
     return await axios(payload);
   } catch (err) {
+    // token seems to have expired
     if (err.response && err.response.status === 401
         && err.response.data && err.response.data.message
         && err.response.data.message === "Invalid token, Signature has expired") {
       try {
+        // can't silent relog, exiting
         if (state.auth.login && state.auth.password) {
           return dispatch(authError({ statusText: "EXPIRED" }));
         }
+        // login and password still available, relogging
         const loginResult = await axios.post(apiUrl + "/auth",
             { login: state.auth.login, password: state.auth.password });
         dispatch(tokenAcquired(loginResult));

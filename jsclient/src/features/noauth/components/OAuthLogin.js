@@ -1,17 +1,17 @@
 import React, { useEffect } from "react";
 import { connect } from "react-redux";
-import CircularProgress from "@material-ui/core/CircularProgress";
 import { doValidOAuth } from "../noAuthSlice";
+import { Redirect, useLocation } from "react-router-dom";
 
 const mapDispatchToProps = (dispatch) => ({
   validOAuth(code) {
-    const url = new URL(window.location.href);
-    dispatch(doValidOAuth(url.searchParams.get("code")));
+    dispatch(doValidOAuth(code));
   },
 });
 
 function OAuthLogin({ validOAuth }) {
-  useEffect(() => validOAuth());
-  return <CircularProgress />;
+  const query = new URLSearchParams(useLocation().search);
+  useEffect(() => validOAuth(query.get("code")));
+  return <Redirect to={{pathname: "/", state: { isLoading: true }}} />;
 }
 export default connect(null, mapDispatchToProps)(OAuthLogin);

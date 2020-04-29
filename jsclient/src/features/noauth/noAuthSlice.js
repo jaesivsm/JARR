@@ -126,6 +126,7 @@ export const doRecovery = (
 
 export const doValidOAuth = (code): AppThunk => async (dispatch) => {
   try {
+    dispatch(requestSent());
     const result = await axios({
       method: "post",
       url: apiUrl + "/oauth/callback/google",
@@ -136,5 +137,4 @@ export const doValidOAuth = (code): AppThunk => async (dispatch) => {
   } catch (err) {
     dispatch(authError(err.response));
   }
-  window.location.href = "/";
 };
