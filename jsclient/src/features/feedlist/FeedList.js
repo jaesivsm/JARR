@@ -16,6 +16,7 @@ import UnFoldAllCategoriesIcon from "@material-ui/icons/UnfoldMore";
 import SearchIcon from "@material-ui/icons/Search";
 import Divider from "@material-ui/core/Divider";
 import Close from "@material-ui/icons/Close";
+import Alert from "@material-ui/lab/Alert";
 // jarrs
 import feedListStyle from "./feedListStyle";
 import FeedRow from "./FeedRow";
@@ -76,6 +77,33 @@ function FeedList(props) {
     );
   }
 
+  const addFeedButton = (
+    <IconButton onClick={() => props.toggleAddPanel("feed")}>
+      <AddFeedIcon />
+    </IconButton>);
+  const addCategoryButton = (
+    <IconButton onClick={() => props.toggleAddPanel("category")}>
+      <AddCategoryIcon />
+    </IconButton>);
+  let list;
+  if (props.itemCount !== 1) {
+    list = (
+      <FixedSizeList height={1000} width={feedListWidth-1} itemCount={props.itemCount} itemSize={34}>
+        {FeedRow}
+      </FixedSizeList>
+    );
+  } else {
+    list = (
+      <Alert severity="info">
+        <p>Hello ! You seem to be new here, welcome !</p>
+        <p>JARR is a tool to aggregate news feed. Since you don't have any feed, there is nothing to display yet.</p>
+        <p>Click on {addFeedButton} here or at the top of this menu to add a new feed.</p>
+        <p>JARR particularity is to allow clustering articles from various feeds to a condensed clusters. This allows a more dense and interesting news feed. You can of course control clustering settings from different level (user, category, and feed).</p>
+        <p>You may later want to organize your feeds into categories, to do that add category by clicking on {addCategoryButton}.</p>
+      </Alert>
+    );
+  }
+
   return (
     <Drawer
       variant="persistent"
@@ -88,16 +116,8 @@ function FeedList(props) {
     >
       <div className={classes.drawerHeader}>
         <div>
-          <Tooltip title="Add new feed">
-            <IconButton onClick={() => props.toggleAddPanel("feed")}>
-              <AddFeedIcon />
-            </IconButton>
-          </Tooltip>
-          <Tooltip title="Add new category">
-            <IconButton onClick={() => props.toggleAddPanel("category")}>
-              <AddCategoryIcon />
-            </IconButton>
-          </Tooltip>
+          <Tooltip title="Add new feed">{addFeedButton}</Tooltip>
+          <Tooltip title="Add new category">{addCategoryButton}</Tooltip>
           <Tooltip title={props.isFoldedFromParent ? "Unfold categories" : "Fold categories"}>
             <IconButton onClick={props.toggleFolder}>
              {props.isFoldedFromParent ? <UnFoldAllCategoriesIcon /> : <FoldAllCategoriesIcon />}
@@ -123,9 +143,7 @@ function FeedList(props) {
       {displaySearch ? <Divider /> : null }
       {searchBar}
       <Divider />
-      <FixedSizeList height={1000} width={feedListWidth-1} itemCount={props.itemCount} itemSize={34}>
-        {FeedRow}
-      </FixedSizeList>
+      {list}
     </Drawer>
   );
 }

@@ -9,6 +9,7 @@ import useMediaQuery from "@material-ui/core/useMediaQuery";
 import CircularProgress from "@material-ui/core/CircularProgress";
 import Paper from "@material-ui/core/Paper";
 import AddIcon from "@material-ui/icons/Add";
+import Alert from "@material-ui/lab/Alert";
 // jarr
 import Cluster from "./components/Cluster";
 import Content from "./components/Content";
@@ -104,7 +105,9 @@ function ClusterList({ clusters, filters, loadedCluster,
       </Fab>
     );
   } else {
-    list = "no cluster, try adding more feeds or come back later!";
+    list = (<Alert severity="info">
+      Nothing to read with the current filter. Try adding more feeds or come back later!
+    </Alert>);
   }
   let card;
   if (selectedFilterObj) {
