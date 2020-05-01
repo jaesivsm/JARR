@@ -66,13 +66,12 @@ function TopMenu(props) {
   const classes = topMenuStyle();
   const burgered = !useMediaQuery(theme.breakpoints.up("md"));
 
+  // menu on smal display
   const [anchorEl, setAnchorEl] = useState(null);
   const showMenu = Boolean(anchorEl);
+  const handleClick = (e) => setAnchorEl(e.currentTarget);
 
-  const handleClick = (e) => {
-    setAnchorEl(e.currentTarget);
-  };
-
+  // iter through commands on top menu
   const commandsDefs = {
     unread: { label: (!props.isFilteringOnAll
                       ? "Show unread articles"
@@ -98,8 +97,7 @@ function TopMenu(props) {
               icon: <MarkAllNonClusterAsReadIcon /> },
   };
 
-  let menu;
-  const commands = ["unread", "liked", "mark", "markNC"].map((key) => {
+  const commands = Object.keys(commandsDefs).map((key) => {
       if (burgered) {
         return (<MenuItem onClick={(e) => {
                     setAnchorEl(null);
@@ -142,6 +140,7 @@ function TopMenu(props) {
     </Tooltip>
   );
 
+  let menu;  // constructing menu depending on the display size
   if (burgered) {
     const openMenuIcon = (<IconButton
           color="inherit"
