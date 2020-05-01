@@ -7,6 +7,7 @@ import Drawer from "@material-ui/core/Drawer";
 import InputBase from "@material-ui/core/InputBase";
 import IconButton from "@material-ui/core/IconButton";
 import Tooltip from "@material-ui/core/Tooltip";
+import CircularProgress from "@material-ui/core/CircularProgress";
 // icons
 import ChevronLeftIcon from "@material-ui/icons/ChevronLeft";
 import AddFeedIcon  from "@material-ui/icons/Add";
@@ -30,6 +31,7 @@ function mapStateToProps(state) {
   return { itemCount: state.feeds.feedListRows.filter(state.feeds.feedListFilter).length,
            isFoldedFromParent: state.feeds.isParentFolded,
            isOpen: state.feeds.isOpen && !state.edit.isOpen,
+           isLoading: state.feeds.loadingFeeds,
   };
 }
 
@@ -69,7 +71,8 @@ function FeedList(props) {
   if (displaySearch) {
     searchBar = (
       <div className={classes.drawerHeader}>
-        <InputBase placeholder="Search feed…" onChange={(e) => props.setSearchFilter(e.target.value)} />
+        <InputBase placeholder="Search feed…" autoFocus
+          onChange={(e) => props.setSearchFilter(e.target.value)} />
         <IconButton onClick={() => {props.setSearchFilter(null); setDisplaySearch(false);} }>
           <Close />
         </IconButton>
@@ -86,7 +89,9 @@ function FeedList(props) {
       <AddCategoryIcon />
     </IconButton>);
   let list;
-  if (props.itemCount !== 1) {
+  if (props.isLoading) {
+    list = <CircularProgress />;
+  } else if (props.itemCount !== 1) {
     list = (
       <FixedSizeList height={1000} width={feedListWidth-1} itemCount={props.itemCount} itemSize={34}>
         {FeedRow}
@@ -94,7 +99,7 @@ function FeedList(props) {
     );
   } else {
     list = (
-      <Alert severity="info">
+      <Alert severity="info" className={classes.welcome}>
         <p>Hello ! You seem to be new here, welcome !</p>
         <p>JARR is a tool to aggregate news feed. Since you don't have any feed, there is nothing to display yet.</p>
         <p>Click on {addFeedButton} here or at the top of this menu to add a new feed.</p>
@@ -152,6 +157,7 @@ FeedList.propTypes = {
     itemCount: PropTypes.number.isRequired,
     isFoldedFromParent: PropTypes.bool.isRequired,
     isOpen: PropTypes.bool.isRequired,
+    isLoading: PropTypes.bool.isRequired,
     selectedFeedId: PropTypes.number,
     selectedCategoryId: PropTypes.number,
     fetchFeed: PropTypes.func.isRequired,

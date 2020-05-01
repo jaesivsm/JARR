@@ -27,8 +27,8 @@ function mergeCategoriesWithUnreads(feedListRows, unreads,
 const defaultFilter = (row) => !row.folded || row.type === "categ" || row.type === "all-categ";
 const feedSlice = createSlice({
   name: "feeds",
-  initialState: { loadingFeeds: false,
-                  loadingUnreadCounts: false,
+  initialState: { loadingFeeds: true,
+                  loadingUnreadCounts: true,
                   feedListRows: [],
                   unreads: {},
                   isParentFolded: storageGet("left-menu-folded") === "true",
