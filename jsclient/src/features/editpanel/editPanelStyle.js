@@ -80,7 +80,10 @@ export default makeStyles((theme: Theme) =>
     },
     editPanelClusterCtrl: {
       justifyContent: "space-between",
-      flexDirection: "row"
+      flexDirection: "row",
+      [theme.breakpoints.down("sm")]: {
+        flexDirection: "column"
+      },
     },
     editPanelClusterSelect: {
       marginBottom: 10,
