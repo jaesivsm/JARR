@@ -25,6 +25,9 @@ export default makeStyles((theme: Theme) =>
       opacity: 1,
       transition: "none",
       width: editPanelWidth,
+      [theme.breakpoints.down("sm")]: {
+        width: "100%"
+      },
       zIndex: 99,
     },
     editPanelHeader: {

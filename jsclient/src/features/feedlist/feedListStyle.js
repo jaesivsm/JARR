@@ -52,10 +52,7 @@ export default makeStyles((theme: Theme) =>
       marginRight: 10,
       "& span" : {
           overflow: "hidden",
-          maxWidth: 175,
-          [theme.breakpoints.down("sm")]: {
-            maxWidth: 200,
-          }
+          maxWidth: "calc(100% - 25px)",
       }
     },
     feedBadge: {
