@@ -53,7 +53,7 @@ FilterSettingLine.propTypes = {
   type: PropTypes.string.isRequired,
 };
 
-function FilterSettings({ filters }) {
+function FilterSettings({ state, setState }) {
   const classes = editPanelStyle();
   return (
     <ExpansionPanel className={classes.editPanelCluster} >
@@ -62,18 +62,18 @@ function FilterSettings({ filters }) {
         aria-controls="panel1a-content"
         id="panel1a-header"
       >
-        <Typography className={classes.heading}>Cluster Settings</Typography>
+        <Typography className={classes.heading}>Filters Settings</Typography>
       </ExpansionPanelSummary>
       <ExpansionPanelDetails className={classes.editPanelClusterSettings}>
 
       <FormControl>
-        {filters.map((filter) =>
+        {state.filters.map((filter) =>
             <FilterSettingLine
-            action={filter.action}
-            trigger={filter["action on"]}
-            pattern={filter.pattern}
-            type={filter.type}
-          />
+              action={filter.action}
+              trigger={filter["action on"]}
+              pattern={filter.pattern}
+              type={filter.type}
+            />
         )}
       </FormControl>
       </ExpansionPanelDetails>
@@ -82,7 +82,7 @@ function FilterSettings({ filters }) {
 }
 
 FilterSettings.propTypes = {
-  filters: PropTypes.array.isRequired,
+  state: PropTypes.object.isRequired,
 };
 
 export default FilterSettings;
