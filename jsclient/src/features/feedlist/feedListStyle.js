@@ -6,10 +6,16 @@ export default makeStyles((theme: Theme) =>
   createStyles({
     drawer: {
       width: feedListWidth,
+      [theme.breakpoints.down("sm")]: {
+        width: "auto"
+      },
       flexShrink: 0,
     },
     drawerPaper: {
       width: feedListWidth,
+      [theme.breakpoints.down("sm")]: {
+        width: "100%"
+      },
     },
     drawerHeader: {
       display: "flex",

@@ -90,6 +90,11 @@ export default makeStyles((theme: Theme) =>
       marginLeft: -feedListWidth,
       marginRight: -editPanelWidth,
       maxWidth: `100%`,
+      [theme.breakpoints.down("sm")]: {
+        paddingLeft: 5,
+        paddingRight: 5,
+        marginLeft: 0,
+      }
     },
     mainShifted: {
       transition: theme.transitions.create("margin", {
