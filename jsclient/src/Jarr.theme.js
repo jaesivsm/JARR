@@ -2,7 +2,7 @@ import { createMuiTheme } from "@material-ui/core/styles";
 
 export const jarrColors = {
     primary : {
-        main : "#F08080",
+        main : "#5F9EA0",
         contrastText: "#ffffff"
     },
     secondary: {
@@ -10,7 +10,7 @@ export const jarrColors = {
         contrastText: "#ffffff"
     },
     background: {
-        default: '#add8e6'
+        default: "rgb(95,158,160, 0.6)"
     }
 }
 
