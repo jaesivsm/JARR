@@ -15,7 +15,7 @@ import MenuItem from "@material-ui/core/MenuItem";
 import ListItemIcon from "@material-ui/core/ListItemIcon";
 // material icons
 import MenuIcon from "@material-ui/icons/Menu";
-import MenuOpenIcon from '@material-ui/icons/MenuOpen';
+import MoreVertIcon from '@material-ui/icons/MoreVert';
 import FilterAllOrFavoriteIcon from "@material-ui/icons/StarBorder";
 import FilterFavoriteIcon from "@material-ui/icons/Star";
 import FilterAllIcon from "@material-ui/icons/IndeterminateCheckBox";
@@ -146,7 +146,7 @@ function TopMenu(props) {
           color="inherit"
           onClick={handleClick}
         >
-          <MenuOpenIcon />
+          <MoreVertIcon />
         </IconButton>);
 
     menu = (
@@ -188,7 +188,7 @@ function TopMenu(props) {
             </IconButton>
           </Tooltip>
           <Tooltip title="Logout">
-            <IconButton color="inherit" onClick={props.logout}>
+            <IconButton color="inherit" onClick={props.logout} className={classes.logoutButton}>
               <ExitToAppIcon />
             </IconButton>
           </Tooltip>

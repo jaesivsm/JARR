@@ -17,14 +17,14 @@ export default makeStyles((theme: Theme) =>
         duration: theme.transitions.duration.enteringScreen,
       }),
     },
-    menuButton: {
-      marginRight: theme.spacing(2),
-    },
     hide: {
       display: "none",
     },
     toolbar: {
       justifyContent: "space-between",
     },
+    logoutButton: {
+      paddingRight: 0
+    }
   }),
 );
