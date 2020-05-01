@@ -2,6 +2,15 @@ import { makeStyles, Theme, createStyles } from "@material-ui/core/styles";
 
 export default makeStyles((theme: Theme) =>
   createStyles({
+    welcome: {
+      color: "rgba(0, 0, 0, 0.6)",
+      fontSize: 16
+    },
+    jarrIcon: {
+      position: "relative",
+      top: 1,
+      right: 10
+    },
     loginContainer: {
       alignItems: "center",
       background: "#ffffff",
@@ -44,7 +53,7 @@ export default makeStyles((theme: Theme) =>
       width: "100%",
     },
     signupButton: {
-      color: "rgba(0, 0, 0, 0.70)",
+      color: "rgba(0, 0, 0, 0.6)",
       marginTop: 20
     },
     signupLink: {
@@ -53,7 +62,7 @@ export default makeStyles((theme: Theme) =>
       marginLeft: 5
     },
     recoverButton: {
-      color: "rgba(0, 0, 0, 0.70)",
+      color: "rgba(0, 0, 0, 0.6)",
       cursor: "pointer",
       textDecoration: "underline",
       textAlign: "right",

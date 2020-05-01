@@ -125,7 +125,7 @@ function Cluster({ cluster,
               }
              {cluster["main_feed_title"]}
             </Link>
-            <span>{moment(cluster["main_date"]).fromNow()}</span>
+            <span className={classes.clusterDate}>{moment(cluster["main_date"]).fromNow()}</span>
           </div>
           <div>
             <Checkbox checked={cluster.read} key={"c" + cluster.id + "r"}

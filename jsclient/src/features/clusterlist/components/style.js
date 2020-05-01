@@ -42,11 +42,13 @@ export default makeStyles((theme: Theme) =>
       verticalAlign: "middle",
       display: "flex",
       justifyContent: "space-between",
-      marginBottom: 4,
       "& a": {
-        lineHeight: 1,
+        lineHeight: 1.4,
         whiteSpace: "nowrap",
         overflow: "hidden",
+        position: "relative",
+        top: 3,
+        marginBottom: 5
       },
       "& img": {
         position: "relative",
@@ -59,9 +61,10 @@ export default makeStyles((theme: Theme) =>
       },
     },
     mainTitle: {
+      fontSize: 14,
       paddingLeft: 5,
       display: "inline",
-      verticalAlign: "middle",
+      verticalAlign: "bottom",
       whiteSpace: "nowrap",
       overflow: "hidden",
       maxWidth: "100%",
@@ -99,6 +102,14 @@ export default makeStyles((theme: Theme) =>
     mainSplitted: {
       display: "flex",
       justifyContent: "space-between",
+    },
+    clusterDate: {
+      position: "absolute",
+      right: 15,
+      fontSize: 12,
+      top: 2,
+      color: "#5F9EA0",
+      opacity: .9,
     },
     clusterList: {
       display: "block",
@@ -165,5 +176,10 @@ export default makeStyles((theme: Theme) =>
       overflowY: "auto",
       overflowX: "hidden",
     },
+    loadingWrap: {
+      height: 50,
+      width: "100%",
+      textAlign: "center",
+    }
   })
 );

@@ -90,7 +90,7 @@ function ClusterList({ clusters, filters, loadedCluster,
   let list;
   let loadMoreButton;
   if (loading) {
-    list = <CircularProgress />;
+    list = <div className={classes.loadingWrap}><CircularProgress /></div>;
 
   } else if (clusters.length) {
     list = clusters.map((cluster) => (
