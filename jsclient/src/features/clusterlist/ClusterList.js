@@ -100,9 +100,11 @@ function ClusterList({ clusters, filters, loadedCluster,
         />)
     );
     loadMoreButton = (
-      <Fab color="primary" className={classes.fab} onClick={loadMoreClusters}>
-        <AddIcon />
-      </Fab>
+      <div className={classes.clusterLoadMore}>
+        <Fab color="primary" className={classes.fab} onClick={loadMoreClusters}>
+          <AddIcon />
+        </Fab>
+      </div>
     );
   } else {
     list = (<Alert severity="info">
@@ -137,9 +139,7 @@ function ClusterList({ clusters, filters, loadedCluster,
         <div className={classes.clusterListInner}>
           {card}
           {list}
-          <div className={classes.clusterLoadMore}>
-            {loadMoreButton}
-          </div>
+          {loadMoreButton}
         </div>
       </div>
       <Paper className={clsx(classes.contentPanel,
