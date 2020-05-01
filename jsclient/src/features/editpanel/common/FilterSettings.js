@@ -102,9 +102,10 @@ function FilterSettingLine({ index, length, action, trigger, pattern, type, stat
           ))}
         </Select>
       </FormControl>
-      <IconButton onClose={() => setState({ ...state,
-        filters: [ ...state.filters.slice(0, index),
-                   ...state.filters.slice(index + 1)]})}>
+      <IconButton onClick={() => setState(
+          { ...state,
+            filters: [ ...state.filters.slice(0, index),
+                       ...state.filters.slice(index + 1)]})}>
         <MinusIcon />
       </IconButton>
     </div>
