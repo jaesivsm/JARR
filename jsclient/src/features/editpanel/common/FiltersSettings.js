@@ -5,6 +5,14 @@ import FormControl from "@material-ui/core/FormControl";
 import Select from "@material-ui/core/Select";
 import MenuItem from "@material-ui/core/MenuItem";
 import TextField from "@material-ui/core/TextField";
+import Typography from "@material-ui/core/Typography";
+import ExpansionPanel from "@material-ui/core/ExpansionPanel";
+import ExpansionPanelSummary from "@material-ui/core/ExpansionPanelSummary";
+import ExpansionPanelDetails from "@material-ui/core/ExpansionPanelDetails";
+import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
+
+
+import editPanelStyle from "../editPanelStyle";
 
 
 const FiltersAction = ['mark as read', 'mark as unread', 'mark as favorite',
@@ -46,17 +54,30 @@ FilterSettingLine.propTypes = {
 };
 
 function FilterSettings({ filters }) {
+  const classes = editPanelStyle();
   return (
-    <FormControl>
-      {filters.map((filter) =>
-          <FilterSettingLine
+    <ExpansionPanel className={classes.editPanelCluster} >
+      <ExpansionPanelSummary
+        expandIcon={<ExpandMoreIcon />}
+        aria-controls="panel1a-content"
+        id="panel1a-header"
+      >
+        <Typography className={classes.heading}>Cluster Settings</Typography>
+      </ExpansionPanelSummary>
+      <ExpansionPanelDetails className={classes.editPanelClusterSettings}>
+
+      <FormControl>
+        {filters.map((filter) =>
+            <FilterSettingLine
             action={filter.action}
             trigger={filter["action on"]}
             pattern={filter.pattern}
             type={filter.type}
           />
-      )}
-    </FormControl>
+        )}
+      </FormControl>
+      </ExpansionPanelDetails>
+    </ExpansionPanel>
   );
 }
 
