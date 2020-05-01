@@ -12,6 +12,7 @@ function Article({ article, hidden }) {
   if (article.comments) {
     comments = (<p><span>Comments</span>
                    <Link
+                     color="secondary"
                      key={`ac-${article.id}`}
                      href={article.comments}>
                      {article.comments}
@@ -22,6 +23,7 @@ function Article({ article, hidden }) {
       <p>
         <span>Link</span>
         <Link
+          color="secondary"
           key={`al-${article.id}`}
           href={article.link}>
           {article.link}

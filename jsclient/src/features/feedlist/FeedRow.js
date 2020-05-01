@@ -44,7 +44,7 @@ function FeedRow({ index, style, feedListRows,
   const classes = feedListStyle();
   const obj = feedListRows[index];
   const isSelected = (selectedFeedId === obj.id && obj.type === "feed") || obj.id === selectedCategoryId;
-  const badge = <Badge badgeContent={obj.unread} color="primary"></Badge>;
+  const badge = <Badge badgeContent={obj.unread} color="primary" className={classes.feedBadge}></Badge>;
   if (obj.type === "feed") {
     const icon = <FeedIcon iconUrl={obj["icon_url"]} />;
     return (
@@ -56,7 +56,7 @@ function FeedRow({ index, style, feedListRows,
           onClick={(e) => (listClusters(e, { feedId: obj.id }))}
         >
         {icon}
-        <ListItemText primary={obj.str} className={classes.feetItemText}/>
+        <ListItemText primary={obj.str} className={classes.feedItemText}/>
         {badge}
       </ListItem>
     );

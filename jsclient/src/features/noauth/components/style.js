@@ -32,14 +32,9 @@ export default makeStyles((theme: Theme) =>
       marginTop: "45px !important",
       "& button": {
         color: "#fff",
-        backgroundColor: "#3f51b5",
         boxShadow: "none",
         borderRadius: 0,
         width: "100%",
-      },
-      "& button:hover": {
-        backgroundColor: "#3f51b5",
-        opacity: 0.9
       },
       "& div": {
         marginBottom: theme.spacing(2),

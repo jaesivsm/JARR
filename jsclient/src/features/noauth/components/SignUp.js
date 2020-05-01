@@ -70,7 +70,7 @@ function SignUp({ isLoading, error, signUp }) {
         />
       </Grid>
       <Grid item className={classes.loginButton}>
-        <Button variant="contained" type="submit">
+        <Button variant="contained" type="submit" color="primary">
           Sign Up
         </Button>
       </Grid>

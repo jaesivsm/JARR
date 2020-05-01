@@ -32,12 +32,16 @@ export default makeStyles((theme: Theme) =>
       paddingLeft: "32px !important",
       whiteSpace: "nowrap"
     },
-    feetItemText: {
+    feedItemText: {
       marginRight: 10,
       "& span" : {
           overflow: "hidden",
           maxWidth: 175,
       }
+    },
+    feedBadge: {
+      opacity: 0.6,
+      right: 2
     },
     feed: {
       paddingTop: 2,

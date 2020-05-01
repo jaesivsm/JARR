@@ -114,6 +114,7 @@ function Cluster({ cluster,
           <div className={classes.link}>
             <Link href={cluster["main_link"]} target="_blank"
               aria-label="link to the resource"
+              color="secondary"
               onFocus={(e) => e.stopPropagation()}
               onClick={(e) => readOnRedirect(e, cluster)}>
               {[ ...new Set(cluster["feeds_id"])].filter((feedId) => icons[feedId])
