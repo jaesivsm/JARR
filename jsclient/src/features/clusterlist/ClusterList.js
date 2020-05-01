@@ -29,7 +29,6 @@ const filterClusters = (requestedClusterId, filter) => (cluster) => (
      || (cluster.liked && filter === "liked")
 );
 
-
 function mapStateToProps(state) {
   let selectedFilterObj;
   if(state.clusters.filters["feed_id"]) {
@@ -55,6 +54,10 @@ function mapStateToProps(state) {
            loading: state.clusters.loading,
            isShifted: state.feeds.isOpen && !state.edit.isOpen,
            selectedFilterObj,
+           doDisplayContent: (!!state.clusters.loadedCluster
+              && !!state.clusters.requestedClusterId
+              && !!state.clusters.loadedCluster.id
+              && state.clusters.requestedClusterId === state.clusters.loadedCluster.id),
   };
 }
 
@@ -69,7 +72,7 @@ const mapDispatchToProps = (dispatch) => ({
 
 
 function ClusterList({ clusters, filters, loadedCluster,
-                       loading, isShifted,
+                       loading, isShifted, doDisplayContent,
                        selectedFilterObj,
                        listClusters, loadMoreClusters, openEditPanel,
                        }) {
@@ -142,12 +145,13 @@ function ClusterList({ clusters, filters, loadedCluster,
           </div>
         </div>
       </div>
-      <Paper className={clsx(classes.contentPanel,
-                           {[classes.contentPanelShifted]: isShifted,})}>
-        <div className={classes.contentPanelInner}>
-         <Content clusterId={loadedCluster.id} />
-        </div>
-      </Paper>
+        {!doDisplayContent ? null :
+          <Paper className={clsx(classes.contentPanel,
+                                 {[classes.contentPanelShifted]: isShifted,})}>
+            <div className={classes.contentPanelInner}>
+              <Content clusterId={loadedCluster.id} />
+            </div>
+          </Paper>}
     </main>
   );
 }
@@ -158,6 +162,7 @@ ClusterList.propTypes = {
   loading: PropTypes.bool.isRequired,
   listClusters: PropTypes.func.isRequired,
   selectedFilterObj: PropTypes.object,
+  doDisplayContent: PropTypes.bool.isRequired,
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(ClusterList);
