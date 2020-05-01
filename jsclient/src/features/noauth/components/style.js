@@ -8,14 +8,14 @@ export default makeStyles((theme: Theme) =>
     },
     jarrIcon: {
       position: "relative",
-      top: 1,
+      top: 2,
       right: 10
     },
     loginContainer: {
       alignItems: "center",
       background: "#ffffff",
       borderRadius: "1px",
-      boxShadow: "lightgrey 0px 0px 2px",
+      boxShadow: "grey 0px 0px 10px",
       padding: "15px 30px 10px",
       position: "absolute",
       top: "50%",
@@ -23,6 +23,12 @@ export default makeStyles((theme: Theme) =>
       transform: "translate(-50%, -50%)",
       height: "auto",
       width: 350,
+      [theme.breakpoints.down("sm")]: {
+          top: 25,
+          marginBottom: 20,
+          transform: "translateX(-50%)",
+          width: 'calc(100% - 50px)',
+      },
       "& .MuiGrid-item": {
         padding: theme.spacing(1),
       },
