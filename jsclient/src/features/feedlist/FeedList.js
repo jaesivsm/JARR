@@ -91,13 +91,7 @@ function FeedList(props) {
   let list;
   if (props.isLoading) {
     list = <CircularProgress />;
-  } else if (props.itemCount !== 1) {
-    list = (
-      <FixedSizeList height={1000} width={feedListWidth-1} itemCount={props.itemCount} itemSize={34}>
-        {FeedRow}
-      </FixedSizeList>
-    );
-  } else {
+  } else if (props.itemCount === 1 && props.setSearchFilter === null) {
     list = (
       <Alert severity="info" className={classes.welcome}>
         <p>Hello ! You seem to be new here, welcome !</p>
@@ -106,6 +100,12 @@ function FeedList(props) {
         <p>JARR particularity is to allow clustering articles from various feeds to a condensed clusters. This allows a more dense and interesting news feed. You can of course control clustering settings from different level (user, category, and feed).</p>
         <p>You may later want to organize your feeds into categories, to do that add category by clicking on {addCategoryButton}.</p>
       </Alert>
+    );
+  } else {
+    list = (
+      <FixedSizeList height={1000} width={feedListWidth-1} itemCount={props.itemCount} itemSize={34}>
+        {FeedRow}
+      </FixedSizeList>
     );
   }
 
