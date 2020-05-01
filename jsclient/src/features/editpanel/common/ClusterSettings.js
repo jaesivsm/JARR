@@ -18,18 +18,12 @@ const clusteringConfOptions = {
     "cluster_tfidf_enabled": { "label": "Allow clustering article by analysing its content through TFIDF"},
     "cluster_same_category": { "label": "Allow cluster article inside the same category" },
     "cluster_same_feed": { "label": "Allow clustering article inside the same feed" },
-    "cluster_wake_up": { "label": "Allow clustering to unread an article previously marked as read",
-                         "only_for": "feed" }
+    "cluster_wake_up": { "label": "Allow clustering to unread an article previously marked as read" }
 };
-
-const filterOption = (level) => ((opt) => (
-  !clusteringConfOptions[opt].only_for || clusteringConfOptions[opt].only_for === level)
-);
 
 export function fillMissingClusterOption(obj, level, def=null) {
   const filledObj = { ...obj };
   Object.keys(clusteringConfOptions)
-        .filter(filterOption(level))
         .forEach((opt) => {
     if(filledObj[opt] === undefined) {
       filledObj[opt] = def;
@@ -57,7 +51,6 @@ function ClusterSettings({ state, level, setState }) {
       </ExpansionPanelSummary>
       <ExpansionPanelDetails className={classes.editPanelClusterSettings}>
         {Object.keys(clusteringConfOptions)
-               .filter(filterOption(level))
                .map((opt) => (
           <FormControl key={opt} className={classes.editPanelClusterCtrl}>
             <InputLabel id={`${"label-"+opt}`} className={classes.editPanelClusterLabel}>{clusteringConfOptions[opt].label}</InputLabel>

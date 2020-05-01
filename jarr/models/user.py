@@ -27,6 +27,7 @@ class User(Base):
     cluster_tfidf_enabled = Column(Boolean, default=True, nullable=False)
     cluster_same_category = Column(Boolean, default=True, nullable=False)
     cluster_same_feed = Column(Boolean, default=True, nullable=False)
+    cluster_wake_up = Column(Boolean, default=True, nullable=False)
     cluster_conf = Column(PickleType, default={})
 
     # user rights
