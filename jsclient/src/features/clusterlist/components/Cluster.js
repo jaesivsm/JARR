@@ -2,6 +2,7 @@ import React from "react";
 import clsx from "clsx";
 import PropTypes from "prop-types";
 import { connect } from "react-redux";
+import moment from "moment";
 // material ui components
 import Typography from "@material-ui/core/Typography";
 import Link from "@material-ui/core/Link";
@@ -123,7 +124,7 @@ function Cluster({ cluster,
               }
              {cluster["main_feed_title"]}
             </Link>
-            <span>{cluster["main_date"]}</span>
+            <span>{moment(cluster["main_date"]).fromNow()}</span>
           </div>
           <div>
             <Checkbox checked={cluster.read} key={"c" + cluster.id + "r"}
