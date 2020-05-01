@@ -8,7 +8,7 @@ function DeleteButton({ id, type, deleteFunc, className }) {
     return null;
   }
   return (
-    <Button variant="contained" color="secondary" type="submit"
+    <Button variant="contained" color="default" type="submit"
       onClick={(e) => deleteFunc(e, id)} className={className}>
       <WarningIcon />
       Delete {type}

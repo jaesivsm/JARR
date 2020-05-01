@@ -6,10 +6,16 @@ export default makeStyles((theme: Theme) =>
   createStyles({
     drawer: {
       width: feedListWidth,
+      [theme.breakpoints.down("sm")]: {
+        width: "auto"
+      },
       flexShrink: 0,
     },
     drawerPaper: {
       width: feedListWidth,
+      [theme.breakpoints.down("sm")]: {
+        width: "100%"
+      },
     },
     drawerHeader: {
       display: "flex",
@@ -23,6 +29,12 @@ export default makeStyles((theme: Theme) =>
       paddingTop: 2,
       paddingBottom: 2,
     },
+    catItem: {
+      [theme.breakpoints.down("sm")]: {
+        paddingLeft: 10,
+        paddingRight: 24
+      }
+    },
     catItemAll: {
         marginLeft: 25
     },
@@ -30,14 +42,25 @@ export default makeStyles((theme: Theme) =>
       lineHeight: 1,
       overflow: "hidden",
       paddingLeft: "32px !important",
-      whiteSpace: "nowrap"
+      whiteSpace: "nowrap",
+      [theme.breakpoints.down("sm")]: {
+        paddingRight: 24,
+        paddingLeft: "18px !important",
+      }
     },
-    feetItemText: {
+    feedItemText: {
       marginRight: 10,
       "& span" : {
           overflow: "hidden",
           maxWidth: 175,
+          [theme.breakpoints.down("sm")]: {
+            maxWidth: 200,
+          }
       }
+    },
+    feedBadge: {
+      opacity: 0.6,
+      right: 2
     },
     feed: {
       paddingTop: 2,

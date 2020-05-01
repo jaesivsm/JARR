@@ -4,7 +4,9 @@ import { connect } from "react-redux";
 import { BrowserRouter } from "react-router-dom";
 
 import CssBaseline from "@material-ui/core/CssBaseline";
+import { ThemeProvider } from "@material-ui/styles";
 
+import {jarrTheme, jarrLoginTheme} from "./Jarr.theme"; 
 import useStyles from "./Jarr.styles.js";
 import NoAuth from "./features/noauth/NoAuth";
 import TopMenu from "./features/topmenu/TopMenu";
@@ -19,23 +21,27 @@ function mapStateToProps(state) {
 function Jarr({ isLogged, isLeftMenuOpen }) {
   const classes = useStyles();
   if (!isLogged) {
-    return (
+    return (      
       <BrowserRouter>
-        <div className={classes.root}>
-          <CssBaseline />
-          <NoAuth />
-        </div>
+        <ThemeProvider theme={jarrLoginTheme}>
+          <div className={classes.root}>
+            <CssBaseline />
+            <NoAuth />
+          </div>
+        </ThemeProvider>
       </BrowserRouter>
     );
   }
   return (
-    <div className={classes.root}>
-      <CssBaseline />
-      <TopMenu />
-      <FeedList />
-      <ClusterList />
-      <EditPanel />
-    </div>
+    <ThemeProvider theme={jarrTheme}>
+      <div className={classes.root}>
+        <CssBaseline />
+        <TopMenu />
+        <FeedList />
+        <ClusterList />
+        <EditPanel />
+      </div>
+    </ThemeProvider>
   );
 }
 

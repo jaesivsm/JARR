@@ -5,11 +5,17 @@ export default makeStyles((theme: Theme) =>
   createStyles({
     editPanel: {
       maxWidth: editPanelWidth,
+      [theme.breakpoints.down("sm")]: {
+        width: "auto"
+      },
       flexShrink: 0,
     },
     editPanelPaper: {
       overflow: "hidden",
       width: editPanelWidth,
+      [theme.breakpoints.down("sm")]: {
+        width: "100%"
+      },
     },
     editPanelHeaderSticky: {
       backgroundColor: "#ffffff",
@@ -74,7 +80,10 @@ export default makeStyles((theme: Theme) =>
     },
     editPanelClusterCtrl: {
       justifyContent: "space-between",
-      flexDirection: "row"
+      flexDirection: "row",
+      [theme.breakpoints.down("sm")]: {
+        flexDirection: "column"
+      },
     },
     editPanelClusterSelect: {
       marginBottom: 10,

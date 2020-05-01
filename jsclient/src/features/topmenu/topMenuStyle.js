@@ -17,14 +17,23 @@ export default makeStyles((theme: Theme) =>
         duration: theme.transitions.duration.enteringScreen,
       }),
     },
-    menuButton: {
-      marginRight: theme.spacing(2),
-    },
     hide: {
       display: "none",
     },
     toolbar: {
       justifyContent: "space-between",
     },
+    logoutButton: {
+      paddingRight: 0
+    },
+    burgeredMenu: {
+      "& .MuiPopover-paper": {
+        left: "0px !important",
+        width: "calc(100%)",
+        maxWidth: "none",
+        marginTop: 41,
+        borderRadius: 0,
+      }
+    }
   }),
 );

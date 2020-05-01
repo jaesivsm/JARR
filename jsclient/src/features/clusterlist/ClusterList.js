@@ -93,7 +93,7 @@ function ClusterList({ clusters, filters, loadedCluster,
   let list;
   let loadMoreButton;
   if (loading) {
-    list = <CircularProgress />;
+    list = <div className={classes.loadingWrap}><CircularProgress /></div>;
 
   } else if (clusters.length) {
     list = clusters.map((cluster) => (
@@ -103,9 +103,11 @@ function ClusterList({ clusters, filters, loadedCluster,
         />)
     );
     loadMoreButton = (
-      <Fab color="primary" className={classes.fab} onClick={loadMoreClusters}>
-        <AddIcon />
-      </Fab>
+      <div className={classes.clusterLoadMore}>
+        <Fab color="primary" className={classes.fab} onClick={loadMoreClusters}>
+          <AddIcon />
+        </Fab>
+      </div>
     );
   } else {
     list = (<Alert severity="info">
@@ -140,9 +142,7 @@ function ClusterList({ clusters, filters, loadedCluster,
         <div className={classes.clusterListInner}>
           {card}
           {list}
-          <div className={classes.clusterLoadMore}>
-            {loadMoreButton}
-          </div>
+          {loadMoreButton}
         </div>
       </div>
         {!doDisplayContent ? null :

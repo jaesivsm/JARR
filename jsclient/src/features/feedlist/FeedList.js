@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import { connect } from "react-redux";
 // components
+import { useTheme } from "@material-ui/core/styles";
+import useMediaQuery from "@material-ui/core/useMediaQuery";
 import { FixedSizeList } from "react-window";
 import Drawer from "@material-ui/core/Drawer";
 import InputBase from "@material-ui/core/InputBase";
@@ -60,6 +62,8 @@ function FeedList(props) {
   const classes = feedListStyle();
   const [everLoaded, setEverLoaded] = useState(false);
   const [displaySearch, setDisplaySearch] = useState(false);
+  const theme = useTheme();
+  const splitedMode = useMediaQuery(theme.breakpoints.up("md"));
   useEffect(() => {
     if (!everLoaded) {
       props.fetchFeed();
@@ -103,7 +107,7 @@ function FeedList(props) {
     );
   } else {
     list = (
-      <FixedSizeList height={1000} width={feedListWidth-1} itemCount={props.itemCount} itemSize={34}>
+      <FixedSizeList height={1000} width={splitedMode ? feedListWidth-1 : '100%'} itemCount={props.itemCount} itemSize={34}>
         {FeedRow}
       </FixedSizeList>
     );

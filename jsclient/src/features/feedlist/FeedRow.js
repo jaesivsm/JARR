@@ -44,7 +44,7 @@ function FeedRow({ index, style, feedListRows,
   const classes = feedListStyle();
   const obj = feedListRows[index];
   const isSelected = (selectedFeedId === obj.id && obj.type === "feed") || obj.id === selectedCategoryId;
-  const badge = <Badge badgeContent={obj.unread} color="primary"></Badge>;
+  const badge = <Badge badgeContent={obj.unread} color="primary" className={classes.feedBadge}></Badge>;
   if (obj.type === "feed") {
     const icon = <FeedIcon iconUrl={obj["icon_url"]} />;
     return (
@@ -56,7 +56,7 @@ function FeedRow({ index, style, feedListRows,
           onClick={(e) => (listClusters(e, { feedId: obj.id }))}
         >
         {icon}
-        <ListItemText primary={obj.str} className={classes.feetItemText}/>
+        <ListItemText primary={obj.str} className={classes.feedItemText}/>
         {badge}
       </ListItem>
     );
@@ -72,7 +72,8 @@ function FeedRow({ index, style, feedListRows,
     <ListItem button
         key={"c" + obj.id + (isSelected ? "s" : "") + obj.unread}
         style={style} selected={isSelected}
-        onClick={(e) => (listClusters(e, { categoryId: isAllCateg ? "all" : obj.id}, obj.folded, selectedCategoryId ))}>
+        onClick={(e) => (listClusters(e, { categoryId: isAllCateg ? "all" : obj.id}, obj.folded, selectedCategoryId ))}
+        className={classes.catItem}>
       {foldButton}
       <ListItemText primary={isAllCateg ? "All" : obj.str} className={isAllCateg ? classes.catItemAll : null} />
       {obj.unread && !isAllCateg ? badge : null}

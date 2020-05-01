@@ -2,11 +2,20 @@ import { makeStyles, Theme, createStyles } from "@material-ui/core/styles";
 
 export default makeStyles((theme: Theme) =>
   createStyles({
+    welcome: {
+      color: "rgba(0, 0, 0, 0.6)",
+      fontSize: 16
+    },
+    jarrIcon: {
+      position: "relative",
+      top: 2,
+      right: 10
+    },
     loginContainer: {
       alignItems: "center",
       background: "#ffffff",
       borderRadius: "1px",
-      boxShadow: "lightgrey 0px 0px 2px",
+      boxShadow: "grey 0px 0px 10px",
       padding: "15px 30px 10px",
       position: "absolute",
       top: "50%",
@@ -14,6 +23,12 @@ export default makeStyles((theme: Theme) =>
       transform: "translate(-50%, -50%)",
       height: "auto",
       width: 350,
+      [theme.breakpoints.down("sm")]: {
+          top: 25,
+          marginBottom: 20,
+          transform: "translateX(-50%)",
+          width: 'calc(100% - 50px)',
+      },
       "& .MuiGrid-item": {
         padding: theme.spacing(1),
       },
@@ -32,14 +47,9 @@ export default makeStyles((theme: Theme) =>
       marginTop: "45px !important",
       "& button": {
         color: "#fff",
-        backgroundColor: "#3f51b5",
         boxShadow: "none",
         borderRadius: 0,
         width: "100%",
-      },
-      "& button:hover": {
-        backgroundColor: "#3f51b5",
-        opacity: 0.9
       },
       "& div": {
         marginBottom: theme.spacing(2),
@@ -49,7 +59,7 @@ export default makeStyles((theme: Theme) =>
       width: "100%",
     },
     signupButton: {
-      color: "rgba(0, 0, 0, 0.70)",
+      color: "rgba(0, 0, 0, 0.6)",
       marginTop: 20
     },
     signupLink: {
@@ -58,7 +68,7 @@ export default makeStyles((theme: Theme) =>
       marginLeft: 5
     },
     recoverButton: {
-      color: "rgba(0, 0, 0, 0.70)",
+      color: "rgba(0, 0, 0, 0.6)",
       cursor: "pointer",
       textDecoration: "underline",
       textAlign: "right",
