@@ -88,8 +88,9 @@ function TopMenu(props) {
              onClick: () => props.filterClusters(props.isFilteringOnLiked
                                                  ? null : "liked" ),
              icon: (props.isFilteringOnLiked
-                    ? <FilterAllOrFavoriteIcon />
-                    : <FilterFavoriteIcon />), },
+                    ? <FilterFavoriteIcon />
+                    : <FilterAllOrFavoriteIcon />
+             ), },
     mark: { label: "Mark all as read",
             onClick: () => props.markAllAsRead(false),
             icon: <MarkAllAsReadIcon /> },

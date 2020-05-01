@@ -50,12 +50,8 @@ function AddEditCategory({ isOpen, job, category,
       }
     }}>
     <FormControl component="fieldset">
-      <TextField
-        required
-        id="outlined-required"
-        label="Category Name"
-        variant="outlined"
-        value={state.name}
+      <TextField required autoFocus variant="outlined"
+        label="Category Name" value={state.name}
         onChange={(e) => (setState({ ...state, name: e.target.value }))}
         className={classes.editPanelSelect}
       />

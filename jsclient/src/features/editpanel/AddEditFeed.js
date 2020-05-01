@@ -22,6 +22,7 @@ import editPanelStyle from "./editPanelStyle";
 const availableFeedTypes = ["classic", "json", "tumblr", "instagram",
                             "soundcloud", "reddit", "fetch", "koreus",
                             "twitter"];
+const noUrlTypes = ["instagram", "soundcloud", "twitter"];
 
 const mapDispatchToProps = (dispatch) => ({
   createFeed(e, feed) {
@@ -100,6 +101,9 @@ function AddEditFeed({ job, feed, categories,
                         onChange={(e) => setState({ ...state, link: e.target.value})}
                     />;
   }
+  const feedTypeHelper = (noUrlTypes.indexOf(state["feed_type"]) === -1 ? null :
+    <Alert severity="info">"{state["feed_type"]}" type doesn't need a full url for link. Just the username will suffice.</Alert>
+  );
   return (
     <form onSubmit={(e) => {
       if (!feed.id) { createFeed(e, state); }
@@ -140,6 +144,7 @@ function AddEditFeed({ job, feed, categories,
             <MenuItem key={"item-" + type} value={type}>{type}</MenuItem>
           ))}
         </Select>
+        {feedTypeHelper}
       </FormControl>
       <ClusterSettings level="feed" state={state} setState={setState} />
       <div className={classes.editPanelButtons}>

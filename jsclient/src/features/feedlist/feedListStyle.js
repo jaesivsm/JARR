@@ -66,5 +66,22 @@ export default makeStyles((theme: Theme) =>
       paddingTop: 2,
       paddingBottom: 2,
     },
+    welcome: {
+      '& .MuiAlert-icon': {
+        display: "none",
+      },
+      '& .MuiAlert-message': {
+        padding: 0,
+      },
+      '& svg': {
+        height: 20,
+        width: 20,
+      },
+      '& .MuiButtonBase-root': {
+        height: 20,
+        width: 20,
+        padding: 0,
+      },
+    },
   }),
 );
