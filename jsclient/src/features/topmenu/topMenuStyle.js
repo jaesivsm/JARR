@@ -25,6 +25,15 @@ export default makeStyles((theme: Theme) =>
     },
     logoutButton: {
       paddingRight: 0
+    },
+    burgeredMenu: {
+      "& .MuiPopover-paper": {
+        left: "0px !important",
+        width: "calc(100%)",
+        maxWidth: "none",
+        marginTop: 41,
+        borderRadius: 0,
+      }
     }
   }),
 );
