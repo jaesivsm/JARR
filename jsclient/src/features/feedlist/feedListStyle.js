@@ -29,6 +29,12 @@ export default makeStyles((theme: Theme) =>
       paddingTop: 2,
       paddingBottom: 2,
     },
+    catItem: {
+      [theme.breakpoints.down("sm")]: {
+        paddingLeft: 10,
+        paddingRight: 24
+      }
+    },
     catItemAll: {
         marginLeft: 25
     },
@@ -36,13 +42,20 @@ export default makeStyles((theme: Theme) =>
       lineHeight: 1,
       overflow: "hidden",
       paddingLeft: "32px !important",
-      whiteSpace: "nowrap"
+      whiteSpace: "nowrap",
+      [theme.breakpoints.down("sm")]: {
+        paddingRight: 24,
+        paddingLeft: "18px !important",
+      }
     },
     feedItemText: {
       marginRight: 10,
       "& span" : {
           overflow: "hidden",
           maxWidth: 175,
+          [theme.breakpoints.down("sm")]: {
+            maxWidth: 200,
+          }
       }
     },
     feedBadge: {

@@ -72,7 +72,8 @@ function FeedRow({ index, style, feedListRows,
     <ListItem button
         key={"c" + obj.id + (isSelected ? "s" : "") + obj.unread}
         style={style} selected={isSelected}
-        onClick={(e) => (listClusters(e, { categoryId: isAllCateg ? "all" : obj.id}, obj.folded, selectedCategoryId ))}>
+        onClick={(e) => (listClusters(e, { categoryId: isAllCateg ? "all" : obj.id}, obj.folded, selectedCategoryId ))}
+        className={classes.catItem}>
       {foldButton}
       <ListItemText primary={isAllCateg ? "All" : obj.str} className={isAllCateg ? classes.catItemAll : null} />
       {obj.unread && !isAllCateg ? badge : null}
