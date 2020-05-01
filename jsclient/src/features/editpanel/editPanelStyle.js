@@ -65,11 +65,17 @@ export default makeStyles((theme: Theme) =>
     },
     editPanelButtons: {
       display: "flex",
-      justifyContent: "space-between"
+      justifyContent: "space-between",
+      [theme.breakpoints.down("sm")]: {
+        flexDirection: "column"
+      }
     },
     editPanelBtn: {
       marginTop: 20,
-      marginBottom: 20
+      marginBottom: 20,
+      [theme.breakpoints.down("sm")]: {
+        marginBottom: 0,
+      }
     },
     editPanelCluster: {
       marginBottom: 30
