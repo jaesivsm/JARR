@@ -11,6 +11,8 @@ import Tooltip from "@material-ui/core/Tooltip";
 import IconButton from "@material-ui/core/IconButton";
 import Typography from "@material-ui/core/Typography";
 import Menu from "@material-ui/core/Menu";
+import MenuItem from "@material-ui/core/MenuItem";
+import ListItemIcon from "@material-ui/core/ListItemIcon";
 // material icons
 import MenuIcon from "@material-ui/icons/Menu";
 import MenuOpenIcon from '@material-ui/icons/MenuOpen';
@@ -23,7 +25,6 @@ import MarkAllNonClusterAsReadIcon from "@material-ui/icons/PlaylistAddCheck";
 import SettingsIcon from "@material-ui/icons/Settings";
 import ExitToAppIcon from "@material-ui/icons/ExitToApp";
 // jarr
-import TopMenuCommand from "./components/TopMenuCommand";
 import topMenuStyle from "./topMenuStyle";
 import { doLogout } from "../../authSlice";
 import { toggleMenu, doMarkAllAsRead } from "../feedlist/feedSlice";
@@ -59,49 +60,74 @@ const mapDispatchToProps = (dispatch) => ({
 });
 
 
+
 function TopMenu(props) {
   const theme = useTheme();
   const classes = topMenuStyle();
-  const [showMenu, setShowMenu] = useState(false);
   const burgered = !useMediaQuery(theme.breakpoints.up("md"));
-  let menu;
-  const getLabel = (key) => {
-    if ((key === "unread" && props.isFilteringOnAll)
-         || (key === "liked" && props.isFilteringOnLiked)) {
-      return "Show all";
-    }
-    return { drawer: "Show feed list",
-             unread: "Show unread articles",
-             liked: "Show only liked articles",
-             mark: "Mark all as read",
-             markNC: "Mark all non cluster as read",
-    }[key];
+
+  const [anchorEl, setAnchorEl] = useState(null);
+  const showMenu = Boolean(anchorEl);
+
+  const handleClick = (e) => {
+    setAnchorEl(e.currentTarget);
   };
 
-  const filterReadButton = (
-    <TopMenuCommand burgered={burgered} setShowMenu={setShowMenu}
-      onClick={() => props.filterClusters(props.isFilteringOnAll ? null : "all" )}
-      icon={props.isFilteringOnAll ? <FilterAllIcon />: <FilterUnreadIcon />}
-      title={getLabel("unread")} />
+  const commandsDefs = {
+    unread: { label: (!props.isFilteringOnAll
+                      ? "Show unread articles"
+                      : "Show all"),
+              onClick: () => props.filterClusters(props.isFilteringOnAll
+                                                  ? null : "all"),
+              icon: (!props.isFilteringOnAll
+                     ? <FilterUnreadIcon />
+                     : <FilterAllIcon />)},
+    liked: { label: (props.isFilteringOnLiked
+                     ? "Show all"
+                     : "Show liked articles"),
+             onClick: () => props.filterClusters(props.isFilteringOnLiked
+                                                 ? null : "liked" ),
+             icon: (props.isFilteringOnLiked
+                    ? <FilterAllOrFavoriteIcon />
+                    : <FilterFavoriteIcon />), },
+    mark: { label: "Mark all as read",
+            onClick: () => props.markAllAsRead(false),
+            icon: <MarkAllAsReadIcon /> },
+    markNC: { label: "Mark all non cluster as read",
+              onClick: () => props.markAllAsRead(true),
+              icon: <MarkAllNonClusterAsReadIcon /> },
+  };
+
+  let menu;
+  const commands = ["unread", "liked", "mark", "markNC"].map((key) => {
+      if (burgered) {
+        return (<MenuItem onClick={(e) => {
+                    setAnchorEl(null);
+                    commandsDefs[key].onClick();
+                }}
+                  key={"command-" + key}
+                >
+                  <ListItemIcon>
+                    <IconButton edge="start" color="inherit"
+                      className={classes.menuButton}>
+                      {commandsDefs[key].icon}
+                    </IconButton>
+                  </ListItemIcon>
+                  <Typography>{commandsDefs[key].label}</Typography>
+                </MenuItem>);
+      }
+      return (<Tooltip title={commandsDefs[key].label}
+                key={"command" + key}
+              >
+                <IconButton color="inherit"
+                  onClick={commandsDefs[key].onClick} className={classes.menuButton}
+                >
+                  {commandsDefs[key].icon}
+                </IconButton>
+              </Tooltip>);
+    }
   );
-  const filterLikedButton = (
-    <TopMenuCommand burgered={burgered} setShowMenu={setShowMenu}
-      onClick={() => props.filterClusters(props.isFilteringOnLiked ? null : "liked" )}
-      icon={props.isFilteringOnLiked ? <FilterFavoriteIcon />: <FilterAllOrFavoriteIcon />}
-      title={getLabel("liked")} />
-  );
-  const markAllAsReadButton = (
-    <TopMenuCommand burgered={burgered} setShowMenu={setShowMenu}
-      onClick={() => props.markAllAsRead(false)}
-      icon={<MarkAllAsReadIcon />} title={getLabel("mark")}
-    />
-  );
-  const markAllNonClusterAsReadButton = (
-    <TopMenuCommand burgered={burgered} setShowMenu={setShowMenu}
-      onClick={() => props.markAllAsRead(true)}
-      icon={<MarkAllNonClusterAsReadIcon />} title={getLabel("markNC")}
-    />
-  );
+
   const showFeedList = (
     <Tooltip title="Show feed list">
       <IconButton
@@ -119,7 +145,7 @@ function TopMenu(props) {
   if (burgered) {
     const openMenuIcon = (<IconButton
           color="inherit"
-          onClick={() => setShowMenu(!showMenu)}
+          onClick={handleClick}
         >
           <MenuOpenIcon />
         </IconButton>);
@@ -130,15 +156,12 @@ function TopMenu(props) {
         {openMenuIcon}
         <Menu
           id="simple-menu"
-          anchorEl={openMenuIcon}
+          anchorEl={anchorEl}
           keepMounted
           open={showMenu}
-          onClose={() => setShowMenu(false)}
+          onClose={() => setAnchorEl(null)}
         >
-          {filterReadButton}
-          {filterLikedButton}
-          {markAllAsReadButton}
-          {markAllNonClusterAsReadButton}
+          {commands}
         </Menu>
       </div>
     );
@@ -146,10 +169,7 @@ function TopMenu(props) {
     menu = (
       <div>
         {showFeedList}
-        {filterReadButton}
-        {filterLikedButton}
-        {markAllAsReadButton}
-        {markAllNonClusterAsReadButton}
+        {commands}
       </div>
     );
   }
