@@ -1,6 +1,7 @@
 import React from "react";
 import PropTypes from "prop-types";
 // material ui components
+import Fab from "@material-ui/core/Fab";
 import FormControl from "@material-ui/core/FormControl";
 import Select from "@material-ui/core/Select";
 import MenuItem from "@material-ui/core/MenuItem";
@@ -40,6 +41,7 @@ const defaultFilter = { action: "mark as read", "action on": "match",
 function FilterSettingLine({ index, length, action, trigger, pattern, type, state, setState }) {
   let moveUp;
   let moveDown;
+  const classes = editPanelStyle();
   if (index !== 0) {
     moveUp = (
       <IconButton onClick={() =>
@@ -49,7 +51,7 @@ function FilterSettingLine({ index, length, action, trigger, pattern, type, stat
                               state.filters[index - 1],
                               ...state.filters.slice(index + 1)],
         })
-      }>
+      } className={classes.editPanelFilterArrow} color="primary">
         <ArrowUpIcon />
       </IconButton>);
   }
@@ -62,7 +64,7 @@ function FilterSettingLine({ index, length, action, trigger, pattern, type, stat
                               state.filters[index],
                               ...state.filters.slice(index + 2)],
         })
-      }>
+      } className={classes.editPanelFilterArrow} color="primary">
         <ArrowDownIcon />
       </IconButton>
     );
@@ -72,9 +74,11 @@ function FilterSettingLine({ index, length, action, trigger, pattern, type, stat
                { ...state.filters[index], [key]: e.target.value },
                ...state.filters.slice(index + 1), ]});
   return (
-    <div>
-      {moveUp}{moveDown}
-      <FormControl key="trigger">
+    <div className={classes.editPanelFilter}>
+      <div className={classes.editPanelFilterArrows}>
+        {moveUp}{moveDown}
+      </div>
+      <FormControl key="trigger" className={classes.editPanelFilterTrigger}>
         <Select value={trigger} onChange={onChange("action on")}>
           {Object.keys(FiltersTrigger).map((trigger) => (
             <MenuItem key={trigger} value={trigger}>
@@ -83,17 +87,17 @@ function FilterSettingLine({ index, length, action, trigger, pattern, type, stat
           ))}
         </Select>
       </FormControl>
-      <FormControl key="type">
+      <FormControl key="type" className={classes.editPanelFilterType}>
         <Select value={type} onChange={onChange("type")}>
           {Object.keys(FiltersType).map((type) => (
             <MenuItem key={type} value={type}>{FiltersType[type]}</MenuItem>
           ))}
         </Select>
       </FormControl>
-      <FormControl key="pattern">
+      <FormControl key="pattern" className={classes.editPanelFilterPattern}>
         <TextField value={pattern} required onChange={onChange("pattern")} />
       </FormControl>
-      <FormControl key="action">
+      <FormControl key="action" className={classes.editPanelFilterAction}>
         <Select value={action} onChange={onChange("action")} >
           {Object.keys(FiltersAction).map((action) => (
             <MenuItem key={action} value={action}>
@@ -105,7 +109,10 @@ function FilterSettingLine({ index, length, action, trigger, pattern, type, stat
       <IconButton onClick={() => setState(
           { ...state,
             filters: [ ...state.filters.slice(0, index),
-                       ...state.filters.slice(index + 1)]})}>
+                       ...state.filters.slice(index + 1)]})}
+        className={classes.editPanelFilterDelBtn}
+        color="primary"
+      >
         <MinusIcon />
       </IconButton>
     </div>
@@ -145,12 +152,14 @@ function FilterSettings({ state, setState }) {
             setState={setState}
           />
         )}
-        <IconButton onClick={() => setState({ ...state,
-                                              filters: [ ...state.filters,
-                                                         { ...defaultFilter }]}
-        )}>
-          <PlusIcon />
-        </IconButton>
+        <div className={classes.editPanelFilterAddBtn}>
+          <Fab onClick={() => setState({ ...state,
+                                                filters: [ ...state.filters,
+                                                           { ...defaultFilter }]}
+          )} color="primary">
+            <PlusIcon />
+          </Fab>
+        </div>
       </ExpansionPanelDetails>
     </ExpansionPanel>
   );

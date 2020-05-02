@@ -61,7 +61,7 @@ function AddEditCategory({ isOpen, job, category,
           {job === "add" ? "Create" : "Edit"} Category
         </Button>
         <DeleteButton id={job === "edit" ? category.id : null}
-           type="category" deleteFunc={deleteCategory} className={classes.editPanelBtn}/>
+           type="category" deleteFunc={deleteCategory} className={classes.deletePanelBtn}/>
       </div>
     </FormControl>
     </form>

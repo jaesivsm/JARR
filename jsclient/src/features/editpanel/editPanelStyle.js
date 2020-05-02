@@ -1,5 +1,6 @@
 import { makeStyles, Theme, createStyles } from "@material-ui/core/styles";
 import { editPanelWidth } from "../../const";
+import { jarrColors } from "../../Jarr.theme";
 
 export default makeStyles((theme: Theme) =>
   createStyles({
@@ -77,6 +78,22 @@ export default makeStyles((theme: Theme) =>
         marginBottom: 0,
       }
     },
+    deletePanelBtn: {
+      color: jarrColors.danger.contrastText,
+      backgroundColor: jarrColors.danger.main,
+      marginTop: 20,
+      marginBottom: 20,
+      [theme.breakpoints.down("sm")]: {
+        marginBottom: 0,
+      },
+      "&:hover": {
+        backgroundColor: jarrColors.danger.hover,
+      },
+      "& svg": {
+        position: "relative",
+        left: -8,
+      }
+    },
     editPanelCluster: {
       marginBottom: 30
     },
@@ -108,6 +125,49 @@ export default makeStyles((theme: Theme) =>
       position: "relative",
       transformOrigin: "top left",
       width: "100%"
-    }
+    },
+    editPanelFilter: {
+      display: "flex",
+      marginBottom: 25,
+      marginRight: 16
+    },
+    editPanelFilterArrows: {
+      display: "flex",
+      flexDirection: "column",
+      justifyContent: "center",
+      left: -10,
+      position: "relative"
+    },
+    editPanelFilterArrow: {
+      position: "relative",
+      padding: 0, 
+      "& svg": {
+        height: 18,
+        width: 18,
+      }
+    },
+    editPanelFilterPattern: {
+      position: "relative",
+      top: -1
+    },
+    editPanelFilterAddBtn: {
+      textAlign: "center",
+      width: "100%",
+      "& button": {
+        minHeight: "unset",
+        height: 35,
+        width: 35,
+      }
+    },
+    editPanelFilterDelBtn: {
+      position: "absolute",
+      right: 0,
+      padding: 8,
+      "& svg": {
+        height: 18,
+        width: 18
+      }
+    },
+    deleteButton: {}
   }),
 );

@@ -153,7 +153,7 @@ function AddEditFeed({ job, feed, categories,
         <Button className={classes.editPanelBtn} variant="contained" color="primary" type="submit">
           {job === "add" ? "Create" : "Edit"} Feed
         </Button>
-        <DeleteButton id={feed.id} type="feed" deleteFunc={deleteFeed} className={classes.editPanelBtn}/>
+        <DeleteButton id={feed.id} type="feed" deleteFunc={deleteFeed} className={classes.deletePanelBtn}/>
       </div>
     </FormControl>
     </form>
