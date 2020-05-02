@@ -14,11 +14,11 @@ import Select from "@material-ui/core/Select";
 import editPanelStyle from "../editPanelStyle";
 
 const clusteringConfOptions = {
-    "cluster_enabled": { "label": "Allow clustering article from this feed" },
-    "cluster_tfidf_enabled": { "label": "Allow clustering article by analysing its content through TFIDF"},
-    "cluster_same_category": { "label": "Allow cluster article inside the same category" },
-    "cluster_same_feed": { "label": "Allow clustering article inside the same feed" },
-    "cluster_wake_up": { "label": "Allow clustering to unread an article previously marked as read" }
+    "cluster_enabled": { "label": "Allow article clustering" },
+    "cluster_tfidf_enabled": { "label": "Allow article clustering by analysing its content through TFIDF"},
+    "cluster_same_category": { "label": "Allow clustering between articles in the same category" },
+    "cluster_same_feed": { "label": "Allow clustering between articles inside the same feed" },
+    "cluster_wake_up": { "label": "Allow clustering process to unread an article previously marked as read" }
 };
 
 export function fillMissingClusterOption(obj, level, def=null) {
