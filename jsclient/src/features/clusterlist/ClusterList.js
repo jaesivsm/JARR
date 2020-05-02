@@ -52,6 +52,8 @@ function mapStateToProps(state) {
            loadedCluster: state.clusters.loadedCluster,
            filters: state.clusters.filters,
            loading: state.clusters.loading,
+           moreLoading: state.clusters.moreLoading,
+           moreToFetch: state.clusters.moreToFetch,
            isShifted: state.feeds.isOpen && !state.edit.isOpen,
            selectedFilterObj,
            doDisplayContent: (!!state.clusters.loadedCluster
@@ -73,6 +75,7 @@ const mapDispatchToProps = (dispatch) => ({
 
 function ClusterList({ clusters, filters, loadedCluster,
                        loading, isShifted, doDisplayContent,
+                       moreLoading, moreToFetch,
                        selectedFilterObj,
                        listClusters, loadMoreClusters, openEditPanel,
                        }) {
@@ -94,7 +97,6 @@ function ClusterList({ clusters, filters, loadedCluster,
   let loadMoreButton;
   if (loading) {
     list = <div className={classes.loadingWrap}><CircularProgress /></div>;
-
   } else if (clusters.length) {
     list = clusters.map((cluster) => (
         <Cluster key={"c-" + cluster.id}
@@ -102,13 +104,19 @@ function ClusterList({ clusters, filters, loadedCluster,
           splitedMode={splitedMode}
         />)
     );
-    loadMoreButton = (
-      <div className={classes.clusterLoadMore}>
+    if (moreLoading && moreToFetch) {
+      loadMoreButton = <CircularProgress />;
+    } else if (moreToFetch) {
+      loadMoreButton = (
         <Fab color="primary" className={classes.fab} onClick={loadMoreClusters}>
           <AddIcon />
         </Fab>
-      </div>
-    );
+      );
+    }
+    loadMoreButton = (<div className={classes.clusterLoadMore}>
+                        {loadMoreButton}
+                      </div>);
+
   } else {
     list = (<Alert severity="info">
       Nothing to read with the current filter. Try adding more feeds or come back later!
