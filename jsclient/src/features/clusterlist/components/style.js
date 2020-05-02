@@ -10,18 +10,27 @@ export default makeStyles((theme: Theme) =>
       overflowX: "hidden",
       overflowWrap: "anywhere",
       "& p": {
-        maxWidth: 800,
+        maxWidth: "100%",
+        width: "auto !important",
         "& span": {
           paddingRight: 30,
           fontStyle: "bold",
         },
       },
+      "& div": {
+        maxWidth: "100%",
+        width: "auto !important",
+      },
       "& img": {
-        maxWidth: "100%"
+        maxWidth: "100%",
+        height: "auto"
       }
     },
     articleInner: {
-      padding: "16px 0"
+      padding: "16px 0",
+      '& iframe': {
+        width: "100%"
+      }
     },
     summary: {
       padding: 0,
