@@ -1,7 +1,5 @@
 from prometheus_client import Histogram, Counter
 
-REQUESTS = Counter('request', 'request', ['type'], namespace='jarr')
-
 CLUSTERING = Counter('clustering', 'Cluster events',
                      ['reason'], namespace='jarr')
 
