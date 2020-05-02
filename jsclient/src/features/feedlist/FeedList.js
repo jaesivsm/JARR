@@ -63,7 +63,7 @@ function FeedList(props) {
   const [everLoaded, setEverLoaded] = useState(false);
   const [displaySearch, setDisplaySearch] = useState(false);
   const theme = useTheme();
-  const splitedMode = useMediaQuery(theme.breakpoints.up("md"));
+  const isDesktop = useMediaQuery(theme.breakpoints.up("md"));
   useEffect(() => {
     if (!everLoaded) {
       props.fetchFeed();
@@ -95,7 +95,7 @@ function FeedList(props) {
   let list;
   if (props.isLoading) {
     list = <CircularProgress />;
-  } else if (props.itemCount === 1 && props.setSearchFilter === null) {
+  } else if (props.itemCount === 1 && !displaySearch) {
     list = (
       <Alert severity="info" className={classes.welcome}>
         <p>Hello ! You seem to be new here, welcome !</p>
@@ -107,7 +107,7 @@ function FeedList(props) {
     );
   } else {
     list = (
-      <FixedSizeList height={1000} width={splitedMode ? feedListWidth-1 : '100%'} itemCount={props.itemCount} itemSize={34}>
+      <FixedSizeList height={1000} width={isDesktop ? feedListWidth-1 : '100%'} itemCount={props.itemCount} itemSize={34}>
         {FeedRow}
       </FixedSizeList>
     );
