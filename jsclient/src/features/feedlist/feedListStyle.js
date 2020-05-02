@@ -36,7 +36,7 @@ export default makeStyles((theme: Theme) =>
       }
     },
     catItemAll: {
-        marginLeft: 25
+      marginLeft: 25
     },
     feedItem: {
       lineHeight: 1,
@@ -51,8 +51,8 @@ export default makeStyles((theme: Theme) =>
     feedItemText: {
       marginRight: 10,
       "& span" : {
-          overflow: "hidden",
-          maxWidth: "calc(100% - 25px)",
+        overflow: "hidden",
+        maxWidth: "calc(100% - 25px)",
       }
     },
     feedBadge: {
@@ -64,21 +64,28 @@ export default makeStyles((theme: Theme) =>
       paddingBottom: 2,
     },
     welcome: {
-      '& .MuiAlert-icon': {
+      "& .MuiAlert-icon": {
         display: "none",
       },
-      '& .MuiAlert-message': {
+      "& .MuiAlert-message": {
         padding: 0,
       },
-      '& svg': {
+      "& svg": {
         height: 20,
         width: 20,
       },
-      '& .MuiButtonBase-root': {
+      "& .MuiButtonBase-root": {
         height: 20,
         width: 20,
         padding: 0,
       },
+    },
+    foldButton: {
+      opacity: 0.7,
+      [theme.breakpoints.down("sm")]: {
+        height: 40,
+        width: 40,
+      }
     },
   }),
 );

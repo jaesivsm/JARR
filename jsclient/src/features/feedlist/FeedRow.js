@@ -8,7 +8,7 @@ import ListItem from "@material-ui/core/ListItem";
 import Badge from "@material-ui/core/Badge";
 import ListItemText from "@material-ui/core/ListItemText";
 import ExpandLess from "@material-ui/icons/ExpandLess";
-import ChevronRight from "@material-ui/icons/ChevronRight";
+import ExpandMore from "@material-ui/icons/ExpandMore";
 // jarr
 import { doListClusters } from "../clusterlist/clusterSlice";
 import { toggleMenu, toggleFolding } from "./feedSlice";
@@ -70,10 +70,9 @@ function FeedRow({ index, style, feedListRows,
   }
   const isAllCateg = obj.type === "all-categ";
   let foldButton;
-
   if (!isAllCateg) {
-    const FoldButton = obj.folded ? ChevronRight : ExpandLess;
-    foldButton = <FoldButton onClick={(e) => (toggleCatFolding(e, obj.id))} />;
+    const FoldButton = obj.folded ? ExpandMore: ExpandLess;
+    foldButton = <FoldButton className={classes.foldButton} onClick={(e) => (toggleCatFolding(e, obj.id))} />;
   }
   return (
     <ListItem button
