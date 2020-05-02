@@ -56,7 +56,7 @@ conf = TheConf({'config_files': ['/etc/jarr/jarr.json', '~/.config/jarr.json'],
             {'auth': [{'secret_key': {'default': str(random.getrandbits(128))
                                       }},
                       {'jwt_header_prefix': {'default': 'JWT', 'type': str}},
-                      {'expiration_sec': {'default': 3600, 'type': int}},
+                      {'expiration_sec': {'default': 24 * 3600, 'type': int}},
                       {'allow_signup': {'default': True, 'type': bool}}]},
             {'oauth': [{'allow_signup': {'default': False, 'type': bool}},
                        {'twitter': [{'id': {'default': ''}},
