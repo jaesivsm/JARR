@@ -62,9 +62,9 @@ function FeedRow({ index, style, feedListRows,
           selected={isSelected}
           onClick={(e) => (listClusters(e, { feedId: obj.id }, isDesktop))}
         >
+        {badge}
         {icon}
         <ListItemText primary={obj.str} className={classes.feedItemText}/>
-        {badge}
       </ListItem>
     );
   }
@@ -79,10 +79,10 @@ function FeedRow({ index, style, feedListRows,
         key={"c" + obj.id + (isSelected ? "s" : "") + obj.unread}
         style={style} selected={isSelected}
         onClick={(e) => (listClusters(e, { categoryId: isAllCateg ? "all" : obj.id}, isDesktop, obj.folded, selectedCategoryId ))}
-        className={classes.catItem}>
-      {foldButton}
-      <ListItemText primary={isAllCateg ? "All" : obj.str} className={isAllCateg ? classes.catItemAll : null} />
+        className={isAllCateg ? classes.catItemAll : classes.catItem}>
       {obj.unread && !isAllCateg ? badge : null}
+      <ListItemText primary={isAllCateg ? "All" : obj.str} className={isAllCateg ? classes.catItemAllText : classes.catItemText} />
+      {foldButton}
     </ListItem>
   );
 }

@@ -10,7 +10,7 @@ const iconStyle = makeStyles((theme: Theme) =>
     feedIcon: {
       maxWidth: 16,
       maxHeight: 16,
-      margin: theme.spacing(1),
+      margin: "8px 5px 8px 20px"
     },
     defaultFeedIcon: {
       margin: 6

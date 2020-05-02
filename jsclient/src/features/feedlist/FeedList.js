@@ -94,7 +94,7 @@ function FeedList(props) {
     </IconButton>);
   let list;
   if (props.isLoading) {
-    list = <CircularProgress />;
+    list = <div className={classes.loadFeedList}><CircularProgress /></div>;
   } else if (props.itemCount === 1 && !displaySearch) {
     list = (
       <Alert severity="info" className={classes.welcome}>
