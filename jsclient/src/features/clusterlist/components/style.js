@@ -8,6 +8,7 @@ export default makeStyles((theme: Theme) =>
     },
     article: {
       overflowX: "hidden",
+      overflowWrap: "anywhere",
       "& p": {
         maxWidth: 800,
         "& span": {
@@ -66,7 +67,6 @@ export default makeStyles((theme: Theme) =>
       display: "inline",
       verticalAlign: "bottom",
       whiteSpace: "nowrap",
-      overflow: "hidden",
       maxWidth: "100%",
     },
     mainTitleExpanded: {
@@ -112,7 +112,7 @@ export default makeStyles((theme: Theme) =>
       position: "absolute",
       right: 15,
       fontSize: 12,
-      top: 2,
+      top: 3,
       color: "#5F9EA0",
       opacity: .9,
     },
@@ -152,12 +152,12 @@ export default makeStyles((theme: Theme) =>
     clusterListCardActions: {
       display: "flex",
       "& svg": {
-        height: 15,
-        width: 15,
+        height: 18,
+        width: 18 ,
       }
     },
     clusterListCardActionBtn: {
-      padding: 0
+      padding: "0 5px"
     },
     contentPanel: {
       display: "block",
