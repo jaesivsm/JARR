@@ -57,8 +57,8 @@ export default makeStyles((theme: Theme) =>
         whiteSpace: "nowrap",
         overflow: "hidden",
         position: "relative",
-        top: 3,
-        marginBottom: 5
+        top: 5,
+        marginBottom: 7
       },
       "& img": {
         position: "relative",

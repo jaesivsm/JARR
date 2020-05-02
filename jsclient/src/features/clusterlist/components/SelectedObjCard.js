@@ -13,7 +13,7 @@ import DeleteIcon from "@material-ui/icons/Delete";
 import { doFetchObjForEdit } from "../../editpanel/editSlice";
 import { doDeleteObj } from "../../feedlist/feedSlice";
 import { doListClusters } from "../clusterSlice";
-import FeedIcon from "../../../components/FeedIcon";
+import ClusterIcon from "../../../components/ClusterIcon";
 import makeStyles from "./style";
 
 const mapDispatchToProps = (dispatch) => ({
@@ -34,7 +34,7 @@ function SelectedObjCard({ id, str, type, iconUrl, errorCount, lastRetrieved,
   return (
     <Card variant="outlined" className={classes.clusterListCard}>
       <CardContent className={classes.clusterListCardTitle}>
-        {type === "feed" ? <FeedIcon iconUrl={iconUrl} /> : null}
+        {type === "feed" ? <ClusterIcon iconUrl={iconUrl} /> : null}
         <Typography>{str}</Typography>
       </CardContent>
       <CardActions className={classes.clusterListCardActions}>
