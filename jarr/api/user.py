@@ -1,5 +1,6 @@
 from flask_jwt import current_identity, jwt_required
-from flask_restx import Namespace, Resource
+from flask_restx import Namespace, Resource, fields
+from werkzeug.exceptions import BadRequest
 
 from jarr.api.common import (parse_meaningful_params, set_clustering_options,
                              set_model_n_parser)
@@ -7,15 +8,15 @@ from jarr.controllers import UserController
 
 user_ns = Namespace("user", description="User related operations (update, "
                                         "delete and password management)")
-model = user_ns.model("User", {})
+model = user_ns.model("User", {'login': fields.String()})
 parser = user_ns.parser()
 set_model_n_parser(model, parser, "email", str, nullable=False)
 set_model_n_parser(model, parser, "timezone", str, nullable=False)
 set_clustering_options("user", model, parser, nullable=False)
 parser_edit = parser.copy()
-set_model_n_parser(model, parser_edit, "login", str, nullable=False)
-parser.add_argument("user", type=str, nullable=False, required=True)
+parser_edit.add_argument("password", type=str, nullable=False)
 parser.add_argument("password", type=str, nullable=False, required=True)
+parser.add_argument("login", type=str, nullable=False, required=True)
 
 
 @user_ns.route("")
@@ -46,7 +47,9 @@ class UserResource(Resource):
     @jwt_required()
     def put():
         user_id = current_identity.id
-        attrs = parse_meaningful_params(parser)
+        attrs = parse_meaningful_params(parser_edit)
+        if not attrs:
+            raise BadRequest()
         return UserController(user_id).update({"id": user_id}, attrs,
                 return_objs=True).first(), 200
 
