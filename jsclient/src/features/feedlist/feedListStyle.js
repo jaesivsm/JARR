@@ -55,9 +55,12 @@ export default makeStyles((theme: Theme) =>
     },
     feedItemText: {
       marginRight: 10,
+      [theme.breakpoints.down("sm")]: {
+        marginRight: 25,
+      },
       "& span" : {
-        overflow: "hidden",
         maxWidth: "100%",
+        overflow: "hidden",
       }
     },
     feedBadge: {
