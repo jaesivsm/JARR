@@ -24,7 +24,13 @@ function mergeCategoriesWithUnreads(feedListRows, unreads,
   }).sort((row1, row2) => (row1.index - row2.index));
 }
 
-const defaultFilter = (row) => !row.folded || row.type === "categ" || row.type === "all-categ" || (row.type === "feed" && row["category_id"] === null);
+const defaultFilter = (row) => ( // will display row if
+  !row.folded  // row is not folded
+  || row.type === "categ" // row is a category (can't be folded)
+  || row.type === "all-categ" // row is the "all categ" category (idem)
+  // row is a feed without category (idem)
+  || (row.type === "feed" && row["category_id"] === null)
+);
 const feedSlice = createSlice({
   name: "feeds",
   initialState: { loadingFeeds: true,
