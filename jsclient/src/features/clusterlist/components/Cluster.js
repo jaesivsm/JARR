@@ -20,7 +20,7 @@ import { doFetchCluster, doEditCluster, removeClusterSelection,
 } from "../clusterSlice";
 import makeStyles from "./style";
 import { changeReadCount } from "../../feedlist/feedSlice";
-import FeedIcon from "../../../components/FeedIcon";
+import ClusterIcon from "../../../components/ClusterIcon";
 import Content from "./Content";
 
 function mapStateToProps(state) {
@@ -118,7 +118,7 @@ function Cluster({ cluster,
               onFocus={(e) => e.stopPropagation()}
               onClick={(e) => readOnRedirect(e, cluster)}>
               {[ ...new Set(cluster["feeds_id"])].filter((feedId) => icons[feedId])
-                      .map((feedId) => <FeedIcon
+                      .map((feedId) => <ClusterIcon
                                           key={"i" + cluster.id + "f" + feedId}
                                           iconUrl={icons[feedId]} />
                            )

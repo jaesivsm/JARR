@@ -8,19 +8,29 @@ export default makeStyles((theme: Theme) =>
     },
     article: {
       overflowX: "hidden",
+      overflowWrap: "anywhere",
       "& p": {
-        maxWidth: 800,
+        maxWidth: "100%",
+        width: "auto !important",
         "& span": {
           paddingRight: 30,
           fontStyle: "bold",
         },
       },
+      "& div": {
+        maxWidth: "100%",
+        width: "auto !important",
+      },
       "& img": {
-        maxWidth: "100%"
+        maxWidth: "100%",
+        height: "auto"
       }
     },
     articleInner: {
-      padding: "16px 0"
+      padding: "16px 0",
+      '& iframe': {
+        width: "100%"
+      }
     },
     summary: {
       padding: 0,
@@ -47,8 +57,8 @@ export default makeStyles((theme: Theme) =>
         whiteSpace: "nowrap",
         overflow: "hidden",
         position: "relative",
-        top: 3,
-        marginBottom: 5
+        top: 5,
+        marginBottom: 7
       },
       "& img": {
         position: "relative",
@@ -66,7 +76,6 @@ export default makeStyles((theme: Theme) =>
       display: "inline",
       verticalAlign: "bottom",
       whiteSpace: "nowrap",
-      overflow: "hidden",
       maxWidth: "100%",
     },
     mainTitleExpanded: {
@@ -112,7 +121,7 @@ export default makeStyles((theme: Theme) =>
       position: "absolute",
       right: 15,
       fontSize: 12,
-      top: 2,
+      top: 3,
       color: "#5F9EA0",
       opacity: .9,
     },
@@ -152,12 +161,12 @@ export default makeStyles((theme: Theme) =>
     clusterListCardActions: {
       display: "flex",
       "& svg": {
-        height: 15,
-        width: 15,
+        height: 18,
+        width: 18 ,
       }
     },
     clusterListCardActionBtn: {
-      padding: 0
+      padding: "0 5px"
     },
     contentPanel: {
       display: "block",

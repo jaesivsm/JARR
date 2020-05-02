@@ -7,28 +7,26 @@ import { makeStyles, Theme, createStyles } from "@material-ui/core/styles";
 
 const iconStyle = makeStyles((theme: Theme) =>
   createStyles({
-    feedIcon: {
+    clusterIcon: {
       maxWidth: 16,
       maxHeight: 16,
-      margin: "8px 5px 8px 20px",
-      width: "100%",
-      height: "auto",
-    }
+      margin: "8px 5px 8px 20px"
+    },
   }),
 );
 
-function FeedIcon({ iconUrl }) {
+function ClusterIcon({ iconUrl }) {
   const classes = iconStyle();
   if (iconUrl) {
-    return <img className={classes.feedIcon} alt="" src={
+    return <img className={classes.clusterIcon} alt="" src={
           apiUrl + "/feed/icon?" + qs.stringify({ url: iconUrl })} />;
   }
-  return <LinkIcon className={classes.feedIcon}
+  return <LinkIcon className={classes.clusterIcon}
             color="disabled" fontSize="small"/>;
 }
 
-FeedIcon.propTypes = {
+ClusterIcon.propTypes = {
   iconUrl: PropTypes.string
 };
 
-export default FeedIcon;
+export default ClusterIcon;

@@ -87,6 +87,7 @@ def create_app(testing=False):
         application.config['PRESERVE_CONTEXT_ON_EXCEPTION'] = False
     else:
         application.debug = conf.log.level <= logging.DEBUG
+    application.config['PREFERRED_URL_SCHEME'] = conf.api.scheme
     application.config['RESTX_JSON'] = {'default': default_handler}
 
     api = setup_api(application)

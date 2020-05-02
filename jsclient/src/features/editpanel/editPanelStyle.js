@@ -115,7 +115,10 @@ export default makeStyles((theme: Theme) =>
       marginBottom: 10,
       marginTop: "0 !important",
       "& .MuiSelect-select": {
-        width: 150
+        width: 150,
+        [theme.breakpoints.down("sm")]: {
+          width: '100%'
+        }
       }
     },
     editPanelClusterLabel: {

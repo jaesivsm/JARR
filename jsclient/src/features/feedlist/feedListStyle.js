@@ -30,29 +30,37 @@ export default makeStyles((theme: Theme) =>
       paddingBottom: 2,
     },
     catItem: {
+      paddingLeft: 30,
+      paddingRight: 10,
       [theme.breakpoints.down("sm")]: {
-        paddingLeft: 10,
-        paddingRight: 24
+        paddingLeft: 30,
+        paddingRight: 14
       }
     },
     catItemAll: {
-        marginLeft: 25
+      paddingLeft: 50,
+    },
+    catItemText: {
+      marginLeft: 20
     },
     feedItem: {
       lineHeight: 1,
       overflow: "hidden",
-      paddingLeft: "32px !important",
+      paddingLeft: "35px !important",
       whiteSpace: "nowrap",
       [theme.breakpoints.down("sm")]: {
-        paddingRight: 24,
-        paddingLeft: "18px !important",
+        paddingRight: 14,
+        paddingLeft: "40px !important",
       }
     },
     feedItemText: {
       marginRight: 10,
+      [theme.breakpoints.down("sm")]: {
+        marginRight: 25,
+      },
       "& span" : {
-          overflow: "hidden",
-          maxWidth: "calc(100% - 25px)",
+        maxWidth: "100%",
+        overflow: "hidden",
       }
     },
     feedBadge: {
@@ -64,21 +72,33 @@ export default makeStyles((theme: Theme) =>
       paddingBottom: 2,
     },
     welcome: {
-      '& .MuiAlert-icon': {
+      "& .MuiAlert-icon": {
         display: "none",
       },
-      '& .MuiAlert-message': {
+      "& .MuiAlert-message": {
         padding: 0,
       },
-      '& svg': {
+      "& svg": {
         height: 20,
         width: 20,
       },
-      '& .MuiButtonBase-root': {
+      "& .MuiButtonBase-root": {
         height: 20,
         width: 20,
         padding: 0,
       },
     },
+    foldButton: {
+      opacity: 0.7,
+      [theme.breakpoints.down("sm")]: {
+        height: 40,
+        width: 40,
+      }
+    },
+    loadFeedList: {
+      width: "100%",
+      textAlign: "center",
+      padding: "20px 0",
+    }
   }),
 );

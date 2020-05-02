@@ -1,6 +1,6 @@
 import qs from "qs";
 import { createSlice } from "@reduxjs/toolkit";
-import { apiUrl } from "../../const";
+import { apiUrl, pageLength } from "../../const";
 import { doRetryOnTokenExpiration } from "../../authSlice";
 
 const clusterSlice = createSlice({
@@ -8,6 +8,8 @@ const clusterSlice = createSlice({
   initialState: { filters: { },
                   requestedFilter: "",
                   loading: false,
+                  moreLoading: false,
+                  moreToFetch: true,
                   clusters: [],
                   requestedClusterId: null,
                   loadedCluster: {},
@@ -44,7 +46,7 @@ const clusterSlice = createSlice({
     requestedMoreCLusters(state, action) {
       const filters = { ...state.filters,
                         "from_date": state.clusters[state.clusters.length - 1].main_date };
-      return { ...state, filters,
+      return { ...state, filters, moreLoading: true,
                requestedFilter: qs.stringify(filters),
       };
     },
@@ -54,11 +56,13 @@ const clusterSlice = createSlice({
         return state;  // ignoring
       }
       if (action.payload.strat === "append") {
-        return { ...state, loading: false,
+        return { ...state, loading: false, moreLoading: false,
+                 moreToFetch: action.payload.clusters.length >= pageLength,
                  clusters: [ ...state.clusters, ...action.payload.clusters],
         };
       }
-      return { ...state, loading: false,
+      return { ...state, loading: false, moreLoading: false,
+               moreToFetch: action.payload.clusters.length >= pageLength,
                clusters: action.payload.clusters };
     },
     requestedCluster(state, action) {

@@ -5,7 +5,7 @@ import Tabs from "@material-ui/core/Tabs";
 
 import Article from "./Article";
 import makeStyles from "./style";
-import FeedIcon from "../../../components/FeedIcon";
+import ClusterIcon from "../../../components/ClusterIcon";
 
 function Articles({ articles, icons }) {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -19,7 +19,7 @@ function Articles({ articles, icons }) {
        {articles.map((article, index) => (
           <Tab key={`t-${index}`}
                className={classes.tabs}
-               icon={<FeedIcon iconUrl={icons[article["feed_id"]]} />}
+               icon={<ClusterIcon iconUrl={icons[article["feed_id"]]} />}
                label={isOnlyOneTitle ? null : article.title}
                value={index}
                aria-controls={`a-${index}`}
