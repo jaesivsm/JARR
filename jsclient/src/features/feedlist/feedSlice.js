@@ -9,22 +9,22 @@ function mergeCategoriesWithUnreads(feedListRows, unreads,
                                     isParentFolded) {
   const categories = [];
   return feedListRows.map((row) => {
-     const unread = unreads[row.type + "-" + row.id];
-     let index;
-     if(row.type === "categ" || row.type === "all-categ") {
-       index = categories.length * 3;
-       categories.push(row.id);
-     } else if (unread) {
-       index = categories.indexOf(row["category_id"]) * 3 + 1 / unread;
-     } else {
-       index = categories.indexOf(row["category_id"]) * 3 + 2;
-     }
-     return { ...row, unread: unread ? unread : null, index,
-              folded: row.folded === undefined ? isParentFolded: row.folded };
+    const unread = unreads[row.type + "-" + row.id];
+    let index;
+    if(row.type === "categ" || row.type === "all-categ") {
+      index = categories.length * 3;
+      categories.push(row.id);
+    } else if (unread) {
+      index = categories.indexOf(row["category_id"]) * 3 + 1 / unread;
+    } else {
+      index = categories.indexOf(row["category_id"]) * 3 + 2;
+    }
+    return { ...row, unread: unread ? unread : null, index,
+             folded: row.folded === undefined ? isParentFolded: row.folded };
   }).sort((row1, row2) => (row1.index - row2.index));
 }
 
-const defaultFilter = (row) => !row.folded || row.type === "categ" || row.type === "all-categ";
+const defaultFilter = (row) => !row.folded || row.type === "categ" || row.type === "all-categ" || (row.type === "feed" && row["category_id"] === null);
 const feedSlice = createSlice({
   name: "feeds",
   initialState: { loadingFeeds: true,
