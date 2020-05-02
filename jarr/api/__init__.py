@@ -94,6 +94,7 @@ def create_app(testing=False):
     else:
         application.debug = conf.log.level <= logging.DEBUG
     application.config['PLATFORM_URL'] = conf.platform_url
+    application.config['SERVER_NAME'] = PARSED_PLATFORM_URL.netloc
     application.config['PREFERRED_URL_SCHEME'] = PARSED_PLATFORM_URL.scheme
     application.config['RESTX_JSON'] = {'default': default_handler}
 

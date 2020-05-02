@@ -10,4 +10,4 @@ class Metric(Resource):
 
     @staticmethod
     def get():
-        return Response(generate_latest(), mimetype='plain/text')
+        return Response(generate_latest(), mimetype='text/plain')

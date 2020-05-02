@@ -69,6 +69,8 @@ conf = TheConf({'config_files': ['/etc/jarr/jarr.json', '~/.config/jarr.json'],
                                 {'secret': {'default': ''}}]},
                     {'linuxfr': [{'id': {'default': ''}},
                                  {'secret': {'default': ''}}]}]},
+            {'worker': [{'metrics': [{'port': {'type': int, 'default': 8001}}]
+                         }]},
             {'notification': [{'email': {'default': ''}},
                               {'host': {'default': ''}},
                               {'starttls': {'type': bool, 'default': True}},
