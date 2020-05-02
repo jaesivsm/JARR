@@ -68,7 +68,7 @@ def setup_api(application):
               authorizations=authorizations)
 
     from jarr.api import (feed, cluster, category, one_page_app, opml,
-                          user, auth, oauth)
+                          user, auth, oauth, metrics)
 
     api.add_namespace(one_page_app.default_ns)
     api.add_namespace(feed.feed_ns)
@@ -78,6 +78,7 @@ def setup_api(application):
     api.add_namespace(user.user_ns)
     api.add_namespace(auth.auth_ns)
     api.add_namespace(oauth.oauth_ns)
+    api.add_namespace(metrics.metrics_ns)
     return api
 
 
@@ -93,7 +94,6 @@ def create_app(testing=False):
     else:
         application.debug = conf.log.level <= logging.DEBUG
     application.config['PLATFORM_URL'] = conf.platform_url
-    application.config['SERVER_NAME'] = PARSED_PLATFORM_URL.netloc
     application.config['PREFERRED_URL_SCHEME'] = PARSED_PLATFORM_URL.scheme
     application.config['RESTX_JSON'] = {'default': default_handler}
 
