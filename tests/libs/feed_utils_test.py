@@ -34,9 +34,9 @@ class ConstructFeedFromTest(unittest.TestCase):
     def test_joies_du_code(self):
         self.maxDiff = None
         joi = FBC('https://lesjoiesducode.fr/feed').construct()
+        joi.pop('icon_url')
         self.assertEqual(
-                {'icon_url': 'https://lesjoiesducode.fr/favicon-32x32.png',
-                 'feed_type': FeedType.classic,
+                {'feed_type': FeedType.classic,
                  'link': 'https://lesjoiesducode.fr/feed',
                  'site_link': 'https://lesjoiesducode.fr',
                  'title': 'Les Joies du Code – Humour de développeurs '
