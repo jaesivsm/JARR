@@ -179,6 +179,10 @@ export default makeStyles((theme: Theme) =>
         width: 18
       }
     },
-    deleteButton: {}
+    loadEditPanel: {
+      width: "100%",
+      textAlign: "center",
+      padding: "20px 0",
+    }
   }),
 );

@@ -32,7 +32,8 @@ import { feedListWidth } from "../../const";
 function mapStateToProps(state) {
   return { itemCount: state.feeds.feedListRows.filter(state.feeds.feedListFilter).length,
            isFoldedFromParent: state.feeds.isParentFolded,
-           isOpen: state.feeds.isOpen && !state.edit.isOpen,
+           isFeedListOpen: state.feeds.isOpen,
+           isEditPanelOpen: state.edit.isOpen,
            isLoading: state.feeds.loadingFeeds,
   };
 }
@@ -64,6 +65,7 @@ function FeedList(props) {
   const [displaySearch, setDisplaySearch] = useState(false);
   const theme = useTheme();
   const isDesktop = useMediaQuery(theme.breakpoints.up("md"));
+  const isOpen = (props.isFeedListOpen === null ? isDesktop : props.isFeedListOpen) && !props.isEditPanelOpen;
   useEffect(() => {
     if (!everLoaded) {
       props.fetchFeed();
@@ -117,7 +119,7 @@ function FeedList(props) {
     <Drawer
       variant="persistent"
       anchor="left"
-      open={props.isOpen}
+      open={isOpen}
       className={classes.drawer}
       classes={{
         paper: classes.drawerPaper,
@@ -160,7 +162,8 @@ function FeedList(props) {
 FeedList.propTypes = {
     itemCount: PropTypes.number.isRequired,
     isFoldedFromParent: PropTypes.bool.isRequired,
-    isOpen: PropTypes.bool.isRequired,
+    isFeedListOpen: PropTypes.bool,
+    isEditPanelOpen: PropTypes.bool.isRequired,
     isLoading: PropTypes.bool.isRequired,
     selectedFeedId: PropTypes.number,
     selectedCategoryId: PropTypes.number,

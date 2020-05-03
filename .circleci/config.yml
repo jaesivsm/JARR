@@ -12,7 +12,7 @@ jobs:
       # restore cache and docker layer cache
       - restore_cache:
           keys:
-            - jarr-{{ .Branch }}
+            - jarrback-{{ .Branch }}
           paths:
             - ~/caches/jarr-server.tar
             - ~/caches/jarr-worker.tar
@@ -34,7 +34,7 @@ jobs:
             docker save -o ~/caches/jarr-server.tar jarr-server
             docker save -o ~/caches/jarr-worker.tar jarr-worker
       - save_cache:
-          key: jarr-{{ .Branch }}-{{ epoch }}
+          key: jarrback-{{ .Branch }}-{{ epoch }}
           paths:
             - ~/caches/jarr-server.tar
             - ~/caches/jarr-worker.tar
@@ -47,7 +47,7 @@ jobs:
       # restore cache and docker layer cache
       - restore_cache:
           keys:
-            - jarr-{{ .Branch }}
+            - jarrfront-{{ .Branch }}
           paths:
             - ~/caches/jarr-front.tar
       - run:
@@ -67,7 +67,7 @@ jobs:
           command: |
             docker save -o ~/caches/jarr-front.tar jarr-front
       - save_cache:
-          key: jarr-{{ .Branch }}-{{ epoch }}
+          key: jarrfront-{{ .Branch }}-{{ epoch }}
           paths:
             - ~/caches/jarr-front.tar
 
@@ -79,7 +79,7 @@ jobs:
       # restore cache and docker layer cache
       - restore_cache:
           keys:
-            - jarr-{{ .Branch }}
+            - jarrback-{{ .Branch }}
           paths:
             - ~/caches/jarr-server.tar
             - ~/caches/jarr-worker.tar
@@ -150,10 +150,14 @@ jobs:
     steps:
       - restore_cache:
           keys:
-            - jarr-{{ .Branch }}
+            - jarrback-{{ .Branch }}
           paths:
             - ~/caches/jarr-server.tar
             - ~/caches/jarr-worker.tar
+      - restore_cache:
+          keys:
+            - jarrfront-{{ .Branch }}
+          paths:
             - ~/caches/jarr-front.tar
       - run:
           name: Loading ALL docker image layer caches

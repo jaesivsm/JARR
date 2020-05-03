@@ -4,6 +4,8 @@ import { doRetryOnTokenExpiration } from "../../authSlice";
 import { apiUrl } from "../../const";
 import { storageGet, storageSet } from "../../storageUtils";
 
+const triboolMapping = {"true": true, "false": false, "null": null};
+
 
 function mergeCategoriesWithUnreads(feedListRows, unreads,
                                     isParentFolded) {
@@ -38,7 +40,7 @@ const feedSlice = createSlice({
                   feedListRows: [],
                   unreads: {},
                   isParentFolded: storageGet("left-menu-folded") === "true",
-                  isOpen: storageGet("left-menu-open") !== "false",
+                  isOpen: triboolMapping[storageGet("left-menu-open")],
                   feedListFilter: defaultFilter,
                   icons: {},
   },
