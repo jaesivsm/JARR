@@ -15,6 +15,7 @@ import { doListClusters } from "../clusterlist/clusterSlice";
 import { defaultTo } from "./common";
 import StateTextInput from "./common/StateTextInput";
 import ClusterSettings, { fillMissingClusterOption } from "./common/ClusterSettings";
+import FilterSettings from "./common/FilterSettings";
 import DeleteButton from "./common/DeleteButton";
 
 import editPanelStyle from "./editPanelStyle";
@@ -146,12 +147,13 @@ function AddEditFeed({ job, feed, categories,
         </Select>
         {feedTypeHelper}
       </FormControl>
+      <FilterSettings state={state} setState={setState} />
       <ClusterSettings level="feed" state={state} setState={setState} />
       <div className={classes.editPanelButtons}>
         <Button className={classes.editPanelBtn} variant="contained" color="primary" type="submit">
           {job === "add" ? "Create" : "Edit"} Feed
         </Button>
-        <DeleteButton id={feed.id} type="feed" deleteFunc={deleteFeed} className={classes.editPanelBtn}/>
+        <DeleteButton id={feed.id} type="feed" deleteFunc={deleteFeed} className={classes.deletePanelBtn}/>
       </div>
     </FormControl>
     </form>

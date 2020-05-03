@@ -16,7 +16,7 @@ clustering_options = {
                            " to be clusterized",
         "cluster_tfidf_enabled": "will allow article in your feeds and categor"
                                  "ies to be clusterized through document compa"
-                                "rison",
+                                 "rison",
         "cluster_same_category": "will allow article in your feeds and categor"
                                  "ies to be clusterized while beloning to the "
                                  "same category",
@@ -26,6 +26,7 @@ clustering_options = {
         "cluster_wake_up": "will unread cluster when article from that feed "
                            "are added to it",
 }
+
 
 def set_clustering_options(level, model, parser, nullable=True):
     if level == "user":
