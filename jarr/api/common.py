@@ -16,7 +16,7 @@ clustering_options = {
                            " to be clusterized",
         "cluster_tfidf_enabled": "will allow article in your feeds and categor"
                                  "ies to be clusterized through document compa"
-                                "rison",
+                                 "rison",
         "cluster_same_category": "will allow article in your feeds and categor"
                                  "ies to be clusterized while beloning to the "
                                  "same category",
