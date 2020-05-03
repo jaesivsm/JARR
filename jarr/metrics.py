@@ -17,3 +17,6 @@ FEED_LATENESS = Histogram('feed_lateness',
 
 WORKER = Histogram('worker_method', 'worker taken actions',
                    ['method'], namespace='jarr')
+
+SERVER = Counter('server_method', 'server taken actions',
+                 ['uri', 'method', 'result'], namespace='jarr')

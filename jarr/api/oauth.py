@@ -9,6 +9,7 @@ from jarr.api.auth import model
 from jarr.api.common import get_ui_url
 from jarr.bootstrap import conf
 from jarr.controllers import UserController
+from jarr.metrics import SERVER
 
 oauth_ns = Namespace('oauth', description="OAuth related operations")
 oauth_callback_parser = oauth_ns.parser()
@@ -43,7 +44,10 @@ class OAuthSignInMixin(Resource):  # pragma: no cover
 
     @classmethod
     def process_ids(cls, social_id, username, email):  # pragma: no cover
+
+        labels = {"method": "get", "uri": "/oauth/callback/" + cls.provider}
         if social_id is None:
+            SERVER.labels(result="4XX", **labels).inc()
             raise UnprocessableEntity('No social id, authentication failed')
         ucontr = UserController()
         try:
@@ -51,8 +55,9 @@ class OAuthSignInMixin(Resource):  # pragma: no cover
         except NotFound:
             user = None
         if not user and not conf.oauth.allow_signup:
-            BadRequest('Account creation is not allowed through OAuth.')
-        elif not user:
+            SERVER.labels(result="4XX", **labels).inc()
+            raise BadRequest('Account creation is not allowed through OAuth.')
+        if not user:
             if username and not ucontr.read(login=username).count():
                 login = username
             else:
@@ -61,6 +66,7 @@ class OAuthSignInMixin(Resource):  # pragma: no cover
                                     'login': login, 'email': email})
         jwt_ext = current_app.extensions['jwt']
         access_token = jwt_ext.jwt_encode_callback(user).decode('utf8')
+        SERVER.labels(result="2XX", **labels).inc()
         return {"access_token": "%s %s" % (conf.auth.jwt_header_prefix,
                                            access_token)}, 200
 
@@ -77,6 +83,8 @@ class GoogleAuthorizeUrl(GoogleSignInMixin):
 
     @oauth_ns.response(301, 'Redirect to provider authorize URL')
     def get(self):
+        SERVER.labels(result="3XX", method="get",
+                      uri="/oauth/" + self.provider).inc()
         return None, 301, {'Location': self.service.get_authorize_url(
                 scope='email', response_type='code',
                 redirect_uri=self.get_callback_url())}
