@@ -4,7 +4,7 @@ Revision ID: 00c5cc87408d
 Revises: 256acb048a32
 Create Date: 2018-02-23 15:21:26.384595
 """
-from datetime import datetime
+import logging
 from alembic import op
 import sqlalchemy as sa
 
@@ -14,21 +14,22 @@ down_revision = '256acb048a32'
 branch_labels = None
 depends_on = None
 
+logger = logging.getLogger('alembic.' + revision)
+
 
 def upgrade():
-    print('%s - better model description, adjustements to models'
-          % datetime.now().isoformat())
+    logger.info('better model description, adjustements to models')
     op.alter_column('article', 'feed_id',
                     existing_type=sa.INTEGER(), nullable=False)
     op.alter_column('article', 'user_id',
                     existing_type=sa.INTEGER(), nullable=False)
-    print('%s - adding link_hash column' % datetime.now().isoformat())
+    logger.info('adding link_hash column')
     op.add_column('article', sa.Column('link_hash',
                                        sa.Binary(), nullable=True))
-    print('%s - updating link_hash values' % datetime.now().isoformat())
+    logger.info('updating link_hash values')
     op.get_bind().execute("""UPDATE article
-                             SET link_hash = digest(link, 'sha1');""")
-    print('%s - creating article indexes' % datetime.now().isoformat())
+                             SET link_hash = digest(link, 'SHA1');""")
+    logger.info('creating article indexes')
     op.create_index('ix_article_eid_cid_uid', 'article',
                     ['user_id', 'category_id', 'entry_id'], unique=False)
     op.create_index('ix_article_uid_cid_linkh', 'article',
@@ -46,14 +47,14 @@ def upgrade():
     op.drop_constraint('article_feed_id_fkey', 'article', type_='foreignkey')
     op.drop_constraint('article_category_id_fkey', 'article',
                        type_='foreignkey')
-    print('%s - creating article FK' % datetime.now().isoformat())
+    logger.info('creating article FK')
     op.create_foreign_key(None, 'article', 'user',
                           ['user_id'], ['id'], ondelete='CASCADE')
     op.create_foreign_key(None, 'article', 'category',
                           ['category_id'], ['id'], ondelete='CASCADE')
     op.create_foreign_key(None, 'article', 'feed',
                           ['feed_id'], ['id'], ondelete='CASCADE')
-    print('%s - updating category table' % datetime.now().isoformat())
+    logger.info('updating category table')
     op.alter_column('category', 'user_id',
                existing_type=sa.INTEGER(),
                nullable=False)
@@ -61,11 +62,11 @@ def upgrade():
     op.drop_constraint('category_user_id_fkey', 'category', type_='foreignkey')
     op.create_foreign_key(None, 'category', 'user',
                           ['user_id'], ['id'], ondelete='CASCADE')
-    print('%s - updating cluster table' % datetime.now().isoformat())
+    logger.info('updating cluster table')
     op.alter_column('cluster', 'user_id',
                existing_type=sa.INTEGER(),
                nullable=False)
-    print('%s - creating cluster index' % datetime.now().isoformat())
+    logger.info('creating cluster index')
     op.create_index('ix_cluster_liked_uid_date', 'cluster',
                     ['liked', 'user_id', sa.text('main_date DESC NULLS LAST')],
                     unique=False)
@@ -81,7 +82,7 @@ def upgrade():
     op.drop_constraint('cluster_user_id_fkey', 'cluster', type_='foreignkey')
     op.create_foreign_key(None, 'cluster', 'user',
                           ['user_id'], ['id'], ondelete='CASCADE')
-    print('%s - updating feed table' % datetime.now().isoformat())
+    logger.info('updating feed table')
     op.alter_column('feed', 'cache_support_a_im',
                existing_type=sa.BOOLEAN(),
                nullable=True,

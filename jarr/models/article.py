@@ -26,7 +26,8 @@ class Article(Base):
     readability_parsed = Column(Boolean, default=False)
 
     # integration control
-    article_type = Column(Enum(ArticleType), default=ArticleType.text)
+    article_type = Column(Enum(ArticleType),
+                          default=ArticleType.text, nullable=False)
 
     # parsing
     tags = Column(PickleType, default=[])

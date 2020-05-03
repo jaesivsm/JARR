@@ -5,15 +5,22 @@ from flask_jwt import current_identity, jwt_required
 from flask_restx import Namespace, Resource, fields
 
 from jarr.api.common import (EnumField, parse_meaningful_params,
-                             set_model_n_parser)
+                             set_clustering_options, set_model_n_parser)
 from jarr.controllers import (FeedBuilderController, FeedController,
                               IconController)
 from jarr.lib.enums import FeedStatus, FeedType
+from jarr.lib.filter import FiltersAction, FiltersTrigger, FiltersType
 
 feed_ns = Namespace('feed', description='Feed related operations')
 url_parser = feed_ns.parser()
-url_parser.add_argument('url', type=str, required=True)
-feed_parser = feed_ns.parser()
+url_parser.add_argument('url', type=str, required=True, nullable=False)
+filter_model = feed_ns.model('Filter', {
+        'action': EnumField(FiltersAction),
+        'pattern': fields.String(),
+        'action on': EnumField(FiltersTrigger),
+        'type': EnumField(FiltersType),
+})
+parser = feed_ns.parser()
 feed_build_model = feed_ns.model('FeedBuilder', {
         'link': fields.String(),
         'links': fields.List(fields.String()),
@@ -22,61 +29,60 @@ feed_build_model = feed_ns.model('FeedBuilder', {
         'icon_url': fields.String(),
         'title': fields.String(),
         'description': fields.String(),
+        'cluster_enabled': fields.Boolean(default=True, required=True),
+        'cluster_tfidf_enabled': fields.Boolean(default=True, required=True),
+        'cluster_same_category': fields.Boolean(default=True, required=True),
+        'cluster_same_feed': fields.Boolean(default=True, required=True),
+        'cluster_wake_up': fields.Boolean(default=True, required=True),
+        'same_link_count': fields.Integer(default=0, required=True,
+            help='number of feed with same link existing for that user'),
 })
-feed_model = feed_ns.model('Feed', {
+# read only fields (and filters which are handled in a peculiar way)
+model = feed_ns.model('Feed', {
         'id': fields.Integer(readOnly=True),
-        'error_count': fields.Integer(readOnly=True, default=0,
-            description='The number of consecutive error encountered while '
-                        'fetching this feed'),
         'icon_url': fields.String(readOnly=True,
             description='The complete url to the icon image file'),
-        'last_error': fields.String(readOnly=True, default=None,
-            description='The last error encountered when fetching this feed'),
         'last_retrieved': fields.DateTime(readOnly=True,
             description='Date of the last time this feed was fetched'),
+        'filters': fields.Nested(filter_model, as_list=True),
 })
-suffix = "(if your global settings " \
-        "and the article's category settings allows it)"
-set_model_n_parser(feed_model, feed_parser, 'cluster_enabled', bool,
-        description="will allow article in your feeds and categories to be "
-                    "clusterized" + suffix)
-set_model_n_parser(feed_model, feed_parser, 'cluster_tfidf_enabled', bool,
-        description="will allow article in your feeds and categories to be "
-                    "clusterized through document comparison" + suffix)
-set_model_n_parser(feed_model, feed_parser, 'cluster_same_category', bool,
-        description="will allow article in your feeds and categories to be "
-                    "clusterized while beloning to the same category" + suffix)
-set_model_n_parser(feed_model, feed_parser, 'cluster_same_feed', bool,
-        description="will allow article in your feeds and categories to be "
-                    "clusterized while beloning to the same feed" + suffix)
-set_model_n_parser(feed_model, feed_parser, 'cluster_wake_up', bool,
-        description='will unread cluster when article '
-                    'from that feed are added to it')
-set_model_n_parser(feed_model, feed_parser, 'category_id', int)
-set_model_n_parser(feed_model, feed_parser, 'site_link', str)
-set_model_n_parser(feed_model, feed_parser, 'description', str)
-feed_parser_edit = feed_parser.copy()
-set_model_n_parser(feed_model, feed_parser_edit, 'title', str)
-set_model_n_parser(feed_model, feed_parser_edit, 'status', FeedStatus)
-set_model_n_parser(feed_model, feed_parser_edit, 'link', str)
-feed_parser.add_argument('title', type=str, required=True)
-feed_parser.add_argument('link', type=str, required=True)
-feed_parser.add_argument('icon_url', type=str)
+parser.add_argument('filters', type=list, location='json')
+# clustering options
+set_clustering_options("feed", model, parser)
+set_model_n_parser(model, parser, 'feed_type', FeedType, nullable=False)
+set_model_n_parser(model, parser, 'category_id', int, nullable=False)
+set_model_n_parser(model, parser, 'site_link', str, nullable=False)
+set_model_n_parser(model, parser, 'link', str, nullable=False)
+set_model_n_parser(model, parser, 'description', str, nullable=False)
+set_model_n_parser(model, parser, 'icon_url', str, nullable=False)
+parser_edit = parser.copy()
+set_model_n_parser(model, parser_edit, 'title', str, nullable=False)
+set_model_n_parser(model, parser_edit, 'status', FeedStatus,
+                   nullable=False)
+parser.add_argument('title', type=str, required=True, nullable=False)
+parser.add_argument('link', type=str, required=True, nullable=False)
+parser.add_argument('icon_url', type=str, required=False, nullable=True)
+set_model_n_parser(model, parser_edit, "error_count", int, nullable=False,
+                   description="The number of consecutive error encountered "
+                               "while fetching this feed")
+set_model_n_parser(model, parser_edit, "last_error", str, nullable=True,
+                   description="The last error encountered when fetching "
+                               "this feed")
 
 
 @feed_ns.route('')
 class NewFeedResource(Resource):
 
     @staticmethod
-    @feed_ns.expect(feed_parser, validate=True)
-    @feed_ns.response(201, 'Created', model=feed_model)
+    @feed_ns.expect(parser, validate=True)
+    @feed_ns.response(201, 'Created', model=model)
     @feed_ns.response(400, 'Validation error')
     @feed_ns.response(401, 'Authorization needed')
-    @feed_ns.marshal_with(feed_model, code=201, description='Created')
+    @feed_ns.marshal_with(model, code=201, description='Created')
     @jwt_required()
     def post():
         """Create an new feed."""
-        attrs = parse_meaningful_params(feed_parser)
+        attrs = parse_meaningful_params(parser)
         return FeedController(current_identity.id).create(**attrs), 201
 
 
@@ -84,9 +90,9 @@ class NewFeedResource(Resource):
 class ListFeedResource(Resource):
 
     @staticmethod
-    @feed_ns.response(200, 'OK', model=[feed_model])
+    @feed_ns.response(200, 'OK', model=[model])
     @feed_ns.response(401, 'Authorization needed')
-    @feed_ns.marshal_list_with(feed_model)
+    @feed_ns.marshal_list_with(model)
     @jwt_required()
     def get():
         """List all available feeds with a relative URL to their icons."""
@@ -97,7 +103,17 @@ class ListFeedResource(Resource):
 class FeedResource(Resource):
 
     @staticmethod
-    @feed_ns.expect(feed_parser_edit)
+    @feed_ns.response(200, 'OK', model=model)
+    @feed_ns.response(400, 'Validation error')
+    @feed_ns.response(401, 'Authorization needed')
+    @feed_ns.marshal_with(model, code=200, description='OK')
+    @jwt_required()
+    def get(feed_id):
+        """Read an existing feed."""
+        return FeedController(current_identity.id).get(id=feed_id), 200
+
+    @staticmethod
+    @feed_ns.expect(parser_edit)
     @feed_ns.response(204, 'Updated')
     @feed_ns.response(400, 'Validation error')
     @feed_ns.response(401, 'Authorization needed')
@@ -107,7 +123,7 @@ class FeedResource(Resource):
     def put(feed_id):
         """Update an existing feed."""
         fctrl = FeedController(current_identity.id)
-        attrs = parse_meaningful_params(feed_parser_edit)
+        attrs = parse_meaningful_params(parser_edit)
         changed = fctrl.update({'id': feed_id}, attrs)
         if not changed:
             fctrl.assert_right_ok(feed_id)
@@ -147,9 +163,14 @@ class FeedBuilder(Resource):
             plus alternative links found during parsing
 
         """
+        code = 406
         url = url_parser.parse_args()['url']
         feed = FeedBuilderController(url).construct()
-        return feed, 200 if feed.get('link') else 406
+        if feed.get('link'):
+            code = 200
+            fctrl = FeedController(current_identity.id)
+            feed['same_link_count'] = fctrl.read(link=feed.get('link')).count()
+        return feed, code
 
 
 @feed_ns.route('/icon')

@@ -5,7 +5,6 @@
 
 import logging
 import random
-from urllib.parse import urlparse
 
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
@@ -13,9 +12,6 @@ from sqlalchemy.orm import sessionmaker, scoped_session
 
 from the_conf import TheConf
 
-
-DEFAULT_UI_PORT = 8000
-DEFAULT_URL = 'http://0.0.0.0:%d/' % DEFAULT_UI_PORT
 
 conf = TheConf({'config_files': ['/etc/jarr/jarr.json', '~/.config/jarr.json'],
         'config_file_environ': ['JARR_CONFIG'],
@@ -28,7 +24,10 @@ conf = TheConf({'config_files': ['/etc/jarr/jarr.json', '~/.config/jarr.json'],
                 {'tfidf_min_sample_size': {'default': 10, 'type': int}},
                 {'tfidf_min_score': {'default': .75, 'type': float}}]},
             {'timezone': {'default': 'Europe/Paris', 'type': str}},
-            {'platform_url': {'default': DEFAULT_URL}},
+            {'app': [{'url': {'default': 'http://0.0.0.0:3000'}}]},
+            {'api': [{'scheme': {'default': 'http'}}]},
+            {'worker': [{'metrics': [{'port': {'type': int, 'default': 8001}}]
+                         }]},
             {'db': [{'pg_uri': {'default': 'postgresql://postgresql/jarr'}},
                     {'redis': [{'host': {'default': 'redis'}},
                                {'db': {'default': 0, 'type': int}},
@@ -45,11 +44,9 @@ conf = TheConf({'config_files': ['/etc/jarr/jarr.json', '~/.config/jarr.json'],
                         {'CELERY_IMPORTS': {'default': 'ep_celery'}},
                         {'CELERY_DEFAULT_QUEUE': {'default': 'jarr'}},
                         {'CELERY_DEFAULT_EXCHANGE': {'default': 'jarr'}}]},
-            {'bundle_js': {'default': 'local'}},
             {'log': [{'level': {'default': logging.WARNING, 'type': int}},
                      {'path': {'default': "jarr.log"}}]},
             {'crawler': [{'idle_delay': {'default': 2 * 60, 'type': int}},
-                         {'passwd': {'default': 'admin'}},
                          {'user_agent': {'default': 'Mozilla/5.0 (compatible; '
                                                     'jarr.info)'}},
                          {'timeout': {'default': 30, 'type': int}}]},
@@ -58,19 +55,17 @@ conf = TheConf({'config_files': ['/etc/jarr/jarr.json', '~/.config/jarr.json'],
             {'auth': [{'secret_key': {'default': str(random.getrandbits(128))
                                       }},
                       {'jwt_header_prefix': {'default': 'JWT', 'type': str}},
-                      {'expiration_sec': {'default': 3600, 'type': int}},
+                      {'expiration_sec': {'default': 24 * 3600, 'type': int}},
                       {'allow_signup': {'default': True, 'type': bool}}]},
             {'oauth': [{'allow_signup': {'default': False, 'type': bool}},
-                    {'twitter': [{'id': {'default': ''}},
-                                 {'secret': {'default': ''}}]},
-                    {'facebook': [{'id': {'default': ''}},
-                                  {'secret': {'default': ''}}]},
-                    {'google': [{'id': {'default': ''}},
-                                {'secret': {'default': ''}}]},
-                    {'linuxfr': [{'id': {'default': ''}},
-                                 {'secret': {'default': ''}}]}]},
-            {'worker': [{'metrics': [{'port': {'type': int, 'default': 8001}}]
-                         }]},
+                       {'twitter': [{'id': {'default': ''}},
+                                    {'secret': {'default': ''}}]},
+                       {'facebook': [{'id': {'default': ''}},
+                                     {'secret': {'default': ''}}]},
+                       {'google': [{'id': {'default': ''}},
+                                   {'secret': {'default': ''}}]},
+                       {'linuxfr': [{'id': {'default': ''}},
+                                    {'secret': {'default': ''}}]}]},
             {'notification': [{'email': {'default': ''}},
                               {'host': {'default': ''}},
                               {'starttls': {'type': bool, 'default': True}},
@@ -82,14 +77,11 @@ conf = TheConf({'config_files': ['/etc/jarr/jarr.json', '~/.config/jarr.json'],
                       {'min_expires': {'type': int, 'default': 60 * 10}},
                       {'max_expires': {'type': int, 'default': 60 * 60 * 4}},
                       {'stop_fetch': {'default': 30, 'type': int}}]},
-            {'webserver': [{'host': {'default': '0.0.0.0'}},
-                           {'port': {'default': DEFAULT_UI_PORT,
-                                     'type': int}}]},
                       ]})
 
 
 def is_secure_served():
-    return PARSED_PLATFORM_URL.scheme == 'https'
+    return conf.api.scheme == 'https'
 
 
 def init_logging(log_path=None, log_level=logging.INFO, modules=(),
@@ -125,7 +117,13 @@ def init_models():
     return models
 
 
-PARSED_PLATFORM_URL = urlparse(conf.platform_url)
+def commit_pending_sql(*args, **kwargs):
+    session.commit()
+
+
+def rollback_pending_sql(*args, **kwargs):
+    session.rollback()
+
 
 engine, session, Base = init_db()
 init_models()

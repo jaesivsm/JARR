@@ -1,5 +1,5 @@
 from flask_jwt import current_identity, jwt_required
-from flask_restx import Namespace, Resource, fields
+from flask_restx import Namespace, Resource, fields, inputs
 from werkzeug.exceptions import Forbidden, NotFound
 
 from jarr.api.common import parse_meaningful_params
@@ -9,11 +9,12 @@ from jarr.metrics import READ
 
 cluster_ns = Namespace('cluster', description='Cluster related operations')
 cluster_parser = cluster_ns.parser()
-cluster_parser.add_argument('liked', type=bool)
-cluster_parser.add_argument('read', type=bool)
+cluster_parser.add_argument('liked', type=inputs.boolean, nullable=False)
+cluster_parser.add_argument('read', type=inputs.boolean, nullable=False)
 article_model = cluster_ns.model('Article', {
     'id': fields.Integer(),
     'link': fields.String(),
+    'feed_id': fields.Integer(),
     'title': fields.String(),
     'content': fields.String(),
     'comments': fields.String(),
@@ -96,23 +97,3 @@ class ClusterResource(Resource):
                 raise Forbidden()
             raise
         return None, 204
-
-
-@cluster_ns.route('/redirect/<int:cluster_id>')
-class ClusterRedirectResource(Resource):
-
-    @staticmethod
-    @cluster_ns.response(301, 'Redirect to article')
-    @cluster_ns.response(401, 'Authorization needed')
-    @cluster_ns.response(403, 'Forbidden')
-    @cluster_ns.response(404, 'Not found')
-    @jwt_required()
-    def get(cluster_id):
-        cluster = ClusterController().get(id=cluster_id)
-        if cluster.user_id != current_identity.id:
-            raise Forbidden()
-        ClusterController(current_identity.id).update(
-                {'id': cluster_id},
-                {'read': True, 'read_reason': ReadReason.consulted})
-        READ.labels(ReadReason.consulted.value).inc()
-        return None, 301, {'Location': cluster.main_link}

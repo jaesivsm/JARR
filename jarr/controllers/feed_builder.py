@@ -13,7 +13,7 @@ from jarr.lib.enums import FeedType
 from jarr.utils import jarr_get
 
 logger = logging.getLogger(__name__)
-REDDIT_FEED = re.compile(r'^https?://www.reddit.com/r/(\S+)/$')
+REDDIT_FEED = re.compile(r'^https?://(www.)?reddit.com/r/(\S+)/$')
 INSTAGRAM_RE = re.compile(r'^https?://(www.)?instagram.com/([^ \t\n\r\f\v/]+)')
 TWITTER_RE = re.compile(r'^https?://(www.)?twitter.com/([^ \t\n\r\f\v/]+)')
 TUMBLR_RE = re.compile(r'^https?://([^ \t\n\r\f\v/]+).tumblr.com/.*$')

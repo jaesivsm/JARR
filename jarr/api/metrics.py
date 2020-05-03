@@ -5,6 +5,7 @@ from flask import Response
 
 metrics_ns = Namespace('metrics', description="Prometheus metrics")
 
+
 @metrics_ns.route('')
 class Metric(Resource):
 

@@ -18,19 +18,21 @@ class Feed(Base):
     description = Column(String, default="")
     link = Column(String)
     site_link = Column(String, default="")
-    status = Column(Enum(FeedStatus), default=FeedStatus.active)
+    status = Column(Enum(FeedStatus), default=FeedStatus.active,
+                    nullable=False)
     created_date = Column(UTCDateTime, default=utc_now)
     filters = Column(PickleType, default=[])
 
     # integration control
-    feed_type = Column(Enum(FeedType), default=FeedType.classic)
+    feed_type = Column(Enum(FeedType),
+                       default=FeedType.classic, nullable=False)
 
     # clustering control
-    cluster_enabled = Column(Boolean, default=True)
-    cluster_tfidf_enabled = Column(Boolean, default=True)
-    cluster_same_category = Column(Boolean, default=True)
-    cluster_same_feed = Column(Boolean, default=True)
-    cluster_wake_up = Column(Boolean, default=True)
+    cluster_enabled = Column(Boolean, default=True, nullable=True)
+    cluster_tfidf_enabled = Column(Boolean, default=True, nullable=True)
+    cluster_same_category = Column(Boolean, default=True, nullable=True)
+    cluster_same_feed = Column(Boolean, default=True, nullable=True)
+    cluster_wake_up = Column(Boolean, default=True, nullable=True)
     cluster_conf = Column(PickleType, default={})
 
     # cache handling

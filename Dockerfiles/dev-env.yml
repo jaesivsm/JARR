@@ -19,7 +19,7 @@ services:
     ports:
       - 0.0.0.0:5432:5432
     volumes:
-      - ../jarr-data:/var/lib/postgresql/data
+      - ../.jarr-data:/var/lib/postgresql/data
     command:
       - "postgres"
       - "-c"

@@ -23,9 +23,8 @@ def db_create(login='admin', password='admin'):
     """Will create the database from conf parameters."""
     admin = {'is_admin': True, 'is_api': True,
              'login': login, 'password': password}
-    with application.app_context():
-        Base.metadata.create_all()
-        UserController(ignore_context=True).create(**admin)
+    Base.metadata.create_all()
+    UserController().create(**admin)
 
 
 @manager.command
