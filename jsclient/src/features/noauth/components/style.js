@@ -23,7 +23,7 @@ export default makeStyles((theme: Theme) =>
       transform: "translate(-50%, -50%)",
       height: "auto",
       width: 350,
-      [theme.breakpoints.down("sm")]: {
+      [theme.breakpoints.down("xs")]: {
           top: 25,
           marginBottom: 20,
           transform: "translateX(-50%)",
