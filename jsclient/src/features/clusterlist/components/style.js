@@ -166,7 +166,7 @@ export default makeStyles((theme: Theme) =>
       }
     },
     clusterListCardActionBtn: {
-      padding: "0 5px"
+      padding: "5px"
     },
     contentPanel: {
       display: "block",
