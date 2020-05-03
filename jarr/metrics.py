@@ -14,3 +14,6 @@ FEED_FETCH = Counter('feed_fetch', 'Feed fetching event',
 FEED_LATENESS = Histogram('feed_lateness',
                           'observed delta time when fetching feed',
                           ['feed_type'], namespace='jarr')
+
+WORKER = Histogram('worker_method', 'worker taken actions',
+                   ['method'], namespace='jarr')
