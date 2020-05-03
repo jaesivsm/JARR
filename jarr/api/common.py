@@ -27,6 +27,7 @@ clustering_options = {
                            "are added to it",
 }
 
+
 def set_clustering_options(level, model, parser, nullable=True):
     if level == "user":
         suffix = " (article's feed and category clustering settings allows it)"
