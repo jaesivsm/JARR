@@ -78,7 +78,7 @@ function FilterSettingLine({ index, length, action, trigger, pattern, type, stat
       <div className={classes.editPanelFilterArrows}>
         {moveUp}{moveDown}
       </div>
-      <FormControl key="trigger" className={classes.editPanelFilterTrigger}>
+      <FormControl key="trigger" className={classes.editPanelFilterItem}>
         <Select value={trigger} onChange={onChange("action on")}>
           {Object.keys(FiltersTrigger).map((trigger) => (
             <MenuItem key={trigger} value={trigger}>
@@ -87,17 +87,17 @@ function FilterSettingLine({ index, length, action, trigger, pattern, type, stat
           ))}
         </Select>
       </FormControl>
-      <FormControl key="type" className={classes.editPanelFilterType}>
+      <FormControl key="type" className={classes.editPanelFilterItem}>
         <Select value={type} onChange={onChange("type")}>
           {Object.keys(FiltersType).map((type) => (
             <MenuItem key={type} value={type}>{FiltersType[type]}</MenuItem>
           ))}
         </Select>
       </FormControl>
-      <FormControl key="pattern" className={classes.editPanelFilterPattern}>
+      <FormControl key="pattern" className={classes.editPanelFilterItem}>
         <TextField value={pattern} required onChange={onChange("pattern")} />
       </FormControl>
-      <FormControl key="action" className={classes.editPanelFilterAction}>
+      <FormControl key="action" className={classes.editPanelFilterItem}>
         <Select value={action} onChange={onChange("action")} >
           {Object.keys(FiltersAction).map((action) => (
             <MenuItem key={action} value={action}>

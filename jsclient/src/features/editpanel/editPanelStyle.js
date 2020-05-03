@@ -121,6 +121,16 @@ export default makeStyles((theme: Theme) =>
         }
       }
     },
+    editPanelFilterItem: {
+      "& .MuiInput-root": {
+        height: 32,
+        justifyContent: "center"
+      },
+      "& .MuiTextField-root": {
+        height: 32,
+        justifyContent: "center"
+      }
+    },
     editPanelClusterLabel: {
       textAlign: "left",
       display: "block",
@@ -131,6 +141,8 @@ export default makeStyles((theme: Theme) =>
     },
     editPanelFilter: {
       display: "flex",
+      alignItems: "baseline",
+      flexDirection: "row",
       marginBottom: 25,
       marginRight: 16
     },
@@ -148,10 +160,6 @@ export default makeStyles((theme: Theme) =>
         height: 18,
         width: 18,
       }
-    },
-    editPanelFilterPattern: {
-      position: "relative",
-      top: -1
     },
     editPanelFilterAddBtn: {
       textAlign: "center",
