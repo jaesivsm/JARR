@@ -7,8 +7,13 @@ logger = logging.getLogger(__name__)
 
 class FiltersAction(Enum):
     READ = 'mark as read'
+    UNREAD = 'mark as unread'
     LIKED = 'mark as favorite'
+    UNLIKED = 'mark as unliked'
     SKIP = 'skipped'
+    UNSKIPPED = 'unskipped'
+    ALLOW_CLUSTERING = 'allow clustering'
+    DISALLOW_CLUSTERING = 'disallow clustering'
 
 
 class FiltersType(Enum):
@@ -59,8 +64,29 @@ def _is_filter_matching(filter_, article):
             or not match and filter_trigger is FiltersTrigger.NO_MATCH
 
 
+def _alter_result(filter_action, filter_result):
+    if filter_action is FiltersAction.READ:
+        filter_result['read'] = True
+    if filter_action is FiltersAction.UNREAD:
+        filter_result['read'] = False
+    elif filter_action is FiltersAction.LIKED:
+        filter_result['liked'] = True
+    elif filter_action is FiltersAction.UNLIKED:
+        filter_result['liked'] = False
+    elif filter_action is FiltersAction.SKIP:
+        filter_result['skipped'] = True
+    elif filter_action is FiltersAction.UNSKIPPED:
+        filter_result['skipped'] = False
+    elif filter_action is FiltersAction.ALLOW_CLUSTERING:
+        filter_result['clustering'] = True
+    elif filter_action is FiltersAction.DISALLOW_CLUSTERING:
+        filter_result['clustering'] = False
+
+
 def process_filters(filters, article, only_actions=None):
-    skipped, read, liked = False, None, False
+    keys = 'skipped', 'clustering', 'read', 'liked'
+    defaults = False, True, None, False
+    filter_result = dict(zip(keys, defaults))
     filters = filters or []
     if only_actions is None:
         only_actions = set(FiltersAction)
@@ -74,14 +100,10 @@ def process_filters(filters, article, only_actions=None):
         if not _is_filter_matching(filter_, article):
             continue
 
-        if filter_action is FiltersAction.READ:
-            read = True
-        elif filter_action is FiltersAction.LIKED:
-            liked = True
-        elif filter_action is FiltersAction.SKIP:
-            skipped = True
+        _alter_result(filter_action, filter_result)
 
-    if skipped or read or liked:
-        logger.info("%r applied on %r", filter_action.value,
-                    article.get('link') or article.get('title'))
-    return skipped, read, liked
+    if any(filter_result[key] != defaults[i] for i, key in enumerate(keys)):
+        logger.info('processing filters resulted on %r for %r',
+                    filter_result, article)
+
+    return filter_result

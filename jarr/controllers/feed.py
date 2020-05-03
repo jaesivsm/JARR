@@ -1,4 +1,5 @@
 import logging
+from collections import defaultdict, OrderedDict
 from datetime import datetime, timedelta
 
 import dateutil.parser
@@ -16,6 +17,14 @@ from jarr.lib.enums import FeedStatus
 DEFAULT_LIMIT = 0
 DEFAULT_ART_SPAN_TIME = timedelta(seconds=conf.feed.max_expires)
 logger = logging.getLogger(__name__)
+LIST_W_CATEG_MAPPING = OrderedDict((('id', Feed.id),
+                                    ('str', Feed.title),
+                                    ('icon_url', Feed.icon_url),
+                                    ('category_id', Feed.category_id),
+                                    ('last_retrieved', Feed.last_retrieved),
+                                    ('error_count', Feed.error_count),
+                                    ('last_error', Feed.last_error),
+                                    ))
 
 
 class FeedController(AbstractController):
@@ -27,14 +36,22 @@ class FeedController(AbstractController):
         return ArticleController(self.user_id)
 
     def list_w_categ(self):
-        fields = Feed.id, Category.id, Feed.title, Category.name
-        return session.query(*fields)\
-                .outerjoin(Category, and_(Feed.category_id == Category.id,
-                                          Category.user_id == self.user_id))\
+        feeds = defaultdict(list)
+        for row in session.query(*LIST_W_CATEG_MAPPING.values())\
                 .filter(Feed.user_id == self.user_id,
                         Feed.status != FeedStatus.to_delete,
                         Feed.status != FeedStatus.deleting)\
-                .order_by(Category.name, Feed.title)
+                .order_by(Feed.title):
+            row = dict(zip(LIST_W_CATEG_MAPPING, row))
+            row['type'] = 'feed'
+            feeds[row['category_id']].append(row)
+        yield {'id': None, 'str': None, 'type': 'all-categ'}
+        yield from feeds.get(None, [])
+        for cid, cname in session.query(Category.id, Category.name)\
+                    .filter(Category.user_id == self.user_id)\
+                    .order_by(Category.name.nullsfirst()):
+            yield {'id': cid, 'str': cname, 'type': 'categ'}
+            yield from feeds.get(cid, [])
 
     def get_active_feed(self, **filters):
         filters['error_count__lt'] = conf.feed.error_max

@@ -34,13 +34,13 @@ class ConstructFeedFromTest(unittest.TestCase):
     def test_joies_du_code(self):
         self.maxDiff = None
         joi = FBC('https://lesjoiesducode.fr/feed').construct()
+        joi.pop('icon_url')
         self.assertEqual(
-                {'icon_url': 'https://lesjoiesducode.fr/favicon-32x32.png',
-                 'feed_type': FeedType.classic,
+                {'feed_type': FeedType.classic,
                  'link': 'https://lesjoiesducode.fr/feed',
                  'site_link': 'https://lesjoiesducode.fr',
                  'title': 'Les Joies du Code – Humour de développeurs '
-                 ': gifs, memes'}, joi)
+                 ': gifs, memes, blagues'}, joi)
 
     def test_apod_from_site(self):
         nasa = FBC('http://apod.nasa.gov/').construct()
@@ -87,7 +87,8 @@ class ConstructFeedFromTest(unittest.TestCase):
             'icon_url': 'https://www.instagram.com/static/'
             'images/ico/favicon.ico/36b3ee2d91ed.ico',
             'site_link': 'https://www.instagram.com/jaesivsm/',
-            'title': 'François (@jaesivsm) • Instagram photos and videos'},
+            'title': 'François (@jaesivsm) '
+                     'Instagram profile • 124 photos and videos'},
             insta)
 
     def test_twitter(self):

@@ -5,20 +5,19 @@ Revises: a987c6ce888d
 Create Date: 2018-08-30 15:09:41.541800
 
 """
-
-# revision identifiers, used by Alembic.
-revision = '33c6542730e6'
-down_revision = 'a987c6ce888d'
-branch_labels = None
-depends_on = None
-
-from datetime import datetime
+import logging
 from alembic import op
 import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
+revision = '33c6542730e6'
+down_revision = 'a987c6ce888d'
+branch_labels = None
+depends_on = None
+logger = logging.getLogger('alembic.' + revision)
+
 def upgrade():
-    print('%s - droping old indexes' % datetime.now().isoformat())
+    logger.info('droping old indexes')
     op.drop_index('article_uid', table_name='article')
     op.drop_index('article_uid_cid_cluid', table_name='article')
     op.drop_index('article_uid_cluid', table_name='article')
