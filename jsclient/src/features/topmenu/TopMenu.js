@@ -34,10 +34,11 @@ import { doFetchObjForEdit } from "../editpanel/editSlice";
 
 
 function mapStateToProps(state) {
-  return { isShifted: state.feeds.isOpen && !state.edit.isOpen,
-           isMenuButtonHidden: state.feeds.isOpen || state.edit.isOpen,
+  return { isMenuButtonHidden: state.feeds.isOpen || state.edit.isOpen,
            isFilteringOnAll: state.clusters.filters.filter === "all",
            isFilteringOnLiked: state.clusters.filters.filter === "liked",
+           isFeedListOpen: state.feeds.isOpen,
+           isEditPanelOpen: state.edit.isOpen,
   };
 }
 
@@ -66,6 +67,7 @@ function TopMenu(props) {
   const theme = useTheme();
   const classes = topMenuStyle();
   const burgered = !useMediaQuery(theme.breakpoints.up("md"));
+  const isShifted = (props.isFeedListOpen === null ? !burgered : props.isFeedListOpen) && !props.isEditPanelOpen;
 
   // menu on smal display
   const [anchorEl, setAnchorEl] = useState(null);
@@ -177,7 +179,7 @@ function TopMenu(props) {
   }
 
   const className = clsx(classes.appBar, {
-    [classes.appBarShift]: props.isShifted,
+    [classes.appBarShift]: isShifted,
   });
   return (
     <AppBar position="fixed" className={className}>
@@ -202,7 +204,8 @@ function TopMenu(props) {
 }
 
 TopMenu.propTypes = {
-  isShifted: PropTypes.bool.isRequired,
+  isFeedListOpen: PropTypes.bool,
+  isEditPanelOpen: PropTypes.bool.isRequired,
   isFilteringOnAll: PropTypes.bool.isRequired,
   isFilteringOnLiked: PropTypes.bool.isRequired,
   isMenuButtonHidden: PropTypes.bool.isRequired,

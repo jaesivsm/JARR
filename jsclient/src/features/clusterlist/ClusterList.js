@@ -54,7 +54,8 @@ function mapStateToProps(state) {
            loading: state.clusters.loading,
            moreLoading: state.clusters.moreLoading,
            moreToFetch: state.clusters.moreToFetch,
-           isShifted: state.feeds.isOpen && !state.edit.isOpen,
+           isFeedListOpen: state.feeds.isOpen,
+           isEditPanelOpen: state.edit.isOpen,
            selectedFilterObj,
            doDisplayContent: (!!state.clusters.loadedCluster
               && !!state.clusters.requestedClusterId
@@ -74,7 +75,8 @@ const mapDispatchToProps = (dispatch) => ({
 
 
 function ClusterList({ clusters, filters, loadedCluster,
-                       loading, isShifted, doDisplayContent,
+                       loading, doDisplayContent,
+                       isFeedListOpen, isEditPanelOpen,
                        moreLoading, moreToFetch,
                        selectedFilterObj,
                        listClusters, loadMoreClusters, openEditPanel,
@@ -82,6 +84,7 @@ function ClusterList({ clusters, filters, loadedCluster,
   const theme = useTheme();
   const classes = makeStyles();
   const splitedMode = useMediaQuery(theme.breakpoints.up("md"));
+  const isShifted = (isFeedListOpen === null ? splitedMode : isFeedListOpen) && !isEditPanelOpen;
   const contentClassName = clsx(classes.main,
     {[classes.mainShifted]: isShifted,
      [classes.mainSplitted]: splitedMode});
@@ -168,6 +171,8 @@ ClusterList.propTypes = {
   clusters: PropTypes.array.isRequired,
   filters: PropTypes.object.isRequired,
   loading: PropTypes.bool.isRequired,
+  isFeedListOpen: PropTypes.bool,
+  isEditPanelOpen: PropTypes.bool.isRequired,
   listClusters: PropTypes.func.isRequired,
   selectedFilterObj: PropTypes.object,
   doDisplayContent: PropTypes.bool.isRequired,
