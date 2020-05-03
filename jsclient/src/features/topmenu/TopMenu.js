@@ -75,8 +75,8 @@ function TopMenu(props) {
   // iter through commands on top menu
   const commandsDefs = {
     unread: { label: (!props.isFilteringOnAll
-                      ? "Show unread articles"
-                      : "Show all"),
+                      ? "Show all"
+                      : "Show unread articles"),
               onClick: () => props.filterClusters(props.isFilteringOnAll
                                                   ? null : "all"),
               icon: (!props.isFilteringOnAll
@@ -148,7 +148,7 @@ function TopMenu(props) {
           color="inherit"
           onClick={handleClick}
         >
-         {showMenu ?  <MoreVertIcon /> : <MoreHorizIcon />} 
+         {showMenu ?  <MoreVertIcon /> : <MoreHorizIcon />}
         </IconButton>);
 
     menu = (
