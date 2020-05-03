@@ -38,7 +38,7 @@ function EditPanel({ isOpen, isLoading, job, objType,
                      buildedFeed, loadedObj, categories,
                      close }) {
   const classes = editPanelStyle();
-  let form = <CircularProgress />;
+  let form = <div className={classes.loadEditPanel}><CircularProgress /></div>;
   if(job === "add" && objType === "feed") {
     if(buildedFeed) {
       form = <AddEditFeed job={job} feed={buildedFeed} categories={categories} />;
