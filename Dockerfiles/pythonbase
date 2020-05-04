@@ -1,11 +1,11 @@
 FROM python:3.7-slim
 
-RUN apt install --yes --force-yes \
+RUN apt install --yes \
     libxml2-dev \
     postgresql-server-dev-all \
     && pip install --no-cache-dir --upgrade pip pipenv \
-    && apt clean --yes --force-yes \
-    && apt autoremove --yes --force-yes
+    && apt clean --yes \
+    && apt autoremove --yes
 RUN useradd jarr --create-home --shell /bin/bash --home-dir /jarr --user-group
 WORKDIR /jarr
 USER jarr
