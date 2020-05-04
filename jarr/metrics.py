@@ -1,8 +1,5 @@
 from prometheus_client import Histogram, Counter
 
-CLUSTERING = Counter('clustering', 'Cluster events',
-                     ['reason'], namespace='jarr')
-
 ARTICLE_CREATION = Counter('article_creation', 'Article Creation',
                            ['article_type'], namespace='jarr')
 
@@ -17,6 +14,13 @@ FEED_LATENESS = Histogram('feed_lateness',
 
 WORKER = Counter('worker_method', 'worker taken actions',
                  ['method'], namespace='jarr')
+
+CLUSTERING = Counter('clustering', 'clustering context and decision',
+                     ['filters',  # filter allows clustering or not
+                      'config',  # config allows clustering or not
+                      'result',  # result is a match or not
+                      'match',  # method for the match
+                      ], namespace='jarr')
 
 SERVER = Counter('server_method', 'server taken actions',
                  ['uri', 'method', 'result'], namespace='jarr')

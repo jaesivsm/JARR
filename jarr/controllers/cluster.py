@@ -27,13 +27,19 @@ JR_SQLA_FIELDS = [getattr(Cluster, key) for key in __returned_keys]
 JR_PAGE_LENGTH = 30
 
 
-def _get_parent_attr(obj, attr):
-    return (getattr(obj.user, attr) and getattr(obj.category, attr, True)
-            and getattr(obj.feed, attr))
+def get_config(obj, attr, level="feed"):
+    val = getattr(obj, attr)
+    if val is not None:
+        return val
+    if level == "feed":
+        return get_config(obj.category, attr, "category")
+    if level == "category":
+        return get_config(obj.user, attr, "user")
+    return val
 
 
 def is_same_ok(obj, parent):
-    return _get_parent_attr(obj, 'cluster_same_%s' % parent)
+    return get_config(obj, 'cluster_same_%s' % parent)
 
 
 class ClusterController(AbstractController):
@@ -67,7 +73,10 @@ class ClusterController(AbstractController):
         # operations involving categories are complicated, handling in software
         for candidate in query:
             if candidate.category_id:
-                if not candidate.category.cluster_enabled:
+                if not get_config(candidate.category,
+                                  "cluster_enabled", "category"):
+                    CLUSTERING.labels(filters="allow", config="target-forbid",
+                                      result="miss", match="none").inc()
                     continue
             yield candidate
 
@@ -75,11 +84,14 @@ class ClusterController(AbstractController):
         for candidate in self._get_query_for_clustering(article,
                 {'link_hash': article.link_hash}):
             article.cluster_reason = ClusterReason.link
-            CLUSTERING.labels(reason=ClusterReason.link.value).inc()
+            CLUSTERING.labels(filters="allow", config="allow",
+                              result="match", match="link_hash").inc()
             return candidate.cluster
         for candidate in self._get_query_for_clustering(article,
                 {'link': article.link}):
             article.cluster_reason = ClusterReason.link
+            CLUSTERING.labels(filters="allow", config="allow",
+                              result="match", match="link").inc()
             return candidate.cluster
 
     def _get_cluster_by_similarity(self, article):
@@ -99,6 +111,8 @@ class ClusterController(AbstractController):
         if len(neighbors) < min_sample_size:
             logger.info('only %d docs against %d required, no TFIDF for %r',
                         len(neighbors), min_sample_size, article)
+            CLUSTERING.labels(filters="allow", config="sample-size-forbid",
+                              result="miss", match="tfidf").inc()
             return None
 
         best_match, score = get_best_match_and_score(article, neighbors)
@@ -107,8 +121,11 @@ class ClusterController(AbstractController):
             article.cluster_score = int(score * 1000)
             article.cluster_tfidf_neighbor_size = len(neighbors)
             article.cluster_tfidf_with = best_match.id
-            CLUSTERING.labels(reason=ClusterReason.tf_idf.value).inc()
+            CLUSTERING.labels(filters="allow", config="allow",
+                              result="match", match="tfidf").inc()
             return best_match.cluster
+        CLUSTERING.labels(filters="allow", config="score-forbid",
+                          result="miss", match="tfidf").inc()
 
     def _create_from_article(self, article,
                              cluster_read=None, cluster_liked=False):
@@ -122,7 +139,6 @@ class ClusterController(AbstractController):
         cluster.read = bool(cluster_read)
         cluster.liked = cluster_liked
         article.cluster_reason = ClusterReason.original
-        CLUSTERING.labels(reason=ClusterReason.original.value).inc()
         self.enrich_cluster(cluster, article, cluster_read, cluster_liked)
         return cluster
 
@@ -158,13 +174,15 @@ class ClusterController(AbstractController):
         filter_read = filter_result.get('read')
         filter_liked = filter_result.get('liked')
         logger.info('%r - processed filter: %r', article, filter_result)
-        cluster_config = _get_parent_attr(article, 'cluster_enabled')
+        cluster_config = get_config(article.feed, 'cluster_enabled')
         if allow_clutering and cluster_config:
             cluster = self._get_cluster_by_link(article)
-            tfidf_config = _get_parent_attr(article, 'cluster_tfidf_enabled')
+            tfidf_config = get_config(article.feed, 'cluster_tfidf_enabled')
             if not cluster and tfidf_config:
                 cluster = self._get_cluster_by_similarity(article)
-            elif not tfidf_config:
+            elif not cluster and not tfidf_config:
+                CLUSTERING.labels(filters="allow", config="forbid",
+                                  result="miss", match="tfidf").inc()
                 logger.debug("%r - no clustering because tfidf disabled",
                              article)
             if cluster:
@@ -173,6 +191,9 @@ class ClusterController(AbstractController):
         else:
             logger.debug("%r - no clustering because filters: %r, config: %r",
                          article, allow_clutering, cluster_config)
+            CLUSTERING.labels(filters="allow" if allow_clutering else "forbid",
+                              config="allow" if cluster_config else "forbid",
+                              result="miss", match="none").inc()
         return self._create_from_article(article, filter_read, filter_liked)
 
     @classmethod
