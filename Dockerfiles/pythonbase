@@ -9,14 +9,14 @@ RUN apt-get update \
     && apt autoremove --yes \
     && rm -rf /var/log/apt /var/cache/apt /var/log/apt
 RUN useradd jarr --create-home --shell /bin/bash --home-dir /jarr --user-group
+COPY example_conf/jarr.json /etc/jarr/jarr.json
 WORKDIR /jarr
 USER jarr
 COPY ./Pipfil* /jarr/
-RUN pipenv sync
-COPY ./jarr/ /jarr/jarr
-COPY ./migrations/ /jarr/migrations
+RUN pipenv --python /usr/bin/python3.6 sync
 COPY ./manager.py /jarr/manager.py
+COPY ./migrations/ /jarr/migrations
 COPY ./*.py /jarr/
+COPY ./jarr/ /jarr/jarr
 
-COPY example_conf/jarr.json /etc/jarr/jarr.json
 VOLUME /etc/jarr/
