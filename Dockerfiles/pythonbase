@@ -1,4 +1,4 @@
-FROM python:3.6-slim
+FROM python:3.7-slim
 
 RUN pip install --upgrade pip pipenv
 RUN useradd jarr --create-home --shell /bin/bash --home-dir /jarr --user-group
