@@ -15,8 +15,8 @@ FEED_LATENESS = Histogram('feed_lateness',
                           'observed delta time when fetching feed',
                           ['feed_type'], namespace='jarr')
 
-WORKER = Histogram('worker_method', 'worker taken actions',
-                   ['method'], namespace='jarr')
+WORKER = Counter('worker_method', 'worker taken actions',
+                 ['method'], namespace='jarr')
 
 SERVER = Counter('server_method', 'server taken actions',
                  ['uri', 'method', 'result'], namespace='jarr')

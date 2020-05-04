@@ -11,7 +11,9 @@ from jarr.crawler.requests_utils import (response_calculated_etag_match,
 from jarr.lib.const import UNIX_START
 from jarr.lib.enums import FeedType
 from jarr.lib.utils import jarr_get, utc_now
-from jarr.metrics import FEED_FETCH as FETCH, FEED_LATENESS as LATENESS
+from jarr.metrics import FEED_FETCH as FETCH
+from jarr.metrics import FEED_LATENESS as LATENESS
+from jarr.metrics import WORKER
 
 logger = logging.getLogger(__name__)
 
@@ -74,6 +76,7 @@ class AbstractCrawler:
         # updating link on permanent move /redirect
         if response.history and self.feed.link != response.url and any(
                 resp.status_code in {301, 308} for resp in response.history):
+            WORKER.labels(method='move-feed').inc()
             logger.warning('feed moved from %r to %r',
                            self.feed.link, response.url)
             info['link'] = response.url
