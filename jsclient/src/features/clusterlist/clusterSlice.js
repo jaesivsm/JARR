@@ -168,7 +168,7 @@ export const doEditCluster = (clusterId, payload): AppThunk => async (dispatch, 
     data: payload,
   }, dispatch, getState);
   const clusterState = getState().clusters;
-  if (clusterState.clusters.filter(
+  if (clusterState.moreToFetch && clusterState.clusters.filter(
         filterClusters(clusterState.requestedClusterId,
                        clusterState.filters.filter)
       ).length === (pageLength / 3 * 2)) {
