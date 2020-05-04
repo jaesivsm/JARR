@@ -8,6 +8,6 @@ COPY jsclient/src/ /jarr/src
 COPY jsclient/public/ /jarr/public
 RUN yarn \
     && yarn build \
-    && rm -rf src public node_modules
+    && rm -rf src public node_modules package.json yarn.lock
 EXPOSE 80
 CMD ["serve", "-p", "80", "-s", "/jarr/build"]

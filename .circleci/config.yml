@@ -12,7 +12,7 @@ jobs:
       # restore cache and docker layer cache
       - restore_cache:
           keys:
-            - jarrback-{{ .Branch }}
+            - jarrback-{{ .Environment.CACHE_VERSION }}.{{ .Branch }}
           paths:
             - ~/caches/jarr-server.tar
             - ~/caches/jarr-worker.tar
@@ -34,7 +34,7 @@ jobs:
             docker save -o ~/caches/jarr-server.tar jarr-server
             docker save -o ~/caches/jarr-worker.tar jarr-worker
       - save_cache:
-          key: jarrback-{{ .Branch }}-{{ epoch }}
+          key: jarrback-{{ .Environment.CACHE_VERSION }}.{{ .Branch }}-{{ epoch }}
           paths:
             - ~/caches/jarr-server.tar
             - ~/caches/jarr-worker.tar
@@ -47,7 +47,7 @@ jobs:
       # restore cache and docker layer cache
       - restore_cache:
           keys:
-            - jarrfront-{{ .Branch }}
+            - jarrfront-{{ .Environment.CACHE_VERSION }}.{{ .Branch }}
           paths:
             - ~/caches/jarr-front.tar
       - run:
@@ -65,7 +65,7 @@ jobs:
           command: |
             docker save -o ~/caches/jarr-front.tar jarr-front
       - save_cache:
-          key: jarrfront-{{ .Branch }}-{{ epoch }}
+          key: jarrfront-{{ .Environment.CACHE_VERSION }}.{{ .Branch }}-{{ epoch }}
           paths:
             - ~/caches/jarr-front.tar
 
@@ -77,7 +77,7 @@ jobs:
       # restore cache and docker layer cache
       - restore_cache:
           keys:
-            - jarrback-{{ .Branch }}
+            - jarrback-{{ .Environment.CACHE_VERSION }}.{{ .Branch }}
           paths:
             - ~/caches/jarr-server.tar
             - ~/caches/jarr-worker.tar
@@ -148,13 +148,13 @@ jobs:
     steps:
       - restore_cache:
           keys:
-            - jarrback-{{ .Branch }}
+            - jarrback-{{ .Environment.CACHE_VERSION }}.{{ .Branch }}
           paths:
             - ~/caches/jarr-server.tar
             - ~/caches/jarr-worker.tar
       - restore_cache:
           keys:
-            - jarrfront-{{ .Branch }}
+            - jarrfront-{{ .Environment.CACHE_VERSION }}.{{ .Branch }}
           paths:
             - ~/caches/jarr-front.tar
       - run:
