@@ -47,7 +47,7 @@ export default makeStyles((theme: Theme) =>
       "& .MuiExpansionPanelSummary-expandIcon": {
         padding: 6,
       },
-    },
+    },  
     link: {
       verticalAlign: "middle",
       display: "flex",
@@ -75,11 +75,10 @@ export default makeStyles((theme: Theme) =>
       paddingLeft: 5,
       display: "inline",
       verticalAlign: "bottom",
-      whiteSpace: "nowrap",
       maxWidth: "100%",
     },
     mainTitleExpanded: {
-      whiteSpace: "break-spaces",
+       whiteSpace: "normal",
     },
     titleAction: {
       padding: 0,
