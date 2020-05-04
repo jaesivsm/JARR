@@ -1,11 +1,13 @@
-FROM python:3.7-slim
+FROM python:3.6-slim
 
-RUN apt install --yes \
-    libxml2-dev \
-    postgresql-server-dev-all \
+RUN apt-get update \
+    && apt-get install --yes \
+        libxml2-dev \
+        postgresql-server-dev-all \
     && pip install --no-cache-dir --upgrade pip pipenv \
     && apt clean --yes \
-    && apt autoremove --yes
+    && apt autoremove --yes \
+    && rm -rf /var/log/apt /var/cache/apt /var/log/apt
 RUN useradd jarr --create-home --shell /bin/bash --home-dir /jarr --user-group
 WORKDIR /jarr
 USER jarr
