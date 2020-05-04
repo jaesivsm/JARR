@@ -11,22 +11,27 @@ logger = logging.getLogger(__name__)
 
 @celery_app.task(name='crawler.process_feed')
 def process_feed(feed_id):
-    FeedController().get_crawler(feed_id).crawl()
+    crawler = FeedController().get_crawler(feed_id)
+    logger.warning("%r is gonna crawl %r", crawler, feed_id)
+    crawler.crawl()
 
 
 @celery_app.task(name='crawler.clusterizer')
 def clusterizer():
+    logger.warning("Gonna clusterize pending articles")
     ClusterController.clusterize_pending_articles()
 
 
 @celery_app.task(name='crawler.feed_cleaner')
 def feed_cleaner():
+    logger.warning("Feed cleaner - start")
     root_feed_ctrl = FeedController()
     feeds = list(root_feed_ctrl.read(status=FeedStatus.to_delete))
     try:
         root_feed_ctrl.update({'id__in': [feed.id for feed in feeds]},
                               {'status': FeedStatus.deleting})
         for feed in feeds:
+            logger.warning("Deleting feed %r", feed)
             FeedController(feed.user_id).delete(feed.id)
     except Exception:
         logger.exception('something went wrong when deleting feeds %r', feeds)
@@ -36,6 +41,7 @@ def feed_cleaner():
 
 @celery_app.task(name='crawler.scheduler')
 def scheduler():
+    logger.warning("Running scheduler")
     feeds = list(FeedController().list_fetchable())
 
     if not feeds:
@@ -48,4 +54,4 @@ def scheduler():
 
     feed_cleaner.apply_async()
     clusterizer.apply_async()
-    scheduler.apply_async()
+    scheduler.apply_async(countdown=60)
