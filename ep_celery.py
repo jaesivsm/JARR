@@ -12,6 +12,6 @@ celery_app = Celery(broker=conf.celery.broker_url,
 signals.task_success.connect(commit_pending_sql)
 signals.task_failure.connect(rollback_pending_sql)
 
-app = make_wsgi_app()
-httpd = make_server('', conf.worker.metrics.port, app)
-httpd.serve_forever()
+#app = make_wsgi_app()
+#httpd = make_server('', conf.worker.metrics.port, app)
+#httpd.serve_forever()
