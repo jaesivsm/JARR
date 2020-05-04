@@ -2,6 +2,7 @@ import React from "react";
 import PropTypes from "prop-types";
 import { connect } from "react-redux";
 // material ui components
+import makeStyles from "./style";
 import CircularProgress from "@material-ui/core/CircularProgress";
 // jarr
 import Articles from "./Articles";
@@ -15,8 +16,9 @@ function mapStateToProps(state) {
 }
 
 function Content({ clusterId, loadedCluster, icons }) {
+  const classes = makeStyles();
   if (loadedCluster.id !== clusterId) {
-    return <CircularProgress />;
+    return <div className={classes.loadingWrap}><CircularProgress /></div>;
   } else if (loadedCluster.articles.length === 1) {
     return (<Article article={loadedCluster.articles[0]}
                      hidden={false} />);

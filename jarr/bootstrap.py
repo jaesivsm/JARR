@@ -35,15 +35,17 @@ conf = TheConf({'config_files': ['/etc/jarr/jarr.json', '~/.config/jarr.json'],
                                {'password': {'default': None}}]}]},
             {'celery': [{'broker': {'default': 'amqp://rabbitmq//'}},
                         {'backend': {'default': 'redis://redis:6379/0'}},
-                        {'BROKER_URL': {'default': 'amqp://rabbitmq//'}},
-                        {'CELERY_TASK_SERIALIZER': {'default': 'json'}},
-                        {'CELERY_RESULT_SERIALIZER': {'default': 'json'}},
-                        {'CELERY_TASK_RESULT_EXPIRE': {'default': None}},
-                        {'CELERY_TIMEZONE': {'default': 'Europe/Paris'}},
-                        {'CELERY_ENABLE_UTC': {'default': True, 'type': bool}},
-                        {'CELERY_IMPORTS': {'default': 'ep_celery'}},
-                        {'CELERY_DEFAULT_QUEUE': {'default': 'jarr'}},
-                        {'CELERY_DEFAULT_EXCHANGE': {'default': 'jarr'}}]},
+                        {'broker_url': {'default': 'amqp://rabbitmq//'}},
+                        {'task_serializer': {'default': 'json'}},
+                        {'result_serializer': {'default': 'json'}},
+                        {'timezone': {'default': 'Europe/Paris'}},
+                        {'enable_utc': {'default': True, 'type': bool}},
+                        {'imports': {
+                            'default': ('ep_celery', 'jarr.crawler.main'),
+                            'type': tuple},
+                        },
+                        {'task_default_queue': {'default': 'jarr'}},
+                        {'task_default_exchange': {'default': 'jarr'}}]},
             {'log': [{'level': {'default': logging.WARNING, 'type': int}},
                      {'path': {'default': "jarr.log"}}]},
             {'crawler': [{'idle_delay': {'default': 2 * 60, 'type': int}},
@@ -128,5 +130,8 @@ def rollback_pending_sql(*args, **kwargs):
 engine, session, Base = init_db()
 init_models()
 
+init_logging(conf.log.path, log_level=logging.ERROR,
+             modules=('urllib3.connectionpool', 'urllib3'))
+init_logging(conf.log.path, log_level=logging.WARNING,
+             modules=('the_conf',))
 init_logging(conf.log.path, log_level=conf.log.level)
-init_logging(conf.log.path, log_level=logging.WARNING, modules=('the_conf',))

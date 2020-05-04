@@ -14,20 +14,10 @@ import Alert from "@material-ui/lab/Alert";
 import Cluster from "./components/Cluster";
 import Content from "./components/Content";
 import SelectedObjCard from "./components/SelectedObjCard";
-import { doListClusters, doLoadMoreClusters } from "./clusterSlice";
+import { doListClusters, doLoadMoreClusters, filterClusters } from "./clusterSlice";
 import makeStyles from "./components/style";
 
 
-const filterClusters = (requestedClusterId, filter) => (cluster) => (
-    // is selected cluster
-    (requestedClusterId && requestedClusterId === cluster.id)
-     // filters is on all
-     || filter === "all"
-     // cluster is not read and no filter
-     || (!cluster.read && !filter)
-     // cluster is liked and filtering on liked
-     || (cluster.liked && filter === "liked")
-);
 
 function mapStateToProps(state) {
   let selectedFilterObj;
@@ -116,14 +106,18 @@ function ClusterList({ clusters, filters, loadedCluster,
         </Fab>
       );
     }
-    loadMoreButton = (<div className={classes.clusterLoadMore}>
-                        {loadMoreButton}
-                      </div>);
-
+    loadMoreButton = (
+      <div className={classes.clusterLoadMore}>
+        {loadMoreButton}
+      </div>
+    );
   } else {
-    list = (<Alert severity="info">
-      Nothing to read with the current filter. Try adding more feeds or come back later!
-    </Alert>);
+    list = (
+      <Alert severity="info">
+        Nothing to read with the current filter.
+        Try adding more feeds or come back later!
+      </Alert>
+    );
   }
   let card;
   if (selectedFilterObj) {

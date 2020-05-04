@@ -9,6 +9,8 @@ RUN = pipenv run
 COMPOSE = $(RUN) docker-compose --project-name jarr --file Dockerfiles/$(ENV)-env.yml
 TEST = tests/
 DB_NAME ?= jarr
+PUBLIC_URL ?=
+REACT_APP_API_URL ?=
 
 install:
 	pipenv sync --dev
@@ -26,18 +28,25 @@ test:
 	$(RUN) nosetests $(TEST) -vv --with-coverage --cover-package=jarr
 
 build-base:
-	docker build --cache-from=jarr . --file Dockerfiles/pythonbase -t jarr-base
+	docker build --cache-from=jarr . \
+		--file Dockerfiles/pythonbase \
+		-t jarr-base
 
 build-server: build-base
-	docker build --cache-from=jarr . --file Dockerfiles/server -t jarr-server
+	docker build --cache-from=jarr . \
+		--file Dockerfiles/server \
+		-t jarr-server
 
 build-worker: build-base
-	docker build --cache-from=jarr . --file Dockerfiles/worker -t jarr-worker
+	docker build --cache-from=jarr . \
+		--file Dockerfiles/worker \
+		-t jarr-worker
 
 build-front:
-	docker build . --file Dockerfiles/front -t jarr-front \
-		--build-arg PUBLIC_URL \
-		--build-arg REACT_APP_API_URL
+	docker build --cache-from=jarr . \
+		--file Dockerfiles/front -t jarr-front \
+		--build-arg PUBLIC_URL=$(PUBLIC_URL) \
+		--build-arg REACT_APP_API_URL=$(REACT_APP_API_URL)
 
 start-env:
 	$(COMPOSE) up -d

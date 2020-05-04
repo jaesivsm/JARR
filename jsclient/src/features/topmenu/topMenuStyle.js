@@ -24,7 +24,7 @@ export default makeStyles((theme: Theme) =>
       justifyContent: "space-between",
     },
     logoutButton: {
-      paddingRight: 0
+      marginRight: -15
     },
     burgeredMenu: {
       "& .MuiPopover-paper": {

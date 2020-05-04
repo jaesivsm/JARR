@@ -22,21 +22,32 @@ class ClusterApiTest(JarrFlaskCommon):
         cluster = ClusterController().read().first()
         user = UserController().get(id=cluster.user_id)
         resp = self.jarr_client('put', 'cluster', cluster.id,
-                data={'read': True})
+                                data={'read': True})
         self.assertStatusCode(401, resp)
         resp = self.jarr_client('put', 'cluster', cluster.id,
-                data={'read': True}, user='user2')
+                                data={'read': True}, user='user2')
         self.assertStatusCode(403, resp)
+        # marking as read
         resp = self.jarr_client('put', 'cluster', cluster.id,
-                data={'read': True}, user=user.login)
+                                data={'read': True}, user=user.login)
         self.assertStatusCode(204, resp)
         cluster = ClusterController().get(id=cluster.id)
         self.assertTrue(cluster.read)
         self.assertFalse(cluster.liked)
         self.assertEqual('marked', cluster.read_reason.value)
-
+        # marking as read / consulted
         resp = self.jarr_client('put', 'cluster', cluster.id,
-                data={'liked': True}, user=user.login)
+                                data={'read_reason': 'consulted',
+                                      'read': True}, user=user.login)
+        self.assertStatusCode(204, resp)
+        cluster = ClusterController().get(id=cluster.id)
+        self.assertTrue(cluster.read)
+        self.assertFalse(cluster.liked)
+        self.assertEqual('consulted', cluster.read_reason.value)
+
+        # marking as liked
+        resp = self.jarr_client('put', 'cluster', cluster.id,
+                                data={'liked': True}, user=user.login)
         self.assertStatusCode(204, resp)
         self.assertTrue(ClusterController().get(id=cluster.id).read)
         self.assertTrue(ClusterController().get(id=cluster.id).liked)

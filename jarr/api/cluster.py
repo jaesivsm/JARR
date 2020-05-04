@@ -11,6 +11,8 @@ cluster_ns = Namespace('cluster', description='Cluster related operations')
 cluster_parser = cluster_ns.parser()
 cluster_parser.add_argument('liked', type=inputs.boolean, nullable=False)
 cluster_parser.add_argument('read', type=inputs.boolean, nullable=False)
+cluster_parser.add_argument('read_reason', type=ReadReason,
+                            choices=list(ReadReason), nullable=False)
 article_model = cluster_ns.model('Article', {
     'id': fields.Integer(),
     'link': fields.String(),
@@ -71,7 +73,9 @@ class ClusterResource(Resource):
     def put(cluster_id):
         cctrl = ClusterController(current_identity.id)
         attrs = parse_meaningful_params(cluster_parser)
-        if 'read' in attrs and attrs['read']:
+        if 'read_reason' in attrs:
+            pass  # not overriding given read reason
+        elif 'read' in attrs and attrs['read']:
             attrs['read_reason'] = ReadReason.marked
             READ.labels(reason=ReadReason.marked.value).inc()
         elif 'read' in attrs and not attrs['read']:

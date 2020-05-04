@@ -59,9 +59,7 @@ jobs:
           name: Building images for front
           command: |
             mkdir -p ~/caches
-            export PUBLIC_URL=""
-            export REACT_APP_API_URL=https://api.jarr.info
-            make build-front
+            make build-front PUBLIC_URL=https://app.jarr.info REACT_APP_API_URL=https://api.jarr.info
       - run:
           name: Saving docker image layer caches
           command: |

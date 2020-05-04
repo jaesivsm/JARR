@@ -16,7 +16,6 @@ import LikedIcon from "@material-ui/icons/Star";
 import LikedIconBorder from "@material-ui/icons/StarBorder";
 // jarr
 import { doFetchCluster, doEditCluster, removeClusterSelection,
-         updateClusterAttrs,
 } from "../clusterSlice";
 import makeStyles from "./style";
 import { changeReadCount } from "../../feedlist/feedSlice";
@@ -75,8 +74,8 @@ const mapDispatchToProps = (dispatch) => ({
   },
   readOnRedirect(e, cluster) {
     e.stopPropagation();
-    dispatch(updateClusterAttrs({
-      clusterId: cluster.id, read: true }));
+    dispatch(doEditCluster(cluster.id,
+                           { read: false, "read_reason": "consulted" }));
     return dispatch(changeReadCount({
       feedsId: cluster["feeds_id"],
       categoriesId: cluster["categories_id"],
@@ -149,7 +148,7 @@ function Cluster({ cluster,
             </Typography>
           </div>
         </ExpansionPanelSummary>
-    {!splitedMode ? (<ExpansionPanelDetails
+          {!splitedMode ? (<ExpansionPanelDetails
            className={classes.content}
            key={"cl-" + cluster.id}>
            <Content clusterId={cluster.id} />
