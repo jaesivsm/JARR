@@ -48,11 +48,13 @@ const mapDispatchToProps = (dispatch) => ({
 });
 
 function ProposedLinks({ link, links, onChange }) {
+  const classes = editPanelStyle();
   return (
       <FormControl>
         <FormHelperText>Other possible feed link have been found :</FormHelperText>
         <Select variant="outlined" value={link}
             onChange={onChange}
+            className={classes.editPanelInput}
         >
             {links.map((proposedLink) => (
               <MenuItem key={"l" + links.indexOf(proposedLink)}
