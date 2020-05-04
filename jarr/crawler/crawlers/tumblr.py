@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 
 
 class TumblrCrawler(ClassicCrawler):
-    feed_type = FeedType.classic
+    feed_type = FeedType.tumblr
 
     def request(self):
         headers = prepare_headers(self.feed)

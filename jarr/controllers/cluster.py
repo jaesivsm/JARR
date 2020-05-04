@@ -75,6 +75,10 @@ class ClusterController(AbstractController):
                 {'link_hash': article.link_hash}):
             article.cluster_reason = ClusterReason.link
             return candidate.cluster
+        for candidate in self._get_query_for_clustering(article,
+                {'link': article.link}):
+            article.cluster_reason = ClusterReason.link
+            return candidate.cluster
 
     def _get_cluster_by_similarity(self, article):
         query = self._get_query_for_clustering(article,
@@ -149,14 +153,22 @@ class ClusterController(AbstractController):
         allow_clutering = filter_result.get('clustering', True)
         filter_read = filter_result.get('read')
         filter_liked = filter_result.get('liked')
-        if allow_clutering and _get_parent_attr(article, 'cluster_enabled'):
+        logger.info('%r - processed filter: %r', article, filter_result)
+        cluster_config = _get_parent_attr(article, 'cluster_enabled')
+        if allow_clutering and cluster_config:
             cluster = self._get_cluster_by_link(article)
-            if not cluster \
-                    and _get_parent_attr(article, 'cluster_tfidf_enabled'):
+            tfidf_config = _get_parent_attr(article, 'cluster_tfidf_enabled')
+            if not cluster and tfidf_config:
                 cluster = self._get_cluster_by_similarity(article)
+            elif not tfidf_config:
+                logger.debug("%r - no clustering because tfidf disabled",
+                             article)
             if cluster:
                 return self.enrich_cluster(cluster, article,
                                            filter_read, filter_liked)
+        else:
+            logger.debug("%r - no clustering because filters: %r, config: %r",
+                         article, allow_clutering, cluster_config)
         return self._create_from_article(article, filter_read, filter_liked)
 
     @classmethod
