@@ -3,6 +3,17 @@ import { createSlice } from "@reduxjs/toolkit";
 import { apiUrl, pageLength } from "../../const";
 import { doRetryOnTokenExpiration } from "../../authSlice";
 
+export const filterClusters = (requestedClusterId, filter) => (cluster) => (
+    // is selected cluster
+    (requestedClusterId && requestedClusterId === cluster.id)
+     // filters is on all
+     || filter === "all"
+     // cluster is not read and no filter
+     || (!cluster.read && !filter)
+     // cluster is liked and filtering on liked
+     || (cluster.liked && filter === "liked")
+);
+
 const clusterSlice = createSlice({
   name: "cluster",
   initialState: { filters: { },
@@ -156,4 +167,11 @@ export const doEditCluster = (clusterId, payload): AppThunk => async (dispatch, 
     url: apiUrl + "/cluster/" + clusterId,
     data: payload,
   }, dispatch, getState);
+  const clusterState = getState().clusters;
+  if (clusterState.clusters.filter(
+        filterClusters(clusterState.requestedClusterId,
+                       clusterState.filters.filter)
+      ).length === (pageLength / 3 * 2)) {
+    dispatch(doLoadMoreClusters());
+  }
 };

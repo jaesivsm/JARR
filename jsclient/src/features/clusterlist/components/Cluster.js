@@ -148,7 +148,7 @@ function Cluster({ cluster,
             </Typography>
           </div>
         </ExpansionPanelSummary>
-    {!splitedMode ? (<ExpansionPanelDetails
+          {!splitedMode ? (<ExpansionPanelDetails
            className={classes.content}
            key={"cl-" + cluster.id}>
            <Content clusterId={cluster.id} />
