@@ -1,11 +1,14 @@
 import logging
 
+import urllib3
+
 from ep_celery import celery_app
 from jarr.bootstrap import conf
 from jarr.controllers import ClusterController, FeedController
 from jarr.lib.enums import FeedStatus
 from jarr.metrics import WORKER
 
+urllib3.disable_warnings()
 logger = logging.getLogger(__name__)
 
 

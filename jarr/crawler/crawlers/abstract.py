@@ -162,3 +162,6 @@ class AbstractCrawler:
 
         if not self.is_cache_hit(response):
             self.create_missing_article(response)
+
+    def __repr__(self):
+        return "<%s(%s)>" % (self.__class__.__name__, self.feed.title)

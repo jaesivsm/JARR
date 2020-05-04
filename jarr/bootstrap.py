@@ -19,7 +19,7 @@ conf = TheConf({'config_files': ['/etc/jarr/jarr.json', '~/.config/jarr.json'],
         'parameters': [
             {'jarr_testing': {'default': False, 'type': bool}},
             {'cluster_default': [
-                {'time_delta': {'default': 7, 'type': int}},
+                {'time_delta': {'default': 20, 'type': int}},
                 {'tfidf_enabled': {'default': True, 'type': bool}},
                 {'tfidf_min_sample_size': {'default': 10, 'type': int}},
                 {'tfidf_min_score': {'default': .75, 'type': float}}]},
@@ -129,8 +129,6 @@ def rollback_pending_sql(*args, **kwargs):
 engine, session, Base = init_db()
 init_models()
 
-init_logging(conf.log.path, log_level=logging.ERROR,
-             modules=('urllib3.connectionpool', 'urllib3'))
 init_logging(conf.log.path, log_level=logging.WARNING,
              modules=('the_conf',))
 init_logging(conf.log.path, log_level=conf.log.level)

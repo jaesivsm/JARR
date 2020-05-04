@@ -32,7 +32,7 @@ const mapDispatchToProps = (dispatch) => ({
   listClusters(e, filters, isDesktop, isFolded, selectedCategoryId) {
     e.stopPropagation();
     if(!isDesktop && (filters.feedId || (filters.categoryId && isFolded))) {
-      dispatch(toggleMenu());
+      dispatch(toggleMenu(false));
     }
     if(isFolded && filters.categoryId){
       dispatch(toggleFolding(filters.categoryId));

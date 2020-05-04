@@ -51,7 +51,7 @@ const mapDispatchToProps = (dispatch) => ({
     return dispatch(markedAllAsRead());
   },
   toggleFeedList() {
-    return dispatch(toggleMenu());
+    return dispatch(toggleMenu(true));
   },
   openEditPanel() {
     return dispatch(doFetchObjForEdit("user"));
