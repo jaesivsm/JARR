@@ -1,7 +1,9 @@
 FROM python:3.6-slim
 
 RUN apt-get update \
-    && apt-get install --yes \
+    && apt-get install --yes --no-install-recommends \
+        gcc \
+        python3-dev \
         libxml2-dev \
         postgresql-server-dev-all \
     && pip install --no-cache-dir --upgrade pip pipenv \
@@ -13,7 +15,7 @@ COPY example_conf/jarr.json /etc/jarr/jarr.json
 WORKDIR /jarr
 USER jarr
 COPY ./Pipfil* /jarr/
-RUN pipenv --python /usr/bin/python3.6 sync
+RUN pipenv sync
 COPY ./manager.py /jarr/manager.py
 COPY ./migrations/ /jarr/migrations
 COPY ./*.py /jarr/
