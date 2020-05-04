@@ -100,9 +100,8 @@ const feedSlice = createSlice({
       };
     },
     toggleMenu(state, action) {
-      const newState = !state.isOpen;
-      storageSet("left-menu-open", newState);
-      return { ...state, isOpen: newState };
+      storageSet("left-menu-open", action.payload);
+      return { ...state, isOpen: action.payload };
     },
     createdObj(state, action) {
       const feedListRow = { unread: 0, id: action.payload.data.id };

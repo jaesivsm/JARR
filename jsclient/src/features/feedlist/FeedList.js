@@ -46,7 +46,7 @@ const mapDispatchToProps = (dispatch) => ({
     return dispatch(doFetchUnreadCount());
   },
   toggleFeedList() {
-    return dispatch(toggleMenu());
+    return dispatch(toggleMenu(false));
   },
   toggleAddPanel(objType) {
     return dispatch(openPanel({ objType }));
