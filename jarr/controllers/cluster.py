@@ -249,7 +249,7 @@ class ClusterController(AbstractController):
         sub_query = session.query(*JR_SQLA_FIELDS)\
                            .filter(*processed_filters)\
                            .order_by(Cluster.main_date.desc())\
-                           .limit(limit).cte('clu')
+                           .cte('clu')
 
         aggreg_feed = func.array_agg(Article.feed_id).label('feeds_id')
         aggreg_cat = func.array_agg(Article.category_id).label('categories_id')
@@ -257,7 +257,7 @@ class ClusterController(AbstractController):
                 .join(Article, Article.cluster_id == sub_query.c.id)
                 .filter(Article.user_id == self.user_id))
         yield from self._iter_on_query(query.group_by(*sub_query.c)
-                .order_by(sub_query.c.main_date.desc()))
+                .order_by(sub_query.c.main_date.desc()).limit(limit))
 
     def join_read(self, feed_id=None, limit=JR_PAGE_LENGTH, **filters):
         filter_on_cat = 'category_id' in filters
