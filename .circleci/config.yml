@@ -9,13 +9,6 @@ jobs:
       image: ubuntu-1604:201903-01
     steps:
       - checkout
-      # restore cache and docker layer cache
-      - restore_cache:
-          keys:
-            - jarrback-{{ .Branch }}
-          paths:
-            - ~/caches/jarr-server.tar
-            - ~/caches/jarr-worker.tar
       - run:
           name: Loading docker image layer caches
           command: |
