@@ -129,8 +129,6 @@ def rollback_pending_sql(*args, **kwargs):
 engine, session, Base = init_db()
 init_models()
 
-init_logging(conf.log.path, log_level=logging.ERROR,
-             modules=('urllib3.connectionpool', 'urllib3'))
 init_logging(conf.log.path, log_level=logging.WARNING,
              modules=('the_conf',))
 init_logging(conf.log.path, log_level=conf.log.level)
