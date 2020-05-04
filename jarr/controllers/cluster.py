@@ -31,11 +31,9 @@ def get_config(obj, attr, level="feed"):
     val = getattr(obj, attr)
     if val is not None:
         return val
-    if level == "feed":
+    if level == "feed" and obj.category_id:
         return get_config(obj.category, attr, "category")
-    if level == "category":
-        return get_config(obj.user, attr, "user")
-    return val
+    return get_config(obj.user, attr, "user")
 
 
 def is_same_ok(article, parent):

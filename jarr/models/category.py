@@ -12,11 +12,11 @@ class Category(Base):
     name = Column(String)
 
     # clustering control
-    cluster_enabled = Column(Boolean, default=True, nullable=True)
-    cluster_tfidf_enabled = Column(Boolean, default=True, nullable=True)
-    cluster_same_category = Column(Boolean, default=True, nullable=True)
-    cluster_same_feed = Column(Boolean, default=True, nullable=True)
-    cluster_wake_up = Column(Boolean, default=True, nullable=True)
+    cluster_enabled = Column(Boolean, default=None, nullable=True)
+    cluster_tfidf_enabled = Column(Boolean, default=None, nullable=True)
+    cluster_same_category = Column(Boolean, default=None, nullable=True)
+    cluster_same_feed = Column(Boolean, default=None, nullable=True)
+    cluster_wake_up = Column(Boolean, default=None, nullable=True)
     cluster_conf = Column(PickleType, default={})
 
     # foreign keys

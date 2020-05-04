@@ -175,14 +175,14 @@ class ClusterControllerTest(BaseJarrTest):
         # category's disabled, won't cluster
         FeedController().update(
                 {'id__in': [a.feed_id for a in cluster.articles]},
-                {'cluster_same_feed': True})
+                {'cluster_same_feed': None})
         CategoryController().update({'id': cluster.main_article.category.id},
                 {'cluster_same_feed': False})
         article = self.create_article_from(cluster, cluster.main_article.feed)
         self.assertNotInCluster(article, cluster)
         # user's disable, won't cluster
         CategoryController().update({'id': cluster.main_article.category.id},
-                {'cluster_same_feed': True})
+                {'cluster_same_feed': None})
         UserController().update({'id': cluster.user_id},
                 {'cluster_same_feed': False})
         article = self.create_article_from(cluster, cluster.main_article.feed)
@@ -213,21 +213,21 @@ class ClusterControllerTest(BaseJarrTest):
         # new article's feed is disabled, won't cluster
         FeedController().update(
                 {'id__in': [a.feed_id for a in cluster.articles]},
-                {'cluster_same_category': True})
+                {'cluster_same_category': None})
         FeedController().update({'id': feed.id},
                 {'cluster_same_category': False})
         article = self.create_article_from(cluster, feed)
         self.assertNotInCluster(article, cluster)
         # category's disabled, won't cluster
         FeedController().update({'id': feed.id},
-                {'cluster_same_category': True})
+                {'cluster_same_category': None})
         CategoryController().update({'id': cluster.main_article.category.id},
                 {'cluster_same_category': False})
         article = self.create_article_from(cluster, feed)
         self.assertNotInCluster(article, cluster)
         # user's disable, won't cluster
         CategoryController().update({'id': cluster.main_article.category.id},
-                {'cluster_same_category': True})
+                {'cluster_same_category': None})
         UserController().update({'id': cluster.user_id},
                 {'cluster_same_category': False})
         article = self.create_article_from(cluster, feed)
