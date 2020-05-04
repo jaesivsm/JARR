@@ -75,6 +75,7 @@ function AddEditFeed({ job, feed, categories,
   const currentFeed = fillMissingClusterOption(feed, "feed", null);
   defaultTo(currentFeed, "category_id", null);
   defaultTo(currentFeed, "feed_type", "classic");
+  defaultTo(currentFeed, "filters", []);
   delete currentFeed.links;
   delete currentFeed["same_link_count"];
 
