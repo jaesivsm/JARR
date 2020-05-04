@@ -121,16 +121,6 @@ export default makeStyles((theme: Theme) =>
         }
       }
     },
-    editPanelFilterItem: {
-      "& .MuiInput-root": {
-        height: 32,
-        justifyContent: "center"
-      },
-      "& .MuiTextField-root": {
-        height: 32,
-        justifyContent: "center"
-      }
-    },
     editPanelClusterLabel: {
       textAlign: "left",
       display: "block",
@@ -140,14 +130,28 @@ export default makeStyles((theme: Theme) =>
       width: "100%"
     },
     editPanelFilter: {
-      display: "flex",
+      display: "table",
       alignItems: "baseline",
       flexDirection: "row",
       marginBottom: 25,
       marginRight: 16
     },
+    editPanelFilterItem: {
+      display: "table-cell",
+      "& .MuiInput-root": {
+        height: 32,
+        justifyContent: "center"
+      },
+      "& .MuiTextField-root": {
+        height: 32,
+        justifyContent: "center",
+        '& input': {
+          padding: 0
+        }
+      }
+    },
     editPanelFilterArrows: {
-      display: "flex",
+      display: "table-cell",
       flexDirection: "column",
       justifyContent: "center",
       left: -10,
