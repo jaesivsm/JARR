@@ -134,6 +134,7 @@ export default makeStyles((theme: Theme) =>
       alignItems: "baseline",
       flexDirection: "row",
       marginBottom: 25,
+      marginLeft: 16,
       marginRight: 16
     },
     editPanelFilterItem: {
@@ -151,11 +152,11 @@ export default makeStyles((theme: Theme) =>
       }
     },
     editPanelFilterArrows: {
-      display: "table-cell",
+      display: "flex",
       flexDirection: "column",
       justifyContent: "center",
-      left: -10,
-      position: "relative"
+      left: 5,
+      position: "absolute"
     },
     editPanelFilterArrow: {
       position: "relative",
