@@ -9,21 +9,17 @@ const refreshDelay = 10 * 60 * 1000;  // 10 mn in miliseconds
 
 const authSlice = createSlice({
   name: "auth",
-  initialState: { login: storageGet("login"),
-                  password: storageGet("password"),
+  initialState: { login: null,
+                  password: null,
                   token: storageGet("token", "session"),
                   refreshedAt: null,
   },
   reducers: {
     attemptLogin(state, action) {
       const { login, password } = action.payload;
-      storageSet("login", login);
-      storageSet("password", password);
       return { ...state, login, password };
     },
     loginFailed(state, action) {
-      storageRemove("login");
-      storageRemove("password");
       return { token: null, login: null, password: null };
     },
     tokenAcquired(state, action) {
@@ -36,8 +32,6 @@ const authSlice = createSlice({
       return { ...state, token: null};
     },
     doLogout() {
-      storageRemove("login");
-      storageRemove("password");
       storageRemove("left-menu-open");
       storageRemove("token", "session");
       return { login: null, password: null, token: null };
@@ -78,21 +72,7 @@ export const doRetryOnTokenExpiration = async (payload, dispatch, getState) => {
     if (err.response && err.response.status === 401
         && err.response.data && err.response.data.message
         && err.response.data.message === "Invalid token, Signature has expired") {
-      try {
-        // can't silent relog, exiting
-        if (state.auth.login && state.auth.password) {
-          return dispatch(authError({ statusText: "EXPIRED" }));
-        }
-        // login and password still available, relogging
-        const loginResult = await axios.post(apiUrl + "/auth",
-            { login: state.auth.login, password: state.auth.password });
-        dispatch(tokenAcquired(loginResult));
-        payload.headers = { "Authorization": loginResult.data["access_token"] };
-        return await axios(payload);
-      } catch (err) {
-        dispatch(loginFailed());
-        return dispatch(authError(err.response));
-      }
+      return dispatch(authError({ statusText: "EXPIRED" }));
     } else {
       return err.response;
     }
