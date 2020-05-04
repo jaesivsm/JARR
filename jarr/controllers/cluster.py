@@ -38,8 +38,8 @@ def get_config(obj, attr, level="feed"):
     return val
 
 
-def is_same_ok(obj, parent):
-    return get_config(obj, 'cluster_same_%s' % parent)
+def is_same_ok(article.feed, parent):
+    return get_config(article.feed, 'cluster_same_%s' % parent)
 
 
 class ClusterController(AbstractController):
