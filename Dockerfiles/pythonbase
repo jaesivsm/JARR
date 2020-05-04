@@ -1,6 +1,16 @@
 FROM python:3.7-slim
 
-RUN pip install --upgrade pip pipenv
+RUN apk add --no-cache --virtual .build-deps \
+    g++ \
+    python-dev \
+    libxml2 \
+    libxml2-dev && \
+    gcc \
+    python3-dev \
+    musl-dev \
+    postgresql-dev \
+    && pip install --no-cache-dir --upgrade pip pipenv \
+    && apk del --no-cache .build-deps
 RUN useradd jarr --create-home --shell /bin/bash --home-dir /jarr --user-group
 WORKDIR /jarr
 USER jarr

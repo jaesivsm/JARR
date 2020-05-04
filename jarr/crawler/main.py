@@ -53,8 +53,9 @@ def scheduler():
             logger.debug("No feed to fetch")
             scheduler.apply_async(countdown=conf.crawler.idle_delay)
             return
-        logger.debug('%d to fetch', len(feeds))
+        logger.debug('%d to enqueue', len(feeds))
         for feed in feeds:
+            logger.warning("scheduling to be fetched %r", feed)
             process_feed.apply_async(args=[feed.id])
 
         feed_cleaner.apply_async()
