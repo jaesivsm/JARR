@@ -41,4 +41,4 @@ the-conf = "==0.0.13"
 flask-cors = "==3.0.8"
 
 [requires]
-python_version = "3.7"
+python_version = "3"
