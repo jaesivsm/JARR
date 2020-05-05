@@ -76,10 +76,8 @@ def setup_api(application):
 
 
 def create_app(testing=False):
-    application = Flask(__name__,
-            static_folder='jarr/static',
-            template_folder='../templates')
-    application.config.from_object(conf)
+    application = Flask(__name__, static_folder='jarr/static',
+                        template_folder='../templates')
 
     CORS(application, resources={r"/*": {"origins": "*"}})
     if testing:
@@ -90,6 +88,8 @@ def create_app(testing=False):
         application.debug = conf.log.level <= logging.DEBUG
     application.config['PREFERRED_URL_SCHEME'] = conf.api.scheme
     application.config['RESTX_JSON'] = {'default': default_handler}
+    if conf.api.server_name:
+        application.config['SERVER_NAME'] = conf.api.server_name
 
     api = setup_api(application)
     setup_jwt(application, api)

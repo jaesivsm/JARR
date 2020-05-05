@@ -13,6 +13,8 @@ from jarr.bootstrap import conf, init_logging
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
+config.set_main_option('sqlalchemy.url', conf.db.pg_uri)
+target_metadata = current_app.extensions['migrate'].db.metadata
 
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.
@@ -20,10 +22,6 @@ log_format = '%(levelname)s [%(name)s] %(message)s'
 init_logging(modules=('root', 'sqlalchemy'), log_format=log_format,
             log_level=logging.WARNING)
 init_logging(modules=('alembic'), log_format=log_format)
-
-config.set_main_option('sqlalchemy.url', conf.db.pg_uri)
-target_metadata = current_app.extensions['migrate'].db.metadata
-
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
