@@ -47,13 +47,16 @@ class CrawlerTest(JarrFlaskCommon):
         self.resp_headers = {}
         self.resp_raise = None
 
+        def json_loads(self):
+            return json.loads(self._content)
+
         def _api_req(url, **kwargs):
             if url.startswith('feed') and len(url) == 6:
                 resp = Mock(status_code=self.resp_status_code,
                             headers=self.resp_headers, history=[],
                             content=self._content, text=self._content)
                 resp.raise_for_status.return_value = self.resp_raise
-                resp.json = lambda : json.loads(self._content)
+                resp.json = json_loads
                 return resp
 
             url = url.split(conf.api_root)[1].strip('/')
