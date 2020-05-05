@@ -1,6 +1,6 @@
 from flask import make_response, render_template, request
 from flask_jwt import current_identity, jwt_required
-from flask_restplus import Namespace, Resource, fields
+from flask_restx import Namespace, Resource, fields
 from werkzeug.datastructures import FileStorage
 from werkzeug.exceptions import UnprocessableEntity
 

@@ -5,8 +5,7 @@ from sqlalchemy.orm import relationship, validates
 
 from jarr.bootstrap import Base
 from jarr.lib.const import UNIX_START
-from jarr.lib.jarr_types import FeedType
-from jarr.lib.reasons import CacheReason
+from jarr.lib.enums import FeedStatus, FeedType
 from jarr.lib.utils import utc_now
 from jarr.models.utc_datetime_type import UTCDateTime
 
@@ -19,24 +18,22 @@ class Feed(Base):
     description = Column(String, default="")
     link = Column(String)
     site_link = Column(String, default="")
-    enabled = Column(Boolean, default=True)
+    status = Column(Enum(FeedStatus), default=FeedStatus.active,
+                    nullable=False)
     created_date = Column(UTCDateTime, default=utc_now)
     filters = Column(PickleType, default=[])
 
     # integration control
-    feed_type = Column(Enum(FeedType), default=FeedType.classic)
+    feed_type = Column(Enum(FeedType),
+                       default=FeedType.classic, nullable=False)
 
     # clustering control
-    cluster_enabled = Column(Boolean, default=True)
-    cluster_tfidf_enabled = Column(Boolean, default=True)
-    cluster_same_category = Column(Boolean, default=True)
-    cluster_same_feed = Column(Boolean, default=True)
-    cluster_wake_up = Column(Boolean, default=True)
+    cluster_enabled = Column(Boolean, default=None, nullable=True)
+    cluster_tfidf_enabled = Column(Boolean, default=None, nullable=True)
+    cluster_same_category = Column(Boolean, default=None, nullable=True)
+    cluster_same_feed = Column(Boolean, default=None, nullable=True)
+    cluster_wake_up = Column(Boolean, default=None, nullable=True)
     cluster_conf = Column(PickleType, default={})
-
-    # cache reasons
-    cache_type = Column(Enum(CacheReason), default=None)
-    cache_support_a_im = Column(Boolean, default=False)
 
     # cache handling
     etag = Column(String, default="")

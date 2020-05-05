@@ -26,7 +26,7 @@ class AbstractArticleBuilder:
     @property
     def do_skip_creation(self):
         return process_filters(self.feed.filters, self.article,
-                               FiltersAction.SKIP)[0]
+                               {FiltersAction.SKIP})['skipped']
 
     def template_article(self):
         return {'feed_id': self.feed.id,

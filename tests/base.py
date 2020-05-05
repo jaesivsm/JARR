@@ -1,14 +1,14 @@
-from os import path
 import json
 import logging
 import unittest
+from os import path
 
 from flask_testing import TestCase
 from werkzeug.exceptions import NotFound
 
-from jarr.bootstrap import conf, session, Base, init_db
+from jarr.bootstrap import Base, conf, init_db, session
+from jarr.lib.enums import ClusterReason
 from tests.fixtures.filler import populate_db
-
 
 logger = logging.getLogger('jarr')
 DEFAULT_HEADERS = {'Content-Type': 'application/json',
@@ -30,6 +30,19 @@ class BaseJarrTest(TestCase):
 
     def assertNotIn(self, elem, txt):
         self.assertFalse(elem in txt, "%s in %s" % (elem, txt))
+
+    def assertNotInCluster(self, article, cluster):
+        self.assertNotEqual(article.cluster_id, cluster.id,
+                "article %r cluster %r is %r" % (
+                    article, article.cluster, cluster))
+
+    def assertInCluster(self, article, cluster, reason=ClusterReason.link):
+        self.assertEqual(article.cluster_id, cluster.id,
+                "article %d:%r:%r cluster %d is not %d(main %d:%r)" % (
+                    article.id, article.entry_id, article.link,
+                    article.cluster.id, cluster.id, cluster.main_article_id,
+                    cluster.main_link))
+        self.assertEqual(reason, article.cluster_reason)
 
     def _get_from_contr(self, obj_id, user_id=None):
         return self._contr_cls(user_id).get(id=obj_id)

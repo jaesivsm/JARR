@@ -1,35 +1,19 @@
 from flask_jwt import current_identity, jwt_required
-from flask_restplus import Namespace, Resource, fields
+from flask_restx import Namespace, Resource, fields
 from werkzeug.exceptions import Forbidden, NotFound
 
-from jarr.api.common import parse_meaningful_params, set_model_n_parser
+from jarr.api.common import (parse_meaningful_params, set_clustering_options,
+                             set_model_n_parser)
 from jarr.controllers import CategoryController
 
-prout = {'debug': False}
 category_ns = Namespace('category', path='/categor',
-        description='Category related operation')
+                        description='Category related operation')
 parser = category_ns.parser()
-model = category_ns.model('Category', {
-        'id': fields.Integer(readOnly=True),
-})
-suffix = "(if your global settings " \
-        "and the article's feed settings allows it)"
-set_model_n_parser(model, parser, 'cluster_enabled', bool,
-        description="will allow article in your feeds and categories to be "
-                    "clusterized" + suffix)
-set_model_n_parser(model, parser, 'cluster_tfidf_enabled', bool,
-        description="will allow article in your feeds and categories to be "
-                    "clusterized through document comparison" + suffix)
-set_model_n_parser(model, parser, 'cluster_same_category', bool,
-        description="will allow article in your feeds and categories to be "
-                    "clusterized while beloning to the same category" + suffix)
-set_model_n_parser(model, parser, 'cluster_same_feed', bool,
-        description="will allow article in your feeds and categories to be "
-                    "clusterized while beloning to the same feed" + suffix)
-
+model = category_ns.model("Category", {'id': fields.Integer(readOnly=True)})
+set_clustering_options("category", model, parser)
 parser_edit = parser.copy()
-parser.add_argument('name', type=str, required=True)
-set_model_n_parser(model, parser_edit, 'name', str)
+parser.add_argument('name', type=str, required=True, nullable=False)
+set_model_n_parser(model, parser_edit, 'name', str, nullable=False)
 
 
 @category_ns.route('y')
@@ -63,6 +47,16 @@ class ListCategoryResource(Resource):
 
 @category_ns.route('y/<int:category_id>')
 class CategoryResource(Resource):
+
+    @staticmethod
+    @category_ns.response(200, 'OK', model=model)
+    @category_ns.response(401, 'Authorization needed')
+    @category_ns.marshal_with(model, code=200, description='OK')
+    @jwt_required()
+    def get(category_id):
+        """Read an existing category."""
+        return CategoryController(current_identity.id).get(id=category_id), \
+                200
 
     @staticmethod
     @category_ns.expect(parser_edit, validate=True)

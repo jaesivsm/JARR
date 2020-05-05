@@ -4,8 +4,7 @@ from sqlalchemy.dialects.postgresql import TSVECTOR
 from sqlalchemy.orm import relationship
 
 from jarr.bootstrap import Base
-from jarr.lib.jarr_types import ArticleType
-from jarr.lib.reasons import ClusterReason
+from jarr.lib.enums import ArticleType, ClusterReason
 from jarr.lib.utils import utc_now
 from jarr.models.utc_datetime_type import UTCDateTime
 
@@ -27,7 +26,8 @@ class Article(Base):
     readability_parsed = Column(Boolean, default=False)
 
     # integration control
-    article_type = Column(Enum(ArticleType), default=ArticleType.text)
+    article_type = Column(Enum(ArticleType),
+                          default=ArticleType.text, nullable=False)
 
     # parsing
     tags = Column(PickleType, default=[])
@@ -88,7 +88,4 @@ class Article(Base):
 
     def __repr__(self):
         """Represents and article."""
-        return "<Article(id=%s, entry_id=%r, title=%r, " \
-               "date=%s, retrieved_date=%s)>" % (self.id, self.entry_id,
-                       self.title, self.date.isoformat(),
-                       self.retrieved_date.isoformat())
+        return "<Article(feed_id=%s, id=%s)>" % (self.feed_id, self.id)

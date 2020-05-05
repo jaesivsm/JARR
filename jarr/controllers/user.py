@@ -11,14 +11,14 @@ logger = logging.getLogger(__name__)
 
 class UserController(AbstractController):
     _db_cls = User
-    _user_id_key = 'id'
+    _user_id_key = "id"
 
     @staticmethod
     def _handle_password(attrs):
-        if attrs.get('password'):
-            attrs['password'] = generate_password_hash(attrs['password'])
-        elif 'password' in attrs:
-            del attrs['password']
+        if attrs.get("password"):
+            attrs["password"] = generate_password_hash(attrs["password"])
+        elif "password" in attrs:
+            del attrs["password"]
 
     def check_password(self, username, password):
         user = self.get(login=username)
@@ -35,7 +35,7 @@ class UserController(AbstractController):
 
     def delete(self, obj_id, commit=True):
         from jarr.controllers import ClusterController, ArticleController
-        fltr = {'user_id': obj_id}
-        ClusterController(self.user_id).update(fltr, {'main_article_id': None})
-        ArticleController(self.user_id).update(fltr, {'cluster_id': None})
+        fltr = {"user_id": obj_id}
+        ClusterController(self.user_id).update(fltr, {"main_article_id": None})
+        ArticleController(self.user_id).update(fltr, {"cluster_id": None})
         return super().delete(obj_id)

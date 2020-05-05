@@ -12,7 +12,7 @@ jobs:
       # restore cache and docker layer cache
       - restore_cache:
           keys:
-            - jarr-{{ .Branch }}
+            - jarrback-{{ .Environment.CACHE_VERSION }}.{{ .Branch }}
           paths:
             - ~/caches/jarr-server.tar
             - ~/caches/jarr-worker.tar
@@ -34,10 +34,40 @@ jobs:
             docker save -o ~/caches/jarr-server.tar jarr-server
             docker save -o ~/caches/jarr-worker.tar jarr-worker
       - save_cache:
-          key: jarr-{{ .Branch }}-{{ epoch }}
+          key: jarrback-{{ .Environment.CACHE_VERSION }}.{{ .Branch }}-{{ epoch }}
           paths:
             - ~/caches/jarr-server.tar
             - ~/caches/jarr-worker.tar
+
+  front-build:
+    machine:
+      image: ubuntu-1604:201903-01
+    steps:
+      - checkout
+      # restore cache and docker layer cache
+      - restore_cache:
+          keys:
+            - jarrfront-{{ .Environment.CACHE_VERSION }}.{{ .Branch }}
+          paths:
+            - ~/caches/jarr-front.tar
+      - run:
+          name: Loading docker image layer caches
+          command: |
+            set +o pipefail
+            docker load -i ~/caches/jarr-front.tar | true
+      - run:
+          name: Building images for front
+          command: |
+            mkdir -p ~/caches
+            make build-front PUBLIC_URL=https://app.jarr.info REACT_APP_API_URL=https://api.jarr.info
+      - run:
+          name: Saving docker image layer caches
+          command: |
+            docker save -o ~/caches/jarr-front.tar jarr-front
+      - save_cache:
+          key: jarrfront-{{ .Environment.CACHE_VERSION }}.{{ .Branch }}-{{ epoch }}
+          paths:
+            - ~/caches/jarr-front.tar
 
   backend-test:
     machine:
@@ -47,7 +77,7 @@ jobs:
       # restore cache and docker layer cache
       - restore_cache:
           keys:
-            - jarr-{{ .Branch }}
+            - jarrback-{{ .Environment.CACHE_VERSION }}.{{ .Branch }}
           paths:
             - ~/caches/jarr-server.tar
             - ~/caches/jarr-worker.tar
@@ -118,16 +148,22 @@ jobs:
     steps:
       - restore_cache:
           keys:
-            - jarr-{{ .Branch }}
+            - jarrback-{{ .Environment.CACHE_VERSION }}.{{ .Branch }}
           paths:
             - ~/caches/jarr-server.tar
             - ~/caches/jarr-worker.tar
+      - restore_cache:
+          keys:
+            - jarrfront-{{ .Environment.CACHE_VERSION }}.{{ .Branch }}
+          paths:
+            - ~/caches/jarr-front.tar
       - run:
           name: Loading ALL docker image layer caches
           command: |
             set +o pipefail
             docker load -i ~/caches/jarr-server.tar
             docker load -i ~/caches/jarr-worker.tar
+            docker load -i ~/caches/jarr-front.tar
       - run:
           name: Pushing tested images to registry
           command: |
@@ -139,19 +175,23 @@ jobs:
             fi
             docker image tag jarr-server $DOCKER_USER/jarr-server:$DOCKER_TAG
             docker image tag jarr-worker $DOCKER_USER/jarr-worker:$DOCKER_TAG
+            docker image tag jarr-front $DOCKER_USER/jarr-front:$DOCKER_TAG
             docker push $DOCKER_USER/jarr-server:$DOCKER_TAG
             docker push $DOCKER_USER/jarr-worker:$DOCKER_TAG
+            docker push $DOCKER_USER/jarr-front:$DOCKER_TAG
 
 workflows:
   jarr-testing:
     jobs:
       - backend-build
+      - front-build
       - backend-test:
           requires:
             - backend-build
       - push-docker-images:
           requires:
             - backend-test
+            - front-build
           filters:
             branches:
               only:

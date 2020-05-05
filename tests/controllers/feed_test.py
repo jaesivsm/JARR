@@ -102,8 +102,10 @@ class FeedControllerTest(BaseJarrTest):
         unix = datetime(1970, 1, 1).replace(tzinfo=timezone.utc)
 
         def assert_in_range(low, val, high):
-            assert low <= val, "%s > %s" % (low.isoformat(), val.isoformat())
-            assert val <= high, "%s > %s" % (val.isoformat(), high.isoformat())
+            self.assertTrue(low <= val,
+                            "%s > %s" % (low.isoformat(), val.isoformat()))
+            self.assertTrue(val <= high,
+                            "%s > %s" % (val.isoformat(), high.isoformat()))
 
         def reset_all_last_retrieved():
             last = utc_now() - timedelta(seconds=conf.feed.min_expires)

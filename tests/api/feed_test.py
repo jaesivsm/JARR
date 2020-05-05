@@ -1,8 +1,9 @@
 from tests.base import JarrFlaskCommon
 from datetime import timezone, timedelta
 from jarr.lib.utils import utc_now
-from jarr.lib.jarr_types import FeedType
+from jarr.lib.enums import FeedType
 from jarr.controllers import FeedController
+from jarr.crawler.main import feed_cleaner
 
 
 FEED = {'link': 'https://1pxsolidblack.pl/feeds/all.atom.xml',
@@ -13,9 +14,14 @@ FEED = {'link': 'https://1pxsolidblack.pl/feeds/all.atom.xml',
 
 class FeedApiTest(JarrFlaskCommon):
 
-    def _get(self, id_, user):
+    def _get(self, id_, user='user1'):
         return next(feed for feed in self.jarr_client('get', 'feeds',
-                    user='user1').json if feed['id'] == id_)
+                    user=user).json if feed['id'] == id_)
+
+    @property
+    def valid_filters(self):
+        return [{"action": "mark as read", "pattern": " pattern ",
+                 "action on": "match", "type": "simple match"}]
 
     def test_NewFeedResource_post(self):
         cats = self.jarr_client('get', 'categories', user='user1').json
@@ -30,8 +36,13 @@ class FeedApiTest(JarrFlaskCommon):
         self.assertStatusCode(400, resp)
 
         resp = self.jarr_client('post', 'feed',
-                data={'title': 'my new feed', 'link': 'my link'}, user='user1')
+                data={'title': 'my new feed', 'filters': self.valid_filters,
+                      'link': 'my link'}, user='user1')
         self.assertStatusCode(201, resp)
+        feed = self._get(resp.json['id'], 'user1')
+        self.assertEqual(self.valid_filters, feed['filters'])
+        self.assertEqual('my new feed', feed['title'])
+        self.assertEqual('my link', feed['link'])
 
         resp = self.jarr_client('post', 'feed',
                 data={'title': 'my new feed',
@@ -82,25 +93,40 @@ class FeedApiTest(JarrFlaskCommon):
         self.assertEqual(json['last_retrieved'], now.isoformat())
 
     def test_FeedResource_put(self):
+        # testing rights
         resp = self.jarr_client('put', 'feed', 1)
         self.assertStatusCode(401, resp)
+        # fetching first feed
         feeds_resp = self.jarr_client('get', 'feeds', user='user1')
         self.assertStatusCode(200, feeds_resp)
-        existing_feed = feeds_resp.json[0]
+        feed_id = feeds_resp.json[0]['id']
+        # changing title un-logged
+        resp = self.jarr_client('put', 'feed', feed_id,
+                                data={'title': 'changed'})
+        self.assertStatusCode(401, resp)
+        # changing title wrong user
+        resp = self.jarr_client('put', 'feed', feed_id,
+                                data={'title': 'changed'}, user='user2')
+        self.assertStatusCode(403, resp)
+        # changing feed attributes
+        resp = self.jarr_client('put', 'feed', feed_id,
+                                data={'filters': self.valid_filters,
+                                      'title': 'changed'}, user='user1')
+        self.assertStatusCode(204, resp)
+        feed = self.jarr_client('get', 'feed', feed_id, user='user1').json
+        self.assertEqual('changed', feed['title'])
+        self.assertEqual(self.valid_filters, feed['filters'])
+        resp = self.jarr_client('put', 'feed', feed_id,
+                                data={'title': 'changed2'}, user='user1')
+        self.assertStatusCode(204, resp)
+        feed = self.jarr_client('get', 'feed', feed_id, user='user1').json
+        self.assertEqual('changed2', feed['title'])
+        # changing to other user category
         categories_resp = self.jarr_client('get', 'categories', user='user2')
         self.assertStatusCode(200, categories_resp)
         category = categories_resp.json[0]
-        resp = self.jarr_client('put', 'feed', existing_feed['id'],
-                data={'title': 'changed'})
-        self.assertStatusCode(401, resp)
-        resp = self.jarr_client('put', 'feed', existing_feed['id'],
-                data={'title': 'changed'}, user='user2')
-        self.assertStatusCode(403, resp)
-        resp = self.jarr_client('put', 'feed', existing_feed['id'],
-                data={'title': 'changed'}, user='user1')
-        self.assertStatusCode(204, resp)
-        resp = self.jarr_client('put', 'feed', existing_feed['id'],
-                data={'category_id': category['id']}, user='user1')
+        resp = self.jarr_client('put', 'feed', feed_id, user='user1',
+                                data={'category_id': category['id']})
         self.assertStatusCode(403, resp)
 
     def test_FeedResource_delete(self):
@@ -109,11 +135,31 @@ class FeedApiTest(JarrFlaskCommon):
         self.assertStatusCode(401, resp)
         resp = self.jarr_client('delete', 'feed', feed_id, user='user2')
         self.assertStatusCode(403, resp)
+
+        resp = self.jarr_client('get', 'list-feeds', user='user1')
+
+        self.assertTrue(any(r['type'] == 'feed' and r['id'] == feed_id
+                            for r in resp.json))
+
         resp = self.jarr_client('delete', 'feed', feed_id, user='user1')
         self.assertStatusCode(204, resp)
 
+        resp = self.jarr_client('get', 'list-feeds', user='user1')
+        self.assertFalse(any(r['type'] == 'feed' and r['id'] == feed_id
+                             for r in resp.json))
+
+        feeds = self.jarr_client('get', 'feeds', user='user1').json
+        self.assertTrue(feed_id in [feed['id'] for feed in feeds])
+        self.assertEqual('to_delete', [feed['status'] for feed in feeds
+                                       if feed['id'] == feed_id][0])
+        feed_cleaner()
+
         feeds = self.jarr_client('get', 'feeds', user='user1').json
         self.assertFalse(feed_id in [feed['id'] for feed in feeds])
+
+        resp = self.jarr_client('get', 'list-feeds', user='user1')
+        self.assertFalse(any(r['type'] == 'feed' and r['id'] == feed_id
+                             for r in resp.json))
 
     def test_FeedBuilder_get(self):
         resp = self.jarr_client('get', 'feed', 'build')
@@ -140,6 +186,7 @@ class FeedApiTest(JarrFlaskCommon):
                       'http://feeds.feedburner.com/Koreus-podcasts-audio',
                       'http://feeds.feedburner.com/Koreus-podcasts-video',
                       'http://feeds.feedburner.com/Koreus-forums'],
+            'same_link_count': 0,
             'site_link': 'https://www.koreus.com/',
             'title': 'Koreus.com - Articles'}, resp.json)
 

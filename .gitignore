@@ -26,4 +26,6 @@ build
 
 # node files
 node_modules
-jarr/views/static/js/bundle.min.js
+
+# docker compose
+.jarr-data/

@@ -43,7 +43,7 @@ class UserTest(JarrFlaskCommon):
 
         data = {'login': self.user.login}
         resp = self.jarr_client('put', 'user', data=data, headers=headers)
-        self.assertStatusCode(409, resp)
+        self.assertStatusCode(400, resp)
 
     def test_UserResource_delete(self):
         headers = {'Authorization': self.get_token_for(self.user2.login)}
