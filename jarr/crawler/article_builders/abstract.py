@@ -4,9 +4,11 @@ import requests
 from requests.exceptions import MissingSchema
 
 from jarr.bootstrap import conf
-from jarr.lib.filter import FiltersAction, process_filters
 from jarr.lib.enums import ArticleType
+from jarr.lib.filter import FiltersAction, process_filters
+from jarr.lib.html_parsing import extract_lang, extract_tags, extract_title
 from jarr.lib.utils import utc_now
+from jarr.utils import jarr_get
 
 logger = logging.getLogger(__name__)
 
@@ -103,4 +105,15 @@ class AbstractArticleBuilder:
                 self.article['article_type'] = ArticleType.image
             elif head.headers['Content-Type'].startswith('video/'):
                 self.article['article_type'] = ArticleType.video
+            else:
+                page = jarr_get(self.article['link'])
+                if not page:
+                    return self.article
+                if not self.article.get('title'):
+                    self.article['title'] = extract_title(page)
+                self.article['tags'] = self.article['tags'].union(
+                        extract_tags(page))
+                lang = extract_lang(page)
+                if lang:
+                    self.article['lang'] = lang
         return self.article
