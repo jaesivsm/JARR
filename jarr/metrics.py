@@ -20,7 +20,8 @@ CLUSTERING = Counter('clustering', 'clustering context and decision',
                       ], namespace='jarr')
 
 ARTICLE_CREATION = Counter('article_creation', 'Article Creation',
-                           ['read', 'read_reason', 'cluster'], namespace='jarr')
+                           ['read', 'read_reason', 'cluster'],
+                           namespace='jarr')
 
 SERVER = Counter('server_method', 'server taken actions',
                  ['uri', 'method', 'result'], namespace='jarr')

@@ -80,7 +80,8 @@ class ClusterController(AbstractController):
                 CLUSTERING.labels(filters="allow", config="target-forbid",
                                   result="miss", match="none").inc()
                 continue
-            if filter_tfidf and not get_config(candidate, "cluster_tfidf_enabled"):
+            if filter_tfidf \
+                    and not get_config(candidate, "cluster_tfidf_enabled"):
                 CLUSTERING.labels(filters="allow", config="target-forbid",
                                   result="miss", match="tfidf").inc()
                 continue
