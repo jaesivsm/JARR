@@ -1,15 +1,16 @@
+import json
 import logging
 import unittest
-import json
 
 from mock import Mock, patch
 
 from jarr.bootstrap import conf
 from jarr.controllers import ArticleController, FeedController
-from jarr.crawler.main import clusterizer, process_feed
 from jarr.crawler.crawlers.classic import ClassicCrawler
+from jarr.crawler.main import clusterizer, process_feed
 from jarr.crawler.requests_utils import (response_calculated_etag_match,
                                          response_etag_match)
+from jarr.lib.enums import FeedType
 from jarr.lib.const import UNIX_START
 from jarr.lib.utils import to_hash
 from jarr.models.feed import Feed
@@ -166,7 +167,7 @@ class CrawlerMethodsTest(unittest.TestCase):
         super().setUp()
         self.feed = Feed(user_id=1, id=1, title='title',
                 description='description', etag='', error_count=5,
-                link='link')
+                feed_type=FeedType.classic, link='link')
         self.resp = Mock(text='text', headers={}, status_code=304, history=[])
 
     def test_etag_matching_w_constructed_etag(self):
