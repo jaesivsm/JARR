@@ -8,7 +8,6 @@ from flask_script import Manager
 from jarr.lib.utils import utc_now
 
 from jarr.bootstrap import conf, Base
-from jarr.scripts.probes import ArticleProbe, FeedProbe, FeedLatenessProbe
 from jarr.controllers import FeedController, UserController
 
 from wsgi import application
@@ -43,10 +42,6 @@ def reset_feeds():
                  'last_retrieved': datetime(1970, 1, 1, tzinfo=timezone.utc),
                  'expires': now + i * step})
 
-
-manager.add_command('probe_articles', ArticleProbe())
-manager.add_command('probe_feeds', FeedProbe())
-manager.add_command('probe_feeds_lateness', FeedLatenessProbe())
 
 if __name__ == '__main__':  # pragma: no cover
     manager.run()

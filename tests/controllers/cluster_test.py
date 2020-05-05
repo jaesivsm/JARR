@@ -1,13 +1,13 @@
-from random import randint
 from datetime import timedelta
+from random import randint
+
 from mock import Mock
 
+from jarr.controllers import ArticleController, FeedController
+from jarr.controllers.cluster import ClusterController, get_config
+from jarr.lib.utils import utc_now
 from tests.base import BaseJarrTest
 from tests.utils import update_on_all_objs
-
-from jarr.lib.utils import utc_now
-from jarr.controllers import (ArticleController,
-                              ClusterController, FeedController)
 
 
 class ClusterControllerTest(BaseJarrTest):
@@ -26,7 +26,7 @@ class ClusterControllerTest(BaseJarrTest):
         for art_to_del in acontr.read(link=article.link, id__ne=article.id):
             acontr.delete(art_to_del.id)
         suffix = str(randint(0, 9999))
-        acontr.create(feed_id=feed.id,
+        return acontr.create(feed_id=feed.id,
                       entry_id=article.entry_id + suffix,
                       link=article.link,
                       title=article.title + suffix,
@@ -44,13 +44,24 @@ class ClusterControllerTest(BaseJarrTest):
         ccontr = ClusterController()
         fcontr = FeedController()
         cluster = ccontr.read().first()
+        self.assertFalse(get_config(cluster, 'cluster_enabled'))
+        self.assertTrue(get_config(cluster, 'cluster_wake_up'))
         ccontr.update({'id': cluster.id}, {'read': True})
-        feed = fcontr.read(user_id=cluster.user_id,
-                    id__ne=cluster.main_article.feed_id).first()
-        update_on_all_objs(feeds=[feed], cluster_enabled=True)
-        #fcontr.update({'id': feed.id}, {'cluster_wake_up': True})
-        self._clone_article(ArticleController(), cluster.main_article, feed)
+        target_feed = fcontr.read(id__ne=cluster.main_article.feed_id,
+                                  user_id=cluster.user_id).first()
+        self.assertFalse(get_config(target_feed, 'cluster_enabled'))
+        fcontr.update({'id__in': [f.id for f in cluster.feeds]
+                                 + [target_feed.id]},
+                      {'cluster_wake_up': True, 'cluster_enabled': True})
+        self.assertTrue(get_config(cluster, 'cluster_enabled'))
+        target_feed = fcontr.read(id__ne=cluster.main_article.feed_id,
+                                  user_id=cluster.user_id).first()
+        article = self._clone_article(ArticleController(),
+                                      cluster.main_article, target_feed)
+        self.assertTrue(get_config(article, 'cluster_wake_up'))
         ClusterController.clusterize_pending_articles()
+        self.assertEqual(2, len(article.cluster.articles))
+        self.assertInCluster(article, cluster)
         ccontr.get(id=cluster.id)
         self.assertFalse(cluster.read)
 

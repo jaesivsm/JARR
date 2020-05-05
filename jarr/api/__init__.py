@@ -61,7 +61,7 @@ def setup_api(application):
               authorizations=authorizations)
 
     from jarr.api import (feed, cluster, category, one_page_app, opml,
-                          user, auth, oauth)
+                          user, auth, oauth, metrics)
 
     api.add_namespace(one_page_app.default_ns)
     api.add_namespace(feed.feed_ns)
@@ -71,6 +71,7 @@ def setup_api(application):
     api.add_namespace(user.user_ns)
     api.add_namespace(auth.auth_ns)
     api.add_namespace(oauth.oauth_ns)
+    api.add_namespace(metrics.metrics_ns)
     return api
 
 

@@ -5,7 +5,7 @@ from sqlalchemy.orm import relationship, validates
 
 from jarr.bootstrap import Base
 from jarr.lib.const import UNIX_START
-from jarr.lib.enums import CacheReason, FeedStatus, FeedType
+from jarr.lib.enums import FeedStatus, FeedType
 from jarr.lib.utils import utc_now
 from jarr.models.utc_datetime_type import UTCDateTime
 
@@ -28,16 +28,12 @@ class Feed(Base):
                        default=FeedType.classic, nullable=False)
 
     # clustering control
-    cluster_enabled = Column(Boolean, default=True, nullable=True)
-    cluster_tfidf_enabled = Column(Boolean, default=True, nullable=True)
-    cluster_same_category = Column(Boolean, default=True, nullable=True)
-    cluster_same_feed = Column(Boolean, default=True, nullable=True)
-    cluster_wake_up = Column(Boolean, default=True, nullable=True)
+    cluster_enabled = Column(Boolean, default=None, nullable=True)
+    cluster_tfidf_enabled = Column(Boolean, default=None, nullable=True)
+    cluster_same_category = Column(Boolean, default=None, nullable=True)
+    cluster_same_feed = Column(Boolean, default=None, nullable=True)
+    cluster_wake_up = Column(Boolean, default=None, nullable=True)
     cluster_conf = Column(PickleType, default={})
-
-    # cache reasons
-    cache_type = Column(Enum(CacheReason), default=None)
-    cache_support_a_im = Column(Boolean, default=False)
 
     # cache handling
     etag = Column(String, default="")

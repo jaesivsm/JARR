@@ -90,7 +90,8 @@ class ArticleController(AbstractController):
         if vector:
             attrs['vector'] = cast(vector, TSVECTOR)
         attrs['link_hash'] = sha1(attrs['link'].encode('utf8')).digest()
-        return super().create(**attrs)
+        article = super().create(**attrs)
+        return article
 
     def update(self, filters, attrs, return_objs=False, commit=True):
         user_id = attrs.get('user_id', self.user_id)

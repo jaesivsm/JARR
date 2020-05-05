@@ -1,15 +1,24 @@
-FROM python:3.6-slim
+FROM python:3.7-slim
 
-RUN pip install --upgrade pip pipenv
+RUN apt-get update \
+    && apt-get install --yes --no-install-recommends \
+        gcc \
+        python3-dev \
+        libxml2-dev \
+        postgresql-server-dev-all \
+    && pip install --no-cache-dir --upgrade pip pipenv \
+    && apt clean --yes \
+    && apt autoremove --yes \
+    && rm -rf /var/log/apt /var/cache/apt /var/log/apt
 RUN useradd jarr --create-home --shell /bin/bash --home-dir /jarr --user-group
+COPY example_conf/jarr.json /etc/jarr/jarr.json
 WORKDIR /jarr
 USER jarr
 COPY ./Pipfil* /jarr/
 RUN pipenv sync
-COPY ./jarr/ /jarr/jarr
-COPY ./migrations/ /jarr/migrations
 COPY ./manager.py /jarr/manager.py
+COPY ./migrations/ /jarr/migrations
 COPY ./*.py /jarr/
+COPY ./jarr/ /jarr/jarr
 
-COPY example_conf/jarr.json /etc/jarr/jarr.json
 VOLUME /etc/jarr/

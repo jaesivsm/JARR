@@ -8,8 +8,12 @@ from jarr.crawler.lib.headers_handling import (extract_feed_info,
                                                prepare_headers)
 from jarr.crawler.requests_utils import (response_calculated_etag_match,
                                          response_etag_match)
+from jarr.lib.const import UNIX_START
 from jarr.lib.enums import FeedType
 from jarr.lib.utils import jarr_get, utc_now
+from jarr.metrics import FEED_FETCH as FETCH
+from jarr.metrics import FEED_LATENESS as LATENESS
+from jarr.metrics import WORKER
 
 logger = logging.getLogger(__name__)
 
@@ -21,6 +25,17 @@ class AbstractCrawler:
     def __init__(self, feed):
         self.feed = feed
 
+    def _metric_fetch(self, result, level=logging.INFO):
+        logger.log(level, 'feed responded with %s', result)
+        FETCH.labels(feed_type=self.feed.feed_type.value, result=result).inc()
+
+    def _metric_lateness(self, now):
+        if not self.feed.last_retrieved \
+                or self.feed.last_retrieved == UNIX_START:
+            return
+        delta = (self.feed.last_retrieved - now).total_seconds()
+        LATENESS.labels(feed_type=self.feed.feed_type.value).observe(delta)
+
     def set_feed_error(self, error=None, parsed_feed=None):
         error_count = self.feed.error_count + 1
         if error:
@@ -31,19 +46,24 @@ class AbstractCrawler:
             level = logging.WARNING
         else:
             level = logging.DEBUG
-        logger.log(level, 'an error occured while fetching feed; '
-                   'bumping error count to %r', error_count)
+        logger.log(level, '%r an error occured while fetching feed; '
+                   'bumping error count to %r', self.feed, error_count)
         logger.debug("last error details %r", last_error)
+        now = utc_now()
         info = {'error_count': error_count, 'last_error': last_error,
-                'user_id': self.feed.user_id, 'last_retrieved': utc_now()}
+                'user_id': self.feed.user_id, 'last_retrieved': now}
+        self._metric_lateness(now)
         info.update(extract_feed_info({}))
+
+        FETCH.labels(feed_type=self.feed.feed_type.value, result='error').inc()
         return FeedController().update({'id': self.feed.id}, info)
 
     def clean_feed(self, response, parsed_feed=None, **info):
         """Will reset the errors counters on a feed that have known errors"""
+        now = utc_now()
         info.update(extract_feed_info(response.headers, response.text))
         info.update({'error_count': 0, 'last_error': None,
-                     'last_retrieved': utc_now()})
+                     'last_retrieved': now})
 
         if parsed_feed is not None:  # updating feed with retrieved info
             fb_contr = FeedBuilderController(self.feed.link, parsed_feed)
@@ -58,10 +78,12 @@ class AbstractCrawler:
         # updating link on permanent move /redirect
         if response.history and self.feed.link != response.url and any(
                 resp.status_code in {301, 308} for resp in response.history):
-            logger.warning('feed moved from %r to %r',
+            WORKER.labels(method='move-feed').inc()
+            logger.warning('%r feed moved from %r to %r', self.feed,
                            self.feed.link, response.url)
             info['link'] = response.url
         if info:
+            self._metric_lateness(now)
             return FeedController(self.feed.user_id).update(
                     {'id': self.feed.id}, info)
         return None
@@ -70,7 +92,8 @@ class AbstractCrawler:
         raise NotImplementedError()
 
     def create_missing_article(self, response):
-        logger.info('cache validation failed, challenging entries')
+        logger.info('%r - cache validation failed, challenging entries',
+                    self.feed)
         parsed = self.parse_feed_response(response)
         if parsed is None:
             return
@@ -91,23 +114,25 @@ class AbstractCrawler:
             logger.debug('nothing to add (skipped %r) %r',
                          skipped_list, parsed)
             return
-        logger.debug('found %d entries %r', len(ids), ids)
+        logger.debug("%r found %d entries %r", self.feed, len(ids), ids)
 
         article_created = False
         actrl = ArticleController(self.feed.user_id)
         new_entries_ids = list(actrl.challenge(ids=ids))
-        logger.debug("%d entries wern't matched and will be created",
-                    len(new_entries_ids))
+        logger.debug("%r %d entries wern't matched and will be created",
+                     self.feed, len(new_entries_ids))
         for id_to_create in new_entries_ids:
             article_created = True
             builder = entries[tuple(sorted(id_to_create.items()))]
             new_article = builder.enhance()
-            logger.info('creating %r for %r - %r', new_article.get('title'),
-                        new_article.get('user_id'), id_to_create)
+            logger.info('%r creating %r for %r - %r', self.feed,
+                        new_article.get('title'), new_article.get('user_id'),
+                        id_to_create)
             actrl.create(**new_article)
 
         if not article_created:
-            logger.info('all article matched in db, adding nothing')
+            logger.info('%r all article matched in db, adding nothing',
+                        self.feed)
 
     def get_url(self):
         return self.feed.link
@@ -120,17 +145,18 @@ class AbstractCrawler:
 
     def is_cache_hit(self, response):
         if response.status_code == 304:
-            logger.info('feed responded with 304')
+            self._metric_fetch('304', logging.DEBUG)
             return True
         if response.status_code == 226:
-            logger.info('feed responded with 226')
+            self._metric_fetch('226')
             return False
         if response_etag_match(self.feed, response):
+            self._metric_fetch('manual-hash-match', logging.DEBUG)
             return True
         if response_calculated_etag_match(self.feed, response):
+            self._metric_fetch('home-made-hash-match', logging.DEBUG)
             return True
-        logger.debug('etag mismatch %r != %r',
-                     response.headers.get('etag'), self.feed.etag)
+        self._metric_fetch('cache-miss')
         return False
 
     def crawl(self):

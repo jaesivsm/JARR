@@ -18,7 +18,6 @@ conf = TheConf({'config_files': ['/etc/jarr/jarr.json', '~/.config/jarr.json'],
         'source_order': ['env', 'files'],
         'parameters': [
             {'jarr_testing': {'default': False, 'type': bool}},
-            {'debug': {'default': True, 'type': bool}},
             {'cluster_default': [
                 {'time_delta': {'default': 20, 'type': int}},
                 {'tfidf_enabled': {'default': True, 'type': bool}},
@@ -27,6 +26,8 @@ conf = TheConf({'config_files': ['/etc/jarr/jarr.json', '~/.config/jarr.json'],
             {'timezone': {'default': 'Europe/Paris', 'type': str}},
             {'app': [{'url': {'default': 'http://0.0.0.0:3000'}}]},
             {'api': [{'scheme': {'default': 'http'}}]},
+            {'worker': [{'metrics': [{'port': {'type': int, 'default': 8001}}]
+                         }]},
             {'db': [{'pg_uri': {'default': 'postgresql://postgresql/jarr'}},
                     {'redis': [{'host': {'default': 'redis'}},
                                {'db': {'default': 0, 'type': int}},
@@ -109,7 +110,6 @@ def init_db(echo=False):
     NewBase = declarative_base(new_engine)
     SessionMaker = sessionmaker(bind=new_engine)
     new_session = scoped_session(SessionMaker)
-
     return new_engine, new_session, NewBase
 
 

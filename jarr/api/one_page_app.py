@@ -4,6 +4,7 @@ from flask_restx import Namespace, Resource, fields, inputs
 from jarr.controllers import FeedController
 from jarr.controllers.cluster import ClusterController
 from jarr.lib.enums import ReadReason
+from jarr.metrics import READ
 
 ACCEPTED_LEVELS = {"success", "info", "warning", "error"}
 default_ns = Namespace("default", path="/")
@@ -147,7 +148,8 @@ class MarkClustersAsRead(Resource):
                     if not attrs.get("only_singles")
                         or len(clu["feeds_id"]) == 1]
         if clusters:
-            clu_ctrl.update({"id__in": [clu["id"] for clu in clusters]},
-                            {"read": True,
-                             "read_reason": ReadReason.mass_marked})
+            clu_ctrl.update({'id__in': [clu['id'] for clu in clusters]},
+                            {'read': True,
+                             'read_reason': ReadReason.mass_marked})
+        READ.labels(ReadReason.mass_marked.value).inc(len(clusters))
         return ClusterController(current_identity.id).get_unreads(), 200

@@ -4,10 +4,10 @@ ARG REACT_APP_API_URL=0.0.0.0:8000
 WORKDIR /jarr
 RUN yarn global add serve
 COPY jsclient/package.json jsclient/yarn.lock ./
-RUN yarn
 COPY jsclient/src/ /jarr/src
 COPY jsclient/public/ /jarr/public
-RUN yarn build
-RUN rm -rf src public node_modules
+RUN yarn \
+    && yarn build \
+    && rm -rf src public node_modules package.json yarn.lock
 EXPOSE 80
 CMD ["serve", "-p", "80", "-s", "/jarr/build"]

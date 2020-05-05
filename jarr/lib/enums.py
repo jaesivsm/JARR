@@ -43,9 +43,4 @@ class ReadReason(Enum):
     mass_marked = 'mass_marked'
     # the cluster was marked as read by a filter
     filtered = 'filtered'
-
-
-class CacheReason(Enum):
-    status_code_304 = 'status_code_304'  # feeds validate sent cache with 304
-    etag = 'etag'  # manual etag check works
-    etag_calculated = 'etag_calculated'  # generated etag check works
+    wake_up = 'wake_up'
