@@ -1,7 +1,8 @@
-from prometheus_client import generate_latest
-
-from flask_restx import Namespace, Resource
 from flask import Response
+from flask_restx import Namespace, Resource
+from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
+
+from jarr.metrics import REGISTRY
 
 metrics_ns = Namespace('metrics', description="Prometheus metrics")
 
@@ -11,4 +12,5 @@ class Metric(Resource):
 
     @staticmethod
     def get():
-        return Response(generate_latest(), mimetype='text/plain')
+        return Response(generate_latest(REGISTRY),
+                        mimetype=CONTENT_TYPE_LATEST)

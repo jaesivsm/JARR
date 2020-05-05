@@ -8,10 +8,10 @@ import random
 
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker, scoped_session
-
+from sqlalchemy.orm import scoped_session, sessionmaker
 from the_conf import TheConf
 
+from prometheus_distributed_client import set_redis_conn
 
 conf = TheConf({'config_files': ['/etc/jarr/jarr.json', '~/.config/jarr.json'],
         'config_file_environ': ['JARR_CONFIG'],
@@ -129,7 +129,9 @@ def rollback_pending_sql(*args, **kwargs):
 
 engine, session, Base = init_db()
 init_models()
-
+set_redis_conn(host=conf.db.redis.host,
+               db=conf.db.redis.db,
+               port=conf.db.redis.port)
 init_logging(conf.log.path, log_level=logging.WARNING,
              modules=('the_conf',))
 init_logging(conf.log.path, log_level=conf.log.level)

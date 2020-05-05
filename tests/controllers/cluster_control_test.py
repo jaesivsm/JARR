@@ -11,8 +11,7 @@ from jarr.controllers import (ClusterController, ArticleController,
 
 class ClusterControllerTest(BaseJarrTest):
 
-    @staticmethod
-    def create_article_from(cluster, feed, link=None):
+    def create_article_from(self, cluster, feed, link=None):
         self.assertEqual(cluster.user_id, feed.user_id)
         suffix = str(randint(0, 9999))
         acontr = ArticleController(cluster.user_id)
