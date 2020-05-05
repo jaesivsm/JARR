@@ -43,3 +43,4 @@ class ReadReason(Enum):
     mass_marked = 'mass_marked'
     # the cluster was marked as read by a filter
     filtered = 'filtered'
+    wake_up = 'wake_up'

@@ -1,8 +1,5 @@
 from prometheus_client import Histogram, Counter
 
-ARTICLE_CREATION = Counter('article_creation', 'Article Creation',
-                           ['article_type'], namespace='jarr')
-
 READ = Counter('read', 'Read event', ['reason'], namespace='jarr')
 
 FEED_FETCH = Counter('feed_fetch', 'Feed fetching event',
@@ -21,6 +18,9 @@ CLUSTERING = Counter('clustering', 'clustering context and decision',
                       'result',  # result is a match or not
                       'match',  # method for the match
                       ], namespace='jarr')
+
+ARTICLE_CREATION = Counter('article_creation', 'Article Creation',
+                           ['read', 'read_reason', 'cluster'], namespace='jarr')
 
 SERVER = Counter('server_method', 'server taken actions',
                  ['uri', 'method', 'result'], namespace='jarr')

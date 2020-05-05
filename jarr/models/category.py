@@ -37,3 +37,6 @@ class Category(Base):
                                  ondelete='CASCADE'),
             Index('ix_category_uid', user_id),
     )
+
+    def __repr__(self):
+        return "<Category(%s)>" % self.id

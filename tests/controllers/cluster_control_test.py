@@ -11,19 +11,6 @@ from jarr.controllers import (ClusterController, ArticleController,
 
 class ClusterControllerTest(BaseJarrTest):
 
-    def assertNotInCluster(self, article, cluster):
-        self.assertNotEqual(article.cluster_id, cluster.id,
-                "article %r cluster %r is %r" % (
-                    article, article.cluster, cluster))
-
-    def assertInCluster(self, article, cluster, reason=ClusterReason.link):
-        self.assertEqual(article.cluster_id, cluster.id,
-                "article %d:%r:%r cluster %d is not %d(main %d:%r)" % (
-                    article.id, article.entry_id, article.link,
-                    article.cluster.id, cluster.id, cluster.main_article_id,
-                    cluster.main_link))
-        self.assertEqual(reason, article.cluster_reason)
-
     @staticmethod
     def create_article_from(cluster, feed, link=None):
         assert cluster.user_id == feed.user_id
@@ -44,21 +31,23 @@ class ClusterControllerTest(BaseJarrTest):
         art_cat_id = article.category_id
         cat_ctrl = CategoryController(article.user_id)
         cluster = article.cluster
-        category = cat_ctrl.create(name='new cat')
-        feed = FeedController(cluster.user_id).create(
-                title='new feed', category_id=art_cat_id)
-        fno_cat = FeedController(cluster.user_id).create(title='category-less')
-        update_on_all_objs(articles=cluster.articles, feeds=[feed, fno_cat],
-                           categories=[category], cluster_enabled=True)
-        cat_ctrl.update({'id': art_cat_id}, {'cluster_enabled': False})
+        fctrl = FeedController(cluster.user_id)
+        feed = fctrl.create(title='new feed', category_id=art_cat_id)
+        fno_cat = fctrl.create(title='category-less')
+        update_on_all_objs(users=[cluster.user], cluster_enabled=None)
+        cat_ctrl.update({}, {'cluster_enabled': False})
         article = self.create_article_from(cluster, feed)
+        self.assertEqual(1, len(article.cluster.articles))
         self.assertNotInCluster(article, cluster)
         article = self.create_article_from(cluster, fno_cat)
+        self.assertEqual(1, len(article.cluster.articles))
         self.assertNotInCluster(article, cluster)
         cat_ctrl.update({'id': art_cat_id}, {'cluster_enabled': True})
         article = self.create_article_from(cluster, fno_cat)
+        self.assertEqual(2, len(article.cluster.articles))
         self.assertInCluster(article, cluster)
         article = self.create_article_from(cluster, feed)
+        self.assertEqual(3, len(article.cluster.articles))
         self.assertInCluster(article, cluster)
 
     def test_cluster_tfidf_control(self):
@@ -124,9 +113,11 @@ class ClusterControllerTest(BaseJarrTest):
         article = self.create_article_from(cluster, feed)
         self.assertInCluster(article, cluster)
 
-        # disabling on user desactivate all clustering
+        # disabling on user desactivate all clustering by default
+        update_on_all_objs(articles=cluster.articles, feeds=[feed],
+                           cluster_enabled=None)
         UserController().update({'id': cluster.user_id},
-                {'cluster_enabled': False})
+                                {'cluster_enabled': False})
         article = self.create_article_from(cluster, feed)
         self.assertNotInCluster(article, cluster)
 

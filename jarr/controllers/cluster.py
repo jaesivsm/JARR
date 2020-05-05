@@ -2,7 +2,7 @@ import logging
 from collections import defaultdict
 from datetime import timedelta
 
-from sqlalchemy import Integer, and_, func
+from sqlalchemy import Integer, and_, func, or_
 from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.orm import aliased
 from sqlalchemy.sql import exists, select
@@ -10,10 +10,10 @@ from sqlalchemy.sql import exists, select
 from jarr.bootstrap import session
 from jarr.controllers.article import ArticleController
 from jarr.lib.clustering_af.grouper import get_best_match_and_score
-from jarr.lib.filter import process_filters
 from jarr.lib.enums import ClusterReason, ReadReason
-from jarr.metrics import CLUSTERING
-from jarr.models import Article, Cluster, Feed, User
+from jarr.lib.filter import process_filters
+from jarr.metrics import ARTICLE_CREATION, CLUSTERING
+from jarr.models import Article, Cluster, Feed
 from jarr.utils import get_cluster_pref
 
 from .abstract import AbstractController
@@ -27,13 +27,18 @@ JR_SQLA_FIELDS = [getattr(Cluster, key) for key in __returned_keys]
 JR_PAGE_LENGTH = 30
 
 
-def get_config(obj, attr, level="feed"):
+def get_config(obj, attr):
+    if obj.__class__.__name__ == "Article":
+        return get_config(obj.feed, attr)
+    if obj.__class__.__name__ == "Cluster":
+        return all(get_config(article, attr) for article in obj.articles)
     val = getattr(obj, attr)
     if val is not None:
+        logger.debug("%r.%s is %r", obj, attr, val)
         return val
-    if level == "feed" and obj.category_id:
-        return get_config(obj.category, attr, "category")
-    return get_config(obj.user, attr, "user")
+    if obj.__class__.__name__ == "Feed" and obj.category_id:
+        return get_config(obj.category, attr)
+    return get_config(obj.user, attr)
 
 
 def is_same_ok(article, parent):
@@ -43,7 +48,7 @@ def is_same_ok(article, parent):
 class ClusterController(AbstractController):
     _db_cls = Cluster
 
-    def _get_query_for_clustering(self, article, filters, join_filters=None):
+    def _get_query_for_clustering(self, article, filters, filter_tfidf=False):
         time_delta = timedelta(
                 days=get_cluster_pref(article.feed, 'time_delta'))
         date_cond = {'date__lt': article.date + time_delta,
@@ -59,23 +64,26 @@ class ClusterController(AbstractController):
         if not is_same_ok(article, 'feed'):
             filters['feed_id__ne'] = article.feed_id
 
-        query = ArticleController(self.user_id).read(**filters)\
-                .join(Feed, Feed.id == Article.feed_id)\
-                .join(User, User.id == Article.user_id)\
-                .filter(User.cluster_enabled.__eq__(True),
-                        Feed.cluster_enabled.__eq__(True))
+        feed_join = [Feed.id == Article.feed_id,
+                     or_(Feed.cluster_enabled.__eq__(True),
+                         Feed.cluster_enabled.__eq__(None))]
+        if filter_tfidf:
+            feed_join.append(or_(Feed.cluster_tfidf_enabled.__eq__(True),
+                                 Feed.cluster_tfidf_enabled.__eq__(None)))
 
-        for join_filter in join_filters or []:
-            query = query.filter(join_filter)
+        query = ArticleController(self.user_id).read(**filters)\
+                .join(Feed, and_(*feed_join))
 
         # operations involving categories are complicated, handling in software
         for candidate in query:
-            if candidate.category_id:
-                if not get_config(candidate.category,
-                                  "cluster_enabled", "category"):
-                    CLUSTERING.labels(filters="allow", config="target-forbid",
-                                      result="miss", match="none").inc()
-                    continue
+            if not get_config(candidate, "cluster_enabled"):
+                CLUSTERING.labels(filters="allow", config="target-forbid",
+                                  result="miss", match="none").inc()
+                continue
+            if filter_tfidf and not get_config(candidate, "cluster_tfidf_enabled"):
+                CLUSTERING.labels(filters="allow", config="target-forbid",
+                                  result="miss", match="tfidf").inc()
+                continue
             yield candidate
 
     def _get_cluster_by_link(self, article):
@@ -95,10 +103,7 @@ class ClusterController(AbstractController):
     def _get_cluster_by_similarity(self, article):
         query = self._get_query_for_clustering(article,
                 # article is matchable
-                {'vector__ne': None},
-                (User.cluster_tfidf_enabled.__eq__(True),
-                 Feed.cluster_tfidf_enabled.__eq__(True))
-                )
+                {'vector__ne': None}, filter_tfidf=True)
 
         neighbors = [neighbor for neighbor in query
                      if not neighbor.category_id
@@ -148,10 +153,12 @@ class ClusterController(AbstractController):
         # a cluster
         if cluster_read is not None:
             cluster.read = cluster.read and cluster_read
-            if cluster.read:
-                cluster.read_reason = ReadReason.filtered
-        elif article.feed.cluster_wake_up:
+            cluster.read_reason = ReadReason.filtered
+            logger.debug('marking as read because of filter %r', cluster)
+        elif get_config(article, 'cluster_wake_up') \
+                and get_config(cluster, 'cluster_wake_up'):
             cluster.read = False
+            logger.debug('waking up %r', cluster)
         # once one article is liked the cluster is liked
         cluster.liked = cluster.liked or cluster_liked
         if cluster.main_date > article.date or force_article_as_main:
@@ -162,18 +169,21 @@ class ClusterController(AbstractController):
         session.add(cluster)
         session.add(article)
         session.commit()
+        ARTICLE_CREATION.labels(read_reason=cluster.read_reason,
+                                read='read' if cluster.read else 'unread',
+                                cluster=article.cluster_reason.value).inc()
         return cluster
 
     def clusterize(self, article, filter_result=None):
         """Will add given article to a fitting cluster or create a cluster
         fitting that article."""
         filter_result = filter_result or {}
-        allow_clutering = filter_result.get('clustering', True)
+        allow_clustering = filter_result.get('clustering', True)
         filter_read = filter_result.get('read')
         filter_liked = filter_result.get('liked')
         logger.info('%r - processed filter: %r', article, filter_result)
         cluster_config = get_config(article.feed, 'cluster_enabled')
-        if allow_clutering and cluster_config:
+        if allow_clustering and cluster_config:
             cluster = self._get_cluster_by_link(article)
             tfidf_config = get_config(article.feed, 'cluster_tfidf_enabled')
             if not cluster and tfidf_config:
@@ -188,10 +198,11 @@ class ClusterController(AbstractController):
                                            filter_read, filter_liked)
         else:
             logger.debug("%r - no clustering because filters: %r, config: %r",
-                         article, allow_clutering, cluster_config)
-            CLUSTERING.labels(filters="allow" if allow_clutering else "forbid",
-                              config="allow" if cluster_config else "forbid",
-                              result="miss", match="none").inc()
+                         article, not allow_clustering, not cluster_config)
+            CLUSTERING.labels(
+                    filters="allow" if allow_clustering else "forbid",
+                    config="allow" if cluster_config else "forbid",
+                    result="miss", match="none").inc()
         return self._create_from_article(article, filter_read, filter_liked)
 
     @classmethod
