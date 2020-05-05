@@ -12,15 +12,9 @@ from jarr.controllers.article import ArticleController
 from jarr.lib.clustering_af.grouper import get_best_match_and_score
 from jarr.lib.enums import ClusterReason, ReadReason
 from jarr.lib.filter import process_filters
-from jarr.lib.html_parsing import extract_lang, extract_tags, extract_title
-from jarr.lib.enums import ArticleType
-from jarr.lib.enums import ClusterReason, ReadReason
-from jarr.lib.utils import jarr_get
-from jarr.models import Article, Cluster, Feed, User
-from jarr.utils import get_cluster_pref
-
 from jarr.metrics import ARTICLE_CREATION, CLUSTERING
 from jarr.models import Article, Cluster, Feed
+from jarr.utils import get_cluster_pref
 
 from .abstract import AbstractController
 
@@ -137,51 +131,23 @@ class ClusterController(AbstractController):
         CLUSTERING.labels(filters="allow", config="score-forbid",
                           result="miss", match="tfidf").inc()
 
-    @staticmethod
-    def _fetch_article(link):
-        try:
-            response = jarr_get(link)
-            response.raise_for_status()
-            return response
-        except Exception:
-            logger.exception("Unable to retrieve %s", link)
-
-    @classmethod
-    def _enrich_with_article_details(cls, cluster, article):
-        cluster.main_link = article.link
-        cluster.main_title = article.title
-        cluster.main_date = article.date
-        cluster.main_feed_title = article.feed.title
-        cluster.main_article_id = article.id
-        if article.article_type in {ArticleType.image, ArticleType.video}:
-            # todo construct integrated cluster content
-            return
-        if article.article_type is ArticleType.embedded:
-            # construct content for embedded player
-            return
-        page = cls._fetch_article(article.link)
-        if not page:
-            return
-        if not article.title:
-            cluster.main_title = extract_title(page)
-        article.tags = set(article.tags).union(extract_tags(page))
-        lang = extract_lang(page)
-        if lang:
-            article.lang = lang
-
     def _create_from_article(self, article,
                              cluster_read=None, cluster_liked=False):
         cluster = Cluster()
         cluster.user_id = article.user_id
-        self._enrich_with_article_details(cluster, article)
+        cluster.main_link = article.link
+        cluster.main_date = article.date
+        cluster.main_feed_title = article.feed.title
+        cluster.main_title = article.title
+        cluster.main_article_id = article.id
         cluster.read = bool(cluster_read)
         cluster.liked = cluster_liked
         article.cluster_reason = ClusterReason.original
         self.enrich_cluster(cluster, article, cluster_read, cluster_liked)
         return cluster
 
-    @classmethod
-    def enrich_cluster(cls, cluster, article,
+    @staticmethod
+    def enrich_cluster(cluster, article,
                        cluster_read=None, cluster_liked=False,
                        force_article_as_main=False):
         article.cluster = cluster
@@ -197,7 +163,10 @@ class ClusterController(AbstractController):
         # once one article is liked the cluster is liked
         cluster.liked = cluster.liked or cluster_liked
         if cluster.main_date > article.date or force_article_as_main:
-            cls._enrich_with_article_details(cluster, article)
+            cluster.main_title = article.title
+            cluster.main_date = article.date
+            cluster.main_feed_title = article.feed.title
+            cluster.main_article_id = article.id
         session.add(cluster)
         session.add(article)
         session.commit()
