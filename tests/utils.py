@@ -20,4 +20,7 @@ def update_on_all_objs(articles=None, feeds=None, categories=None, users=None,
                                         {'user_id__in': user_ids}]}, kwargs)
     CategoryController().update({'__or__':
             [{'id__in': category_ids}, {'user_id__in': user_ids}]}, kwargs)
-    UserController().update({'id__in': user_ids}, kwargs)
+    UserController().update(
+            {'id__in': user_ids},
+            # pushing default to user if not specifically false
+            {k: v if v is not None else True for k, v in kwargs.items()})

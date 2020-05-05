@@ -99,11 +99,10 @@ class ClusterControllerTest(BaseJarrTest):
         art_cat_id = article.category_id
         cat_ctrl = CategoryController(article.user_id)
         cluster = article.cluster
-        feed = FeedController(cluster.user_id).create(
-                title='new feed', category_id=art_cat_id)
+        feed = FeedController(cluster.user_id).create(title='new feed',
+                                                      category_id=art_cat_id)
         update_on_all_objs(articles=cluster.articles, feeds=[feed],
-                           cluster_same_category=True,
-                           cluster_enabled=True)
+                           cluster_same_category=None, cluster_enabled=True)
         cat_ctrl.update({'id': art_cat_id}, {'cluster_same_category': False})
         article = self.create_article_from(cluster, feed)
         self.assertNotInCluster(article, cluster)
