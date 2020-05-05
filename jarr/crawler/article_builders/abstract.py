@@ -4,6 +4,7 @@ import requests
 from requests.exceptions import MissingSchema
 
 from jarr.bootstrap import conf
+from jarr.lib.content_generator import is_embedded_link
 from jarr.lib.enums import ArticleType
 from jarr.lib.filter import FiltersAction, process_filters
 from jarr.lib.html_parsing import extract_lang, extract_tags, extract_title
@@ -105,6 +106,8 @@ class AbstractArticleBuilder:
                 self.article['article_type'] = ArticleType.image
             elif head.headers['Content-Type'].startswith('video/'):
                 self.article['article_type'] = ArticleType.video
+            elif is_embedded_link(self.article['link']):
+                self.article['article_type'] = ArticleType.embedded
             else:
                 page = jarr_get(self.article['link'])
                 if not page:
