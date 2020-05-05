@@ -5,7 +5,7 @@ from requests.exceptions import MissingSchema
 
 from jarr.bootstrap import conf
 from jarr.lib.filter import FiltersAction, process_filters
-from jarr.lib.jarr_types import ArticleType
+from jarr.lib.enums import ArticleType
 from jarr.lib.utils import utc_now
 
 logger = logging.getLogger(__name__)

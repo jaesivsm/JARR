@@ -13,8 +13,8 @@ from jarr.lib.clustering_af.grouper import get_best_match_and_score
 from jarr.lib.enums import ClusterReason, ReadReason
 from jarr.lib.filter import process_filters
 from jarr.lib.html_parsing import extract_lang, extract_tags, extract_title
-from jarr.lib.jarr_types import ArticleType
-from jarr.lib.reasons import ClusterReason, ReadReason
+from jarr.lib.enums import ArticleType
+from jarr.lib.enums import ClusterReason, ReadReason
 from jarr.lib.utils import jarr_get
 from jarr.models import Article, Cluster, Feed, User
 from jarr.utils import get_cluster_pref
