@@ -27,7 +27,7 @@ export default makeStyles((theme: Theme) =>
           top: 25,
           marginBottom: 20,
           transform: "translateX(-50%)",
-          width: 'calc(100% - 50px)',
+          width: "calc(100% - 50px)",
       },
       "& .MuiGrid-item": {
         padding: theme.spacing(1),

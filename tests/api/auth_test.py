@@ -1,4 +1,3 @@
-import urllib
 from mock import patch
 
 from tests.base import JarrFlaskCommon

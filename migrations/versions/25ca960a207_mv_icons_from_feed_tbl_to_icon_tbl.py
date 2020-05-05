@@ -8,8 +8,6 @@ Create Date: 2015-08-03 14:36:21.626411
 import sqlalchemy as sa
 from alembic import op
 
-from jarr.bootstrap import conf
-
 revision = '25ca960a207'
 down_revision = '19bdaa6208e'
 

@@ -7,8 +7,6 @@ Create Date: 2018-08-30 15:09:41.541800
 """
 import logging
 from alembic import op
-import sqlalchemy as sa
-from sqlalchemy.dialects import postgresql
 
 revision = '33c6542730e6'
 down_revision = 'a987c6ce888d'

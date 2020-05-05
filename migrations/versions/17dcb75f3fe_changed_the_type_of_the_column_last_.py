@@ -10,8 +10,6 @@ from datetime import datetime
 import sqlalchemy as sa
 from alembic import op
 
-from jarr.bootstrap import conf
-
 
 revision = '17dcb75f3fe'
 down_revision = 'cde34831ea'

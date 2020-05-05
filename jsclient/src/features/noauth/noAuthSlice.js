@@ -29,7 +29,7 @@ const noAuthSlice = createSlice({
       } else if (action.payload.statusText === "NOT FOUND") {
         state.loginError = "User does not exist.";
       } else if (action.payload.statusText === "EXPIRED") {
-        state.loginError = "Your session has expired, please log in again"
+        state.loginError = "Your session has expired, please log in again";
       } else {
         state.loginError = "Unknown error.";
         state.creationError = "Unknown error.";

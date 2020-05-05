@@ -28,7 +28,7 @@ export default makeStyles((theme: Theme) =>
     },
     articleInner: {
       padding: "16px 0",
-      '& iframe': {
+      "& iframe": {
         width: "100%"
       }
     },
@@ -97,7 +97,7 @@ export default makeStyles((theme: Theme) =>
       }),
       marginLeft: -feedListWidth,
       marginRight: -editPanelWidth,
-      maxWidth: `100%`,
+      maxWidth: "100%",
       [theme.breakpoints.down("sm")]: {
         paddingLeft: 5,
         paddingRight: 5,

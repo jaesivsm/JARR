@@ -9,8 +9,6 @@ from alembic import op
 import sqlalchemy as sa
 from sqlalchemy.sql import column, table
 
-from jarr.bootstrap import conf
-
 
 revision = '122ac0c356c'
 down_revision = '493abdb2b73'

@@ -117,7 +117,7 @@ export default makeStyles((theme: Theme) =>
       "& .MuiSelect-select": {
         width: 150,
         [theme.breakpoints.down("sm")]: {
-          width: '100%'
+          width: "100%"
         }
       }
     },
@@ -146,7 +146,7 @@ export default makeStyles((theme: Theme) =>
       "& .MuiTextField-root": {
         height: 32,
         justifyContent: "center",
-        '& input': {
+        "& input": {
           padding: 0
         }
       }
@@ -160,7 +160,7 @@ export default makeStyles((theme: Theme) =>
     },
     editPanelFilterArrow: {
       position: "relative",
-      padding: 0, 
+      padding: 0,
       "& svg": {
         height: 18,
         width: 18,

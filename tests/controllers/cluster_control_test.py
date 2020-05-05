@@ -13,7 +13,7 @@ class ClusterControllerTest(BaseJarrTest):
 
     @staticmethod
     def create_article_from(cluster, feed, link=None):
-        assert cluster.user_id == feed.user_id
+        self.assertEqual(cluster.user_id, feed.user_id)
         suffix = str(randint(0, 9999))
         acontr = ArticleController(cluster.user_id)
         article = acontr.create(feed_id=feed.id,

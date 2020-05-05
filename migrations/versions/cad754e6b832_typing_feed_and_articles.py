@@ -25,8 +25,8 @@ def upgrade():
     op.add_column('article', sa.Column('article_type', article_type,
                                        nullable=True, default='text'))
     op.execute("UPDATE article SET article_type='text'")
-    op.alter_column('article', 'article_type', nullable=False)
-
+    op.alter_column('article', 'article_type',
+                    existing_type=article_type, nullable=False)
 
     logger.info("altering article indexes")
     op.create_index('ix_cluster_uid_martid', 'cluster',
@@ -61,8 +61,9 @@ def upgrade():
     op.execute("UPDATE feed SET feed_type='classic' WHERE feed_type IS NULL;")
     op.execute("UPDATE feed SET status='active' WHERE enabled=true");
     op.execute("UPDATE feed SET status='paused' WHERE enabled=false");
-    op.alter_column('feed', 'feed_type', nullable=False)
-    op.alter_column('feed', 'status', nullable=False)
+    op.alter_column('feed', 'feed_type',
+                    existing_type=feedtype, nullable=False)
+    op.alter_column('feed', 'status', existing_type=feedstatus, nullable=False)
 
     logger.info("droping feed obsolete column")
     op.drop_column('feed', 'integration_reddit')
