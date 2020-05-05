@@ -115,9 +115,11 @@ class ConstructFeedFromTest(unittest.TestCase):
         self.assertEqual({
             'feed_type': FeedType.classic,
             'icon_url': 'https://s.ytimg.com/yts/img/favicon-vfl8qSV2F.ico',
+            'link': 'https://www.youtube.com/feeds/videos.xml'
+                    '?channel_id=UCOWsWZTiXkbvQvtWO9RA0gA',
             'site_link': 'https://www.youtube.com/channel/'
                          'UCOWsWZTiXkbvQvtWO9RA0gA',
-            'title': 'YouTube'}, youtube)
+            'title': 'BenzaieLive'}, youtube)
 
     def test_json(self):
         feed = FBC('https://daringfireball.net/feeds/json').construct()
