@@ -19,14 +19,11 @@ logger = logging.getLogger('alembic.' + revision)
 
 def upgrade():
     logger.info("creating type for articles")
-    article_type = postgresql.ENUM('text', 'image', 'video',
+    article_type = postgresql.ENUM('image', 'video', 'embedded',
                                    name='articletype')
     article_type.create(op.get_bind())
     op.add_column('article', sa.Column('article_type', article_type,
-                                       nullable=True, default='text'))
-    op.execute("UPDATE article SET article_type='text'")
-    op.alter_column('article', 'article_type',
-                    existing_type=article_type, nullable=False)
+                                       nullable=True, default=None))
 
     logger.info("altering article indexes")
     op.create_index('ix_cluster_uid_martid', 'cluster',
