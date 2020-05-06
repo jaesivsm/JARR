@@ -35,7 +35,7 @@ def generate_content(article):
                         article)
             content['player'] = 'youtube'
             try:
-                content['video-id'] = YOUTUBE_RE.match(article.link).group(5)
+                content['videoId'] = YOUTUBE_RE.match(article.link).group(5)
                 success = True
             except IndexError:
                 pass

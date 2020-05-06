@@ -20,14 +20,18 @@ article_model = cluster_ns.model('Article', {
     'title': fields.String(),
     'content': fields.String(),
     'comments': fields.String(),
-    'date': fields.DateTime(),
-})
-
+    'date': fields.DateTime()})
+content_model = cluster_ns.model('ComplexContent', {
+    'type': fields.String(required=True),
+    'alt': fields.String(),
+    'src': fields.String(),
+    'player': fields.String(),
+    'videoId': fields.String()})
 model = cluster_ns.model('Cluster', {
     'id': fields.Integer(),
     'read': fields.Boolean(),
     'liked': fields.Boolean(),
-    'content': fields.String(),
+    'content': fields.Nested(content_model, skip_none=True),
     'main_feed_title': fields.String(),
     'main_article_id': fields.Integer(),
     'articles': fields.Nested(article_model, as_list=True),
@@ -38,7 +42,7 @@ model = cluster_ns.model('Cluster', {
 class ClusterResource(Resource):
 
     @staticmethod
-    @cluster_ns.marshal_with(model)
+    @cluster_ns.marshal_with(model, skip_none=True)
     @cluster_ns.response(200, 'OK')
     @cluster_ns.response(226, 'OK, marked as read')
     @cluster_ns.response(400, 'Validation error')
@@ -63,7 +67,6 @@ class ClusterResource(Resource):
         return cluster, code
 
     @staticmethod
-    @cluster_ns.marshal_with(model)
     @cluster_ns.expect(cluster_parser, validate=True)
     @cluster_ns.response(204, 'Updated')
     @cluster_ns.response(401, 'Authorization needed')
