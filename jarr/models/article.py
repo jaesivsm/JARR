@@ -27,7 +27,7 @@ class Article(Base):
 
     # integration control
     article_type = Column(Enum(ArticleType),
-                          default=ArticleType.text, nullable=False)
+                          default=None, nullable=True)
 
     # parsing
     tags = Column(PickleType, default=[])

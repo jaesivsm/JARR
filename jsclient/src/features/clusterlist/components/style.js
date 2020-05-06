@@ -47,7 +47,7 @@ export default makeStyles((theme: Theme) =>
       "& .MuiExpansionPanelSummary-expandIcon": {
         padding: 6,
       },
-    },  
+    },
     link: {
       verticalAlign: "middle",
       display: "flex",
@@ -193,6 +193,35 @@ export default makeStyles((theme: Theme) =>
       height: 50,
       width: "100%",
       textAlign: "center",
-    }
+    },
+    videoContainer: {
+      verticalAlign: "middle",
+      position: "relative",
+      paddingBottom: "56.25%",
+      height: 0,
+      marginTop: theme.spacing(2),
+      overflow: "hidden",
+      "& iframe": {
+        position: "absolute",
+        top: 0,
+        left: 0,
+        width: "100%",
+        height: "100%",
+      },
+      "& object": {
+        position: "absolute",
+        top: 0,
+        left: 0,
+        width: "100%",
+        height: "100%",
+      },
+      "& embed": {
+        position: "absolute",
+        top: 0,
+        left: 0,
+        width: "100%",
+        height: "100%",
+      },
+    },
   })
 );

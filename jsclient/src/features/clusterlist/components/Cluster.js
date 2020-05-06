@@ -4,6 +4,7 @@ import PropTypes from "prop-types";
 import { connect } from "react-redux";
 import moment from "moment";
 // material ui components
+import CircularProgress from "@material-ui/core/CircularProgress";
 import Typography from "@material-ui/core/Typography";
 import Link from "@material-ui/core/Link";
 import ExpansionPanel from "@material-ui/core/ExpansionPanel";
@@ -20,12 +21,13 @@ import { doFetchCluster, doEditCluster, removeClusterSelection,
 import makeStyles from "./style";
 import { changeReadCount } from "../../feedlist/feedSlice";
 import ClusterIcon from "../../../components/ClusterIcon";
-import Content from "./Content";
+import Articles from "./Articles";
 
 function mapStateToProps(state) {
   return { requestedClusterId: state.clusters.requestedClusterId,
            unreadOnClose: !state.clusters.filters.filter,
            icons: state.feeds.icons,
+           loadedCluster: state.clusters.loadedCluster,
   };
 }
 
@@ -83,13 +85,31 @@ const mapDispatchToProps = (dispatch) => ({
   },
 });
 
-function Cluster({ cluster,
+function Cluster({ cluster, loadedCluster,
                    icons, requestedClusterId, unreadOnClose,
                    readOnRedirect, toggleRead, toggleLiked,
                    handleClickOnPanel, splitedMode,
 }) {
   const classes = makeStyles();
   const expanded = requestedClusterId === cluster.id;
+  let content;
+  if(!splitedMode && expanded) {
+    if (loadedCluster.id !== cluster.id) {
+      content = <div className={classes.loadingWrap}><CircularProgress /></div>;
+    } else {
+      content = (
+        <Articles content={loadedCluster.content}
+                  articles={loadedCluster.articles} />
+      );
+    }
+    content = (
+      <ExpansionPanelDetails className={classes.content}
+                             key={"cl-" + cluster.id}>
+        {content}
+      </ExpansionPanelDetails>
+    );
+  }
+
   return (
       <ExpansionPanel
         expanded={expanded}
@@ -148,16 +168,13 @@ function Cluster({ cluster,
             </Typography>
           </div>
         </ExpansionPanelSummary>
-          {!splitedMode ? (<ExpansionPanelDetails
-           className={classes.content}
-           key={"cl-" + cluster.id}>
-           <Content clusterId={cluster.id} />
-        </ExpansionPanelDetails>): null}
+        {content}
       </ExpansionPanel>
     );
 }
 
 Cluster.propTypes = {
+  loadedCluster: PropTypes.object,
   cluster: PropTypes.shape({
     id: PropTypes.number.isRequired,
     read: PropTypes.bool.isRequired,

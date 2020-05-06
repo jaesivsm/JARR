@@ -1,5 +1,5 @@
 from sqlalchemy import (Boolean, Column, Integer, String, Enum,
-                        ForeignKey, ForeignKeyConstraint, Index)
+                        ForeignKey, ForeignKeyConstraint, Index, PickleType)
 from sqlalchemy.orm import relationship
 
 from jarr.lib.utils import utc_now
@@ -18,7 +18,7 @@ class Cluster(Base):
     read = Column(Boolean, default=False)
     liked = Column(Boolean, default=False)
     created_date = Column(UTCDateTime, default=utc_now)
-    content = Column(String, default=None)
+    content = Column(PickleType, default={})
 
     # denorm
     main_date = Column(UTCDateTime, default=utc_now)

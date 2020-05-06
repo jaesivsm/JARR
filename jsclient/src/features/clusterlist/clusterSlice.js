@@ -162,6 +162,9 @@ export const doFetchCluster = (clusterId): AppThunk => async (dispatch, getState
 
 export const doEditCluster = (clusterId, payload): AppThunk => async (dispatch, getState) => {
   dispatch(updateClusterAttrs({ clusterId, ...payload }));
+  if (payload["read_reason"] === null) {
+    delete payload["read_reason"];
+  }
   await doRetryOnTokenExpiration({
     method: "put",
     url: apiUrl + "/cluster/" + clusterId,

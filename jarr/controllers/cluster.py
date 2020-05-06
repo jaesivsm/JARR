@@ -14,6 +14,7 @@ from jarr.lib.enums import ClusterReason, ReadReason
 from jarr.lib.filter import process_filters
 from jarr.metrics import ARTICLE_CREATION, CLUSTERING
 from jarr.models import Article, Cluster, Feed
+from jarr.lib.content_generator import generate_content
 from jarr.utils import get_cluster_pref
 
 from .abstract import AbstractController
@@ -167,6 +168,10 @@ class ClusterController(AbstractController):
             cluster.main_date = article.date
             cluster.main_feed_title = article.feed.title
             cluster.main_article_id = article.id
+        if not cluster.content:
+            success, content = generate_content(article)
+            if success:
+                cluster.content = content
         session.add(cluster)
         session.add(article)
         session.commit()

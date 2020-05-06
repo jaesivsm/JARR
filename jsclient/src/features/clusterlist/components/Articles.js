@@ -1,33 +1,65 @@
 import React, { useState } from "react";
+import PropTypes from "prop-types";
+import { connect } from "react-redux";
 
 import Tab from "@material-ui/core/Tab";
 import Tabs from "@material-ui/core/Tabs";
 
 import Article from "./Article";
+import Content from "./Content";
 import makeStyles from "./style";
 import ClusterIcon from "../../../components/ClusterIcon";
+import jarrIcon from "../../../components/JarrIcon.gif";
 
-function Articles({ articles, icons }) {
+function mapStateToProps(state) {
+  return { icons: state.feeds.icons,
+  };
+}
+const proccessedContentTitle = "proccessed content";
+
+function Articles({ articles, icons, content }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const classes = makeStyles();
+
+  let contentTitle, contentTab;
+  if (articles.length === 1 && !content) {
+    return <Article article={articles[0]} hidden={false} />;
+  } else if (content) {
+    contentTitle = (
+      <Tab key="t-0"
+        className={classes.tabs}
+      //
+        icon={<img src={jarrIcon} alt={proccessedContentTitle}
+                   title={proccessedContentTitle} />}
+        label={proccessedContentTitle}
+        value={0} aria-controls="a-0"
+      />
+    );
+    contentTab = <Content content={content} hidden={0 !== currentIndex} />;
+  }
   const isOnlyOneTitle = [...new Set(articles.map((a) => a.title))].length === 1;
   return (
     <>
       <Tabs indicatorColor="primary" textColor="primary"
         value={currentIndex}
         onChange={(e, v) => setCurrentIndex(v)}>
-       {articles.map((article, index) => (
-          <Tab key={`t-${index}`}
-               className={classes.tabs}
-               icon={<ClusterIcon iconUrl={icons[article["feed_id"]]} />}
-               label={isOnlyOneTitle ? null : article.title}
-               value={index}
-               aria-controls={`a-${index}`}
-           />
-       ))}
+        {contentTitle}
+        {articles.map((article, index) => {
+          index = content ? index + 1 : index;
+          return (<Tab key={`t-${index}`}
+            className={classes.tabs}
+            icon={<ClusterIcon iconUrl={icons[article["feed_id"]]} />}
+            label={isOnlyOneTitle ? null : article.title}
+            value={index}
+            aria-controls={`a-${index}`}
+          />);
+        })}
       </Tabs>
-      {articles.map((article, index) =>
-         <Article
+      {contentTab}
+      {articles.map((article, index) => {
+        index = content ? index + 1 : index;
+        return (
+          <Article
             key={`a-${index}-${index !== currentIndex ? "h" : ""}`}
             id={`a-${index}`}
             article={article}
@@ -35,8 +67,19 @@ function Articles({ articles, icons }) {
             index={index}
             hidden={index !== currentIndex}
           />
-      )}
+        );
+      })}
     </>
   );
 }
-export default Articles;
+Articles.propTypes = {
+  articles: PropTypes.array,
+  content: PropTypes.shape({
+    type: PropTypes.string.isRequired,
+    alt: PropTypes.string,
+    src: PropTypes.string,
+    videoId: PropTypes.string,
+    player: PropTypes.string,
+  }),
+};
+export default connect(mapStateToProps)(Articles);

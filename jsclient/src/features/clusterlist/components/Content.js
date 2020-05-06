@@ -1,36 +1,59 @@
 import React from "react";
 import PropTypes from "prop-types";
-import { connect } from "react-redux";
-// material ui components
+import Typography from "@material-ui/core/Typography";
+import Link from "@material-ui/core/Link";
+import Divider from "@material-ui/core/Divider";
+
 import makeStyles from "./style";
-import CircularProgress from "@material-ui/core/CircularProgress";
-// jarr
-import Articles from "./Articles";
-import Article from "./Article";
 
-function mapStateToProps(state) {
-  return { loadedCluster: state.clusters.loadedCluster,
-           unreadOnClose: !state.clusters.filters.filter,
-           icons: state.feeds.icons,
-  };
-}
-
-function Content({ clusterId, loadedCluster, icons }) {
+function Content({ content, hidden }) {
   const classes = makeStyles();
-  if (loadedCluster.id !== clusterId) {
-    return <div className={classes.loadingWrap}><CircularProgress /></div>;
-  } else if (loadedCluster.articles.length === 1) {
-    return (<Article article={loadedCluster.articles[0]}
-                     hidden={false} />);
-  } else {
-    return (<Articles articles={loadedCluster.articles}
-                      icons={icons} />);
+  let head, body;
+  if (content.type === "image") {
+    head = (
+      <p>
+        <span>Link</span>
+        <Link color="secondary" target="_blank" href={content.src}>
+          {content.src}
+        </Link>
+      </p>
+    );
+    body = (
+      <Typography hidden={!!hidden}>
+        <img src={content.src} alt={content.alt} title={content.alt} />
+      </Typography>
+    );
+  } else if (content.type === "embedded" && content.player === "youtube") {
+    body = (
+      <div className={classes.videoContainer}>
+        <iframe key="jarr-proccessed-content"
+          title="JARR processed Player"
+          id="ytplayer"
+          type="text/html"
+          src={"http://www.youtube.com/embed/" + content.videoId}
+          frameborder="0"
+        />
+      </div>
+    );
   }
+  return (
+    <div hidden={hidden} className={classes.article}>
+      {head}
+      <Divider />
+      {body}
+    </div>
+  );
 }
 
 Content.propTypes = {
-  clusterId: PropTypes.number,
-  loadedCluster: PropTypes.object,
+  content: PropTypes.shape({
+    type: PropTypes.string.isRequired,
+    alt: PropTypes.string,
+    src: PropTypes.string,
+    player: PropTypes.string,
+    videoId: PropTypes.string,
+  }),
+  hidden: PropTypes.bool.isRequired,
 };
 
-export default connect(mapStateToProps)(Content);
+export default Content;

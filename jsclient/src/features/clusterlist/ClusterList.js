@@ -12,12 +12,10 @@ import AddIcon from "@material-ui/icons/Add";
 import Alert from "@material-ui/lab/Alert";
 // jarr
 import Cluster from "./components/Cluster";
-import Content from "./components/Content";
 import SelectedObjCard from "./components/SelectedObjCard";
 import { doListClusters, doLoadMoreClusters, filterClusters } from "./clusterSlice";
 import makeStyles from "./components/style";
-
-
+import Articles from "./components/Articles";
 
 function mapStateToProps(state) {
   let selectedFilterObj;
@@ -140,6 +138,18 @@ function ClusterList({ clusters, filters, loadedCluster,
       </main>
     );
   }
+  let content;
+  if (doDisplayContent) {
+    content = (
+      <Paper className={clsx(classes.contentPanel,
+                             {[classes.contentPanelShifted]: isShifted,})}>
+        <div className={classes.contentPanelInner}>
+          <Articles content={loadedCluster.content}
+                    articles={loadedCluster.articles} />
+        </div>
+      </Paper>
+    );
+  }
   return (
     <main className={contentClassName}>
       <div className={clsx(classes.clusterList,
@@ -150,13 +160,7 @@ function ClusterList({ clusters, filters, loadedCluster,
           {loadMoreButton}
         </div>
       </div>
-        {!doDisplayContent ? null :
-          <Paper className={clsx(classes.contentPanel,
-                                 {[classes.contentPanelShifted]: isShifted,})}>
-            <div className={classes.contentPanelInner}>
-              <Content clusterId={loadedCluster.id} />
-            </div>
-          </Paper>}
+      {content}
     </main>
   );
 }

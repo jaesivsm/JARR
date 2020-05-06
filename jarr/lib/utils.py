@@ -2,11 +2,10 @@ import logging
 import re
 import types
 import urllib
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from hashlib import md5
 
-import pytz
 import requests
 
 logger = logging.getLogger(__name__)
@@ -16,7 +15,7 @@ CORRECTABLE_LANG_FORMAT = re.compile('^[A-z]{2}(.[A-z]{2})?.*$')
 
 
 def utc_now():
-    return pytz.utc.localize(datetime.utcnow())
+    return datetime.utcnow().replace(tzinfo=timezone.utc)
 
 
 def clean_lang(lang):
@@ -66,7 +65,7 @@ def to_hash(text):
 
 
 def jarr_get(url, timeout=None, user_agent=None, headers=None, **kwargs):
-    from jarr.bootstrap import conf
+    from jarr.bootstrap import conf  # circular import otherwise
     timeout = timeout or conf.crawler.timeout
     user_agent = user_agent or conf.crawler.user_agent
     def_headers = {'User-Agent': user_agent}

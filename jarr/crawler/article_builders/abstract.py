@@ -1,8 +1,11 @@
 import logging
-from urllib.parse import SplitResult, urlsplit, urlunsplit
 
+import requests
 from requests.exceptions import MissingSchema
 
+from jarr.bootstrap import conf
+from jarr.lib.content_generator import is_embedded_link
+from jarr.lib.enums import ArticleType
 from jarr.lib.filter import FiltersAction, process_filters
 from jarr.lib.html_parsing import extract_lang, extract_tags, extract_title
 from jarr.lib.utils import utc_now
@@ -79,33 +82,45 @@ class AbstractArticleBuilder:
         self.article['lang'] = self.extract_lang(entry)
         self.article['comments'] = self.extract_comments(entry)
 
-    @staticmethod
-    def _fetch_article(link):
+    @classmethod
+    def _head(cls, url, reraise=False):
         try:
-            # resolves URL behind proxies (like feedproxy.google.com)
-            return jarr_get(link)
+            headers = {'User-Agent': conf.crawler.user_agent}
+            head = requests.head(url, headers=headers, allow_redirects=True,
+                                 timeout=conf.crawler.timeout)
+            head.raise_for_status()
+            return head
         except MissingSchema:
-            split = urlsplit(link)
-            for scheme in 'https', 'http':
-                new_link = urlunsplit(SplitResult(scheme, *split[1:]))
+            if reraise:
+                raise
+            for scheme in 'https:', 'https://', 'http:', 'http://':
                 try:
-                    return jarr_get(new_link)
-                except Exception:
-                    logger.error("tried %r, didn't work", new_link)
+                    return cls._head(scheme + url, reraise=True)
+                except Exception as error:
+                    logger.debug('got %r for url %s%s', error, scheme, url)
                     continue
-        except Exception as error:
-            logger.info("Unable to get the real URL of %s. Won't fix "
-                        "link or title. Error: %s", link, error)
 
-    def enhance(self):
-        page = self._fetch_article(self.article['link'])
-        if not page:
-            return self.article
-        self.article['link'] = page.url
-        if not self.article.get('title'):
-            self.article['title'] = extract_title(page)
-        self.article['tags'] = self.article['tags'].union(extract_tags(page))
-        lang = extract_lang(page)
-        if lang:
-            self.article['lang'] = lang
+    def enhance(self, fetch_page=True):
+        head = self._head(self.article['link'])
+        if head:
+            self.article['link'] = head.url
+            if head.headers['Content-Type'].startswith('image/'):
+                fetch_page = False
+                self.article['article_type'] = ArticleType.image
+            elif head.headers['Content-Type'].startswith('video/'):
+                fetch_page = False
+                self.article['article_type'] = ArticleType.video
+            elif is_embedded_link(self.article['link']):
+                self.article['article_type'] = ArticleType.embedded
+            if fetch_page:
+                page = jarr_get(self.article['link'])
+                if not page:
+                    return self.article
+                if not self.article.get('title'):
+                    self.article['title'] = extract_title(page)
+                self.article['tags'] = self.article['tags'].union(
+                        extract_tags(page))
+                lang = extract_lang(page)
+                if lang:
+                    self.article['lang'] = lang
         return self.article
