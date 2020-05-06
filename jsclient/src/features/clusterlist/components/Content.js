@@ -23,6 +23,18 @@ function Content({ content, hidden }) {
         <img src={content.src} alt={content.alt} title={content.alt} />
       </Typography>
     );
+  } else if (content.type === "embedded" && content.player === "youtube") {
+    body = (
+      <div className={classes.videoContainer}>
+        <iframe key="jarr-proccessed-content"
+          title="JARR processed Player"
+          id="ytplayer"
+          type="text/html"
+          src={"http://www.youtube.com/embed/" + content.videoId}
+          frameborder="0"
+        />
+      </div>
+    );
   }
   return (
     <div hidden={hidden} className={classes.article}>
