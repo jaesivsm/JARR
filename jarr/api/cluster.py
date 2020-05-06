@@ -65,7 +65,6 @@ class ClusterResource(Resource):
             cluster.read = True
             cluster.read_reason = ReadReason.read
             code = 226
-        print(cluster.content)
         return cluster, code
 
     @staticmethod
