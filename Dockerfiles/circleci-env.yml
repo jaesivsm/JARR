@@ -1,0 +1,18 @@
+version: '3.2'
+services:
+  postgresql:
+    image: postgres:11
+    ports:
+      - 0.0.0.0:5432:5432
+    environment:
+      - POSTGRES_PASSWORD=password
+  redis:
+    image: redis
+    ports:
+      - 0.0.0.0:6379:6379
+  server:
+    image: jarr-server:latest
+    volumes:
+      - "/home/circleci/project/tests:/jarr/tests"
+      - "/home/circleci/project/example_conf:/etc/jarr"
+      - "/home/circleci/coverage_results:/jarr/coverage_results:rw"

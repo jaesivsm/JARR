@@ -1,0 +1,107 @@
+from flask_jwt import current_identity, jwt_required
+from flask_restx import Namespace, Resource, fields, inputs
+from werkzeug.exceptions import Forbidden, NotFound
+
+from jarr.api.common import parse_meaningful_params
+from jarr.controllers import ClusterController
+from jarr.lib.enums import ReadReason
+from jarr.metrics import READ
+
+cluster_ns = Namespace('cluster', description='Cluster related operations')
+cluster_parser = cluster_ns.parser()
+cluster_parser.add_argument('liked', type=inputs.boolean, nullable=False)
+cluster_parser.add_argument('read', type=inputs.boolean, nullable=False)
+cluster_parser.add_argument('read_reason', type=str,
+                            choices=[rr.value for rr in ReadReason],
+                            required=False, nullable=False)
+article_model = cluster_ns.model('Article', {
+    'id': fields.Integer(),
+    'link': fields.String(),
+    'feed_id': fields.Integer(),
+    'title': fields.String(),
+    'content': fields.String(),
+    'comments': fields.String(),
+    'date': fields.DateTime()})
+content_model = cluster_ns.model('ComplexContent', {
+    'type': fields.String(required=True),
+    'alt': fields.String(),
+    'src': fields.String(),
+    'player': fields.String(),
+    'videoId': fields.String()})
+model = cluster_ns.model('Cluster', {
+    'id': fields.Integer(),
+    'read': fields.Boolean(),
+    'liked': fields.Boolean(),
+    'content': fields.Nested(content_model, skip_none=True),
+    'main_feed_title': fields.String(),
+    'main_article_id': fields.Integer(),
+    'articles': fields.Nested(article_model, as_list=True),
+})
+
+
+@cluster_ns.route('/<int:cluster_id>')
+class ClusterResource(Resource):
+
+    @staticmethod
+    @cluster_ns.marshal_with(model, skip_none=True)
+    @cluster_ns.response(200, 'OK')
+    @cluster_ns.response(226, 'OK, marked as read')
+    @cluster_ns.response(400, 'Validation error')
+    @cluster_ns.response(401, 'Authorization needed')
+    @cluster_ns.response(403, 'Forbidden')
+    @cluster_ns.response(404, 'Not found')
+    @jwt_required()
+    def get(cluster_id):
+        cluc = ClusterController()
+        cluster = cluc.get(id=cluster_id)
+        if cluster.user_id != current_identity.id:
+            raise Forbidden()
+        code = 200
+        if not cluster.read:
+            cluc.update({'id': cluster_id},
+                        {'read': True,
+                         'read_reason': ReadReason.read})
+            READ.labels(reason=ReadReason.read.value).inc()
+            cluster.read = True
+            cluster.read_reason = ReadReason.read
+            code = 226
+        return cluster, code
+
+    @staticmethod
+    @cluster_ns.expect(cluster_parser)
+    @cluster_ns.response(204, 'Updated')
+    @cluster_ns.response(401, 'Authorization needed')
+    @cluster_ns.response(403, 'Forbidden')
+    @cluster_ns.response(404, 'Not found')
+    @jwt_required()
+    def put(cluster_id):
+        cctrl = ClusterController(current_identity.id)
+        attrs = parse_meaningful_params(cluster_parser)
+        if 'read_reason' in attrs:
+            pass  # not overriding given read reason
+        elif 'read' in attrs and attrs.get('read'):
+            attrs['read_reason'] = ReadReason.marked
+            READ.labels(reason=ReadReason.marked.value).inc()
+        elif 'read' in attrs and not attrs.get('read'):
+            attrs['read_reason'] = None
+        changed = cctrl.update({'id': cluster_id}, attrs)
+        if not changed:
+            cctrl.assert_right_ok(cluster_id)
+        return None, 204
+
+    @staticmethod
+    @cluster_ns.response(204, 'Deleted')
+    @cluster_ns.response(400, 'Validation error')
+    @cluster_ns.response(401, 'Authorization needed')
+    @cluster_ns.response(403, 'Forbidden')
+    @cluster_ns.response(404, 'Not found')
+    @jwt_required()
+    def delete(cluster_id):
+        try:
+            ClusterController(current_identity.id).delete(cluster_id)
+        except NotFound:
+            user_id = ClusterController().get(id=cluster_id).user_id
+            if user_id != current_identity.id:
+                raise Forbidden()
+            raise
+        return None, 204

@@ -1,0 +1,497 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom"><title>1pxsolidblack</title><link href="https://1pxsolidblack.pl/" rel="alternate"></link><link href="https://1pxsolidblack.pl/feeds/all.atom.xml" rel="self"></link><id>https://1pxsolidblack.pl/</id><updated>2017-03-07T14:57:00+01:00</updated><entry><title>Releasing MindYourNeighbors</title><link href="https://1pxsolidblack.pl/releasing-mindyourneighbors-en.html" rel="alternate"></link><published>2017-03-07T14:57:00+01:00</published><updated>2017-03-07T14:57:00+01:00</updated><author><name>jaes</name></author><id>tag:1pxsolidblack.pl,2017-03-07:/releasing-mindyourneighbors-en.html</id><summary type="html">&lt;p&gt;I &lt;a href="https://github.com/jaesivsm/MindYourNeighbors/"&gt;wrote&lt;/a&gt;, &lt;a href="https://pypi.python.org/pypi/MindYourNeighbors/"&gt;packaged&lt;/a&gt; and just finished &lt;a href="https://travis-ci.org/jaesivsm/MindYourNeighbors"&gt;testing&lt;/a&gt; &lt;strong&gt;MindYourNeighbors&lt;/strong&gt;, a piece of software which allows you to run scripts depending on your network&amp;nbsp;neighborhood.&lt;/p&gt;
+&lt;h3&gt;Why&amp;nbsp;?&lt;/h3&gt;
+&lt;p&gt;Several years ago, I used &lt;a href="https://transmissionbt.com/"&gt;transmission&lt;/a&gt; on a machine at home; it was running constantly. Transmission has a &lt;em&gt;turtle&lt;/em&gt; mode which reduce its network bandwith consumption …&lt;/p&gt;</summary><content type="html">&lt;p&gt;I &lt;a href="https://github.com/jaesivsm/MindYourNeighbors/"&gt;wrote&lt;/a&gt;, &lt;a href="https://pypi.python.org/pypi/MindYourNeighbors/"&gt;packaged&lt;/a&gt; and just finished &lt;a href="https://travis-ci.org/jaesivsm/MindYourNeighbors"&gt;testing&lt;/a&gt; &lt;strong&gt;MindYourNeighbors&lt;/strong&gt;, a piece of software which allows you to run scripts depending on your network&amp;nbsp;neighborhood.&lt;/p&gt;
+&lt;h3&gt;Why&amp;nbsp;?&lt;/h3&gt;
+&lt;p&gt;Several years ago, I used &lt;a href="https://transmissionbt.com/"&gt;transmission&lt;/a&gt; on a machine at home; it was running constantly. Transmission has a &lt;em&gt;turtle&lt;/em&gt; mode which reduce its network bandwith consumption when it&amp;#8217;s activated. I triggered that mode which two &lt;a href="https://en.wikipedia.org/wiki/Cron"&gt;cron&lt;/a&gt; lines. I set them so they would trigger the &amp;#8220;turtle&amp;#8221; mode when I knew they were people at home.
+For various reasons, it becomed uneasy to anticipate the period when there was nobody&amp;#8217;s home and so, in the end, transmission was always in its &lt;em&gt;turtle&lt;/em&gt;&amp;nbsp;mode.&lt;/p&gt;
+&lt;h3&gt;And so, why&amp;nbsp;?&lt;/h3&gt;
+&lt;p&gt;So, instead of using cron, I wrote a small script that watches the neighbors table and decide if it can run or not a script that&amp;#8217;ll set or unset the transmission &lt;em&gt;turtle&lt;/em&gt; mode.
+After that I just made it so that any script could be triggered that way following a simple configuration&amp;nbsp;file.&lt;/p&gt;
+&lt;p&gt;After I left it ran on my home linuxbox and saw it was working fine, I &lt;a href="https://codeclimate.com/github/jaesivsm/MindYourNeighbors"&gt;cleaned&lt;/a&gt; it up, added some tests, build a &lt;a href="https://pypi.python.org/pypi/MindYourNeighbors/"&gt;python egg on pipy&lt;/a&gt; and did some nice integration on &lt;a href="https://github.com/jaesivsm/MindYourNeighbors"&gt;github&lt;/a&gt;.&lt;/p&gt;
+&lt;h3&gt;How&amp;nbsp;?&lt;/h3&gt;
+&lt;p&gt;The principle of the script is fairly simple. It&amp;#8217;ll run &lt;code&gt;ip neigh show&lt;/code&gt; and will analyse its output line by line. If a line has the &lt;code&gt;REACHABLE&lt;/code&gt; or &lt;code&gt;PERMANENT&lt;/code&gt; mark, it&amp;#8217;s considered that we have a neighbor. It&amp;#8217;ll then pass through some filters which will exclude it or&amp;nbsp;not.&lt;/p&gt;
+&lt;p&gt;Filters are defined in a configuration file where all section inherit from the default section.
+Here is a commented and edited version of my configuration&amp;nbsp;file:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="k"&gt;[DEFAULT]&lt;/span&gt;
+&lt;span class="na"&gt;threshold&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s"&gt;4&lt;/span&gt;
+&lt;span class="c1"&gt;# by default, only my pc will be considered as a neighbor&lt;/span&gt;
+&lt;span class="na"&gt;filter_on_machines&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s"&gt;my_pc&lt;/span&gt;
+&lt;span class="c1"&gt;# you can also do some broader filter&lt;/span&gt;
+&lt;span class="c1"&gt;# filter_on_regex = .*192\.168\.0\..*  # for example this will allow you to consider as neighbor all the IPv4 address of the class B&lt;/span&gt;
+
+&lt;span class="c1"&gt;# this section allows you to register device by their mac addresses&lt;/span&gt;
+&lt;span class="c1"&gt;# if you want to filter them by name in the&lt;/span&gt;
+&lt;span class="c1"&gt;# filter_on_machines and filter_out_machines paramters&lt;/span&gt;
+&lt;span class="k"&gt;[known_machines]&lt;/span&gt;
+&lt;span class="na"&gt;my_pc&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s"&gt;&amp;lt;mac&amp;gt;&lt;/span&gt;
+&lt;span class="na"&gt;my_tel&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s"&gt;&amp;lt;mac&amp;gt;&lt;/span&gt;
+
+&lt;span class="k"&gt;[transmission]&lt;/span&gt;
+&lt;span class="c1"&gt;# activate the &amp;quot;turtle&amp;quot; mode when there is neighbors&lt;/span&gt;
+&lt;span class="na"&gt;command_neighbor&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s"&gt;/my/scripts/transmission-turtle true&lt;/span&gt;
+&lt;span class="c1"&gt;# desactivate it when there is none&lt;/span&gt;
+&lt;span class="na"&gt;command_no_neighbor&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s"&gt;/my/scripts/transmission-turtle false&lt;/span&gt;
+
+&lt;span class="k"&gt;[bitcoind]&lt;/span&gt;
+&lt;span class="c1"&gt;# you can desactivate a section without having to delete it&lt;/span&gt;
+&lt;span class="c1"&gt;# from the configuration file&lt;/span&gt;
+&lt;span class="na"&gt;enabled&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s"&gt;false&lt;/span&gt;
+&lt;span class="na"&gt;command_neighbor&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s"&gt;killall bitcoind&lt;/span&gt;
+&lt;span class="na"&gt;command_no_neighbor&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s"&gt;/opt/bitcoind -server -daemon&lt;/span&gt;
+
+&lt;span class="c1"&gt;# for both section above, filters are inherited from the default section&lt;/span&gt;
+
+&lt;span class="k"&gt;[wake_computer]&lt;/span&gt;
+&lt;span class="c1"&gt;# but here, I override that default value to only filter on my_tel&lt;/span&gt;
+&lt;span class="na"&gt;filter_on_machines&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s"&gt;my_tel&lt;/span&gt;
+&lt;span class="c1"&gt;# again, we override the default value as we don&amp;#39;t want to wait 4 cycles&lt;/span&gt;
+&lt;span class="na"&gt;threshold&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s"&gt;2&lt;/span&gt;
+&lt;span class="c1"&gt;# we restrict time period during which this section is activated&lt;/span&gt;
+&lt;span class="c1"&gt;# with a cron like syntax&lt;/span&gt;
+&lt;span class="na"&gt;cron&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s"&gt;* 18-23 * * 1-5&lt;/span&gt;
+&lt;span class="na"&gt;command_neighbor&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s"&gt;wake my machine&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;The package also provides a script that you can run from anywere: &lt;code&gt;myn&lt;/code&gt;. This script, run with the &lt;code&gt;--output&lt;/code&gt; and &lt;code&gt;--verbose&lt;/code&gt; verbose options allows you to easily run through a buggy configuration file and analyse what you would want to match and what doesn&amp;#8217;t&amp;nbsp;match.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="gp"&gt;#&lt;/span&gt; myn -o -v
+&lt;span class="go"&gt;MindYourNeighbors: INFO - MindYourNeighbors initialized&lt;/span&gt;
+&lt;span class="go"&gt;MindYourNeighbors: DEBUG - &amp;#39;transmission&amp;#39; - processing section&lt;/span&gt;
+&lt;span class="go"&gt;MindYourNeighbors: DEBUG - EXCLUDED - &amp;lt;mac&amp;gt; - MACHINE: a_random_device&lt;/span&gt;
+&lt;span class="go"&gt;MindYourNeighbors: DEBUG - MATCH - &amp;lt;mac&amp;gt; - MACHINE: my_pc&lt;/span&gt;
+&lt;span class="go"&gt;MindYourNeighbors: DEBUG - NO_MATCH - &amp;lt;mac&amp;gt; - MACHINE: my_tel&lt;/span&gt;
+&lt;span class="go"&gt;MindYourNeighbors: DEBUG - cache/transmission/neighbor 2 =&amp;gt; 2&lt;/span&gt;
+&lt;span class="go"&gt;MindYourNeighbors: INFO - &amp;#39;transmission&amp;#39; - cache state: {&amp;#39;results&amp;#39;: [&amp;#39;neighbor&amp;#39;, &amp;#39;no_neighbor&amp;#39;, &amp;#39;no_neighbor&amp;#39;, &amp;#39;neighbor&amp;#39;], &amp;#39;last_command&amp;#39;: &amp;#39;/home/jaes/bin/transmission-turtle false&amp;#39;}&lt;/span&gt;
+&lt;span class="go"&gt;MindYourNeighbors: INFO - &amp;#39;transmission&amp;#39; - cache count hasn&amp;#39;t reached threshold yet (2/4)&lt;/span&gt;
+&lt;span class="go"&gt;MindYourNeighbors: DEBUG - section &amp;lt;Section: bitcoind&amp;gt; not enabled&lt;/span&gt;
+&lt;span class="go"&gt;MindYourNeighbors: DEBUG - section &amp;lt;Section: wake_if&amp;gt; disabled for now&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h3&gt;SystemD&lt;/h3&gt;
+&lt;p&gt;It&amp;#8217;s possible to make SystemD daemonize MindYourNeighbors. For that, you&amp;#8217;ll have to put this &lt;a href="https://raw.githubusercontent.com/jaesivsm/MindYourNeighbors/master/data/mind-your-neighbors.service"&gt;file&lt;/a&gt; in &lt;code&gt;/etc/systemd/system/&lt;/code&gt; and run &lt;code&gt;systemctl daemon-reload&lt;/code&gt; and &lt;code&gt;service mind-your-neighbors start&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;Sadly, I did not find how to package this in the correct way into the python egg. Indeed, put that file and it&amp;#8217;s destination in the &lt;code&gt;setup.py&lt;/code&gt; won&amp;#8217;t allow a none superuser to install the egg (since they can&amp;#8217;t write in &lt;code&gt;/etc/systemd/system&lt;/code&gt;). (Yes, it is kind of a cry for help&amp;nbsp;:D)&lt;/p&gt;
+&lt;h3&gt;What&amp;#8217;s to&amp;nbsp;come&lt;/h3&gt;
+&lt;p&gt;Some enhancements should be coming soon like the &lt;a href="https://github.com/jaesivsm/MindYourNeighbors/issues/4"&gt;neighbors probing&lt;/a&gt;, some dry run options or juste add enough test to reach a &lt;a href="https://coveralls.io/github/jaesivsm/MindYourNeighbors?branch=master"&gt;descent coverage&lt;/a&gt;.&lt;/p&gt;</content><category term="ip neigh"></category><category term="admin sys"></category><category term="network"></category><category term="monitoring"></category><category term="english"></category></entry><entry><title>MindYourNeighbors</title><link href="https://1pxsolidblack.pl/mindyourneighbors.html" rel="alternate"></link><published>2017-02-28T23:59:00+01:00</published><updated>2017-02-28T23:59:00+01:00</updated><author><name>jaes</name></author><id>tag:1pxsolidblack.pl,2017-02-28:/mindyourneighbors.html</id><summary type="html">&lt;p&gt;J&amp;#8217;ai &lt;a href="https://github.com/jaesivsm/MindYourNeighbors/"&gt;écrit&lt;/a&gt;, &lt;a href="https://pypi.python.org/pypi/MindYourNeighbors/"&gt;packagé&lt;/a&gt; et finis de &lt;a href="https://travis-ci.org/jaesivsm/MindYourNeighbors"&gt;tester&lt;/a&gt; &lt;strong&gt;MindYourNeighbors&lt;/strong&gt;, un programme qui permet de déclencher des scripts en fonction de son voisinage&amp;nbsp;réseau.&lt;/p&gt;
+&lt;h3&gt;Pourquoi&amp;nbsp;?&lt;/h3&gt;
+&lt;p&gt;Il y a quelques années de ça, j&amp;#8217;utilisais &lt;a href="https://transmissionbt.com/"&gt;transmission&lt;/a&gt; sur une machine chez moi, qui tournait en permanence. Transmission possède un mode &amp;#8220;lent&amp;#8221; qui permet …&lt;/p&gt;</summary><content type="html">&lt;p&gt;J&amp;#8217;ai &lt;a href="https://github.com/jaesivsm/MindYourNeighbors/"&gt;écrit&lt;/a&gt;, &lt;a href="https://pypi.python.org/pypi/MindYourNeighbors/"&gt;packagé&lt;/a&gt; et finis de &lt;a href="https://travis-ci.org/jaesivsm/MindYourNeighbors"&gt;tester&lt;/a&gt; &lt;strong&gt;MindYourNeighbors&lt;/strong&gt;, un programme qui permet de déclencher des scripts en fonction de son voisinage&amp;nbsp;réseau.&lt;/p&gt;
+&lt;h3&gt;Pourquoi&amp;nbsp;?&lt;/h3&gt;
+&lt;p&gt;Il y a quelques années de ça, j&amp;#8217;utilisais &lt;a href="https://transmissionbt.com/"&gt;transmission&lt;/a&gt; sur une machine chez moi, qui tournait en permanence. Transmission possède un mode &amp;#8220;lent&amp;#8221; qui permet d&amp;#8217;économiser les ressources du réseau quand il est activé, et via un script et deux &lt;a href="https://fr.wikipedia.org/wiki/Cron"&gt;cron&lt;/a&gt;, je m&amp;#8217;arrangeais pour que transmission soit lent le soir quand il y avait du monde à la maison, et normal le reste du temps.
+Pour différentes raisons, il est devenu de plus en plus malaisé de prévoir les périodes creuses où transmission pourrait être en mode normal et il finissait par être en mode lent la plupart du&amp;nbsp;temps.&lt;/p&gt;
+&lt;h3&gt;Et donc, pourquoi&amp;nbsp;?&lt;/h3&gt;
+&lt;p&gt;Donc, plutôt que d&amp;#8217;utiliser cron, j&amp;#8217;ai écrit un petit programme qui regarde la table des neighbors connus du kernel et décide si il peut, ou non, sortir transmission de son mode lent.
+Puis j&amp;#8217;ai simplement ouvert le principe à l&amp;#8217;exécution de n&amp;#8217;importe quel exécutable selon une&amp;nbsp;configuration.&lt;/p&gt;
+&lt;p&gt;Après l&amp;#8217;avoir laissé tourné dans une version assez peu présentable pendant plutôt longtemps sur mon serveur, j&amp;#8217;ai finis par &lt;a href="https://codeclimate.com/github/jaesivsm/MindYourNeighbors"&gt;nettoyer&lt;/a&gt; un peu tout ça, rajouter des tests, en faire une archive sur &lt;a href="https://pypi.python.org/pypi/MindYourNeighbors/"&gt;pypi&lt;/a&gt; et intégrer tout ça joliement sur &lt;a href="https://github.com/jaesivsm/MindYourNeighbors"&gt;github&lt;/a&gt;.&lt;/p&gt;
+&lt;h3&gt;Comment&amp;nbsp;?&lt;/h3&gt;
+&lt;p&gt;Le principe de fonctionnement est assez trivial, le script lance la commande &lt;code&gt;ip neigh show&lt;/code&gt; et ligne par ligne analyse la sortie. Si une ligne a le status &lt;code&gt;REACHABLE&lt;/code&gt; ou &lt;code&gt;PERMANENT&lt;/code&gt; elle est considéré comme un voisin et elle passe ensuite au travers des filtres qui pourrait l&amp;#8217;exclure ou l&amp;#8217;inclure (sachant que l&amp;#8217;exclusion&amp;nbsp;prime).&lt;/p&gt;
+&lt;p&gt;Les filtres sont définit dans un fichier de configuration dont toutes les sections héritent de la section par défaut.
+Voici une version commenté de mon fichier de configuration&amp;nbsp;:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="k"&gt;[DEFAULT]&lt;/span&gt;
+&lt;span class="na"&gt;threshold&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s"&gt;4&lt;/span&gt;
+&lt;span class="c1"&gt;# par défaut, seul mon_ordi sera considéré&lt;/span&gt;
+&lt;span class="na"&gt;filter_on_machines&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s"&gt;mon_ordi&lt;/span&gt;
+&lt;span class="c1"&gt;# on peut aussi faire des filtres plus large&lt;/span&gt;
+&lt;span class="c1"&gt;# filter_on_regex = .*192\.168\.0\..*  # filtrera sur toutes les adresses IPv4 de classes B&lt;/span&gt;
+
+&lt;span class="c1"&gt;# cette section sert juste à renseigner les machines par leurs&lt;/span&gt;
+&lt;span class="c1"&gt;# adresses mac si c&amp;#39;est le mode de filtrage que vous choisissez&lt;/span&gt;
+&lt;span class="k"&gt;[known_machines]&lt;/span&gt;
+&lt;span class="na"&gt;mon_ordi&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s"&gt;&amp;lt;mac&amp;gt;&lt;/span&gt;
+&lt;span class="na"&gt;mon_tel&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s"&gt;&amp;lt;mac&amp;gt;&lt;/span&gt;
+
+&lt;span class="k"&gt;[transmission]&lt;/span&gt;
+&lt;span class="c1"&gt;# activer le mode lent quand il y a des voisins&lt;/span&gt;
+&lt;span class="na"&gt;command_neighbor&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s"&gt;/my/scripts/transmission-turtle true&lt;/span&gt;
+&lt;span class="c1"&gt;# le désactiver quand il n&amp;#39;y en a pas&lt;/span&gt;
+&lt;span class="na"&gt;command_no_neighbor&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s"&gt;/my/scripts/transmission-turtle false&lt;/span&gt;
+&lt;span class="c1"&gt;# capturer la sortie sur une erreur&lt;/span&gt;
+&lt;span class="na"&gt;error_on_stderr&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s"&gt;true&lt;/span&gt;
+
+&lt;span class="k"&gt;[bitcoind]&lt;/span&gt;
+&lt;span class="c1"&gt;# Vous pouvez désactiver une section entière sans avoir à l&amp;#39;effacer de la conf&lt;/span&gt;
+&lt;span class="na"&gt;enabled&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s"&gt;false&lt;/span&gt;
+&lt;span class="na"&gt;command_neighbor&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s"&gt;killall bitcoind&lt;/span&gt;
+&lt;span class="na"&gt;command_no_neighbor&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s"&gt;/opt/bitcoind -server -daemon&lt;/span&gt;
+
+&lt;span class="c1"&gt;# pour les deux sections ci-dessus, les filtres sont hérités de la section par défaut&lt;/span&gt;
+
+&lt;span class="k"&gt;[wake_computer]&lt;/span&gt;
+&lt;span class="c1"&gt;# mais ici on surcharge la valeur par défaut pour ne filtrer que sur mon_tel&lt;/span&gt;
+&lt;span class="na"&gt;filter_on_machines&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s"&gt;mon_tel&lt;/span&gt;
+&lt;span class="c1"&gt;# pareil, on veut que un réveil n&amp;#39;attendent pas 4 rotation alors on descends le seuil&lt;/span&gt;
+&lt;span class="na"&gt;threshold&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s"&gt;2&lt;/span&gt;
+&lt;span class="c1"&gt;# on restreint les horraires d&amp;#39;exécution avec une syntaxe similaire à cron&lt;/span&gt;
+&lt;span class="na"&gt;cron&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s"&gt;* 18-23 * * 1-5&lt;/span&gt;
+&lt;span class="na"&gt;command_neighbor&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s"&gt;wake my machine&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Un script executable à la main &lt;code&gt;myn&lt;/code&gt; exécuter avec les options &lt;code&gt;--output&lt;/code&gt; et &lt;code&gt;--verbose&lt;/code&gt; permet de facilement debugger sont fichier de configuration en comparant les correspondance obtenue avec celle&amp;nbsp;désirée.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="gp"&gt;#&lt;/span&gt; myn -o -v
+&lt;span class="go"&gt;MindYourNeighbors: INFO - MindYourNeighbors initialized&lt;/span&gt;
+&lt;span class="go"&gt;MindYourNeighbors: DEBUG - &amp;#39;transmission&amp;#39; - processing section&lt;/span&gt;
+&lt;span class="go"&gt;MindYourNeighbors: DEBUG - EXCLUDED - &amp;lt;mac&amp;gt; - MACHINE: une_machine&lt;/span&gt;
+&lt;span class="go"&gt;MindYourNeighbors: DEBUG - MATCH - &amp;lt;mac&amp;gt; - MACHINE: mon_ordi&lt;/span&gt;
+&lt;span class="go"&gt;MindYourNeighbors: DEBUG - NO_MATCH - &amp;lt;mac&amp;gt; - MACHINE: mon_tel&lt;/span&gt;
+&lt;span class="go"&gt;MindYourNeighbors: DEBUG - cache/transmission/neighbor 2 =&amp;gt; 2&lt;/span&gt;
+&lt;span class="go"&gt;MindYourNeighbors: INFO - &amp;#39;transmission&amp;#39; - cache state: {&amp;#39;results&amp;#39;: [&amp;#39;neighbor&amp;#39;, &amp;#39;no_neighbor&amp;#39;, &amp;#39;no_neighbor&amp;#39;, &amp;#39;neighbor&amp;#39;], &amp;#39;last_command&amp;#39;: &amp;#39;/home/jaes/bin/transmission-turtle false&amp;#39;}&lt;/span&gt;
+&lt;span class="go"&gt;MindYourNeighbors: INFO - &amp;#39;transmission&amp;#39; - cache count hasn&amp;#39;t reached threshold yet (2/4)&lt;/span&gt;
+&lt;span class="go"&gt;MindYourNeighbors: DEBUG - section &amp;lt;Section: bitcoind&amp;gt; not enabled&lt;/span&gt;
+&lt;span class="go"&gt;MindYourNeighbors: DEBUG - section &amp;lt;Section: wake_if&amp;gt; disabled for now&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h3&gt;SystemD&lt;/h3&gt;
+&lt;p&gt;Il est possible de faire que systemd se charge de la &lt;em&gt;dæmonisation&lt;/em&gt; de MindYourNeighbors. Pour ce faire il faut placer ce &lt;a href="https://raw.githubusercontent.com/jaesivsm/MindYourNeighbors/master/data/mind-your-neighbors.service"&gt;fichier&lt;/a&gt; dans &lt;code&gt;/etc/systemd/system/&lt;/code&gt; et d&amp;#8217;exécuter &lt;code&gt;systemctl daemon-reload&lt;/code&gt; et &lt;code&gt;service mind-your-neighbors start&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;Malheureusement je n&amp;#8217;ai pasa réussi à trouver comment packager de façon correct ce fichier avec l&amp;#8217;archive &lt;em&gt;pypi&lt;/em&gt;. En effet la mettre dans le &lt;code&gt;setup.py&lt;/code&gt; dans l&amp;#8217;option &lt;code&gt;data_files&lt;/code&gt; résultera en une erreur si on tente une installation sans les droits &lt;em&gt;root&lt;/em&gt;. (Oui c&amp;#8217;est un appel à l&amp;#8217;aide aux bonnes âmes qui me lisent&amp;nbsp;!).&lt;/p&gt;
+&lt;h3&gt;À&amp;nbsp;venir&lt;/h3&gt;
+&lt;p&gt;Quelques améliorations sont à venir comme le &lt;a href="https://github.com/jaesivsm/MindYourNeighbors/issues/4"&gt;probing&lt;/a&gt;, une option pour exécuter en &lt;em&gt;dry run&lt;/em&gt; ou juste rajouter assez de test pour avoir une &lt;a href="https://coveralls.io/github/jaesivsm/MindYourNeighbors?branch=master"&gt;couverture descente&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;Malgré tout je considère le programme comme assez stable pour être publié tel&amp;nbsp;quel.&lt;/p&gt;</content><category term="ip neigh"></category><category term="admin sys"></category><category term="network"></category><category term="monitoring"></category></entry><entry><title>Récupération et expiration en HTTP1.1</title><link href="https://1pxsolidblack.pl/recuperation-et-expiration-en-http11.html" rel="alternate"></link><published>2016-11-19T12:00:00+01:00</published><updated>2016-11-19T12:00:00+01:00</updated><author><name>jaes</name></author><id>tag:1pxsolidblack.pl,2016-11-19:/recuperation-et-expiration-en-http11.html</id><summary type="html">&lt;p&gt;Quand je me suis attaqué à &lt;span class="caps"&gt;JARR&lt;/span&gt;, ma première motivation était d&amp;#8217;écrire un crawler qui ne soit pas non seulement rapide mais qui respecte aussi tout un panel de bonnes pratiques et autres&amp;nbsp;RFCs.&lt;/p&gt;
+&lt;p&gt;Le crawler doit en l&amp;#8217;occurence&amp;nbsp;:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;dans le but de limiter le traffic réseau et …&lt;/li&gt;&lt;/ul&gt;</summary><content type="html">&lt;p&gt;Quand je me suis attaqué à &lt;span class="caps"&gt;JARR&lt;/span&gt;, ma première motivation était d&amp;#8217;écrire un crawler qui ne soit pas non seulement rapide mais qui respecte aussi tout un panel de bonnes pratiques et autres&amp;nbsp;RFCs.&lt;/p&gt;
+&lt;p&gt;Le crawler doit en l&amp;#8217;occurence&amp;nbsp;:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;dans le but de limiter le traffic réseau et soulager en temps &lt;span class="caps"&gt;CPU&lt;/span&gt; les serveurs distants : &lt;strong&gt;ne récupérer une resource que si elle a&amp;nbsp;expiré&lt;/strong&gt;&lt;/li&gt;
+&lt;li&gt;dans le but de limiter la consomation de resources de mon crawler : &lt;strong&gt;vérifier qu&amp;#8217;une resource a changé avant de la&amp;nbsp;traiter&lt;/strong&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Exposé ainsi, je pense que ça peut s&amp;#8217;appliquer à en fait n&amp;#8217;importe quel crawler et pas seulement un qui récupère des flux &lt;span class="caps"&gt;RSS&lt;/span&gt;, et du coup plus largement n&amp;#8217;importe quel client web.
+Pour expliquer comment réaliser ces deux fonctionnalités je vais m&amp;#8217;appuyer sur différents mécanismes de &lt;span class="caps"&gt;HTTP&lt;/span&gt; que presque tout le monde implémente plus ou moins bien. Comme base de travail je vais bien sûr utiliser la &lt;a href="https://tools.ietf.org/html/rfc2616"&gt;&lt;span class="caps"&gt;RFC2616&lt;/span&gt;&lt;/a&gt; qui traitre de &lt;span class="caps"&gt;HTTP1&lt;/span&gt;.1.&lt;/p&gt;
+&lt;h2&gt;Expiration d&amp;#8217;une&amp;nbsp;ressource&lt;/h2&gt;
+&lt;p&gt;Il y bien sûr la possibilité de simplement récupérer une ressource en boucle à intervalle de temps régulier. Ça marche plutôt bien et ça reste un fonctionnement par défaut très utile quand une ressource ne dispose d&amp;#8217;aucun mécanisme&amp;nbsp;d&amp;#8217;expiration.&lt;/p&gt;
+&lt;p&gt;Comme beaucoup de choses en &lt;span class="caps"&gt;HTTP&lt;/span&gt; on va passer par des&amp;nbsp;entêtes.&lt;/p&gt;
+&lt;h4&gt;Cache-Control&lt;/h4&gt;
+&lt;p&gt;L&amp;#8217;entête &lt;a href="https://tools.ietf.org/html/rfc2616#section-14.9"&gt;&lt;code&gt;Cache-Control&lt;/code&gt;&lt;/a&gt;, si il est placé dans la réponse, peut préciser différentes choses concernant le contrôle de cache sur un proxy ou par un client. La directive &lt;a href="https://tools.ietf.org/html/rfc2616#section-14.9.3"&gt;&lt;code&gt;max-age&lt;/code&gt;&lt;/a&gt;) est celle qui nous intéresse et sert à préciser le délais après laquelle une ressource est considérée comme&amp;nbsp;périmée.&lt;/p&gt;
+&lt;p&gt;Par exemple le header suivant &lt;code&gt;Cache-Control: max-age=600&lt;/code&gt; signifie que la resource expirera dix minutes après avoir reçu la requête (&lt;a href="https://tools.ietf.org/html/rfc2616#section-14.9.3"&gt;&lt;code&gt;en gros&lt;/code&gt;&lt;/a&gt;).&lt;/p&gt;
+&lt;h4&gt;Expires&lt;/h4&gt;
+&lt;p&gt;On peut aussi utiliser l&amp;#8217;entête &lt;a href="https://tools.ietf.org/html/rfc2616#section-14.21"&gt;&lt;code&gt;Expires&lt;/code&gt;&lt;/a&gt;. Celui-ci, beaucoup plus simplement, précise directement la date à laquelle la ressource sera considéré comme périmée. La date doit être précisée dans le format spécifié par la &lt;a href="https://tools.ietf.org/html/rfc1123"&gt;&lt;span class="caps"&gt;RFC1123&lt;/span&gt;&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;Exemple assez explicite : &lt;code&gt;Expires: Sat, 19 Nov 2016 14:32:47 GMT&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;Les deux pouvant être présent en même temps la &lt;span class="caps"&gt;RFC&lt;/span&gt; précise à la fin de cette &lt;a href="https://tools.ietf.org/html/rfc2616#section-14.21"&gt;section&lt;/a&gt; que la directive &lt;code&gt;max-age&lt;/code&gt; de l&amp;#8217;entête &lt;code&gt;Cache-Control&lt;/code&gt; doit&amp;nbsp;prévaloir.&lt;/p&gt;
+&lt;h5&gt;Remarques&lt;/h5&gt;
+&lt;p&gt;Si la date d&amp;#8217;expiration de la ressource est inférieure à votre délais de rafraichissement, ce la vous aidera à garder la ressources plus à jours. Si elle est supérieure, cela vous évitera de la récupérer probablement&amp;nbsp;inutilement.&lt;/p&gt;
+&lt;p&gt;Mais ce qui est important c&amp;#8217;est de ne pas oublier que ces valeurs ne sont que des recommandations du serveur. Il n&amp;#8217;est pas rare par exemple de voir des valeurs pour &lt;code&gt;Expires&lt;/code&gt; plusieurs années dans le passés ou le futur ! C&amp;#8217;est parfois dû à la cohabitation de &lt;code&gt;max-age&lt;/code&gt; et de &lt;code&gt;Expires&lt;/code&gt; mais la conclusion est la même : le serveur peut mentir ou se tromper. Je suggère par conséquent de borner la valeur que vous allez utiliser en y appliquant une limite basse et&amp;nbsp;haute.&lt;/p&gt;
+&lt;p&gt;Maintenant que vous avez la date d&amp;#8217;expiration, il ne vous reste plus qu&amp;#8217;à ne planifier la récupération qu&amp;#8217;après cette&amp;nbsp;date.&lt;/p&gt;
+&lt;p&gt;Ensuite, ce n&amp;#8217;est pas parce qu&amp;#8217;elle a expirée qu&amp;#8217;elle a&amp;nbsp;changé.&lt;/p&gt;
+&lt;h2&gt;Vérifier qu&amp;#8217;une ressource a&amp;nbsp;changée&lt;/h2&gt;
+&lt;p&gt;Pour ce faire on peut tout simplement comparer la réponse obtenue avec le résultat en cache. Mais cette comparaison implique souvent un coût (disque, réseau, base de donnée, etc) qu&amp;#8217;on peut éviter avec, encore une fois l&amp;#8217;usage de deux entêtes. Si le serveur reconnaît ces entêtes, il répondra avec un &lt;a href="https://tools.ietf.org/html/rfc2616#section-10.3.5"&gt;code 304&lt;/a&gt; qui en plus d&amp;#8217;être vide (et donc d&amp;#8217;économiser de la bande passante) indique qu&amp;#8217;elle ne nécessite aucun traitement&amp;nbsp;supplémentaire.&lt;/p&gt;
+&lt;h4&gt;Last-Modified /&amp;nbsp;If-Modified-Since&lt;/h4&gt;
+&lt;p&gt;Vous pouvez placer l&amp;#8217;entête &lt;a href="https://tools.ietf.org/html/rfc2616#section-14.25"&gt;&lt;code&gt;If-Modified-Since&lt;/code&gt;&lt;/a&gt; avec comme valeur la date (toujours au format de la &lt;a href="https://tools.ietf.org/html/rfc1123"&gt;&lt;span class="caps"&gt;RFC1123&lt;/span&gt;&lt;/a&gt;) de la dernière fois que la ressource a été&amp;nbsp;modifié.&lt;/p&gt;
+&lt;p&gt;Vous pouvez aussi tirer la valeur de n&amp;#8217;importe quelle réponse du serveur contenant l&amp;#8217;entête &lt;a href="https://tools.ietf.org/html/rfc2616#section-14.29"&gt;&lt;code&gt;Last-Modified&lt;/code&gt;&lt;/a&gt;.&lt;/p&gt;
+&lt;h4&gt;ETag /&amp;nbsp;If-None-Match&lt;/h4&gt;
+&lt;p&gt;Autrement vous pouvez aussi récupérer la valeur de l&amp;#8217;entête &lt;a href="https://tools.ietf.org/html/rfc2616#section-14.19"&gt;&lt;code&gt;ETag&lt;/code&gt;&lt;/a&gt; de n&amp;#8217;importe quelle réponse qui le contient et le passer dans vos prochaines requêtes avec l&amp;#8217;entête &lt;a href="https://tools.ietf.org/html/rfc2616#section-14.26"&gt;&lt;code&gt;If-None-Match&lt;/code&gt;&lt;/a&gt;.&lt;/p&gt;
+&lt;h5&gt;Remarques&lt;/h5&gt;
+&lt;p&gt;Il se peut qu&amp;#8217;une réponse avec un code autre que &lt;code&gt;304&lt;/code&gt; qui contienne un &lt;code&gt;ETag&lt;/code&gt; correspondant à celui transmit dans la requête. Je n&amp;#8217;ai pas trouvé de &lt;span class="caps"&gt;RFC&lt;/span&gt; spécifiant le comportement à adopter dans ce cas. Pour ce qui est de &lt;a href="https://github.com/jaesivsm/JARR"&gt;&lt;span class="caps"&gt;JARR&lt;/span&gt;&lt;/a&gt; j&amp;#8217;ai pour ma part décidé que cette réponse n&amp;#8217;invalidait pas la ressource et ne procède donc à aucune action après cette&amp;nbsp;réponse.&lt;/p&gt;
+&lt;p&gt;Si possible, il faut préciser &lt;code&gt;If-None-Match&lt;/code&gt; et &lt;code&gt;If-Modified-Since&lt;/code&gt;. Le serveur suivra différentes &lt;a href="https://tools.ietf.org/html/rfc2616#section-13.3.4"&gt;règles&lt;/a&gt; pour savoir comment traiter les deux&amp;nbsp;entêtes.&lt;/p&gt;</content><category term="jarr"></category><category term="web tech"></category><category term="expires"></category><category term="last-modified"></category><category term="if-modified-since"></category><category term="etag"></category><category term="if-none-match"></category></entry><entry><title>JARR: Note de Production</title><link href="https://1pxsolidblack.pl/2016-10-21-jarr-note-de-production.html" rel="alternate"></link><published>2016-10-21T00:00:00+02:00</published><updated>2016-10-21T00:00:00+02:00</updated><author><name>jaes</name></author><id>tag:1pxsolidblack.pl,2016-10-21:/2016-10-21-jarr-note-de-production.html</id><summary type="html">&lt;p&gt;Si vous utilisez &lt;a href="https://jarr.info"&gt;&lt;span class="caps"&gt;JARR&lt;/span&gt;&lt;/a&gt; régulièrement, et plus particulièrement depuis une semaine, vous avez peut-être remarqué quelques&amp;nbsp;changements.&lt;/p&gt;
+&lt;h2&gt;Clusters&amp;nbsp;(grappes)&lt;/h2&gt;
+&lt;p&gt;Est en test (puisque oui, la version de &lt;span class="caps"&gt;JARR&lt;/span&gt; en production est souvent celle de la branche &lt;a href="https://github.com/jaesivsm/JARR/tree/develop"&gt;develop&lt;/a&gt;) une première version d&amp;#8217;une feature que je prépare depuis un moment: les …&lt;/p&gt;</summary><content type="html">&lt;p&gt;Si vous utilisez &lt;a href="https://jarr.info"&gt;&lt;span class="caps"&gt;JARR&lt;/span&gt;&lt;/a&gt; régulièrement, et plus particulièrement depuis une semaine, vous avez peut-être remarqué quelques&amp;nbsp;changements.&lt;/p&gt;
+&lt;h2&gt;Clusters&amp;nbsp;(grappes)&lt;/h2&gt;
+&lt;p&gt;Est en test (puisque oui, la version de &lt;span class="caps"&gt;JARR&lt;/span&gt; en production est souvent celle de la branche &lt;a href="https://github.com/jaesivsm/JARR/tree/develop"&gt;develop&lt;/a&gt;) une première version d&amp;#8217;une feature que je prépare depuis un moment: les clusters. J&amp;#8217;en ferais un article plus détaillé bientôt, mais le but est, pour l&amp;#8217;instant, de grouper les articles de même sources, et bientôt les articles très&amp;nbsp;similaires.&lt;/p&gt;
+&lt;h2&gt;Les aléas de la&amp;nbsp;bêta&lt;/h2&gt;
+&lt;p&gt;Hier vous avez aussi pu remarquer quelques problèmes avec vos articles. Il s&amp;#8217;avère qu&amp;#8217;un vicieux bug qui survient lors de la suppression d&amp;#8217;utilisateur (rarement donc) s&amp;#8217;était caché dans le code de &lt;span class="caps"&gt;JARR&lt;/span&gt;.&lt;/p&gt;
+&lt;p&gt;Ayant détruit les associations articles/clusters j&amp;#8217;ai du les reconstruire dans la nuit. Ce fut un peut douloureux pour la base mais tout est maintenant rentré dans&amp;nbsp;l&amp;#8217;ordre.&lt;/p&gt;
+&lt;p&gt;Mais c&amp;#8217;était pas sans une petite montée en charge :
+&lt;p style="text-align: center; width: 100%; display: block;"&gt;
+&lt;img src="https://1pxsolidblack.pl/img/jarr/postgres_cache_ALL-day.png" /&gt;
+&lt;img src="https://1pxsolidblack.pl/img/jarr/postgres_locks_ALL-day.png" /&gt;
+&lt;/p&gt;&lt;/p&gt;</content><category term="jarr"></category><category term="upgrade"></category><category term="postgresql"></category><category term="auto-hébergement"></category></entry><entry><title>JARR: Production Note</title><link href="https://1pxsolidblack.pl/2016-10-21-jarr-production-note-en.html" rel="alternate"></link><published>2016-10-21T00:00:00+02:00</published><updated>2016-10-21T00:00:00+02:00</updated><author><name>jaes</name></author><id>tag:1pxsolidblack.pl,2016-10-21:/2016-10-21-jarr-production-note-en.html</id><summary type="html">&lt;p&gt;If you use &lt;a href="https://jarr.info"&gt;&lt;span class="caps"&gt;JARR&lt;/span&gt;&lt;/a&gt; on a daily basis, and more particularly yesterday, you may have noticed some&amp;nbsp;changes.&lt;/p&gt;
+&lt;h2&gt;Clusters&lt;/h2&gt;
+&lt;p&gt;Since a week or so, I pushed on my running instance the last version of the &lt;a href="https://github.com/jaesivsm/JARR/tree/develop"&gt;develop branch&lt;/a&gt; of &lt;span class="caps"&gt;JARR&lt;/span&gt;.
+The main feature that this branch brings is the clusters that …&lt;/p&gt;</summary><content type="html">&lt;p&gt;If you use &lt;a href="https://jarr.info"&gt;&lt;span class="caps"&gt;JARR&lt;/span&gt;&lt;/a&gt; on a daily basis, and more particularly yesterday, you may have noticed some&amp;nbsp;changes.&lt;/p&gt;
+&lt;h2&gt;Clusters&lt;/h2&gt;
+&lt;p&gt;Since a week or so, I pushed on my running instance the last version of the &lt;a href="https://github.com/jaesivsm/JARR/tree/develop"&gt;develop branch&lt;/a&gt; of &lt;span class="caps"&gt;JARR&lt;/span&gt;.
+The main feature that this branch brings is the clusters that allow to group article on their source or title. I&amp;#8217;ll talk more deeply about that&amp;nbsp;later.&lt;/p&gt;
+&lt;h2&gt;Some &lt;span class="caps"&gt;DB&lt;/span&gt;&amp;nbsp;problems&lt;/h2&gt;
+&lt;p&gt;Yesterday you may have notied some problems with your articles. As it appears a vicious bug found its way into the &lt;span class="caps"&gt;JARR&lt;/span&gt; code and was triggered at user deletion (which happens rarely, and that&amp;#8217;s a&amp;nbsp;relief).&lt;/p&gt;
+&lt;p&gt;That bug destroyed association between clusters and articles. I wrote a script that spent the night fixing that but it wasn&amp;#8217;t without some unnecessary stress on the&amp;nbsp;database:&lt;/p&gt;
+&lt;p style="text-align: center; width: 100%; display: block;"&gt;
+&lt;img src="https://1pxsolidblack.pl/img/jarr/postgres_cache_ALL-day.png" /&gt;
+&lt;img src="https://1pxsolidblack.pl/img/jarr/postgres_locks_ALL-day.png" /&gt;
+&lt;/p&gt;</content><category term="jarr"></category><category term="upgrade"></category><category term="postgresql"></category><category term="auto-hébergement"></category><category term="english"></category></entry><entry><title>Mixed contents</title><link href="https://1pxsolidblack.pl/mixed-contents-en.html" rel="alternate"></link><published>2016-07-23T23:01:00+02:00</published><updated>2016-07-23T23:01:00+02:00</updated><author><name>jaes</name></author><id>tag:1pxsolidblack.pl,2016-07-23:/mixed-contents-en.html</id><summary type="html">&lt;p&gt;Today I want to write a small bit about something that bugged me for while before I found a 20 lines of code fix that solved it all : &lt;em&gt;Mixed Content&lt;/em&gt;.&lt;/p&gt;
+&lt;p&gt;I recently figured out many of the articles I read on &lt;a href="https://jarr.info"&gt;&lt;span class="caps"&gt;JARR&lt;/span&gt;&lt;/a&gt; (my feed reader for those &lt;a href="https://1pxsolidblack.pl/jarr-en.html"&gt;who didn&amp;#8217;t …&lt;/a&gt;&lt;/p&gt;</summary><content type="html">&lt;p&gt;Today I want to write a small bit about something that bugged me for while before I found a 20 lines of code fix that solved it all : &lt;em&gt;Mixed Content&lt;/em&gt;.&lt;/p&gt;
+&lt;p&gt;I recently figured out many of the articles I read on &lt;a href="https://jarr.info"&gt;&lt;span class="caps"&gt;JARR&lt;/span&gt;&lt;/a&gt; (my feed reader for those &lt;a href="https://1pxsolidblack.pl/jarr-en.html"&gt;who didn&amp;#8217;t follow&lt;/a&gt;) were badly displayed. The usual and easy solution was to directly go to the website hosting the article. But it&amp;#8217;s shame to do so if the feed is not truncated and hold every bits of data you&amp;#8217;ll need to read the&amp;nbsp;article.&lt;/p&gt;
+&lt;p&gt;Anyway I got into debugging mode and I realised that my web browser console were showing some&amp;nbsp;errors:&lt;/p&gt;
+&lt;p&gt;&lt;img src="https://1pxsolidblack.pl/img/mixed-content/content-blocked.png" style="margin: auto; display: block;" alt="some blocked content (in red)" /&gt;&lt;/p&gt;
+&lt;p&gt;It appears that the &lt;em&gt;mixed contents&lt;/em&gt; is the type of content which isn&amp;#8217;t secured (understand, not in &lt;span class="caps"&gt;HTTPS&lt;/span&gt;) in a page which is (understand in &lt;span class="caps"&gt;HTTPS&lt;/span&gt;). Mozilla talks a bit about how firefox handles those kind of pages &lt;a href="https://support.mozilla.org/en-US/kb/mixed-content-blocking-firefox"&gt;here&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;But I also happened to stumble upon unsecure content which was still displayed. The browser was only showing warning when displaying it and not blocking&amp;nbsp;it:&lt;/p&gt;
+&lt;p&gt;&lt;img src="https://1pxsolidblack.pl/img/mixed-content/content-warning.png" style="margin: auto; display: block;" alt="unsecure but unblocked, a real mystery" /&gt;&lt;/p&gt;
+&lt;p&gt;That&amp;#8217;s where it becomes slightly trickier, there are two types of &lt;em&gt;mixed content&lt;/em&gt;, and Mozilla (again) gives details about the differences &lt;a href="https://developer.mozilla.org/en-US/docs/Web/Security/Mixed_content"&gt;here&lt;/a&gt;.
+In a few words, &lt;em&gt;active&lt;/em&gt; content is supposed to be blocked, &lt;em&gt;passive&lt;/em&gt; not. &lt;code&gt;img&lt;/code&gt; are supposed to be &lt;em&gt;passive&lt;/em&gt; so not blocked. So why &lt;strong&gt;some&lt;/strong&gt; of my images were blocked&amp;nbsp;?&lt;/p&gt;
+&lt;p&gt;That&amp;#8217;s the trick, those blocked &lt;code&gt;ìmg&lt;/code&gt; with there &lt;code&gt;src&lt;/code&gt; attribute also had a &lt;code&gt;srcset&lt;/code&gt; attribute which make &lt;code&gt;img&lt;/code&gt; &lt;em&gt;active&lt;/em&gt; and so blocked. As &lt;span class="caps"&gt;JARR&lt;/span&gt; doesn&amp;#8217;t really need &lt;code&gt;srcset&lt;/code&gt; I just implemented a small cleaner that remove those attributes when appropriate. It should close some &lt;a href="https://github.com/jaesivsm/JARR/issues/45"&gt;&lt;span class="caps"&gt;UX&lt;/span&gt; problems&lt;/a&gt;&amp;#8230;&lt;/p&gt;</content><category term="jarr"></category><category term="web tech"></category><category term="english"></category></entry><entry><title>Les mixed content</title><link href="https://1pxsolidblack.pl/les-mixed-content.html" rel="alternate"></link><published>2016-07-23T23:00:00+02:00</published><updated>2016-07-23T23:00:00+02:00</updated><author><name>jaes</name></author><id>tag:1pxsolidblack.pl,2016-07-23:/les-mixed-content.html</id><summary type="html">&lt;p&gt;Dans la série des petits détails méconnus qui vous prennent la tête un moment, avant de se résoudre en une vingtaine de lignes de code ; j&amp;#8217;ai envie de parler aujourd&amp;#8217;hui des &lt;em&gt;Mixed Content&lt;/em&gt;.&lt;/p&gt;
+&lt;p&gt;Je me suis aperçu que pas mal d&amp;#8217;articles étaient mals affichés quand je les …&lt;/p&gt;</summary><content type="html">&lt;p&gt;Dans la série des petits détails méconnus qui vous prennent la tête un moment, avant de se résoudre en une vingtaine de lignes de code ; j&amp;#8217;ai envie de parler aujourd&amp;#8217;hui des &lt;em&gt;Mixed Content&lt;/em&gt;.&lt;/p&gt;
+&lt;p&gt;Je me suis aperçu que pas mal d&amp;#8217;articles étaient mals affichés quand je les lisais dans &lt;a href="https://jarr.info"&gt;&lt;span class="caps"&gt;JARR&lt;/span&gt;&lt;/a&gt; (mon agrégateur &lt;span class="caps"&gt;RSS&lt;/span&gt; pour ceux qui &lt;a href="https://linuxfr.org/users/jaes/journaux/jarr-v1"&gt;ne suivrait pas&lt;/a&gt;). La solution facile était généralement de se rendre directement sur le site qui héberge l&amp;#8217;article en question mais c&amp;#8217;est un peu dommage d&amp;#8217;en arriver là quand le flux Atom/&lt;span class="caps"&gt;RSS&lt;/span&gt; est complet et contient toutes les données nécessaires à la lecture de&amp;nbsp;l&amp;#8217;article.&lt;/p&gt;
+&lt;p&gt;Bref, petite enquête et je m&amp;#8217;aperçois que dans la console de mon butineur préféré j&amp;#8217;ai ça&amp;nbsp;:&lt;/p&gt;
+&lt;p&gt;&lt;img src="https://1pxsolidblack.pl/img/mixed-content/content-blocked.png" style="margin: auto; display: block;" alt="du contenu bloqué (en rouge) car non sécure" /&gt;&lt;/p&gt;
+&lt;p&gt;Petite explication pour ceux qui, comme moi, ignoreraient ce qu&amp;#8217;est un &lt;em&gt;mixed content&lt;/em&gt; : on parle de &lt;em&gt;mixed content&lt;/em&gt; quand une page page sécurisé (comprendre en &lt;span class="caps"&gt;HTTPS&lt;/span&gt;) sert du contenu non sécurisé (en &lt;span class="caps"&gt;HTTP&lt;/span&gt; par exemple).
+Mozilla explique comment c&amp;#8217;est géré dans firefox &lt;a href="https://support.mozilla.org/en-US/kb/mixed-content-blocking-firefox"&gt;ici&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;Ceci étant, je suis aussi tombé sur du contenu non sécurisé malgré tout affiché par mon navigateur depuis une page sécurisée. Seul un warning était affiché en console mais rien n&amp;#8217;était bloqué&amp;nbsp;:&lt;/p&gt;
+&lt;p&gt;&lt;img src="https://1pxsolidblack.pl/img/mixed-content/content-warning.png" style="margin: auto; display: block;" /&gt;&lt;/p&gt;
+&lt;p&gt;C&amp;#8217;est là que réside la subtilité, il y a deux type de &lt;em&gt;mixed content&lt;/em&gt; et (encore une fois) Mozilla explique les différences et comment elles sont gérées &lt;a href="https://developer.mozilla.org/fr/docs/S%C3%A9curit%C3%A9/MixedContent"&gt;ici&lt;/a&gt;.
+Pour faire court, il y a le contenu &lt;em&gt;passif&lt;/em&gt; et le contenu &lt;em&gt;actif&lt;/em&gt;. Seul le contenu actif est censé être bloqué. Les &lt;code&gt;img&lt;/code&gt; sont catégorisés comme &lt;em&gt;passif&lt;/em&gt; et sont censé ne pas être bloqués, même si servit en &lt;span class="caps"&gt;HTTP&lt;/span&gt; dans une page en &lt;span class="caps"&gt;HTTPS&lt;/span&gt;. Alors pourquoi &lt;strong&gt;certains&lt;/strong&gt; &lt;code&gt;img&lt;/code&gt; sont bloquées&amp;nbsp;?&lt;/p&gt;
+&lt;p&gt;C&amp;#8217;est là qu&amp;#8217;il y a une astuce ! Ces &lt;code&gt;img&lt;/code&gt; étaient affublés d&amp;#8217;un attribut &lt;code&gt;srcset&lt;/code&gt; (&lt;a href="http://www.alsacreations.com/article/lire/1621-responsive-images-srcset.html"&gt;que j&amp;#8217;ai découvert à cette occasion&lt;/a&gt;). Cet attribut fait passer les balises &lt;code&gt;img&lt;/code&gt; de &lt;em&gt;passive&lt;/em&gt; à &lt;em&gt;active&lt;/em&gt; et ces dernières se retrouvent donc&amp;nbsp;bloquées.&lt;/p&gt;
+&lt;p&gt;Pour le besoin de &lt;span class="caps"&gt;JARR&lt;/span&gt; donc, les images des articles à afficher sont purgés de toute mention de &lt;code&gt;srcset&lt;/code&gt;. Voilà qui devrait clore quelques &lt;a href="https://github.com/jaesivsm/JARR/issues/45"&gt;petits problème d&amp;#8217;utilisabilité&lt;/a&gt;.&lt;/p&gt;</content><category term="jarr"></category><category term="web tech"></category></entry><entry><title>L’impact de la sortie de Jarr</title><link href="https://1pxsolidblack.pl/jarr-impact-sortie.html" rel="alternate"></link><published>2016-04-16T12:00:00+02:00</published><updated>2016-04-16T12:00:00+02:00</updated><author><name>jaes</name></author><id>tag:1pxsolidblack.pl,2016-04-16:/jarr-impact-sortie.html</id><summary type="html">&lt;p&gt;J&amp;#8217;ai écrit &lt;a href="https://linuxfr.org/users/jaes/journaux/jarr-v1"&gt;trois quatre mots&lt;/a&gt; sur le fait que &lt;a href="https://github.com/jaesivsm/JARR"&gt;&lt;span class="caps"&gt;JARR&lt;/span&gt;&lt;/a&gt; est passé dans une version propre et stable. C&amp;#8217;est la première release publique dirons-nous, et même si c&amp;#8217;est sur une niche (linuxfr n&amp;#8217;est pas franchement un média de masse), j&amp;#8217;ai quand même eu pas mal …&lt;/p&gt;</summary><content type="html">&lt;p&gt;J&amp;#8217;ai écrit &lt;a href="https://linuxfr.org/users/jaes/journaux/jarr-v1"&gt;trois quatre mots&lt;/a&gt; sur le fait que &lt;a href="https://github.com/jaesivsm/JARR"&gt;&lt;span class="caps"&gt;JARR&lt;/span&gt;&lt;/a&gt; est passé dans une version propre et stable. C&amp;#8217;est la première release publique dirons-nous, et même si c&amp;#8217;est sur une niche (linuxfr n&amp;#8217;est pas franchement un média de masse), j&amp;#8217;ai quand même eu pas mal de retour intéressants (j&amp;#8217;ai mis tout ça sur &lt;a href="https://github.com/jaesivsm/JARR/milestones/1.0.0%20-%20Lisboa"&gt;github&lt;/a&gt; histoire de retravailler sur tout ça plus&amp;nbsp;tard).&lt;/p&gt;
+&lt;h2&gt;Inscription&lt;/h2&gt;
+&lt;p&gt;À l&amp;#8217;heure où j&amp;#8217;écris ces lignes 39 nouveaux utilisateurs se sont inscrit sur &lt;a href="https://jarr.info/"&gt;&lt;span class="caps"&gt;JARR&lt;/span&gt;&lt;/a&gt;. La plupart sont des comptes de tests avec seulement un ou deux flux, mais certains on quand même ajouter dans les 20 ou 30&amp;nbsp;flux.&lt;/p&gt;
+&lt;p&gt;&lt;img src="https://1pxsolidblack.pl/img/jarr/jarr-feeds-release-day.png" style="margin: auto; display: block;" /&gt;&lt;/p&gt;
+&lt;p&gt;Comme vous pouvez le voir ci-dessus, à peu près 100 feeds ont été ajouté dans les heures qui ont suivies (avec un pic à 200 mais l&amp;#8217;utilisateur a sûrement dû détruire son compte après son&amp;nbsp;test).&lt;/p&gt;
+&lt;p&gt;Ce qu&amp;#8217;on peu voir sur ce graph, c&amp;#8217;est que les retards, c&amp;#8217;est à dire les flux qui n&amp;#8217;avait pas été mis à jours dans l&amp;#8217;heure, ont fait un pic au moment de l&amp;#8217;ajout des flux. Pic qui a eux quelques échos dans les heures suivantes. Ces échos ont finit par se tasser naturellement car, le crawler ne prends qu&amp;#8217;un nombre limité de flux à rafraîchir et va donc, par construction, répartir la charge dans le&amp;nbsp;temps.&lt;/p&gt;
+&lt;p&gt;À noter que même si les flux vont finir par se répartir dans le temps, la répartition ne sera jamais égale par la seule action du crawler (une évolution à venir ?). Pour remédier à ça, j&amp;#8217;ai écrit un petit &lt;a href="https://github.com/jaesivsm/JARR/blob/master/src/manager.py#L46"&gt;utilitaire&lt;/a&gt; qui répartira l&amp;#8217;intégralité des&amp;nbsp;flux.&lt;/p&gt;
+&lt;h2&gt;Stress sur la&amp;nbsp;base&lt;/h2&gt;
+&lt;p style="text-align: center; width: 100%; display: block;"&gt;
+&lt;img src="https://1pxsolidblack.pl/img/jarr/postgres_scans_release-day.png" /&gt;
+&lt;img src="https://1pxsolidblack.pl/img/jarr/postgres_size_release-day.png" /&gt;
+&lt;/p&gt;
+
+&lt;p&gt;Bon, postgres a vaguement pris en poids au passage, mais ce n&amp;#8217;est rien par rapport à la masse qu&amp;#8217;il avait déjà (20M sur 400, moins de 5%) et même si le nombre de requête a explosé aux deux principaux imports de flux (j&amp;#8217;imagine lors de l&amp;#8217;import de fichiers &lt;span class="caps"&gt;OPML&lt;/span&gt;), tout est très vite revenu à la normal sans autres&amp;nbsp;impact.&lt;/p&gt;
+&lt;p&gt;On peut observer que le nombre de flux a fait un cours bon à 600. C&amp;#8217;est lors de ce pic que corresponds la prise de 10Mo de poids par la base, Ces flux ayant disparus, la base aurait du maigrir d&amp;#8217;autant mais ce n&amp;#8217;est pas le cas, je soupçonne une mauvais configuration qui empêcher le &lt;span class="caps"&gt;VACUM&lt;/span&gt; d&amp;#8217;être&amp;nbsp;éxécuté.&lt;/p&gt;
+&lt;h2&gt;Stress sur la&amp;nbsp;machine&lt;/h2&gt;
+&lt;p&gt;Et pour finir voyons comment mon serveur s&amp;#8217;est comporté&amp;nbsp;:&lt;/p&gt;
+&lt;p&gt;&lt;img src="https://1pxsolidblack.pl/img/jarr/load-release-day.png" style="margin: auto; display: block;" /&gt;&lt;/p&gt;
+&lt;p&gt;Mon server s&amp;#8217;en fout ; il n&amp;#8217;y a aucun impact sur la charge de la machine ni par le crawling ni par l&amp;#8217;ajout massif&amp;nbsp;d&amp;#8217;articles.&lt;/p&gt;
+&lt;p&gt;Bon en même temps mon Xeon à 3.1GHz qui court à côté de s&amp;#8217;est 4Go de &lt;span class="caps"&gt;RAM&lt;/span&gt; m&amp;#8217;aurait fait bien de la peine à trimer pour si&amp;nbsp;peu.&lt;/p&gt;
+&lt;h2&gt;Conclusion&lt;/h2&gt;
+&lt;p&gt;Certes, c&amp;#8217;était un mini stress test sans grands enjeux mais je suis content de voir que &lt;span class="caps"&gt;JARR&lt;/span&gt; a bien tenu la&amp;nbsp;charge.&lt;/p&gt;
+&lt;p&gt;Côté crawler, ça semble suffisament optimisé pour la tâche et le fait qu&amp;#8217;il soit et multiprocess et multithreadé n&amp;#8217;y est sûrement pas pour rien. Je ne pense pas avoir grand chose à améliorer de ce côté&amp;nbsp;là.&lt;/p&gt;
+&lt;p&gt;Côté server, Postgres est largement suffisant pour la tâche (ce qui n&amp;#8217;aurait probablement pas été le cas si j&amp;#8217;étais resté sur un sqlite qui luttait déjà avec mon compte et ses 400 flux&amp;#8230;). La machine est surdimenssionné aussi pour&amp;nbsp;l&amp;#8217;enjeux.&lt;/p&gt;
+&lt;p&gt;Côté applicatif, je ne sais pas. Je n&amp;#8217;ai pas mesuré grand chose, mais vu l&amp;#8217;impact sur le reste, je dirais que ça va. Le bench de ce côté là sera sûrement à prévoir pour une prochaine release ou une communication sur le projet via un média peut être plus&amp;nbsp;important.&lt;/p&gt;</content><category term="jarr"></category><category term="auto-hébergement"></category><category term="upgrade"></category></entry><entry><title>Introducing JARR v1</title><link href="https://1pxsolidblack.pl/jarr-en.html" rel="alternate"></link><published>2016-04-13T23:00:00+02:00</published><updated>2016-04-13T23:00:00+02:00</updated><author><name>jaes</name></author><id>tag:1pxsolidblack.pl,2016-04-13:/jarr-en.html</id><summary type="html">&lt;p&gt;It&amp;#8217;s time I (re)present to the world a project I&amp;#8217;ve been working on for some time now. It&amp;#8217;s a web app that agregate feeds (&lt;span class="caps"&gt;RSS&lt;/span&gt;/Atom) and it let you read most of them inside your&amp;nbsp;browser.&lt;/p&gt;
+&lt;p&gt;&lt;a class="reference external" href="https://jarr.info/"&gt;&lt;span class="caps"&gt;JARR&lt;/span&gt;&lt;/a&gt; (and it stands for &lt;a class="reference external" href="https://github.com/jaesivsm/JARR"&gt;Just Another Rss Reader …&lt;/a&gt;&lt;/p&gt;</summary><content type="html">&lt;p&gt;It&amp;#8217;s time I (re)present to the world a project I&amp;#8217;ve been working on for some time now. It&amp;#8217;s a web app that agregate feeds (&lt;span class="caps"&gt;RSS&lt;/span&gt;/Atom) and it let you read most of them inside your&amp;nbsp;browser.&lt;/p&gt;
+&lt;p&gt;&lt;a class="reference external" href="https://jarr.info/"&gt;&lt;span class="caps"&gt;JARR&lt;/span&gt;&lt;/a&gt; (and it stands for &lt;a class="reference external" href="https://github.com/jaesivsm/JARR"&gt;Just Another Rss Reader&lt;/a&gt;).&lt;/p&gt;
+&lt;p&gt;Before going through the details, you can test it by yourself by creating an account on &lt;a class="reference external" href="https://jarr.info/"&gt;my running instance&lt;/a&gt;&amp;nbsp;!&lt;/p&gt;
+&lt;div class="section" id="the-stack"&gt;
+&lt;h2&gt;The&amp;nbsp;Stack&lt;/h2&gt;
+&lt;p&gt;The project runs on python3.4 and makes a heavy use of the &lt;a class="reference external" href="http://flask.pocoo.org/"&gt;Flask&lt;/a&gt; framework. It&amp;#8217;s completed with the &lt;a class="reference external" href="http://www.sqlalchemy.org/"&gt;SQLAlchemy&lt;/a&gt; &lt;a class="reference external" href="https://en.wikipedia.org/wiki/Object-relational_mapping"&gt;&lt;span class="caps"&gt;ORM&lt;/span&gt;&lt;/a&gt; which allows various &lt;span class="caps"&gt;SQL&lt;/span&gt; database plug. I run my own installation against a &lt;a class="reference external" href="http://www.postgresql.org/"&gt;PostgreSQL&lt;/a&gt; database and it works like a charm.
+Concerning the &lt;span class="caps"&gt;UI&lt;/span&gt;, I coded the whole thing as a &lt;a class="reference external" href="http://reactjs.net/"&gt;ReactJS&lt;/a&gt; one page&amp;nbsp;app.&lt;/p&gt;
+&lt;p&gt;Let&amp;#8217;s have a&amp;nbsp;look:&lt;/p&gt;
+&lt;a class="reference external image-reference" href="https://1pxsolidblack.pl/img/jarr/full.png"&gt;&lt;img alt="The JARR UI" src="https://1pxsolidblack.pl/img/jarr/full.png" style="width: 70%;" /&gt;&lt;/a&gt;
+&lt;/div&gt;
+&lt;div class="section" id="a-little-tour"&gt;
+&lt;h2&gt;A little&amp;nbsp;tour&lt;/h2&gt;
+&lt;dl class="docutils"&gt;
+&lt;dt&gt;As you can see on the screenshot above, the &lt;span class="caps"&gt;UI&lt;/span&gt; is splited in three columns. From left to&amp;nbsp;right:&lt;/dt&gt;
+&lt;dd&gt;&lt;ul class="first last simple"&gt;
+&lt;li&gt;the first one let you see and select your categories and feeds. You can fold categories and display only feeds with unread articles or feeds which have encountered&amp;nbsp;errors.&lt;/li&gt;
+&lt;li&gt;the second one is the article list, which will be updated when you select a feed or a&amp;nbsp;category.&lt;/li&gt;
+&lt;li&gt;the third and last one is the category, feed, article or article you&amp;nbsp;selected.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/dd&gt;
+&lt;/dl&gt;
+&lt;p&gt;As some feeds don&amp;#8217;t provide content, the right panel may not be as filled as you can see on the screenshot and you may have to go directly to the source though the link on the feed title in the article list.
+A better solution has also been implemented, if you have a &lt;a class="reference external" href="https://www.readability.com/"&gt;readability&lt;/a&gt; key you provided either at the installation or in your profile, you&amp;#8217;ll have a little readability button in the top right corner or your article. Clicking it will retrieve a cleaned version of your content.
+You can also choose in a feed options to make that retrieving automatic.
+That&amp;#8217;s especially handy for news agregator like &lt;a class="reference external" href="https://news.ycombinator.com/"&gt;HackerNews&lt;/a&gt;.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="section" id="what-s-new"&gt;
+&lt;h2&gt;What&amp;#8217;s&amp;nbsp;new&lt;/h2&gt;
+&lt;p&gt;I worked a lot on the &lt;span class="caps"&gt;UI&lt;/span&gt;, and it feels pretty done by now. I&amp;#8217;ll talk about it a lot&amp;nbsp;below.&lt;/p&gt;
+&lt;p&gt;I&amp;#8217;m working on redoing the install process so it&amp;#8217;d be easy to bootstrap the&amp;nbsp;project.&lt;/p&gt;
+&lt;p&gt;The crawler works pretty fine. The queue system is pretty robust and the whole thing works pretty well, it scales great against huge work loads without consumming to much ressource. The next step for it would be to make it a daemon and make it scale&amp;nbsp;automatically.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="section" id="mobile"&gt;
+&lt;h2&gt;Mobile&lt;/h2&gt;
+&lt;p&gt;The site is somewhat compatible with smaller&amp;nbsp;device.&lt;/p&gt;
+&lt;p&gt;Here on tablets&amp;nbsp;:&lt;/p&gt;
+&lt;a class="reference external image-reference" href="https://1pxsolidblack.pl/img/jarr/small.png"&gt;&lt;img alt="The JARR UI" src="https://1pxsolidblack.pl/img/jarr/small.png" style="width: 50%;" /&gt;&lt;/a&gt;
+&lt;p&gt;And on phones&amp;nbsp;:&lt;/p&gt;
+&lt;a class="reference external image-reference" href="https://1pxsolidblack.pl/img/jarr/xsmall.png"&gt;&lt;img alt="The JARR UI" src="https://1pxsolidblack.pl/img/jarr/xsmall.png" style="width: 25%;" /&gt;&lt;/a&gt;
+&lt;/div&gt;
+&lt;div class="section" id="what-s-down-the-road"&gt;
+&lt;h2&gt;What&amp;#8217;s down the&amp;nbsp;road&lt;/h2&gt;
+&lt;p&gt;Some coming features are listed in the &lt;a class="reference external" href="https://github.com/jaesivsm/JARR/milestones"&gt;Github milestones&lt;/a&gt;. Most of them are obvious &lt;span class="caps"&gt;UI&lt;/span&gt; improvements and utilisability tweaks (as &lt;a class="reference external" href="https://github.com/jaesivsm/JARR/issues/3"&gt;mark an article to be read later on&lt;/a&gt; or &lt;a class="reference external" href="https://github.com/jaesivsm/JARR/issues/8"&gt;having a nice integration for well-known feed that misbehave or are poorly formated&lt;/a&gt;).&lt;/p&gt;
+&lt;p&gt;But the main thing I&amp;#8217;d like to implement would be an intelligent grouping feature that would regroup articles in clusters. The goal would be to regroup article on the same subject (or pointing to the same resource) so a user wouldn&amp;#8217;t be presented with the same news if it appears in multiple feeds.
+It&amp;#8217;s a feature a bit down the road, but definitively coming&amp;nbsp;!&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="section" id="history"&gt;
+&lt;h2&gt;History&lt;/h2&gt;
+&lt;p&gt;The project was initially created by &lt;a class="reference external" href="http://www.cedricbonhomme.org/"&gt;Cédric Bonhomme&lt;/a&gt; who I thanks a lot for letting me fiddle with his project. But, as I introduced stuffs to the project that he was less and less easy with, I thought it was time for a full&amp;nbsp;fork.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="section" id="conclusion"&gt;
+&lt;h2&gt;Conclusion&lt;/h2&gt;
+&lt;p&gt;I&amp;#8217;d be happy to see some of you install the &lt;a class="reference external" href="https://github.com/jaesivsm/JARR"&gt;project&lt;/a&gt; (I worked on the install script so it&amp;#8217;s painless :) or try it on &lt;a class="reference external" href="https://jarr.info/"&gt;my instance&lt;/a&gt;.
+Of course, I&amp;#8217;m welcoming all critics and &lt;a class="reference external" href="https://github.com/jaesivsm/JARR"&gt;contributions&lt;/a&gt;&amp;nbsp;!&lt;/p&gt;
+&lt;style type='text/css'&gt;
+  .reference.external.image-reference {
+      text-align: center; width: 100%; display: block;}
+&lt;/style&gt;&lt;/div&gt;
+</content><category term="jarr"></category><category term="auto-hébergement"></category><category term="release note"></category><category term="english"></category></entry><entry><title>Pélican</title><link href="https://1pxsolidblack.pl/pelican.html" rel="alternate"></link><published>2016-01-16T21:00:00+01:00</published><updated>2016-01-16T21:00:00+01:00</updated><author><name>jaes</name></author><id>tag:1pxsolidblack.pl,2016-01-16:/pelican.html</id><summary type="html">&lt;p&gt;Plus pour réellement m&amp;#8217;amuser que par réelle envie de maintenir ce blog à jour, j&amp;#8217;ai changé de moteur de blog. Inspiré par d&amp;#8217;autres pages personnelles d&amp;#8217;&lt;a class="reference external" href="http://kirellbenzi.com/blog/the-infamous-first-blog-post/"&gt;autres développeurs&lt;/a&gt;, je suis passé à &lt;a class="reference external" href="https://github.com/getpelican/pelican/"&gt;pelican&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;Par rapport à &lt;a class="reference external" href="https://github.com/lepture/liquidluck"&gt;liquidluck&lt;/a&gt; que j&amp;#8217;utilisais avant il y a quelque changements notables …&lt;/p&gt;</summary><content type="html">&lt;p&gt;Plus pour réellement m&amp;#8217;amuser que par réelle envie de maintenir ce blog à jour, j&amp;#8217;ai changé de moteur de blog. Inspiré par d&amp;#8217;autres pages personnelles d&amp;#8217;&lt;a class="reference external" href="http://kirellbenzi.com/blog/the-infamous-first-blog-post/"&gt;autres développeurs&lt;/a&gt;, je suis passé à &lt;a class="reference external" href="https://github.com/getpelican/pelican/"&gt;pelican&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;Par rapport à &lt;a class="reference external" href="https://github.com/lepture/liquidluck"&gt;liquidluck&lt;/a&gt; que j&amp;#8217;utilisais avant il y a quelque changements notables (même si ça ne casse pas trois pattes à un canard, on reste dans le générateur de blog statique qui mange du markdown / restructured pour pondre du&amp;nbsp;html).&lt;/p&gt;
+&lt;p&gt;Parmi les points à l&amp;#8217;avantage de liquidluck, de mémoire (parce que je l&amp;#8217;ai installé il y a un moment maintenant) ce dernier était plus facile à installer et son côté &amp;#8220;brut de décoffrage&amp;#8221; le rendait plus facile à&amp;nbsp;hacker.&lt;/p&gt;
+&lt;p&gt;Bon par contre son intégration n&amp;#8217;était vraiment pas aussi souple. Pélican offre tout un tas d&amp;#8217;intégration, la possibilité de déployer via &lt;em&gt;ssh&lt;/em&gt;, une configuration bien plus complète. Bref, le choix est sans équivoque&amp;nbsp;!&lt;/p&gt;
+</content><category term="pelican"></category><category term="blog"></category><category term="auto-hébergement"></category></entry><entry><title>Jessie, g_slice_set_config et gdm3</title><link href="https://1pxsolidblack.pl/console-kit.html" rel="alternate"></link><published>2015-02-05T12:00:00+01:00</published><updated>2016-01-17T11:00:00+01:00</updated><author><name>jaes</name></author><id>tag:1pxsolidblack.pl,2015-02-05:/console-kit.html</id><summary type="html">&lt;p&gt;Après avoir mis à jours ma debian au boulot de &lt;em&gt;wheezy&lt;/em&gt; à &lt;em&gt;jessie&lt;/em&gt; impossible de lancer gdm3. Après quelques errement j&amp;#8217;ai découvert que mon &lt;tt class="docutils literal"&gt;/var/log/syslog&lt;/tt&gt; était rempli de lignes de ce genre&amp;nbsp;:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;Feb  &lt;span class="m"&gt;5&lt;/span&gt; &lt;span class="m"&gt;14&lt;/span&gt;:32:14 evoli console-kit-daemon&lt;span class="o"&gt;[&lt;/span&gt;&lt;span class="m"&gt;4627&lt;/span&gt;&lt;span class="o"&gt;]&lt;/span&gt;: &lt;span class="o"&gt;(&lt;/span&gt;process:4690&lt;span class="o"&gt;)&lt;/span&gt;: GLib-CRITICAL **: g_slice_set_config: assertion &lt;span class="s1"&gt;&amp;#39;sys_page_size == 0 …&lt;/span&gt;&lt;/pre&gt;&lt;/div&gt;</summary><content type="html">&lt;p&gt;Après avoir mis à jours ma debian au boulot de &lt;em&gt;wheezy&lt;/em&gt; à &lt;em&gt;jessie&lt;/em&gt; impossible de lancer gdm3. Après quelques errement j&amp;#8217;ai découvert que mon &lt;tt class="docutils literal"&gt;/var/log/syslog&lt;/tt&gt; était rempli de lignes de ce genre&amp;nbsp;:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;Feb  &lt;span class="m"&gt;5&lt;/span&gt; &lt;span class="m"&gt;14&lt;/span&gt;:32:14 evoli console-kit-daemon&lt;span class="o"&gt;[&lt;/span&gt;&lt;span class="m"&gt;4627&lt;/span&gt;&lt;span class="o"&gt;]&lt;/span&gt;: &lt;span class="o"&gt;(&lt;/span&gt;process:4690&lt;span class="o"&gt;)&lt;/span&gt;: GLib-CRITICAL **: g_slice_set_config: assertion &lt;span class="s1"&gt;&amp;#39;sys_page_size == 0&amp;#39;&lt;/span&gt; failed
+&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;Une recherche google d&amp;#8217;une partie de cette ligne donne surtout comme conseil de supprimer son &lt;tt class="docutils literal"&gt;&lt;span class="pre"&gt;~/.profile&lt;/span&gt;&lt;/tt&gt; ce qui n&amp;#8217;aide en rien. Une autre, plus approfondie, avec comme paramètre que ma carte graphique est une &lt;em&gt;&lt;span class="caps"&gt;GT610&lt;/span&gt;&lt;/em&gt; et a donc besoin d&amp;#8217;un pilote nvidia, ne donne comme conseil que de &lt;tt class="docutils literal"&gt;&lt;span class="pre"&gt;apt-get&lt;/span&gt; remove &lt;span class="pre"&gt;--purge&lt;/span&gt;&lt;/tt&gt; tous les paquets liés de plus ou moins loin à&amp;nbsp;nvidia.&lt;/p&gt;
+&lt;p&gt;Je le marque ici afin de peut être aidé une âme perdu qui parcourerait les tréfons du net à la recherche d&amp;#8217;une solution&amp;nbsp;:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;aptitude purge --purge consolekit
+aptitude install consolekit
+&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;En effet, c&amp;#8217;est ce petit malin qui est à l&amp;#8217;origine du fail de&amp;nbsp;gdm3.&lt;/p&gt;
+&lt;p&gt;Si il doit y avoir une leçon à tirer de cette histoire c&amp;#8217;est bien qu&amp;#8217;il ne sert à rien de trop chercher sur le net quand on peut lire le nom du fautif directement dans le message de log. Oui, &lt;tt class="docutils literal"&gt;&lt;span class="pre"&gt;console-kit-daemon&lt;/span&gt;&lt;/tt&gt;, c&amp;#8217;est à toi que je&amp;nbsp;parle.&lt;/p&gt;
+&lt;div class="section" id="mise-a-jours"&gt;
+&lt;h2&gt;Mise à&amp;nbsp;jours&lt;/h2&gt;
+&lt;p&gt;La &lt;em&gt;traceback&lt;/em&gt; survient toujours sur mon server et c&amp;#8217;est plutôt disgracieux, aussi j&amp;#8217;ai trouvé ce &lt;a class="reference external" href="https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=718843"&gt;rapport de bug&lt;/a&gt; qui stipule&amp;nbsp;:&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;ConsoleKit only manages console logins in graphical mode, so it&amp;#8217;s
+useless on a debian 8 based headless server[1]. The way to remove and
+stop console&amp;nbsp;kit:&lt;/p&gt;
+&lt;p&gt;$ sudo apt-get remove&amp;nbsp;consolekit&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;On ne me le demandera pas deux&amp;nbsp;fois.&lt;/p&gt;
+&lt;/div&gt;
+</content><category term="debian"></category><category term="upgrade"></category></entry><entry><title>Disqus !</title><link href="https://1pxsolidblack.pl/disqus.html" rel="alternate"></link><published>2014-09-10T15:00:00+02:00</published><updated>2014-09-10T15:00:00+02:00</updated><author><name>jaes</name></author><id>tag:1pxsolidblack.pl,2014-09-10:/disqus.html</id><summary type="html">&lt;p&gt;J&amp;#8217;utilise &lt;a class="reference external" href="https://github.com/lepture/liquidluck"&gt;liquidluck&lt;/a&gt; pour générer le rendu de ce blog et ça marche bien pour le peu que j&amp;#8217;utilise. Bon, la prise en main n&amp;#8217;a pas forcément été des plus facile, mais dans le genre c&amp;#8217;est quand même dans les moteurs de blog les plus sympa que …&lt;/p&gt;</summary><content type="html">&lt;p&gt;J&amp;#8217;utilise &lt;a class="reference external" href="https://github.com/lepture/liquidluck"&gt;liquidluck&lt;/a&gt; pour générer le rendu de ce blog et ça marche bien pour le peu que j&amp;#8217;utilise. Bon, la prise en main n&amp;#8217;a pas forcément été des plus facile, mais dans le genre c&amp;#8217;est quand même dans les moteurs de blog les plus sympa que j&amp;#8217;ai trouvé.
+Pour le principe : ça marche avec python (indispensable !), ça génère du contenu statique et&amp;#8230; et c&amp;#8217;est&amp;nbsp;tout.&lt;/p&gt;
+&lt;p&gt;En tout cas c&amp;#8217;est ce que je pensais ! J&amp;#8217;ai découvert, à base de lecture de fichier de configuration et de &lt;tt class="docutils literal"&gt;grep&lt;/tt&gt; au travers du code source, que le moteur de blog supportait l&amp;#8217;intégration du moteur de commentaire &lt;a class="reference external" href="http://disqus.com/"&gt;Disqus&lt;/a&gt;. J&amp;#8217;avais vaguement entendu parlé du service auparavant mais c&amp;#8217;était le moment de&amp;nbsp;tester.&lt;/p&gt;
+&lt;p&gt;Le principe est simple : on créé son compte, on intégre leur bout de code et ça roule tout seul. Après avoir jouer peu avec leur code et être vite arrivé à la conclusion qu&amp;#8217;il n&amp;#8217;y avait pas grand chose à tripoter je vais juste laisser cette histoire tourner par elle&amp;nbsp;même.&lt;/p&gt;
+&lt;p&gt;J&amp;#8217;ai reçu plusieurs mails concernant mon &lt;a class="reference external" href="https://github.com/jaesivsm/ing_chart"&gt;appli web pour les graphs &lt;span class="caps"&gt;ING&lt;/span&gt;&lt;/a&gt; et je me suis dit que ces mails auraient pu profiter à &lt;a class="reference external" href="https://1pxsolidblack.pl/ing-chart.html"&gt;mon post&lt;/a&gt; en parlant, au moins sous forme de commentaire. C&amp;#8217;était ma principale et unique motivation pour trifouiller &lt;tt class="docutils literal"&gt;liquidluck&lt;/tt&gt; en fin de&amp;nbsp;compte&amp;#8230;&lt;/p&gt;
+&lt;p&gt;Bref maintenant ça marche et personne n&amp;#8217;écrira jamais rien là dedans !&amp;nbsp;Joie.&lt;/p&gt;
+</content><category term="disqus"></category><category term="blog"></category><category term="auto-hébergement"></category></entry><entry><title>ING Chart : Visualiser ses extraits de comptes</title><link href="https://1pxsolidblack.pl/ing-chart.html" rel="alternate"></link><published>2014-06-30T12:00:00+02:00</published><updated>2014-06-30T12:00:00+02:00</updated><author><name>jaes</name></author><id>tag:1pxsolidblack.pl,2014-06-30:/ing-chart.html</id><summary type="html">&lt;p&gt;Il y a quelque semaines de ça, j&amp;#8217;en ai finalement eu marre que les différents graphiques de suivis de budget du site web de ma banque soient&amp;nbsp;cassés.&lt;/p&gt;
+&lt;p&gt;Sachant que ça faisait déjà près d&amp;#8217;un an (&lt;a class="reference external" href="https://communaute.ingdirect.fr/t5/Sur-le-Web/Compte-courant-Fonctions-de-suivi-budget-et-d-export-HS-depuis/td-p/1395"&gt;cf le post sur le forum de support&lt;/a&gt;) que rien n&amp;#8217;était …&lt;/p&gt;</summary><content type="html">&lt;p&gt;Il y a quelque semaines de ça, j&amp;#8217;en ai finalement eu marre que les différents graphiques de suivis de budget du site web de ma banque soient&amp;nbsp;cassés.&lt;/p&gt;
+&lt;p&gt;Sachant que ça faisait déjà près d&amp;#8217;un an (&lt;a class="reference external" href="https://communaute.ingdirect.fr/t5/Sur-le-Web/Compte-courant-Fonctions-de-suivi-budget-et-d-export-HS-depuis/td-p/1395"&gt;cf le post sur le forum de support&lt;/a&gt;) que rien n&amp;#8217;était fait à ce sujet j&amp;#8217;ai décidé de coder moi même une petite appli web qui reproduirait les mêmes graphiques. Je me suis servi pour ça de trois bouts de &lt;em&gt;JavaScript&lt;/em&gt; collé à la glue de chez &lt;a class="reference external" href="http://jquery.com/"&gt;jquery&lt;/a&gt; et de la bibliothèque &lt;a class="reference external" href="http://chartjs.org/"&gt;Chart.js&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;L&amp;#8217;appli fonctionne bien et est globalement plus esthétique / ergonomique que les graphs originaux. Pour fonctionner elle ne requiert que les historiques des mouvements de compte qui sont téléchargeables au format &lt;em&gt;&lt;span class="caps"&gt;CSV&lt;/span&gt;&lt;/em&gt; depuis le site d&amp;#8217;&lt;span class="caps"&gt;ING&lt;/span&gt;.&lt;/p&gt;
+&lt;p&gt;Le graph est utilisable à partir d&amp;#8217;&lt;a class="reference external" href="/ing_chart/"&gt;ici&lt;/a&gt; et je me fends d&amp;#8217;un petit aperçu du rendu&amp;nbsp;:&lt;/p&gt;
+&lt;a class="reference external image-reference" href="https://1pxsolidblack.pl/img/ing_chart.lines.png"&gt;&lt;img alt="Lines chart example" class="align-center" src="https://1pxsolidblack.pl/img/ing_chart.lines.png" style="width: 30%;" /&gt;&lt;/a&gt;
+&lt;p&gt;J&amp;#8217;ai aussi implémenté un mode camembert (&lt;em&gt;piechart&lt;/em&gt; quoi) parce que j&amp;#8217;aurais eu tort de me priver&amp;nbsp;:&lt;/p&gt;
+&lt;a class="reference external image-reference" href="https://1pxsolidblack.pl/img/ing_chart.pie.png"&gt;&lt;img alt="Pie chart example" class="align-center" src="https://1pxsolidblack.pl/img/ing_chart.pie.png" style="width: 30%;" /&gt;&lt;/a&gt;
+&lt;p&gt;Bon. Ce qui est dommage, c&amp;#8217;est qu&amp;#8217;à l&amp;#8217;heure où j&amp;#8217;écris ces lignes, un correctif vient tout juste d&amp;#8217;être plublié et les graphs fonctionnent de nouveau sur le site d&amp;#8217;&lt;span class="caps"&gt;ING&lt;/span&gt;&amp;nbsp;Direct&amp;#8230;&lt;/p&gt;
+&lt;p&gt;Malgré tout, je trouve mon implémentation bien meilleurs ! Plus flexible, plus jolie, plus lisible, si en plus on compte sur mon rêve simplet de postérité, ça fait pas mal de raisons de laisser ma bidouille en&amp;nbsp;ligne.&lt;/p&gt;
+&lt;p&gt;Bien entendu, tout ceci est open source et le code est disponible sur &lt;a class="reference external" href="https://github.com/jaesivsm/ing_chart/"&gt;github&lt;/a&gt;.&lt;/p&gt;
+&lt;style type='text/css'&gt;
+  .reference.external.image-reference {
+      text-align: center; width: 100%; display: block;}
+&lt;/style&gt;</content><category term="ING"></category><category term="data visualisation"></category></entry><entry><title>Servir et gérer des fichiers avec WebDav</title><link href="https://1pxsolidblack.pl/apache-webdav-file-server.html" rel="alternate"></link><published>2013-12-09T21:20:00+01:00</published><updated>2013-12-09T21:20:00+01:00</updated><author><name>jaes</name></author><id>tag:1pxsolidblack.pl,2013-12-09:/apache-webdav-file-server.html</id><summary type="html">&lt;p&gt;J&amp;#8217;ai récement eu besoin de pouvoir stocker des fichiers en ligne. Je voulais un minimum d&amp;#8217;authentification, quelque chose qui soit standard, pas de client lourd etc, etc. Bref, après m&amp;#8217;être renseigné à minima j&amp;#8217;ai décidé de tenter ma chance avec &lt;a href="https://httpd.apache.org/docs/2.4/fr/mod/mod_dav.html"&gt;WebDav&lt;/a&gt; en l&amp;#8217;occurence puisque je …&lt;/p&gt;</summary><content type="html">&lt;p&gt;J&amp;#8217;ai récement eu besoin de pouvoir stocker des fichiers en ligne. Je voulais un minimum d&amp;#8217;authentification, quelque chose qui soit standard, pas de client lourd etc, etc. Bref, après m&amp;#8217;être renseigné à minima j&amp;#8217;ai décidé de tenter ma chance avec &lt;a href="https://httpd.apache.org/docs/2.4/fr/mod/mod_dav.html"&gt;WebDav&lt;/a&gt; en l&amp;#8217;occurence puisque je fais tourner ça avec&amp;nbsp;apache).&lt;/p&gt;
+&lt;p&gt;Les caractéristiques voulues&amp;nbsp;:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;accès en &lt;span class="caps"&gt;HTTP&lt;/span&gt; et&amp;nbsp;HTTPs&lt;/li&gt;
+&lt;li&gt;un dossier &lt;code&gt;/public/&lt;/code&gt; accessible en lecture par tous (&lt;span class="caps"&gt;HTTP&lt;/span&gt; et&amp;nbsp;HTTPs)&lt;/li&gt;
+&lt;li&gt;redirection de &lt;span class="caps"&gt;HTTP&lt;/span&gt; vers HTTPs&amp;nbsp;sinon&lt;/li&gt;
+&lt;li&gt;authentification via &lt;em&gt;BasicAuth&lt;/em&gt;&lt;/li&gt;
+&lt;li&gt;tous les utilisateurs peuvent écrire dans &lt;code&gt;/public/&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;chaque utilisateurs ne peut écrire sur dans l&amp;#8217;&lt;span class="caps"&gt;URI&lt;/span&gt; &lt;code&gt;/&amp;lt;utilisateur&amp;gt;/&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Maintenant la conf et les explications&amp;nbsp;:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;La conf du &lt;em&gt;VirtualHost&lt;/em&gt; pour l&amp;#8217;accès en &lt;span class="caps"&gt;HTTP&lt;/span&gt;&amp;nbsp;:&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nt"&gt;&amp;lt;VirtualHost&lt;/span&gt; &lt;span class="s"&gt;*:80&lt;/span&gt;&lt;span class="nt"&gt;&amp;gt;&lt;/span&gt;
+    &lt;span class="nb"&gt;ServerName&lt;/span&gt; my.server.tld
+    &lt;span class="nb"&gt;DocumentRoot&lt;/span&gt; /$document_root/
+
+    &lt;span class="nt"&gt;&amp;lt;Directory&lt;/span&gt; &lt;span class="s"&gt;/$document_root/public/&lt;/span&gt;&lt;span class="nt"&gt;&amp;gt;&lt;/span&gt;
+        &lt;span class="nb"&gt;Options&lt;/span&gt; -Indexes
+    &lt;span class="nt"&gt;&amp;lt;/Directory&amp;gt;&lt;/span&gt;
+    &lt;span class="nt"&gt;&amp;lt;Directory&lt;/span&gt; &lt;span class="s"&gt;/$document_root/public/*/&lt;/span&gt;&lt;span class="nt"&gt;&amp;gt;&lt;/span&gt;
+        &lt;span class="nb"&gt;Options&lt;/span&gt; +Indexes
+    &lt;span class="nt"&gt;&amp;lt;/Directory&amp;gt;&lt;/span&gt;
+
+    &lt;span class="nb"&gt;RewriteEngine&lt;/span&gt; &lt;span class="k"&gt;On&lt;/span&gt;
+    &lt;span class="c"&gt;# Cette RewriteCond vérifie que l&amp;#39;URI de la requête concerne le notre&lt;/span&gt;
+    &lt;span class="c"&gt;# dossier /public/ (ou les images qui servent à l&amp;#39;affichage des indexes&lt;/span&gt;
+    &lt;span class="c"&gt;# chez apache). La RewriteCond ne s&amp;#39;applique que pour la RewriteRule&lt;/span&gt;
+    &lt;span class="c"&gt;# suivante.&lt;/span&gt;
+    &lt;span class="nb"&gt;RewriteCond&lt;/span&gt; %{REQUEST_URI} ^/(public/(?|.*)|icons/(?|.*)|favicon\.ico|robots\.txt|$)$
+    &lt;span class="nb"&gt;RewriteRule&lt;/span&gt; ^.* - [L]
+
+    &lt;span class="c"&gt;# Cette dernière RewriteRule s&amp;#39;assure que tous ce qui n&amp;#39;a pas matché&lt;/span&gt;
+    &lt;span class="c"&gt;# plus haut est redirigé vers le même domaine en HTTPs&lt;/span&gt;
+    &lt;span class="nb"&gt;RewriteRule&lt;/span&gt; ^/?(.*) https://%{HTTP_HOST}/$1 [QSA,L,R=301]
+
+    &lt;span class="nb"&gt;ErrorLog&lt;/span&gt; ${APACHE_LOG_DIR}/error.log
+    &lt;span class="nb"&gt;CustomLog&lt;/span&gt; ${APACHE_LOG_DIR}/access.log vhost_combined
+    &lt;span class="nb"&gt;LogLevel&lt;/span&gt; &lt;span class="k"&gt;warn&lt;/span&gt;
+&lt;span class="nt"&gt;&amp;lt;/VirtualHost&amp;gt;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;ul&gt;
+&lt;li&gt;La conf du &lt;em&gt;VirtualHost&lt;/em&gt; pour l&amp;#8217;accès en HTTPs&amp;nbsp;:&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nt"&gt;&amp;lt;VirtualHost&lt;/span&gt; &lt;span class="s"&gt;*:443&lt;/span&gt;&lt;span class="nt"&gt;&amp;gt;&lt;/span&gt;
+    &lt;span class="nb"&gt;ServerName&lt;/span&gt; my.server.tld
+    &lt;span class="nb"&gt;SSLEngine&lt;/span&gt; &lt;span class="k"&gt;on&lt;/span&gt;
+
+    &lt;span class="nb"&gt;DocumentRoot&lt;/span&gt; /$document_root/
+
+    &lt;span class="nb"&gt;DavLockDB&lt;/span&gt; &lt;span class="sx"&gt;/run/lock/apache_dav&lt;/span&gt;
+    &lt;span class="nb"&gt;DAVMinTimeout&lt;/span&gt; &lt;span class="m"&gt;600&lt;/span&gt;
+
+    &lt;span class="c"&gt;# On empêche les robots des snifer le roots où il y a&lt;/span&gt;
+    &lt;span class="c"&gt;# la liste des users (leurs dossiers perso en fait)&lt;/span&gt;
+    &lt;span class="nt"&gt;&amp;lt;Directory&lt;/span&gt; &lt;span class="s"&gt;/$document_root/&lt;/span&gt;&lt;span class="nt"&gt;&amp;gt;&lt;/span&gt;
+        &lt;span class="nb"&gt;Options&lt;/span&gt; -Indexes
+        &lt;span class="nb"&gt;Dav&lt;/span&gt; &lt;span class="k"&gt;On&lt;/span&gt;
+    &lt;span class="nt"&gt;&amp;lt;/Directory&amp;gt;&lt;/span&gt;
+
+    &lt;span class="c"&gt;# On définit qu&amp;#39;une authentification est nécessaire pour&lt;/span&gt;
+    &lt;span class="c"&gt;# accéder à n&amp;#39;importe quel dossier.&lt;/span&gt;
+    &lt;span class="nt"&gt;&amp;lt;Directory&lt;/span&gt; &lt;span class="s"&gt;/$document_root/*/&lt;/span&gt;&lt;span class="nt"&gt;&amp;gt;&lt;/span&gt;
+        &lt;span class="nb"&gt;Options&lt;/span&gt; +Indexes +FollowSymLinks +MultiViews
+        &lt;span class="nb"&gt;AllowOverride&lt;/span&gt; &lt;span class="k"&gt;None&lt;/span&gt;
+
+        &lt;span class="nb"&gt;Order&lt;/span&gt; allow,deny
+        &lt;span class="nb"&gt;Allow&lt;/span&gt; from &lt;span class="k"&gt;all&lt;/span&gt;
+        &lt;span class="nb"&gt;Dav&lt;/span&gt; &lt;span class="k"&gt;On&lt;/span&gt;
+
+        &lt;span class="nb"&gt;AuthType&lt;/span&gt; Basic
+        &lt;span class="nb"&gt;AuthName&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;My Server WebDav&amp;quot;&lt;/span&gt;
+        &lt;span class="nb"&gt;AuthUserFile&lt;/span&gt; &lt;span class="sx"&gt;/path/to/htpasswd&lt;/span&gt;
+        &lt;span class="nb"&gt;Require&lt;/span&gt; valid-user
+    &lt;span class="nt"&gt;&amp;lt;/Directory&amp;gt;&lt;/span&gt;
+
+    &lt;span class="c"&gt;# On est pas trop méchant et on laisse&lt;/span&gt;
+    &lt;span class="c"&gt;# quand même les robots accéder à leurs conf&lt;/span&gt;
+    &lt;span class="nt"&gt;&amp;lt;Files&lt;/span&gt; &lt;span class="s"&gt;/$document_root/robots.txt&lt;/span&gt;&lt;span class="nt"&gt;&amp;gt;&lt;/span&gt;
+        &lt;span class="nb"&gt;Order&lt;/span&gt; Allow,Deny
+        &lt;span class="nb"&gt;Allow&lt;/span&gt; from &lt;span class="k"&gt;all&lt;/span&gt;
+        &lt;span class="nb"&gt;Satisfy&lt;/span&gt; &lt;span class="k"&gt;any&lt;/span&gt;
+        &lt;span class="nb"&gt;Require&lt;/span&gt; &lt;span class="k"&gt;all&lt;/span&gt; granted
+    &lt;span class="nt"&gt;&amp;lt;/Files&amp;gt;&lt;/span&gt;
+
+    &lt;span class="c"&gt;# On surcharge la précédente définition pour le dossier /public/.&lt;/span&gt;
+    &lt;span class="nt"&gt;&amp;lt;Directory&lt;/span&gt; &lt;span class="s"&gt;/$document_root/public/&lt;/span&gt;&lt;span class="nt"&gt;&amp;gt;&lt;/span&gt;
+        &lt;span class="nb"&gt;Options&lt;/span&gt; -Indexes +FollowSymLinks +MultiViews
+        &lt;span class="nb"&gt;AllowOverride&lt;/span&gt; &lt;span class="k"&gt;None&lt;/span&gt;
+
+        &lt;span class="nb"&gt;Order&lt;/span&gt; Allow,Deny
+        &lt;span class="nb"&gt;Allow&lt;/span&gt; from &lt;span class="k"&gt;all&lt;/span&gt;
+        &lt;span class="nb"&gt;Dav&lt;/span&gt; &lt;span class="k"&gt;On&lt;/span&gt;
+
+        &lt;span class="nt"&gt;&amp;lt;LimitExcept&lt;/span&gt; &lt;span class="s"&gt;GET OPTIONS&lt;/span&gt;&lt;span class="nt"&gt;&amp;gt;&lt;/span&gt;
+            &lt;span class="nb"&gt;AuthType&lt;/span&gt; Basic
+            &lt;span class="nb"&gt;AuthName&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;My Server WebDav&amp;quot;&lt;/span&gt;
+            &lt;span class="nb"&gt;AuthUserFile&lt;/span&gt; &lt;span class="sx"&gt;/path/to/htpasswd&lt;/span&gt;
+            &lt;span class="nb"&gt;Require&lt;/span&gt; valid-user
+        &lt;span class="nt"&gt;&amp;lt;/LimitExcept&amp;gt;&lt;/span&gt;
+    &lt;span class="nt"&gt;&amp;lt;/Directory&amp;gt;&lt;/span&gt;
+    &lt;span class="c"&gt;# On autorise les indexes sur les dossiers contenu dans /public/&lt;/span&gt;
+    &lt;span class="c"&gt;# même si ils ne sont pas autorisés dans ce dernier&lt;/span&gt;
+    &lt;span class="nt"&gt;&amp;lt;Directory&lt;/span&gt; &lt;span class="s"&gt;/$document_root/public/*/&lt;/span&gt;&lt;span class="nt"&gt;&amp;gt;&lt;/span&gt;
+        &lt;span class="nb"&gt;Options&lt;/span&gt; +Indexes
+    &lt;span class="nt"&gt;&amp;lt;/Directory&amp;gt;&lt;/span&gt;
+
+    &lt;span class="nb"&gt;RewriteEngine&lt;/span&gt; &lt;span class="k"&gt;On&lt;/span&gt;
+    &lt;span class="c"&gt;# On autorise l&amp;#39;accès au robot.txt sans redirection aucune&lt;/span&gt;
+    &lt;span class="nb"&gt;RewriteCond&lt;/span&gt; %{REQUEST_URI} ^/robots.txt$
+    &lt;span class="nb"&gt;RewriteRule&lt;/span&gt; ^/?(.*) http://%{HTTP_HOST}/robots.txt [QSA,L,R=301]
+
+    &lt;span class="c"&gt;# Comme précédemment, on ne touche à rien si&lt;/span&gt;
+    &lt;span class="c"&gt;# l&amp;#39;URI de la requête concerne le dossier /public/.&lt;/span&gt;
+    &lt;span class="nb"&gt;RewriteCond&lt;/span&gt; %{REQUEST_URI} ^/(public/(?|.*)|icons/(?|.*)|favicon\.ico)$
+    &lt;span class="nb"&gt;RewriteRule&lt;/span&gt; ^.* - [L]
+
+    &lt;span class="c"&gt;# La règle qui empêche un utilisateur d&amp;#39;accéder&lt;/span&gt;
+    &lt;span class="c"&gt;# à un dossier qui n&amp;#39;est pas à eux.&lt;/span&gt;
+    &lt;span class="nb"&gt;RewriteCond&lt;/span&gt; %{LA-U:REMOTE_USER} ^(.+)
+    &lt;span class="nb"&gt;RewriteCond&lt;/span&gt; %1:/$1 !^([^:]+):/\&lt;span class="m"&gt;1&lt;/span&gt;$
+    &lt;span class="nb"&gt;RewriteRule&lt;/span&gt; ^/([^/]*) - [F,L]
+
+    &lt;span class="nb"&gt;ErrorLog&lt;/span&gt; ${APACHE_LOG_DIR}/error.log
+    &lt;span class="nb"&gt;CustomLog&lt;/span&gt; ${APACHE_LOG_DIR}/access.log vhost_combined
+    &lt;span class="nb"&gt;LogLevel&lt;/span&gt; &lt;span class="k"&gt;warn&lt;/span&gt;
+&lt;span class="nt"&gt;&amp;lt;/VirtualHost&amp;gt;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Les dernières &lt;em&gt;RewriteCond&lt;/em&gt; sont utilisées pour s&amp;#8217;assurer que chaque utilisateur n&amp;#8217;accèdera qu&amp;#8217;à son dossier utilisent &lt;code&gt;LA-U:&lt;/code&gt;. Ce préfix est décrit dans la documentation de &lt;a href="http://httpd.apache.org/docs/current/mod/mod_rewrite.html#rewritecond"&gt;mod_rewrite&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;L&amp;#8217;idée derrière cette subtilité est que les règles de réécriture sont exécutées avant que l&amp;#8217;authentification n&amp;#8217;ait lieu. La variable &lt;code&gt;REMOTE_USER&lt;/code&gt;, elle, définie lors de l&amp;#8217;authentification, n&amp;#8217;est pas disponible pour la comparaison avec l&amp;#8217;&lt;strong&gt;&lt;span class="caps"&gt;URI&lt;/span&gt;&lt;/strong&gt; de la requête. &lt;code&gt;LA-U:&lt;/code&gt; permet de prefetch cette valeur. La dernière condition de réécriture véréfie que cette valeur correspond bien au début de l&amp;#8217;&lt;span class="caps"&gt;URI&lt;/span&gt; de la&amp;nbsp;requête.&lt;/p&gt;
+&lt;p&gt;La syntaxe de la condition de réécriture est assez compliquée (et honteusement copiée de &lt;a href="https://maze.io/2010/02/09/restricting-directory-in-apache-per-logged-in-user/"&gt;cet article&lt;/a&gt;). Elle doit sa structure au fait que apache ne permet pas à une valeur d&amp;#8217;être à droite de la comparaison du &lt;em&gt;RewriteCond&lt;/em&gt;.&lt;/p&gt;</content><category term="apache"></category><category term="webdav"></category><category term="auto-hébergement"></category></entry></feed>

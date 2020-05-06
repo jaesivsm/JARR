@@ -1,0 +1,29 @@
+version: '3.2'
+services:
+  redis:
+    image: redis
+    ports:
+      - 0.0.0.0:6379:6379
+  rabbitmq:
+    image: rabbitmq
+    ports:
+      - 0.0.0.0:25672:25672
+      - 0.0.0.0:4369:4369
+      - 0.0.0.0:5671:5671
+      - 0.0.0.0:5672:5672
+  postgresql:
+    image: postgres:11
+    environment:
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_HOST_AUTH_METHOD=trust
+    ports:
+      - 0.0.0.0:5432:5432
+    volumes:
+      - ../.jarr-data:/var/lib/postgresql/data
+    command:
+      - "postgres"
+      - "-c"
+      - "log_min_duration_statement=100"
+
+volumes:
+  db-data:

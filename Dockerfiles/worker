@@ -1,0 +1,3 @@
+FROM jarr-base:latest
+EXPOSE 8001
+CMD ["pipenv", "run", "celery", "worker", "--app", "ep_celery.celery_app"]

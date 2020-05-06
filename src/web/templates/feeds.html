@@ -1,7 +1,0 @@
-{% extends "layout.html" %}
-{% block content %}
-<div class="container">
-    <h1>{{ _('You are subscribed to %(feed_count)d feeds.', feed_count=feeds.count()) }}</h1>
-    {% include "feed_list.html" %}
-</div><!-- /.container -->
-{% endblock %}

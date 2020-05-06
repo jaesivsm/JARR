@@ -1,0 +1,6 @@
+FROM jarr-base:latest
+
+COPY example_conf/logging.ini /etc/jarr/logging.ini
+COPY example_conf/gunicorn.py /etc/jarr/gunicorn.py
+EXPOSE 8000
+CMD ["pipenv", "run", "gunicorn", "-c", "/etc/jarr/gunicorn.py", "--log-config", "/etc/jarr/logging.ini", "-b", "0.0.0.0:8000", "wsgi:application"]
