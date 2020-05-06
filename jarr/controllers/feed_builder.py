@@ -12,14 +12,16 @@ from jarr.lib.html_parsing import (extract_feed_links, extract_icon_url,
 from jarr.lib.enums import FeedType
 from jarr.utils import jarr_get
 
+SCHEME = r'(?:https?:)?\/\/'
 logger = logging.getLogger(__name__)
-REDDIT_FEED = re.compile(r'^https?://(www.)?reddit.com/r/(\S+)/$')
-INSTAGRAM_RE = re.compile(r'^https?://(www.)?instagram.com/([^ \t\n\r\f\v/]+)')
-TWITTER_RE = re.compile(r'^https?://(www.)?twitter.com/([^ \t\n\r\f\v/]+)')
-TUMBLR_RE = re.compile(r'^https?://([^ \t\n\r\f\v/]+).tumblr.com/.*$')
+REDDIT_FEED = re.compile(SCHEME + r'(www.)?reddit.com/r/([\w\-_]+)/?(.*)$')
+INSTAGRAM_RE = re.compile(SCHEME + r'(www.)?instagram.com/([^ \t\n\r\f\v/]+)')
+TWITTER_RE = re.compile(SCHEME + r'(www.)?twitter.com/([^ \t\n\r\f\v/]+)')
+TUMBLR_RE = re.compile(SCHEME + r'([^ \t\n\r\f\v/]+).tumblr.com/.*$')
 SOUNDCLOUD_RE = re.compile(
         r'^https?://(www.)?soundcloud.com/([^ \t\n\r\f\v/]+)')
 KOREUS_RE = re.compile(r'^https?://feeds.feedburner.com/Koreus.*$')
+REDDIT_FEED_PATTERN = "https://www.reddit.com/r/%s/.rss"
 
 
 class FeedBuilderController:
@@ -150,9 +152,18 @@ class FeedBuilderController:
             result['title'] = extract_title(self.page_response)
         return {key: value for key, value in result.items() if value}
 
+    @staticmethod
+    def _handle_known_malfunctionning_link(feed):
+        # reddit's subs don't automatically provide rss feed
+        reddit_match = REDDIT_FEED.match(feed['link'])
+        if reddit_match and not reddit_match.group(3):
+            feed['link'] = REDDIT_FEED_PATTERN % reddit_match.group(2)
+            feed['feed_type'] = FeedType.reddit
+        return feed
+
     def construct(self):
-        feed = {'feed_type': FeedType.classic,
-                'link': self.url}
+        feed = {'feed_type': FeedType.classic, 'link': self.url}
+        feed = self._handle_known_malfunctionning_link(feed)
 
         self.feed_response = jarr_get(feed['link'])
         # is an XML feed
@@ -178,6 +189,7 @@ class FeedBuilderController:
                 if regex.match(check_url):
                     logger.info('%r is %s site', check_url, feed_type.value)
                     feed['feed_type'] = feed_type
+                    break
         if feed['feed_type'] in {FeedType.classic, FeedType.json}:
             for regex, feed_type in ((TWITTER_RE, FeedType.twitter),
                                      (INSTAGRAM_RE, FeedType.instagram),

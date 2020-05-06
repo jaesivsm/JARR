@@ -63,11 +63,13 @@ class ConstructFeedFromTest(unittest.TestCase):
     def test_reddit_from_site(self):
         reddit = FBC('https://www.reddit.com/r/france/').construct()
         self.assertEqual({
+            'description': 'La France et les Français.',
             'feed_type': FeedType.reddit,
             'icon_url': 'https://www.redditstatic.com/desktop2x/'
                         'img/favicon/android-icon-192x192.png',
             'site_link': 'https://www.reddit.com/r/france/',
-            'title': 'reddit'}, reddit)
+            'link': 'https://www.reddit.com/r/france/.rss',
+            'title': 'France'}, reddit)
 
     def test_reddit_from_feed(self):
         reddit = FBC('https://www.reddit.com/r/france/.rss').construct()
