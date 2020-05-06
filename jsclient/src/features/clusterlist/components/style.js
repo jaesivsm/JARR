@@ -197,10 +197,10 @@ export default makeStyles((theme: Theme) =>
     videoContainer: {
       verticalAlign: "middle",
       position: "relative",
-	    paddingBottom: "56.25%",
-    	height: 0,
+      paddingBottom: "56.25%",
+      height: 0,
       marginTop: theme.spacing(2),
-    	overflow: "hidden",
+      overflow: "hidden",
       "& iframe": {
         position: "absolute",
         top: 0,

@@ -38,7 +38,6 @@ function Articles({ articles, icons, content }) {
     contentTab = <Content content={content} hidden={0 !== currentIndex} />;
   }
   const isOnlyOneTitle = [...new Set(articles.map((a) => a.title))].length === 1;
-  console.log(currentIndex);
   return (
     <>
       <Tabs indicatorColor="primary" textColor="primary"
