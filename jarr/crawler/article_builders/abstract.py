@@ -83,7 +83,7 @@ class AbstractArticleBuilder:
         self.article['comments'] = self.extract_comments(entry)
 
     @classmethod
-    def _head(cls, url):
+    def _head(cls, url, reraise=False):
         try:
             headers = {'User-Agent': conf.crawler.user_agent}
             head = requests.head(url, headers=headers, allow_redirects=True,
@@ -91,24 +91,28 @@ class AbstractArticleBuilder:
             head.raise_for_status()
             return head
         except MissingSchema:
-            for scheme in 'https://', 'https:', 'http://', 'http:':
+            if reraise:
+                raise
+            for scheme in 'https:', 'https://', 'http:', 'http://':
                 try:
-                    return cls._head(scheme + url)
+                    return cls._head(scheme + url, reraise=True)
                 except Exception as error:
                     logger.debug('got %r for url %s%s', error, scheme, url)
                     continue
 
-    def enhance(self):
+    def enhance(self, fetch_page=True):
         head = self._head(self.article['link'])
         if head:
             self.article['link'] = head.url
             if head.headers['Content-Type'].startswith('image/'):
+                fetch_page = False
                 self.article['article_type'] = ArticleType.image
             elif head.headers['Content-Type'].startswith('video/'):
+                fetch_page = False
                 self.article['article_type'] = ArticleType.video
             elif is_embedded_link(self.article['link']):
                 self.article['article_type'] = ArticleType.embedded
-            else:
+            if fetch_page:
                 page = jarr_get(self.article['link'])
                 if not page:
                     return self.article
