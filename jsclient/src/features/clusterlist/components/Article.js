@@ -11,21 +11,17 @@ function Article({ article, hidden }) {
   let comments;
   if (article.comments) {
     comments = (<p><span>Comments</span>
-                   <Link
-                     color="secondary"
-                     key={`ac-${article.id}`}
-                     href={article.comments}>
-                     {article.comments}
-                   </Link></p>);
+                  <Link color="secondary" target="_blank"
+                    key={`ac-${article.id}`} href={article.comments}>
+                    {article.comments}
+                  </Link></p>);
   }
   return (
     <div className={classes.article}>
       <p>
         <span>Link</span>
-        <Link
-          color="secondary"
-          key={`al-${article.id}`}
-          href={article.link}>
+        <Link color="secondary" target="_blank"
+          key={`al-${article.id}`} href={article.link}>
           {article.link}
         </Link>
       </p>
@@ -42,7 +38,11 @@ function Article({ article, hidden }) {
 }
 
 Article.propTypes = {
-  article: PropTypes.object.isRequired,
+  article: PropTypes.shape({
+    link: PropTypes.string.isRequired,
+    content: PropTypes.string.isRequired,
+    comments: PropTypes.string,
+  }),
   hidden: PropTypes.bool.isRequired,
 };
 

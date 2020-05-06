@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import PropTypes from "prop-types";
+import { connect } from "react-redux";
 
 import Tab from "@material-ui/core/Tab";
 import Tabs from "@material-ui/core/Tabs";
@@ -6,6 +8,11 @@ import Tabs from "@material-ui/core/Tabs";
 import Article from "./Article";
 import makeStyles from "./style";
 import ClusterIcon from "../../../components/ClusterIcon";
+
+function mapStateToProps(state) {
+  return { icons: state.feeds.icons,
+  };
+}
 
 function Articles({ articles, icons }) {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -16,27 +23,37 @@ function Articles({ articles, icons }) {
       <Tabs indicatorColor="primary" textColor="primary"
         value={currentIndex}
         onChange={(e, v) => setCurrentIndex(v)}>
-       {articles.map((article, index) => (
+        {articles.map((article, index) => (
           <Tab key={`t-${index}`}
-               className={classes.tabs}
-               icon={<ClusterIcon iconUrl={icons[article["feed_id"]]} />}
-               label={isOnlyOneTitle ? null : article.title}
-               value={index}
-               aria-controls={`a-${index}`}
-           />
+            className={classes.tabs}
+            icon={<ClusterIcon iconUrl={icons[article["feed_id"]]} />}
+            label={isOnlyOneTitle ? null : article.title}
+            value={index}
+            aria-controls={`a-${index}`}
+          />
        ))}
       </Tabs>
       {articles.map((article, index) =>
-         <Article
-            key={`a-${index}-${index !== currentIndex ? "h" : ""}`}
-            id={`a-${index}`}
-            article={article}
-            aria-labelledby={`t-${index}`}
-            index={index}
-            hidden={index !== currentIndex}
-          />
+        <Article
+          key={`a-${index}-${index !== currentIndex ? "h" : ""}`}
+          id={`a-${index}`}
+          article={article}
+          aria-labelledby={`t-${index}`}
+          index={index}
+          hidden={index !== currentIndex}
+        />
       )}
     </>
   );
 }
-export default Articles;
+Articles.propTypes = {
+  articles: PropTypes.array,
+  content: PropTypes.shape({
+    type: PropTypes.string.isRequired,
+    alt: PropTypes.string,
+    src: PropTypes.string,
+    videoId: PropTypes.string,
+    player: PropTypes.string,
+  }),
+};
+export default connect(mapStateToProps)(Articles);
