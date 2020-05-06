@@ -31,7 +31,7 @@ def get_cluster_pref(feed, pref_name):
     for obj in objs:
         if obj is None:
             continue
-        if pref_name not in obj.cluster_conf:
+        if not obj.cluster_conf or pref_name not in obj.cluster_conf:
             continue
         if not obj.cluster_conf[pref_name] and obj is not feed:
             continue
