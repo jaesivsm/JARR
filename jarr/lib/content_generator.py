@@ -31,8 +31,8 @@ def generate_content(article):
         success = True
     elif article.article_type is ArticleType.embedded:
         if YOUTUBE_RE.match(article.link):
-            logger.info('%r constructing embedded youtube content from article',
-                        article)
+            logger.info('%r constructing embedded youtube content '
+                        'from article', article)
             content['player'] = 'youtube'
             try:
                 content['videoId'] = YOUTUBE_RE.match(article.link).group(5)
