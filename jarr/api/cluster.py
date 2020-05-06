@@ -11,8 +11,9 @@ cluster_ns = Namespace('cluster', description='Cluster related operations')
 cluster_parser = cluster_ns.parser()
 cluster_parser.add_argument('liked', type=inputs.boolean, nullable=False)
 cluster_parser.add_argument('read', type=inputs.boolean, nullable=False)
-cluster_parser.add_argument('read_reason', type=ReadReason,
-                            choices=list(ReadReason), nullable=False)
+cluster_parser.add_argument('read_reason', type=str,
+                            choices=[rr.value for rr in ReadReason],
+                            required=False, nullable=False)
 article_model = cluster_ns.model('Article', {
     'id': fields.Integer(),
     'link': fields.String(),
@@ -64,10 +65,11 @@ class ClusterResource(Resource):
             cluster.read = True
             cluster.read_reason = ReadReason.read
             code = 226
+        print(cluster.content)
         return cluster, code
 
     @staticmethod
-    @cluster_ns.expect(cluster_parser, validate=True)
+    @cluster_ns.expect(cluster_parser)
     @cluster_ns.response(204, 'Updated')
     @cluster_ns.response(401, 'Authorization needed')
     @cluster_ns.response(403, 'Forbidden')
@@ -78,10 +80,10 @@ class ClusterResource(Resource):
         attrs = parse_meaningful_params(cluster_parser)
         if 'read_reason' in attrs:
             pass  # not overriding given read reason
-        elif 'read' in attrs and attrs['read']:
+        elif 'read' in attrs and attrs.get('read'):
             attrs['read_reason'] = ReadReason.marked
             READ.labels(reason=ReadReason.marked.value).inc()
-        elif 'read' in attrs and not attrs['read']:
+        elif 'read' in attrs and not attrs.get('read'):
             attrs['read_reason'] = None
         changed = cctrl.update({'id': cluster_id}, attrs)
         if not changed:

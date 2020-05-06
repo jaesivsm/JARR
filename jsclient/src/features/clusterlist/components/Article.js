@@ -17,7 +17,7 @@ function Article({ article, hidden }) {
                   </Link></p>);
   }
   return (
-    <div className={classes.article}>
+    <div hidden={hidden} className={classes.article}>
       <p>
         <span>Link</span>
         <Link color="secondary" target="_blank"
@@ -29,10 +29,9 @@ function Article({ article, hidden }) {
       <Divider />
       <div className={classes.articleInner}>
         <Typography
-          hidden={!!hidden}
           dangerouslySetInnerHTML={{__html: article.content}}
         />
-        </div>
+      </div>
     </div>
   );
 }
