@@ -23,7 +23,6 @@ def upgrade():
     op.add_column('article',
             sa.Column('vector', postgresql.TSVECTOR(), nullable=True))
     op.drop_column('article', 'valuable_tokens')
-    op.add_column('cluster', sa.Column('content', sa.String(), nullable=True))
 
     for code, pg_language in LANG_TO_PSQL_MAPPING.items():
         logger.info('vectorizing lang=%s', code)
@@ -34,7 +33,6 @@ def upgrade():
 
 
 def downgrade():
-    op.drop_column('cluster', 'content')
     op.add_column('article', sa.Column('valuable_tokens', postgresql.BYTEA(),
                                        autoincrement=False, nullable=True))
     op.drop_column('article', 'vector')

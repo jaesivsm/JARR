@@ -169,9 +169,9 @@ class ClusterController(AbstractController):
             cluster.main_feed_title = article.feed.title
             cluster.main_article_id = article.id
         if not cluster.content:
-            generated_content = generate_content(article)
-            if generated_content:
-                cluster.content = generated_content
+            success, content = generate_content(article)
+            if success:
+                cluster.content = content
         session.add(cluster)
         session.add(article)
         session.commit()

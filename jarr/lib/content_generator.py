@@ -1,30 +1,44 @@
-import re
+import html
 import logging
+import re
+
 from jarr.lib.enums import ArticleType
 
 logger = logging.getLogger(__name__)
-YOUTUBE_VIDEO_RE = re.compile(
+IMG_ALT_MAX_LENGTH = 100
+YOUTUBE_RE = re.compile(
         r'^((?:https?:)?\/\/)?((?:www|m)\.)?((?:youtube\.com|youtu.be))'
         r'(\/(?:[\w\-]+\?v=|embed\/|v\/)?)([\w\-]+)(\S+)?$')
 
 
 def is_embedded_link(link):
-    return YOUTUBE_VIDEO_RE.match(link)
+    return YOUTUBE_RE.match(link)
 
 
 def generate_content(article):
+    success = False
     if not article.article_type:
         logger.debug('%r no special type found doing nothing', article)
-        return
+        return success, {}
+    content = {'type': article.article_type.value}
     if article.article_type is ArticleType.video:
         logger.debug('no action implemented for video yet')
-        return
-    if article.article_type is ArticleType.image:
+    elif article.article_type is ArticleType.image:
         logger.info('%r constructing image content from article', article)
-        return '<img alt="" src="%s" />' % article.link
-    if article.article_type is ArticleType.embedded:
-        if YOUTUBE_VIDEO_RE.match(article.link):
+        content['alt'] = article.title or article.content
+        content['alt'] = html.escape(content['alt'][:IMG_ALT_MAX_LENGTH])
+        content['src'] = article.link
+        success = True
+    elif article.article_type is ArticleType.embedded:
+        if YOUTUBE_RE.match(article.link):
             logger.info('%r constructing embedded youtube content from article',
                         article)
-            return
-        logger.warning('embedded video not recognized %r', article.link)
+            content['player'] = 'youtube'
+            try:
+                content['video-id'] = YOUTUBE_RE.match(article.link).group(5)
+                success = True
+            except IndexError:
+                pass
+        else:
+            logger.warning('embedded video not recognized %r', article.link)
+    return success, content

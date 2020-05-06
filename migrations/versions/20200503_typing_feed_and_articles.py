@@ -24,6 +24,9 @@ def upgrade():
     article_type.create(op.get_bind())
     op.add_column('article', sa.Column('article_type', article_type,
                                        nullable=True, default=None))
+    logger.info("complex content for cluster")
+    op.add_column('cluster', sa.Column('content',
+                                       sa.PickleType(), nullable=True))
 
     logger.info("altering article indexes")
     op.create_index('ix_cluster_uid_martid', 'cluster',
