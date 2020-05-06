@@ -2,11 +2,10 @@ import logging
 import re
 import types
 import urllib
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from hashlib import md5
 
-import pytz
 import requests
 
 from jarr.bootstrap import conf
@@ -18,7 +17,7 @@ CORRECTABLE_LANG_FORMAT = re.compile('^[A-z]{2}(.[A-z]{2})?.*$')
 
 
 def utc_now():
-    return pytz.utc.localize(datetime.utcnow())
+    return datetime.utcnow().replace(tzinfo=timezone.utc)
 
 
 def clean_lang(lang):
