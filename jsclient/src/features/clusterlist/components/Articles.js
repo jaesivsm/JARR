@@ -14,9 +14,13 @@ function mapStateToProps(state) {
   };
 }
 
-function Articles({ articles, icons }) {
+function Articles({ articles, icons, content }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const classes = makeStyles();
+
+  if (articles.length === 1 && !content) {
+    return <Article article={articles[0]} hidden={false} />;
+  }
   const isOnlyOneTitle = [...new Set(articles.map((a) => a.title))].length === 1;
   return (
     <>

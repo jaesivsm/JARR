@@ -16,9 +16,6 @@ import SelectedObjCard from "./components/SelectedObjCard";
 import { doListClusters, doLoadMoreClusters, filterClusters } from "./clusterSlice";
 import makeStyles from "./components/style";
 import Articles from "./components/Articles";
-import Article from "./components/Article";
-
-
 
 function mapStateToProps(state) {
   let selectedFilterObj;
@@ -143,22 +140,12 @@ function ClusterList({ clusters, filters, loadedCluster,
   }
   let content;
   if (doDisplayContent) {
-    if (loadedCluster.articles.length === 1 && !loadedCluster.content) {
-      content = (
-        <Article article={loadedCluster.articles[0]}
-                 hidden={false} />
-      );
-    } else {
-      content = (
-        <Articles content={loadedCluster.content}
-                  articles={loadedCluster.articles} />
-      );
-    }
     content = (
       <Paper className={clsx(classes.contentPanel,
                              {[classes.contentPanelShifted]: isShifted,})}>
         <div className={classes.contentPanelInner}>
-          {content}
+          <Articles content={loadedCluster.content}
+                    articles={loadedCluster.articles} />
         </div>
       </Paper>
     );

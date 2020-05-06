@@ -22,7 +22,6 @@ import makeStyles from "./style";
 import { changeReadCount } from "../../feedlist/feedSlice";
 import ClusterIcon from "../../../components/ClusterIcon";
 import Articles from "./Articles";
-import Article from "./Article";
 
 function mapStateToProps(state) {
   return { requestedClusterId: state.clusters.requestedClusterId,
@@ -97,16 +96,10 @@ function Cluster({ cluster, loadedCluster,
   if(!splitedMode && expanded) {
     if (loadedCluster.id !== cluster.id) {
       content = <div className={classes.loadingWrap}><CircularProgress /></div>;
-    } else if (loadedCluster.articles.length === 1 && !loadedCluster.content) {
-      content = (
-        <Article article={loadedCluster.articles[0]}
-                 hidden={false} />
-      );
     } else {
       content = (
         <Articles content={loadedCluster.content}
-                  articles={loadedCluster.articles}
-                  icons={icons} />
+                  articles={loadedCluster.articles} />
       );
     }
     content = (
