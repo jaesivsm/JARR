@@ -77,7 +77,7 @@ def scheduler():
     fctrl = FeedController()
     # browsing feeds to fetch
     feeds = list(fctrl.list_fetchable())
-    WORKER_BATCH.labels(worker_batch='delete').observe(len(feeds))
+    WORKER_BATCH.labels(worker_type='delete').observe(len(feeds))
     logger.info('%d to enqueue', len(feeds))
     for feed in feeds:
         logger.debug("scheduling to be fetched %r", feed)
@@ -85,7 +85,7 @@ def scheduler():
     # browsing feeds to delete
     feeds_to_delete = list(fctrl.read(status=FeedStatus.to_delete))
     logger.info('%d to delete', len(feeds_to_delete))
-    WORKER_BATCH.labels(worker_batch='delete').observe(len(feeds_to_delete))
+    WORKER_BATCH.labels(worker_type='delete').observe(len(feeds_to_delete))
     for feed in feeds_to_delete:
         logger.debug("scheduling to be delete %r", feed)
         feed_cleaner.apply_async(args=[feed.id])
