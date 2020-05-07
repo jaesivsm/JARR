@@ -12,7 +12,7 @@ from jarr.controllers.article import ArticleController
 from jarr.lib.clustering_af.grouper import get_best_match_and_score
 from jarr.lib.enums import ClusterReason, ReadReason
 from jarr.lib.filter import process_filters
-from jarr.metrics import ARTICLE_CREATION, CLUSTERING
+from jarr.metrics import ARTICLE_CREATION, CLUSTERING, WORKER_BATCH
 from jarr.models import Article, Cluster, Feed
 from jarr.lib.content_generator import generate_content
 from jarr.utils import get_cluster_pref
