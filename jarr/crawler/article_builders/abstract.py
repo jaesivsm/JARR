@@ -74,7 +74,10 @@ class AbstractArticleBuilder:
         if not entry:
             return
         self.article['entry_id'] = self.extract_id(entry)
-        self.article['date'] = self.extract_date(entry)
+        try:
+            self.article['date'] = self.extract_date(entry)
+        except Exception:
+            self.article['date'] = utc_now()
         self.article['title'] = self.extract_title(entry)
         self.article['tags'] = self.extract_tags(entry)
         self.article['link'] = self.extract_link(entry)
