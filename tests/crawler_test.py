@@ -21,9 +21,12 @@ BASE_COUNT = 36
 
 
 def crawler():
+    user_ids = set()
     for feed in FeedController().list_fetchable(limit=1):
         process_feed.apply(args=[feed.id])
-    clusterizer.apply()
+        user_ids.add(feed.user_id)
+    for user_id in user_ids:
+        clusterizer.apply(args=[user_id])
 
 
 class CrawlerTest(JarrFlaskCommon):
