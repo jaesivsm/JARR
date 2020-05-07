@@ -21,15 +21,16 @@ def lock(prefix, expire=60 * 60):
         def wrapper(id_):
             start = datetime.now()
             key = 'lock-%s-%d' % (prefix, id_)
-            if REDIS_CONN.setnx(key):
+            if REDIS_CONN.setnx(key, 'locked'):
                 REDIS_CONN.expire(key, expire)
                 try:
                     return func(id_)
-                except Exception:
+                except Exception as error:
+                    logger.debug('something wrong happen %r', error)
                     raise
                 finally:
                     duration = (datetime.now() - start).total_seconds()
-                    WORKER.labels(method=prefix).oberve(duration)
+                    WORKER.labels(method=prefix).observe(duration)
                     REDIS_CONN.delete(key)
         return wrapper
     return metawrapper
