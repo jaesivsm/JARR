@@ -99,6 +99,8 @@ class AbstractArticleBuilder:
                 except Exception as error:
                     logger.debug('got %r for url %s%s', error, scheme, url)
                     continue
+        except Exception:
+            logger.error("couldn't fetch %r", url)
 
     def enhance(self, fetch_page=True):
         head = self._head(self.article['link'])
