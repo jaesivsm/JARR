@@ -27,7 +27,8 @@ def get_cosine_similarity(v1, article2, freq, tokens, nb_docs):
     int: the cosine similarity
     """
     v2 = TFIDFVector(article2.simple_vector, freq, tokens, nb_docs)
-    return (v1 * v2) / (v1.norm * v2.norm)
+    norms = v1.norm * v2.norm
+    return (v1 * v2) / norms if norms else 0
 
 
 def get_token_occurences_count(*articles):

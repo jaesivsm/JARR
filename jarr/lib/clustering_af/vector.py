@@ -72,5 +72,8 @@ class TFIDFVector(SparseVector):
         nb_docs: int
             the total number of documents in the sample
         """
-        return ((document[token] / sum(document.values()))  # tf
+        all_values_count = sum(document.values())
+        if all_values_count == 0:
+            return 0
+        return ((document[token] / all_values_count)  # tf
                 * log10(nb_docs / (1 + frequences.get(token, 0))))  # idf
