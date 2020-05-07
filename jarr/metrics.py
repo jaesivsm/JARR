@@ -18,16 +18,17 @@ FEED_FETCH = Counter('feed_fetch', 'Feed fetching event',
 
 FEED_LATENESS = Histogram('feed_lateness',
                           'observed delta time when fetching feed',
+                          ['feed_type'],
                           buckets=BUCKETS_7D,
-                          ['feed_type'], namespace='jarr', registry=REGISTRY)
+                          namespace='jarr', registry=REGISTRY)
 
-WORKER_BATCH = Histogram('worker_batch', 'worker batch size',
-                         buckets=BUCKETS_3H,
-                         ['worker_type'], namespace='jarr', registry=REGISTRY)
+WORKER_BATCH = Histogram(
+        'worker_batch', 'worker batch size', ['worker_type'],
+        buckets=BUCKETS_3H, namespace='jarr', registry=REGISTRY)
 
-WORKER = Histogram('worker_method', 'worker taken actions',
-                   buckets=BUCKETS_3H,
-                   ['method'], namespace='jarr', registry=REGISTRY)
+WORKER = Histogram(
+        'worker_method', 'worker taken actions', ['method'],
+        buckets=BUCKETS_3H, namespace='jarr', registry=REGISTRY)
 
 CLUSTERING = Counter('clustering', 'clustering context and decision',
                      ['filters',  # filter allows clustering or not
