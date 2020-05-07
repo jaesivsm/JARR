@@ -120,7 +120,7 @@ class OnePageAppTest(JarrFlaskCommon):
         ArticleController(self.user.id).create(entry_id='new entry_id',
                 title='new title', content='new content',
                 feed_id=feed.id, link=feed.articles[0].link)
-        ClusterController.clusterize_pending_articles()
+        ClusterController(self.user.id).clusterize_pending_articles()
         self.assertClusterCount(18, {'filter': 'unread'})
         # one per feed
         self._mark_as_read(2, {'only_singles': True, 'filter': 'unread'})
