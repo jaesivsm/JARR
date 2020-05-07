@@ -109,10 +109,11 @@ class AbstractArticleBuilder:
         head = self._head(self.article['link'])
         if head:
             self.article['link'] = head.url
-            if head.headers['Content-Type'].startswith('image/'):
+            content_type = str(head.headers.get('Content-Type')) or ''
+            if content_type.startswith('image/'):
                 fetch_page = False
                 self.article['article_type'] = ArticleType.image
-            elif head.headers['Content-Type'].startswith('video/'):
+            elif content_type.startswith('video/'):
                 fetch_page = False
                 self.article['article_type'] = ArticleType.video
             elif is_embedded_link(self.article['link']):
