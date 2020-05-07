@@ -214,6 +214,9 @@ class ClusterController(AbstractController):
     @classmethod
     def clusterize_pending_articles(cls):
         results = []
+        articles = list(ArticleController().read(cluster_id=None))
+        logger.info('got %d articles to clusterize', articles)
+        WORKER_BATCH.labels(worker_batch='clusterizer').observe(len(articles))
         for article in ArticleController().read(cluster_id=None):
             filter_result = process_filters(article.feed.filters,
                                             {'tags': article.tags,

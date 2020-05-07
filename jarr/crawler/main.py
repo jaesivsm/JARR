@@ -6,7 +6,7 @@ from ep_celery import celery_app
 from jarr.bootstrap import conf
 from jarr.controllers import ClusterController, FeedController
 from jarr.lib.enums import FeedStatus
-from jarr.metrics import WORKER
+from jarr.metrics import WORKER, WORKER_BATCH
 
 urllib3.disable_warnings()
 logger = logging.getLogger(__name__)
@@ -54,13 +54,15 @@ def scheduler():
     fctrl = FeedController()
     # browsing feeds to fetch
     feeds = list(fctrl.list_fetchable())
+    WORKER_BATCH.labels(worker_batch='delete').observe(len(feeds))
     logger.info('%d to enqueue', len(feeds))
     for feed in feeds:
         logger.debug("scheduling to be fetched %r", feed)
         process_feed.apply_async(args=[feed.id])
     # browsing feeds to delete
-    feeds = list(fctrl.read(status=FeedStatus.to_delete))
-    logger.info('%d to delete', len(feeds))
+    feeds_to_delete = list(fctrl.read(status=FeedStatus.to_delete))
+    logger.info('%d to delete', len(feeds_to_delete))
+    WORKER_BATCH.labels(worker_batch='delete').observe(len(feeds_to_delete))
     for feed in feeds_to_delete:
         logger.debug("scheduling to be delete %r", feed)
         feed_cleaner.apply_async(args=[feed.id])
