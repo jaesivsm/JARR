@@ -8,7 +8,6 @@ BUCKETS_7D = [615, 922, 1383, 2073, 3109, 4663, 6994, 10490, 15734, 23600,
               35399, 53098, 79646, 119468, 179201, 268801, 403200, 604798]
 
 
-
 READ = Counter('read', 'Read event', ['reason'], namespace='jarr',
                registry=REGISTRY)
 
