@@ -77,7 +77,7 @@ const mapDispatchToProps = (dispatch) => ({
   readOnRedirect(e, cluster) {
     e.stopPropagation();
     dispatch(doEditCluster(cluster.id,
-                           { read: false, "read_reason": "consulted" }));
+                           { read: true, "read_reason": "consulted" }));
     return dispatch(changeReadCount({
       feedsId: cluster["feeds_id"],
       categoriesId: cluster["categories_id"],
