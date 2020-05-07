@@ -12,7 +12,6 @@ from jarr.controllers.abstract import AbstractController
 from jarr.controllers.icon import IconController
 from jarr.lib.enums import FeedStatus
 from jarr.lib.utils import utc_now
-from jarr.metrics import FEED_EXPIRE
 from jarr.models import Article, Category, Cluster, Feed, User
 
 DEFAULT_LIMIT = 0
@@ -158,7 +157,6 @@ class FeedController(AbstractController):
         attrs['expires'] = min(expires)
         logger.info('saw %d articles in the past %r seconds, expiring at %r',
                     art_count, span_time, attrs['expires'])
-        FEED_EXPIRE.observe((attrs['expires'] - utc_now()).total_seconds())
 
     def update(self, filters, attrs, return_objs=False, commit=True):
         self._ensure_icon(attrs)

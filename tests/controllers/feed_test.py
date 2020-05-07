@@ -1,10 +1,11 @@
 from datetime import datetime, timedelta, timezone
-from tests.base import BaseJarrTest
-from tests.utils import update_on_all_objs
-from jarr.lib.utils import utc_now
+
 from jarr.bootstrap import conf
 from jarr.controllers import (ArticleController, ClusterController,
                               FeedController, UserController)
+from jarr.lib.utils import utc_now
+from tests.base import BaseJarrTest
+from tests.utils import update_on_all_objs
 
 
 class FeedControllerTest(BaseJarrTest):
@@ -41,7 +42,7 @@ class FeedControllerTest(BaseJarrTest):
                 retrieved_date=clu.main_article.retrieved_date + timedelta(1),
         )
 
-        ClusterController.clusterize_pending_articles()
+        ClusterController(clu.user_id).clusterize_pending_articles()
         clu = ClusterController().get(id=10)
         self.assertEqual(2, len(clu.articles))
         fcontr.delete(clu.main_article.feed_id)

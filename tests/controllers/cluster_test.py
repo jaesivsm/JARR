@@ -59,10 +59,10 @@ class ClusterControllerTest(BaseJarrTest):
         article = self._clone_article(ArticleController(),
                                       cluster.main_article, target_feed)
         self.assertTrue(get_config(article, 'cluster_wake_up'))
-        ClusterController.clusterize_pending_articles()
+        ClusterController(cluster.user_id).clusterize_pending_articles()
         self.assertEqual(2, len(article.cluster.articles))
         self.assertInCluster(article, cluster)
-        ccontr.get(id=cluster.id)
+        cluster = ccontr.get(id=cluster.id)
         self.assertFalse(cluster.read)
 
     def test_adding_to_cluster_by_link(self):
@@ -141,7 +141,8 @@ class ClusterControllerTest(BaseJarrTest):
                     content=article.content,
                     link=article.link)
 
-        ClusterController.clusterize_pending_articles()
+        for user_id in ArticleController.get_user_id_with_pending_articles():
+            ClusterController(user_id).clusterize_pending_articles()
         self.assertEqual(2 * total_articles, len(list(acontr.read())))
         self.assertEqual(2 * total_clusters, len(list(ccontr.read())))
 
