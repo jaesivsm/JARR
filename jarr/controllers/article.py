@@ -72,6 +72,12 @@ class ArticleController(AbstractController):
                                         User.last_connection >= last_conn_max)
                               .group_by(Article.user_id).all())
 
+    @staticmethod
+    def get_user_id_with_pending_articles():
+        yield from (session.query(Article.user_id)
+                           .filter(Article.cluster_id.__eq__(None))
+                           .group_by(Article.user_id)
+
     def create(self, **attrs):
         # handling special denorm for article rights
         if 'feed_id' not in attrs:

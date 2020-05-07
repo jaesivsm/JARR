@@ -211,18 +211,18 @@ class ClusterController(AbstractController):
                     result="miss", match="none").inc()
         return self._create_from_article(article, filter_read, filter_liked)
 
-    @classmethod
-    def clusterize_pending_articles(cls):
+    def clusterize_pending_articles(self):
         results = []
-        articles = list(ArticleController().read(cluster_id=None))
+        actrl = ArticleController(self.user_id)
+        articles = list(actrl.read(cluster_id=None))
         logger.info('got %d articles to clusterize', articles)
         WORKER_BATCH.labels(worker_batch='clusterizer').observe(len(articles))
-        for article in ArticleController().read(cluster_id=None):
+        for article in actrl.read(cluster_id=None):
             filter_result = process_filters(article.feed.filters,
                                             {'tags': article.tags,
                                              'title': article.title,
                                              'link': article.link})
-            result = cls(article.user_id).clusterize(article, filter_result).id
+            result = self.clusterize(article, filter_result).id
             results.append(result)
         return results
 

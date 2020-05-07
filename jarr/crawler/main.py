@@ -4,7 +4,8 @@ import urllib3
 
 from ep_celery import celery_app
 from jarr.bootstrap import conf
-from jarr.controllers import ClusterController, FeedController
+from jarr.models import Article
+from jarr.controllers import ArticleController, ClusterController, FeedController
 from jarr.lib.enums import FeedStatus
 from jarr.metrics import WORKER, WORKER_BATCH
 
@@ -21,10 +22,10 @@ def process_feed(feed_id):
 
 
 @celery_app.task(name='crawler.clusterizer')
-def clusterizer():
+def clusterizer(user_id):
     logger.warning("Gonna clusterize pending articles")
     WORKER.labels(method='clusterizer').inc()
-    ClusterController.clusterize_pending_articles()
+    ClusterController(user_id).clusterize_pending_articles()
 
 
 @celery_app.task(name='crawler.feed_cleaner')
@@ -67,5 +68,6 @@ def scheduler():
         logger.debug("scheduling to be delete %r", feed)
         feed_cleaner.apply_async(args=[feed.id])
     # applying clusterizer
-    clusterizer.apply_async()
+    for user_id in ArticleController.get_user_id_with_pending_articles():
+        clusterizer.apply_async(args=[user_id])
     scheduler.apply_async(countdown=conf.crawler.idle_delay)
