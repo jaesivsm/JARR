@@ -1,11 +1,12 @@
-from datetime import timedelta, timezone
-import dateutil.parser
 import logging
 import re
+from datetime import timedelta, timezone
+
+import dateutil.parser
 
 from jarr.bootstrap import conf
 from jarr.lib.const import FEED_ACCEPT_HEADERS
-from jarr.lib.utils import utc_now, rfc_1123_utc, to_hash
+from jarr.lib.utils import rfc_1123_utc, to_hash, utc_now
 
 logger = logging.getLogger(__name__)
 MAX_AGE_RE = re.compile('max-age=([0-9]+)')
@@ -61,7 +62,7 @@ def extract_feed_info(headers, text=None):
                     max_expires.isoformat())
         feed_info['expires'] = max_expires
     elif feed_info['expires'] < min_expires:
-        min_exp_w_buffer = now + timedelta(seconds=conf.feed.min_expires * 1.2)
+        min_exp_w_buffer = now + timedelta(seconds=conf.feed.min_expires)
         logger.info("expiring too early, forcing expiring at %r",
                     min_exp_w_buffer.isoformat())
         feed_info['expires'] = min_exp_w_buffer

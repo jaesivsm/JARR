@@ -22,6 +22,9 @@ FEED_LATENESS = Histogram('feed_lateness',
                           buckets=BUCKETS_7D,
                           namespace='jarr', registry=REGISTRY)
 
+FEED_EXPIRE = Histogram('feed_expire', '', ['feed_type'], buckets=BUCKETS_7D,
+                        namespace='jarr', registry=REGISTRY)
+
 WORKER_BATCH = Histogram(
         'worker_batch', 'worker batch size', ['worker_type'],
         buckets=BUCKETS_3H, namespace='jarr', registry=REGISTRY)
