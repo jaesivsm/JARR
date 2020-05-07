@@ -12,7 +12,7 @@ from jarr.controllers.article import ArticleController
 from jarr.lib.clustering_af.grouper import get_best_match_and_score
 from jarr.lib.enums import ClusterReason, ReadReason
 from jarr.lib.filter import process_filters
-from jarr.metrics import ARTICLE_CREATION, CLUSTERING
+from jarr.metrics import ARTICLE_CREATION, CLUSTERING, WORKER_BATCH
 from jarr.models import Article, Cluster, Feed
 from jarr.lib.content_generator import generate_content
 from jarr.utils import get_cluster_pref
@@ -211,15 +211,18 @@ class ClusterController(AbstractController):
                     result="miss", match="none").inc()
         return self._create_from_article(article, filter_read, filter_liked)
 
-    @classmethod
-    def clusterize_pending_articles(cls):
+    def clusterize_pending_articles(self):
         results = []
-        for article in ArticleController().read(cluster_id=None):
+        actrl = ArticleController(self.user_id)
+        articles = list(actrl.read(cluster_id=None))
+        logger.info('got %d articles to clusterize', len(articles))
+        WORKER_BATCH.labels(worker_type='clusterizer').observe(len(articles))
+        for article in actrl.read(cluster_id=None):
             filter_result = process_filters(article.feed.filters,
                                             {'tags': article.tags,
                                              'title': article.title,
                                              'link': article.link})
-            result = cls(article.user_id).clusterize(article, filter_result).id
+            result = self.clusterize(article, filter_result).id
             results.append(result)
         return results
 

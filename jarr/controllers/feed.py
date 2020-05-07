@@ -1,5 +1,5 @@
 import logging
-from collections import defaultdict, OrderedDict
+from collections import OrderedDict, defaultdict
 from datetime import datetime, timedelta
 
 import dateutil.parser
@@ -10,9 +10,9 @@ from werkzeug.exceptions import Forbidden
 from jarr.bootstrap import conf, session
 from jarr.controllers.abstract import AbstractController
 from jarr.controllers.icon import IconController
+from jarr.lib.enums import FeedStatus
 from jarr.lib.utils import utc_now
 from jarr.models import Article, Category, Cluster, Feed, User
-from jarr.lib.enums import FeedStatus
 
 DEFAULT_LIMIT = 0
 DEFAULT_ART_SPAN_TIME = timedelta(seconds=conf.feed.max_expires)
@@ -56,8 +56,8 @@ class FeedController(AbstractController):
     def get_active_feed(self, **filters):
         filters['error_count__lt'] = conf.feed.error_max
         query = self.read(status=FeedStatus.active, **filters)
-        last_conn = utc_now() - timedelta(days=conf.feed.stop_fetch)
         if conf.feed.stop_fetch:
+            last_conn = utc_now() - timedelta(days=conf.feed.stop_fetch)
             return query.join(User).filter(User.is_active.__eq__(True),
                                            User.last_connection >= last_conn)
         return query
@@ -154,8 +154,9 @@ class FeedController(AbstractController):
         art_count = self.__actrl.read(feed_id=feed.id,
                 retrieved_date__gt=now - span_time).count()
         expires.append(now + (span_time / (art_count or 1)))
-
         attrs['expires'] = min(expires)
+        logger.info('saw %d articles in the past %r seconds, expiring at %r',
+                    art_count, span_time, attrs['expires'])
 
     def update(self, filters, attrs, return_objs=False, commit=True):
         self._ensure_icon(attrs)

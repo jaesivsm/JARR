@@ -6,7 +6,7 @@ from os import path
 from flask_testing import TestCase
 from werkzeug.exceptions import NotFound
 
-from jarr.bootstrap import Base, conf, init_db, session
+from jarr.bootstrap import REDIS_CONN, Base, conf, init_db, session
 from jarr.lib.enums import ClusterReason
 from tests.fixtures.filler import populate_db
 
@@ -85,6 +85,7 @@ class BaseJarrTest(TestCase):
 
     def setUp(self):
         self.assertTrue(conf.jarr_testing, "configuration not set on testing")
+        REDIS_CONN.flushdb()
         from jarr.api import get_cached_user
         get_cached_user.cache_clear()
         init_db()
@@ -93,6 +94,7 @@ class BaseJarrTest(TestCase):
         populate_db()
 
     def tearDown(self):
+        REDIS_CONN.flushdb()
         from jarr.api import get_cached_user
         get_cached_user.cache_clear()
         self._drop_all()

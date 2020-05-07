@@ -2,6 +2,11 @@ from prometheus_client import CollectorRegistry
 from prometheus_distributed_client import Counter, Histogram
 
 REGISTRY = CollectorRegistry()
+BUCKETS_3H = [3, 4, 5, 6, 9, 12, 18, 26, 38, 57, 85, 126, 189, 282, 423, 633,
+              949, 1423, 2134, 3201, 4801, 7200, 10798]
+BUCKETS_7D = [615, 922, 1383, 2073, 3109, 4663, 6994, 10490, 15734, 23600,
+              35399, 53098, 79646, 119468, 179201, 268801, 403200, 604798]
+
 
 READ = Counter('read', 'Read event', ['reason'], namespace='jarr',
                registry=REGISTRY)
@@ -12,10 +17,17 @@ FEED_FETCH = Counter('feed_fetch', 'Feed fetching event',
 
 FEED_LATENESS = Histogram('feed_lateness',
                           'observed delta time when fetching feed',
-                          ['feed_type'], namespace='jarr', registry=REGISTRY)
+                          ['feed_type'],
+                          buckets=BUCKETS_7D,
+                          namespace='jarr', registry=REGISTRY)
 
-WORKER = Counter('worker_method', 'worker taken actions',
-                 ['method'], namespace='jarr', registry=REGISTRY)
+WORKER_BATCH = Histogram(
+        'worker_batch', 'worker batch size', ['worker_type'],
+        buckets=BUCKETS_3H, namespace='jarr', registry=REGISTRY)
+
+WORKER = Histogram(
+        'worker_method', 'worker taken actions', ['method'],
+        buckets=BUCKETS_3H, namespace='jarr', registry=REGISTRY)
 
 CLUSTERING = Counter('clustering', 'clustering context and decision',
                      ['filters',  # filter allows clustering or not

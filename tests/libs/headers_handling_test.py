@@ -6,8 +6,8 @@ from jarr.lib.utils import utc_now
 from jarr.bootstrap import conf
 
 
-def assert_in_range(val, ref, sec_range=1):
-    low, high = ref - timedelta(seconds=1), ref + timedelta(seconds=1)
+def assert_in_range(val, ref, sec=2):
+    low, high = ref - timedelta(seconds=sec), ref + timedelta(seconds=sec)
     assert low <= val, "%s > %s: diff %ss" % (
             low.isoformat(), val.isoformat(), (val - low).total_seconds())
     assert val <= high, "%s > %s: diff %ss" % (
@@ -57,7 +57,7 @@ class HeadersHandlingTest(unittest.TestCase):
     def test_lower_bound():
         headers = {'cache-control': 'max-age=%d' % (conf.feed.min_expires / 2)}
         assert_in_range(extract_feed_info(headers)['expires'],
-                utc_now() + timedelta(seconds=conf.feed.min_expires * 1.2))
+                utc_now() + timedelta(seconds=conf.feed.min_expires))
 
     @staticmethod
     def test_upper_bound():

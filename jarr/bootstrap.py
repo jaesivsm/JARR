@@ -5,6 +5,7 @@
 
 import logging
 import random
+from redis import Redis
 
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
@@ -27,13 +28,16 @@ conf = TheConf({'config_files': ['/etc/jarr/jarr.json', '~/.config/jarr.json'],
             {'app': [{'url': {'default': 'http://0.0.0.0:3000'}}]},
             {'api': [{'scheme': {'default': 'http'}},
                      {'server_name': {'default': '', 'type': str}}]},
-            {'worker': [{'metrics': [{'port': {'type': int, 'default': 8001}}]
-                         }]},
             {'db': [{'pg_uri': {'default': 'postgresql://postgresql/jarr'}},
                     {'redis': [{'host': {'default': 'redis'}},
-                               {'db': {'default': 0, 'type': int}},
+                               {'db': {'default': 1, 'type': int}},
                                {'port': {'default': 6379, 'type': int}},
-                               {'password': {'default': None}}]}]},
+                               {'password': {'default': None}}]},
+                     {'metrics': [{'host': {'default': 'redis'}},
+                                  {'db': {'default': 2, 'type': int}},
+                                  {'port': {'default': 6379, 'type': int}},
+                                  {'password': {'default': None}}]},
+                    ]},
             {'celery': [{'broker': {'default': 'amqp://rabbitmq//'}},
                         {'backend': {'default': 'redis://redis:6379/0'}},
                         {'broker_url': {'default': 'amqp://rabbitmq//'}},
@@ -129,9 +133,12 @@ def rollback_pending_sql(*args, **kwargs):
 
 engine, session, Base = init_db()
 init_models()
-set_redis_conn(host=conf.db.redis.host,
-               db=conf.db.redis.db,
-               port=conf.db.redis.port)
+set_redis_conn(host=conf.db.metrics.host,
+               db=conf.db.metrics.db,
+               port=conf.db.metrics.port)
 init_logging(conf.log.path, log_level=logging.WARNING,
              modules=('the_conf',))
 init_logging(conf.log.path, log_level=conf.log.level)
+REDIS_CONN = Redis(host=conf.db.redis.host,
+                   db=conf.db.redis.db,
+                   port=conf.db.redis.port)

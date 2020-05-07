@@ -22,7 +22,7 @@ class ClusterControllerTest(BaseJarrTest):
                 content=cluster.main_article.content + suffix,
                 date=cluster.main_article.date + timedelta(1),
                 retrieved_date=cluster.main_article.retrieved_date)
-        ClusterController.clusterize_pending_articles()
+        ClusterController(cluster.user_id).clusterize_pending_articles()
         return acontr.read(id=article.id).first()
 
     def test_cluster_disabled_on_original_category(self):
