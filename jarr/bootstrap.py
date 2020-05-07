@@ -27,8 +27,6 @@ conf = TheConf({'config_files': ['/etc/jarr/jarr.json', '~/.config/jarr.json'],
             {'app': [{'url': {'default': 'http://0.0.0.0:3000'}}]},
             {'api': [{'scheme': {'default': 'http'}},
                      {'server_name': {'default': '', 'type': str}}]},
-            {'worker': [{'metrics': [{'port': {'type': int, 'default': 8001}}]
-                         }]},
             {'db': [{'pg_uri': {'default': 'postgresql://postgresql/jarr'}},
                     {'redis': [{'host': {'default': 'redis'}},
                                {'db': {'default': 0, 'type': int}},

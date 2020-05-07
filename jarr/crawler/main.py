@@ -28,39 +28,42 @@ def clusterizer():
 
 
 @celery_app.task(name='crawler.feed_cleaner')
-def feed_cleaner():
+def feed_cleaner(feed_id):
     logger.warning("Feed cleaner - start")
     WORKER.labels(method='feed-cleaner').inc()
-    root_feed_ctrl = FeedController()
-    feeds = list(root_feed_ctrl.read(status=FeedStatus.to_delete))
+    fctrl = FeedController()
+    result = fctrl.update({'id': feed_id, 'status': FeedStatus.to_delete},
+                          {'status': FeedStatus.deleting})
+    if not result:
+        logger.error('feed %r seems locked, not doing anything', feed_id)
+        return
     try:
-        root_feed_ctrl.update({'id__in': [feed.id for feed in feeds]},
-                                {'status': FeedStatus.deleting})
-        for feed in feeds:
-            logger.warning("Deleting feed %r", feed)
-            FeedController(feed.user_id).delete(feed.id)
+        logger.warning("Deleting feed %r", feed)
+        fctrl.delete(feed_id)
     except Exception:
-        logger.exception('something went wrong when deleting feeds %r',
-                            feeds)
-        root_feed_ctrl.update({'id__in': [feed.id for feed in feeds]},
-                            {'status': FeedStatus.to_delete})
+        logger.exception('something went wrong when deleting feeds %r', feeds)
+        root_feed_ctrl.update({'id': feed_id},
+                              {'status': FeedStatus.to_delete})
+        raise
 
 
 @celery_app.task(name='crawler.scheduler')
 def scheduler():
     logger.warning("Running scheduler")
     WORKER.labels(method='scheduler').inc()
-    feeds = list(FeedController().list_fetchable())
-
-    if not feeds:
-        logger.debug("No feed to fetch")
-        scheduler.apply_async(countdown=conf.crawler.idle_delay)
-        return
-    logger.debug('%d to enqueue', len(feeds))
+    fctrl = FeedController()
+    # browsing feeds to fetch
+    feeds = list(fctrl.list_fetchable())
+    logger.info('%d to enqueue', len(feeds))
     for feed in feeds:
-        logger.warning("scheduling to be fetched %r", feed)
+        logger.debug("scheduling to be fetched %r", feed)
         process_feed.apply_async(args=[feed.id])
-
-    feed_cleaner.apply_async()
+    # browsing feeds to delete
+    feeds = list(fctrl.read(status=FeedStatus.to_delete))
+    logger.info('%d to delete', len(feeds))
+    for feed in feeds_to_delete:
+        logger.debug("scheduling to be delete %r", feed)
+        feed_cleaner.apply_async(args=[feed.id])
+    # applying clusterizer
     clusterizer.apply_async()
-    scheduler.apply_async(countdown=60)
+    scheduler.apply_async(countdown=conf.crawler.idle_delay)
