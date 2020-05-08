@@ -9,24 +9,23 @@ import FormControl from "@material-ui/core/FormControl";
 import TextField from "@material-ui/core/TextField";
 // jarr
 import StateTextInput from "./common/StateTextInput";
-import ClusterSettings, { fillMissingClusterOption } from "./common/ClusterSettings";
+import ClusterSettings from "./common/ClusterSettings";
 import { closePanel } from "./editSlice";
 import { doEditObj } from "../feedlist/feedSlice";
 import editPanelStyle from "./editPanelStyle";
 
 const mapDispatchToProps = (dispatch) => ({
-  editSettings(e, settings, password) {
+  editSettings(settings, password) {
     if (password) {
-      dispatch(doEditObj(null, { ...settings, password }, "user"));
+      dispatch(doEditObj(null, { password }, "user"));
     } else {
-      dispatch(doEditObj(null, settings, "user"));
+      dispatch(doEditObj(null, {}, "user"));
     }
     return dispatch(closePanel());
   },
 });
 
 function SettingsPanel({ user, editSettings }) {
-  const [state, setState] = useState(fillMissingClusterOption(user, "user", null));
   const [pwdVal, setPwd] = useState("");
   const [pwdConfirm, setPwdConfirm] = useState("");
   const [showPasswd, setShowPasswd] = useState(false);
@@ -35,12 +34,14 @@ function SettingsPanel({ user, editSettings }) {
     <form onSubmit={(e) => {
       e.preventDefault();
       if (pwdVal === pwdConfirm) {
-        editSettings(e, state, pwdVal);
+        editSettings(pwdVal);
       }
     }}>
     <FormControl component="fieldset">
       {["login", "email", "timezone"].map((key) => (
-          <StateTextInput key={key} label={key} name={key} state={state} setState={setState} disabled={key === "login"}  className={classes.editPanelInput}  />
+          <StateTextInput key={key} label={key} name={key}
+            disabled={key === "login"}
+            className={classes.editPanelInput}  />
        ))}
       <ClusterSettings level="user" />
       <TextField label="Password" variant="outlined"

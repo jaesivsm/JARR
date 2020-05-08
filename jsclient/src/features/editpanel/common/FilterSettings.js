@@ -113,10 +113,9 @@ function FilterSettingLine({ index, length, action, trigger, pattern, type, filt
           ))}
         </Select>
       </FormControl>
-      <IconButton onClick={() => setState(
-          { ...state,
-            filters: [ ...state.filters.slice(0, index),
-                       ...state.filters.slice(index + 1)]})}
+      <IconButton onClick={() => edit(
+            [ ...filters.slice(0, index),
+              ...filters.slice(index + 1)])}
         className={classes.editPanelFilterDelBtn}
         color="primary"
       >
@@ -149,7 +148,7 @@ function FilterSettings({ filters, edit }) {
       <ExpansionPanelDetails className={classes.editPanelClusterSettings}>
 
         {filters.map((filter, i) =>
-          <FilterSettingLine
+          <filterSettingLine
             key={"filter"+i}
             index={i}
             length={filters.length}
@@ -157,15 +156,12 @@ function FilterSettings({ filters, edit }) {
             trigger={filter["action on"]}
             pattern={filter.pattern}
             type={filter.type}
-            state={state}
-            setState={setState}
           />
         )}
         <div className={classes.editPanelFilterAddBtn}>
-          <Fab onClick={() => setState({ ...state,
-                                                filters: [ ...state.filters,
-                                                           { ...defaultFilter }]}
-          )} color="primary">
+          <Fab onClick={() => edit([ ...filters,
+                                    { ...defaultFilter }])}
+               color="primary">
             <PlusIcon />
           </Fab>
         </div>
