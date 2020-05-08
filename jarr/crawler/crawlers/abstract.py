@@ -11,8 +11,7 @@ from jarr.crawler.requests_utils import (response_calculated_etag_match,
 from jarr.lib.const import UNIX_START
 from jarr.lib.enums import FeedType
 from jarr.lib.utils import jarr_get, utc_now
-from jarr.metrics import FEED_FETCH as FETCH
-from jarr.metrics import FEED_LATENESS as LATENESS
+from jarr.metrics import FEED_FETCH, FEED_LATENESS
 
 logger = logging.getLogger(__name__)
 
@@ -26,14 +25,15 @@ class AbstractCrawler:
 
     def _metric_fetch(self, result, level=logging.INFO):
         logger.log(level, 'feed responded with %s', result)
-        FETCH.labels(feed_type=self.feed.feed_type.value, result=result).inc()
+        FEED_FETCH.labels(feed_type=self.feed.feed_type.value,
+                          result=result).inc()
 
     def _metric_lateness(self, now):
         if not self.feed.last_retrieved \
                 or self.feed.last_retrieved == UNIX_START:
             return
-        delta = (self.feed.last_retrieved - now).total_seconds()
-        LATENESS.labels(feed_type=self.feed.feed_type.value).observe(delta)
+        FEED_LATENESS.labels(feed_type=self.feed.feed_type.value).observe(
+            (now - self.feed.last_retrieved).total_seconds())
 
     def set_feed_error(self, error=None, parsed_feed=None):
         error_count = self.feed.error_count + 1
@@ -54,7 +54,8 @@ class AbstractCrawler:
         self._metric_lateness(now)
         info.update(extract_feed_info({}))
 
-        FETCH.labels(feed_type=self.feed.feed_type.value, result='error').inc()
+        FEED_FETCH.labels(feed_type=self.feed.feed_type.value,
+                          result='error').inc()
         return FeedController().update({'id': self.feed.id}, info)
 
     def clean_feed(self, response, parsed_feed=None, **info):
