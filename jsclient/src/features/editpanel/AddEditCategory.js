@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import PropTypes from "prop-types";
 import { connect } from "react-redux";
 // material components
@@ -15,14 +15,14 @@ import StateTextInput from "./common/StateTextInput";
 import editPanelStyle from "./editPanelStyle";
 
 const mapDispatchToProps = (dispatch) => ({
-  createCategory(e, category) {
+  createCategory(e) {
     e.preventDefault();
-    dispatch(doCreateObj(category, "category"));
+    dispatch(doCreateObj("category"));
     return dispatch(closePanel());
   },
-  editCategory(e, id, category) {
+  editCategory(e, id) {
     e.preventDefault();
-    dispatch(doEditObj(id, category, "category"));
+    dispatch(doEditObj(id, "category"));
     return dispatch(closePanel());
   },
   deleteCategory(e, id) {
@@ -69,7 +69,6 @@ function AddEditCategory({ job, catId,
 
 AddEditCategory.propTypes = {
   job: PropTypes.string.isRequired,
-  category: PropTypes.object,
   createCategory: PropTypes.func.isRequired,
   editCategory: PropTypes.func.isRequired,
   deleteCategory: PropTypes.func.isRequired,

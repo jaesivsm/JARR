@@ -10,22 +10,21 @@ import TextField from "@material-ui/core/TextField";
 // jarr
 import StateTextInput from "./common/StateTextInput";
 import ClusterSettings from "./common/ClusterSettings";
-import { closePanel } from "./editSlice";
+import { closePanel, editLoadedObj } from "./editSlice";
 import { doEditObj } from "../feedlist/feedSlice";
 import editPanelStyle from "./editPanelStyle";
 
 const mapDispatchToProps = (dispatch) => ({
-  editSettings(settings, password) {
-    if (password) {
-      dispatch(doEditObj(null, { password }, "user"));
-    } else {
-      dispatch(doEditObj(null, {}, "user"));
-    }
+  editSettings(settings) {
+    dispatch(doEditObj(null, "user"));
     return dispatch(closePanel());
+  },
+  edit(key, value) {
+    return dispatch(editLoadedObj({ key, value }));
   },
 });
 
-function SettingsPanel({ user, editSettings }) {
+function SettingsPanel({ editSettings }) {
   const [pwdVal, setPwd] = useState("");
   const [pwdConfirm, setPwdConfirm] = useState("");
   const [showPasswd, setShowPasswd] = useState(false);
@@ -61,7 +60,8 @@ function SettingsPanel({ user, editSettings }) {
         onChange={() => setShowPasswd(!showPasswd)}
         color="primary"
       />} label="Show password" />
-      <Button variant="contained" color="primary" type="submit" className={classes.editPanelBtn}>
+      <Button variant="contained" color="primary" type="submit"
+         className={classes.editPanelBtn}>
         Edit settings
       </Button>
     </FormControl>
@@ -70,7 +70,6 @@ function SettingsPanel({ user, editSettings }) {
 }
 
 SettingsPanel.propTypes = {
-  user: PropTypes.object.isRequired,
   editSettings: PropTypes.func.isRequired,
 };
 

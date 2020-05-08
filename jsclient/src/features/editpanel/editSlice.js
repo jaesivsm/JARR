@@ -12,6 +12,7 @@ const editSlice = createSlice({
                   job: "", // edit, add
                   buildedFeed: null,
                   loadedObj: null,
+                  editedKeys: [],
   },
   reducers: {
     openPanel(state, action) {
@@ -25,10 +26,12 @@ const editSlice = createSlice({
       return { ...state, isOpen: false,
                objType: "", objId: null, job: "",
                buildedFeed: null, loadedObj: null,
+               editedKeys: [],
       };
     },
     editLoadedObj(state, action) {
       return { ...state,
+               editedKeys: [ ...state.editedKeys, action.payload.key ],
                loadedObj: { ...state.loadedObj,
                             [action.payload.key]: action.payload.value }
       };
@@ -39,6 +42,7 @@ const editSlice = createSlice({
         return state;
       }
       return { ...state, isOpen: true, job: "edit",
+               editedKeys: [],
                loadedObj: action.payload.data, };
     },
     requestedBuildedFeed(state, action) {
@@ -67,7 +71,7 @@ export const doBuildFeed = (url): AppThunk => async (dispatch, getState) => {
 };
 
 export const doFetchObjForEdit = (type, id): AppThunk => async (dispatch, getState) => {
-  dispatch(openPanel({ job: "loading", objId: id, objType: type, }));
+  dispatch(openPanel({ job: "load", objId: id, objType: type, }));
   const url = apiUrl + "/" + type + (id ? "/" + id : "");
   const result = await doRetryOnTokenExpiration({
     method: "get", url,
