@@ -41,6 +41,7 @@ const editSlice = createSlice({
         // not the object that was asked for last, ignoring
         return state;
       }
+      console.log(action.payload.data);
       return { ...state, isOpen: true, job: "edit",
                editedKeys: [],
                loadedObj: action.payload.data, };
@@ -71,7 +72,7 @@ export const doBuildFeed = (url): AppThunk => async (dispatch, getState) => {
 };
 
 export const doFetchObjForEdit = (type, id): AppThunk => async (dispatch, getState) => {
-  dispatch(openPanel({ job: "load", objId: id, objType: type, }));
+  dispatch(openPanel({ job: "load", objId: id, objType: type }));
   const url = apiUrl + "/" + type + (id ? "/" + id : "");
   const result = await doRetryOnTokenExpiration({
     method: "get", url,

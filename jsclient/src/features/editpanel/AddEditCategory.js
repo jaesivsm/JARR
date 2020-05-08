@@ -68,6 +68,7 @@ function AddEditCategory({ job, catId,
 
 AddEditCategory.propTypes = {
   job: PropTypes.string.isRequired,
+  catId: PropTypes.number.isRequired,
   createCategory: PropTypes.func.isRequired,
   editCategory: PropTypes.func.isRequired,
   deleteCategory: PropTypes.func.isRequired,

@@ -27,28 +27,27 @@ function mapStateToProps(state) {
            job: state.edit.job,
            objType: state.edit.objType,
            buildedFeed: state.edit.buildedFeed,
-           categories: state.feeds.feedListRows.filter((row) => (
-               row.type === "categ" || row.type === "all-categ")
-           ).map((cat) => ({ id: cat.id, name: cat.str })),
   };
 }
 
 function EditPanel({ isOpen, isLoading, job, objType,
-                     buildedFeed, categories, close }) {
+                     buildedFeed, close }) {
   const classes = editPanelStyle();
   let form = <div className={classes.loadEditPanel}><CircularProgress /></div>;
+  if (!isLoading) {
   if(job === "add" && objType === "feed") {
     if(buildedFeed) {
-      form = <AddEditFeed job={job} feed={buildedFeed} categories={categories} />;
+      form = <AddEditFeed job={job} feed={buildedFeed} />;
     } else {
       form = <BuildFeed isLoading={isLoading} />;
     }
   } else if (job === "edit" && objType === "feed") {
-    form = <AddEditFeed job={job} categories={categories} />;
+    form = <AddEditFeed job={job} />;
   } else if ((job === "add" || job === "edit") && objType === "category") {
     form = <AddEditCategory job={job} />;
   } else if (job === "edit" && objType === "user") {
     form = <SettingsPanel />;
+  }
   }
   return (
     <Drawer
@@ -82,7 +81,6 @@ function EditPanel({ isOpen, isLoading, job, objType,
 EditPanel.propTypes = {
   isOpen: PropTypes.bool.isRequired,
   isLoading: PropTypes.bool.isRequired,
-  categories: PropTypes.array,
   job: PropTypes.string,
   objType: PropTypes.string,
   buildedFeed: PropTypes.object,

@@ -16,7 +16,8 @@ const mapDispatchToProps = (dispatch) => ({
 function StateTextInput({ label, name, loadedObj, edit, required, disabled, className }) {
   return (
     <TextField required={!!required} disabled={!!disabled} variant="outlined"
-               label={label} name={name} value={loadedObj[name]}
+               label={label} name={name}
+               value={loadedObj ? loadedObj[name] : ""}
                className={className}
                onChange={(e) => edit(e, name)}
     />

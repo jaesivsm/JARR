@@ -92,13 +92,22 @@ const ProposedLinks = connect(mapPropposedLinkStateToProps,
                               mapPropposedLinkDispatchToProps
 )(ProposedLinksComponent);
 
-function mapStateToProps(state) {
-  return { catId: state.edit.loadedObj["category_id"] ? state.edit.loadedObj["category_id"] : null,
-           feedType: state.edit.loadedObj["feed_type"] ? state.edit.loadedObj["feed_type"] : "classic",
-           sameLinkCount: state.edit.loadedObj["same_link_count"],
-           link: state.edit.loadedObj.link,
-           feedId: state.edit.loadedObj.id,
+function extractFromLoadedObj(state, key, def) {
+  if (state.edit.loadedObj && state.edit.loadedObj[key] !== undefined) {
+      return state.edit.loadedObj[key];
+  }
+  return def;
+}
 
+function mapStateToProps(state) {
+  return { catId: extractFromLoadedObj(state, "category_id", null),
+           feedType: extractFromLoadedObj(state, "feed_type", "classic"),
+           sameLinkCount: extractFromLoadedObj(state, "same_link_count", 0),
+           link: extractFromLoadedObj(state, "link", ""),
+           feedId: extractFromLoadedObj(state, "id", null),
+           categories: state.feeds.feedListRows.filter((row) => (
+               row.type === "categ" || row.type === "all-categ")
+           ).map((cat) => ({ id: cat.id, name: cat.str })),
            };
 }
 
@@ -182,8 +191,12 @@ function AddEditFeed({ job, categories, link, sameLinkCount,
 }
 
 AddEditFeed.propTypes = {
+  link: PropTypes.string,
+  sameLinkCount: PropTypes.number.isRequired,
+  feedId: PropTypes.number.isRequired,
+  catId: PropTypes.number,
+  feedType: PropTypes.string.isRequired,
   job: PropTypes.string.isRequired,
-  feed: PropTypes.object.isRequired,
   categories: PropTypes.array.isRequired,
   createFeed: PropTypes.func.isRequired,
   commitEditFeed: PropTypes.func.isRequired,
