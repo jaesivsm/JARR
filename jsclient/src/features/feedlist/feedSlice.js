@@ -189,16 +189,22 @@ export const doCreateObj = (obj, type): AppThunk => async (dispatch, getState) =
   dispatch(createdObj({ data: result.data, type }));
 };
 
-export const doEditObj = (id, obj, objType): AppThunk => async (dispatch, getState) => {
+export const doEditObj = (objType): AppThunk => async (dispatch, getState) => {
+  const editState = getState().edit;
+  const data = {};
+  editState.editedKeys.forEach((key) => {
+    data[key] = editState.loadedObj[key];
+  });
   const result = await doRetryOnTokenExpiration({
     method: "put",
-    url: apiUrl + "/" + objType + (id ? "/" + id : ""),
-    data: obj,
+    url: apiUrl + "/" + objType + (objType !== "user" ? "/" + editState.loadedObj.id : ""),
+    data: data,
   }, dispatch, getState);
   return result;
 };
 
-export const doDeleteObj = (id, objType): AppThunk => async (dispatch, getState) => {
+export const doDeleteObj = (objType): AppThunk => async (dispatch, getState) => {
+  const id = getState().edit.loadedObj.id;
   await doRetryOnTokenExpiration({
     method: "delete",
     url: apiUrl + "/" + objType + (id ? "/" + id : ""),

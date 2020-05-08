@@ -22,12 +22,12 @@ const mapDispatchToProps = (dispatch) => ({
   },
   editCategory(e, id) {
     e.preventDefault();
-    dispatch(doEditObj(id, "category"));
+    dispatch(doEditObj("category"));
     return dispatch(closePanel());
   },
   deleteCategory(e, id) {
     e.preventDefault();
-    dispatch(doDeleteObj(id, "category"));
+    dispatch(doDeleteObj("category"));
     dispatch(doListClusters({ categoryId: "all" }));
     return dispatch(closePanel());
   },
@@ -52,7 +52,6 @@ function AddEditCategory({ job, catId,
     <FormControl component="fieldset">
       <StateTextInput label="Category name" name="name"
         className={classes.editPanelInput} />
-      />
       <ClusterSettings level="category" />
       <div className={classes.editPanelButtons}>
         <Button className={classes.editPanelBtn} variant="contained" color="primary" type="submit">

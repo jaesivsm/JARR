@@ -16,7 +16,7 @@ import editPanelStyle from "./editPanelStyle";
 
 const mapDispatchToProps = (dispatch) => ({
   editSettings(settings) {
-    dispatch(doEditObj(null, "user"));
+    dispatch(doEditObj("user"));
     return dispatch(closePanel());
   },
   edit(key, value) {

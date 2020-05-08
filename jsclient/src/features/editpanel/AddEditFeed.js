@@ -42,17 +42,17 @@ const mapDispatchToProps = (dispatch) => ({
     if (!feed["category_id"]) {
       delete feed["category_id"];
     }
-    dispatch(doCreateObj(feed, "feed"));
+    dispatch(doCreateObj("feed"));
     return dispatch(closePanel());
   },
-  editFeed(e, id, feed) {
+  editFeed(e, id) {
     e.preventDefault();
-    dispatch(doEditObj(id, feed, "feed"));
+    dispatch(doEditObj("feed"));
     return dispatch(closePanel());
   },
   deleteFeed(e, id) {
     e.preventDefault();
-    dispatch(doDeleteObj(id, "feed"));
+    dispatch(doDeleteObj("feed"));
     dispatch(doListClusters({ categoryId: "all" }));
     return dispatch(closePanel());
   },
@@ -104,7 +104,7 @@ function mapStateToProps(state) {
 
 function AddEditFeed({ job, categories, link, sameLinkCount,
                        feedId, catId, feedType,
-                       createFeed, editFeed, deleteFeed, edit }) {
+                       createFeed, commitEditFeed, deleteFeed, edit }) {
   const classes = editPanelStyle();
 
   let warning;
@@ -128,7 +128,7 @@ function AddEditFeed({ job, categories, link, sameLinkCount,
   return (
     <form onSubmit={(e) => {
       if (!feedId) { createFeed(e); }
-      else {editFeed(e);}
+      else {commitEditFeed(e);}
     }}>
     <FormControl component="fieldset">
       {warning}
@@ -186,7 +186,8 @@ AddEditFeed.propTypes = {
   feed: PropTypes.object.isRequired,
   categories: PropTypes.array.isRequired,
   createFeed: PropTypes.func.isRequired,
-  editFeed: PropTypes.func.isRequired,
+  commitEditFeed: PropTypes.func.isRequired,
+  edit: PropTypes.func.isRequired,
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(AddEditFeed);
