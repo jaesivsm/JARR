@@ -36,7 +36,6 @@ const mapDispatchToProps = (dispatch) => ({
 function AddEditCategory({ isOpen, job, category,
                            createCategory, editCategory, deleteCategory }) {
   const [state, setState] = useState({
-      ...fillMissingClusterOption(category, "category", null),
       "name": category && category.name ? category.name : "",
   });
   const classes = editPanelStyle();
@@ -55,7 +54,7 @@ function AddEditCategory({ isOpen, job, category,
         onChange={(e) => (setState({ ...state, name: e.target.value }))}
         className={classes.editPanelSelect}
       />
-      <ClusterSettings level="category" state={state} setState={setState} />
+      <ClusterSettings level="category" />
       <div className={classes.editPanelButtons}>
         <Button className={classes.editPanelBtn} variant="contained" color="primary" type="submit">
           {job === "add" ? "Create" : "Edit"} Category

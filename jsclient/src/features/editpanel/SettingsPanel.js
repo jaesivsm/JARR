@@ -42,7 +42,7 @@ function SettingsPanel({ user, editSettings }) {
       {["login", "email", "timezone"].map((key) => (
           <StateTextInput key={key} label={key} name={key} state={state} setState={setState} disabled={key === "login"}  className={classes.editPanelInput}  />
        ))}
-      <ClusterSettings level="user" state={state} setState={setState} />
+      <ClusterSettings level="user" />
       <TextField label="Password" variant="outlined"
         className={classes.editPanelInput}
         value={pwdVal}

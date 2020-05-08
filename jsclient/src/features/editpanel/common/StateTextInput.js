@@ -1,11 +1,25 @@
 import React from "react";
+import { connect } from "react-redux";
 import TextField from "@material-ui/core/TextField";
 
-export default function StateTextInput({ label, name, state, setState, required, disabled, className }) {
-  const onChange = (e) => (setState({ ...state, [e.target.name]: e.target.value }));
+import { editLoadedObj } from "../editSlice";
+
+function mapStateToProps(state) {
+  return { loadedObj: state.edit.loadedObj };
+}
+const mapDispatchToProps = (dispatch) => ({
+  edit(e, key) {
+    return dispatch(editLoadedObj({ key, value: e.target.value }));
+  },
+});
+
+function StateTextInput({ label, name, loadedObj, edit, required, disabled, className }) {
   return (
     <TextField required={!!required} disabled={!!disabled} variant="outlined"
-               label={label} name={name} value={state[name]}
-               onChange={onChange} className={className} />
+               label={label} name={name} value={loadedObj[name]}
+               className={className}
+               onChange={(e) => edit(e, name)}
+    />
   );
 }
+export default connect(mapStateToProps, mapDispatchToProps)(StateTextInput);

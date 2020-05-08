@@ -71,16 +71,16 @@ ProposedLinks.propTypes = {
   onChange: PropTypes.func.isRequired,
 };
 
+function mapStateToProps(state) {
+  return { feed: { ...state.edit.loadedObj,
+                   "category_id": state.edit.loadedObj["category_id"] ? state.edit.loadedObj["category_id"] : null,
+                   "feed_type": state.edit.loadedObj["feed_type"] ? state.edit.loadedObj["feed_type"] : "classic",
+  };
+}
 
-function AddEditFeed({ job, feed, categories,
+function AddEditFeed({ job, categories,
+                       category_id, feed_type,
                        createFeed, editFeed, deleteFeed }) {
-  const currentFeed = fillMissingClusterOption(feed, "feed", null);
-  defaultTo(currentFeed, "category_id", null);
-  defaultTo(currentFeed, "feed_type", "classic");
-  defaultTo(currentFeed, "filters", []);
-  delete currentFeed.links;
-  delete currentFeed["same_link_count"];
-
   const [state, setState] = useState(currentFeed);
   const classes = editPanelStyle();
 
@@ -150,8 +150,8 @@ function AddEditFeed({ job, feed, categories,
         </Select>
         {feedTypeHelper}
       </FormControl>
-      <FilterSettings state={state} setState={setState} />
-      <ClusterSettings level="feed" state={state} setState={setState} />
+      <FilterSettings />
+      <ClusterSettings level="feed" />
       <div className={classes.editPanelButtons}>
         <Button className={classes.editPanelBtn} variant="contained" color="primary" type="submit">
           {job === "add" ? "Create" : "Edit"} Feed
@@ -171,4 +171,4 @@ AddEditFeed.propTypes = {
   editFeed: PropTypes.func.isRequired,
 };
 
-export default connect(null, mapDispatchToProps)(AddEditFeed);
+export default connect(mapStateToProps, mapDispatchToProps)(AddEditFeed);

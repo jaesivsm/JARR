@@ -1,5 +1,6 @@
 import React from "react";
 import PropTypes from "prop-types";
+import { connect } from "react-redux";
 // meterial components
 import ExpansionPanel from "@material-ui/core/ExpansionPanel";
 import ExpansionPanelSummary from "@material-ui/core/ExpansionPanelSummary";
@@ -12,6 +13,7 @@ import Typography from "@material-ui/core/Typography";
 import Select from "@material-ui/core/Select";
 
 import editPanelStyle from "../editPanelStyle";
+import { editLoadedObj } from "../editSlice";
 
 const clusteringConfOptions = {
     "cluster_enabled": { "label": "Allow article clustering" },
@@ -21,23 +23,21 @@ const clusteringConfOptions = {
     "cluster_wake_up": { "label": "Allow clustering process to unread an article previously marked as read" }
 };
 
-export function fillMissingClusterOption(obj, level, def=null) {
-  const filledObj = { ...obj };
-  Object.keys(clusteringConfOptions)
-        .forEach((opt) => {
-    if(filledObj[opt] === undefined) {
-      filledObj[opt] = def;
-    }
-  });
-  return filledObj;
+function mapStateToProps(state) {
+  const clusterOptions = {};
+  Object.keys(clusteringConfOptions).forEach((opt) => {
+      clusterOptions[opt] = state.edit.loadedObj[opt] !== undefined ? state.edit.loadedObj[opt] : null;
+});
+  return { clusterOptions };
 }
 
-function ClusterSettings({ state, level, setState }) {
+const mapDispatchToProps = (dispatch) => ({
+  edit(e, key) {
+    return dispatch(editLoadedObj({key, value: e.target.value }));
+  },
+});
 
-  const getHandleChange = (key) => (e, newVal) => {
-    setState({ ...state, [key]: e.target.value});
-  };
-
+function ClusterSettings({ level, clusterOptions, edit }) {
   const classes = editPanelStyle();
 
   return (
@@ -56,8 +56,8 @@ function ClusterSettings({ state, level, setState }) {
             <InputLabel id={`${"label-"+opt}`} className={classes.editPanelClusterLabel}>{clusteringConfOptions[opt].label}</InputLabel>
             <Select labelId={`${"label-"+opt}`} id={`${"select-"+opt}`}
               className={classes.editPanelClusterSelect}
-              value={`${state[opt] === null && level === "user" ? true : state[opt]}`}
-              onChange={getHandleChange(opt)}>
+              value={`${clusterOptions[opt] === null && level === "user" ? true : clusterOptions[opt]}`}
+              onChange={(e) => edit(e, opt)}>
               {level !== "user" ? <MenuItem value={null}>Default from parent</MenuItem> : null }
               <MenuItem value={true}>Activated</MenuItem>
               <MenuItem value={false}>Deactivated</MenuItem>
@@ -70,9 +70,14 @@ function ClusterSettings({ state, level, setState }) {
 }
 
 ClusterSettings.propTypes = {
-    state: PropTypes.object.isRequired,
-    level: PropTypes.string.isRequired,
-    setState: PropTypes.func.isRequired,
+  level: PropTypes.string.isRequired,
+  clusterOptions: PropTypes.shape({
+    "cluster_enabled": PropTypes.bool,
+    "cluster_tfidf_enabled": PropTypes.bool,
+    "cluster_same_category": PropTypes.bool,
+    "cluster_same_feed": PropTypes.bool,
+    "cluster_wake_up": PropTypes.bool,
+  }),
 };
 
-export default ClusterSettings;
+export default connect(mapStateToProps, mapDispatchToProps)(ClusterSettings);

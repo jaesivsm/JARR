@@ -27,6 +27,12 @@ const editSlice = createSlice({
                buildedFeed: null, loadedObj: null,
       };
     },
+    editLoadedObj(state, action) {
+      return { ...state,
+               loadedObj: { ...state.loadedObj,
+                            [action.payload.key]: action.payload.value }
+      };
+    },
     loadedObjToEdit(state, action) {
       if (state.objId !== action.payload.data.id) {
         // not the object that was asked for last, ignoring
@@ -47,7 +53,7 @@ const editSlice = createSlice({
 
 export const { openPanel, closePanel,
                requestedBuildedFeed, fetchedBuildedFeed,
-               loadedObjToEdit,
+               editLoadedObj, loadedObjToEdit,
 } = editSlice.actions;
 export default editSlice.reducer;
 
