@@ -41,13 +41,14 @@ class Article(Base):
             return self._simple_vector
         if self._simple_vector is None:
             self._simple_vector = {}
-        for word_n_count in self.vector.split():
-            try:
-                word, count = word_n_count.split(':')
-            except Exception:  # no :count if there's only one
-                self._simple_vector[word_n_count[1:-1]] = 1
-            else:
-                self._simple_vector[word[1:-1]] = count.count(',')
+        if self.vector is not None:
+            for word_n_count in self.vector.split():
+                try:
+                    word, count = word_n_count.split(':')
+                except Exception:  # no :count if there's only one
+                    self._simple_vector[word_n_count[1:-1]] = 1
+                else:
+                    self._simple_vector[word[1:-1]] = count.count(',')
         return self._simple_vector
 
     # reasons
