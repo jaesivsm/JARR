@@ -30,8 +30,7 @@ function mapStateToProps(state) {
   return { catId: state.edit.loadedObj.id };
 }
 
-function AddEditCategory({ job, catId,
-                           createCategory, editCategory, deleteCategory }) {
+function AddEditCategory({ job, catId, createCategory, editCategory }) {
   const classes = editPanelStyle();
 
   return (
@@ -50,9 +49,7 @@ function AddEditCategory({ job, catId,
         <Button className={classes.editPanelBtn} variant="contained" color="primary" type="submit">
           {job === "add" ? "Create" : "Edit"} Category
         </Button>
-        <DeleteButton
-           type="category" deleteFunc={deleteCategory}
-           className={classes.deletePanelBtn} />
+        <DeleteButton type="category" className={classes.deletePanelBtn} />
       </div>
     </FormControl>
     </form>
@@ -64,7 +61,6 @@ AddEditCategory.propTypes = {
   catId: PropTypes.number,
   createCategory: PropTypes.func.isRequired,
   editCategory: PropTypes.func.isRequired,
-  deleteCategory: PropTypes.func.isRequired,
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(AddEditCategory);
