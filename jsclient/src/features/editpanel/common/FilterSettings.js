@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { connect } from "react-redux";
 import PropTypes from "prop-types";
 // material ui components
@@ -9,10 +9,12 @@ import MenuItem from "@material-ui/core/MenuItem";
 import TextField from "@material-ui/core/TextField";
 import Typography from "@material-ui/core/Typography";
 import ExpansionPanel from "@material-ui/core/ExpansionPanel";
+import Alert from "@material-ui/lab/Alert";
 import ExpansionPanelSummary from "@material-ui/core/ExpansionPanelSummary";
 import ExpansionPanelDetails from "@material-ui/core/ExpansionPanelDetails";
 import IconButton from "@material-ui/core/IconButton";
 // material icons
+import HelpIcon from "@material-ui/icons/Help";
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import ArrowUpIcon from "@material-ui/icons/ArrowUpward";
 import ArrowDownIcon from "@material-ui/icons/ArrowDownward";
@@ -136,6 +138,19 @@ const FilterSettingLine = connect(mapStateToProps, mapDispatchToProps)(FilterSet
 
 function FilterSettings({ filters, edit }) {
   const classes = editPanelStyle();
+  const [showHelp, setShowHelp] = useState(false)
+  let help;
+  if(showHelp) {
+    help = (
+      <Alert>
+        <Typography>
+          <p>Filters are processed in the order you place them on every new articles that will be fetched for that feed.</p>
+          <p>Through filters you can modify the read, liked status, allow or forbid clustering new articles. You can also skip entierly the creation of an article match a filter.</p>
+          <p>Filters are processed one after another and you can revert the filter you applied just before. For example you might want to skip every article which title contains "Python" and 'unskip' every article containing "Monthy". This way you would see every article mentionning "Monthy Python" but none about python solely.</p>
+        </Typography>
+      </Alert>
+    );
+  }
   return (
     <ExpansionPanel className={classes.editPanelCluster} >
       <ExpansionPanelSummary
@@ -146,7 +161,11 @@ function FilterSettings({ filters, edit }) {
         <Typography className={classes.heading}>Filters Settings</Typography>
       </ExpansionPanelSummary>
       <ExpansionPanelDetails className={classes.editPanelClusterSettings}>
-
+        <IconButton onClick={() => setShowHelp(!showHelp)}
+            className={classes.showHelpButton}>
+          <HelpIcon />
+        </IconButton>
+        {help}
         {filters.map((filter, i) =>
           <FilterSettingLine
             key={"filter"+i}

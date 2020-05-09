@@ -3,10 +3,12 @@ import PropTypes from "prop-types";
 import { connect } from "react-redux";
 // material components
 import Alert from "@material-ui/lab/Alert";
+import Switch from "@material-ui/core/Switch";
 import Button from "@material-ui/core/Button";
 import Select from "@material-ui/core/Select";
 import MenuItem from "@material-ui/core/MenuItem";
 import FormControl from "@material-ui/core/FormControl";
+import FormControlLabel from "@material-ui/core/FormControlLabel";
 import FormHelperText from "@material-ui/core/FormHelperText";
 // jarr
 import { closePanel, editLoadedObj } from "./editSlice";
@@ -95,6 +97,7 @@ function mapStateToProps(state) {
            sameLinkCount: extractFromLoadedObj(state, "same_link_count", 0),
            link: extractFromLoadedObj(state, "link", ""),
            feedId: extractFromLoadedObj(state, "id", null),
+           active: extractFromLoadedObj(state, "status", "active") === "active",
            categories: state.feeds.feedListRows.filter((row) => (
                row.type === "categ" || row.type === "all-categ")
            ).map((cat) => ({ id: cat.id, name: cat.str })),
@@ -102,10 +105,9 @@ function mapStateToProps(state) {
 }
 
 function AddEditFeed({ job, categories, link, sameLinkCount,
-                       feedId, catId, feedType,
+                       feedId, catId, feedType, active,
                        edit, commit }) {
   const classes = editPanelStyle();
-
   let warning;
   if(sameLinkCount) {
     warning = (
@@ -137,6 +139,10 @@ function AddEditFeed({ job, categories, link, sameLinkCount,
       <ProposedLinks />
       <StateTextInput label="Website link" name="site_link"
         className={classes.editPanelInput} />
+      <FormControlLabel
+        control={<Switch color="primary" checked={active}
+                    onChange={() => edit("status", active ? "paused" : "active")} />}
+        label="Active feed" />
       <FormControl>
         <FormHelperText>Here you can change the category of the feed :</FormHelperText>
         <Select variant="outlined"
@@ -165,6 +171,9 @@ function AddEditFeed({ job, categories, link, sameLinkCount,
       </FormControl>
       <FilterSettings />
       <ClusterSettings level="feed" />
+      {!feedId ? <Alert>
+        Your feed will be created but articles won't appear right away. It might take a little while before you see content appear. Be patient :)
+      </Alert>: null}
       <div className={classes.editPanelButtons}>
         <Button className={classes.editPanelBtn}
           variant="contained" color="primary" type="submit">
@@ -183,6 +192,7 @@ AddEditFeed.propTypes = {
   feedId: PropTypes.number,
   catId: PropTypes.number,
   feedType: PropTypes.string.isRequired,
+  active: PropTypes.bool.isRequired,
   job: PropTypes.string.isRequired,
   categories: PropTypes.array.isRequired,
   edit: PropTypes.func.isRequired,
