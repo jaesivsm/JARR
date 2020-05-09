@@ -10,12 +10,13 @@ const editSlice = createSlice({
                   objType: "", // feed, category
                   objId: null,
                   job: "", // edit, add
-                  buildedFeed: null,
-                  loadedObj: null,
+                  loadedObj: {},
+                  editedKeys: [],
   },
   reducers: {
     openPanel(state, action) {
       return { ...state, isOpen: true,
+               isLoading: !!action.payload.isLoading,
                objType: action.payload.objType,
                objId: action.payload.objId,
                job: action.payload.job ? action.payload.job : action.payload.objId ? "edit" : "add",
@@ -24,30 +25,35 @@ const editSlice = createSlice({
     closePanel(state, action) {
       return { ...state, isOpen: false,
                objType: "", objId: null, job: "",
-               buildedFeed: null, loadedObj: null,
+               loadedObj: {},
+               editedKeys: [],
+      };
+    },
+    editLoadedObj(state, action) {
+      return { ...state,
+               editedKeys: [ ...state.editedKeys, action.payload.key ],
+               loadedObj: { ...state.loadedObj,
+                            [action.payload.key]: action.payload.value }
       };
     },
     loadedObjToEdit(state, action) {
-      if (state.objId !== action.payload.data.id) {
+      if (state.objId !== action.payload.data.id && !action.payload.noIdCheck ) {
         // not the object that was asked for last, ignoring
         return state;
       }
-      return { ...state, isOpen: true, job: "edit",
-               loadedObj: action.payload.data, };
+      return { ...state, isOpen: true, isLoading: false,
+               editedKeys: [], loadedObj: action.payload.data,
+               job: action.payload.job ? action.payload.job: state.job };
     },
     requestedBuildedFeed(state, action) {
       return { ...state, isLoading: true };
-    },
-    fetchedBuildedFeed(state, action) {
-      return { ...state, isLoading: false,
-               buildedFeed: action.payload.buildedFeed };
     },
   },
 });
 
 export const { openPanel, closePanel,
-               requestedBuildedFeed, fetchedBuildedFeed,
-               loadedObjToEdit,
+               requestedBuildedFeed,
+               editLoadedObj, loadedObjToEdit,
 } = editSlice.actions;
 export default editSlice.reducer;
 
@@ -57,14 +63,15 @@ export const doBuildFeed = (url): AppThunk => async (dispatch, getState) => {
     method: "get",
     url: apiUrl + "/feed/build?" + qs.stringify({ url }),
   }, dispatch, getState);
-  dispatch(fetchedBuildedFeed({ buildedFeed: result.data }));
+  dispatch(loadedObjToEdit({ data: result.data, noIdCheck: true,
+                             job: "build" }));
 };
 
 export const doFetchObjForEdit = (type, id): AppThunk => async (dispatch, getState) => {
-  dispatch(openPanel({ job: "loading", objId: id, objType: type, }));
+  dispatch(openPanel({ job: "load", objId: id, objType: type, isLoading: true }));
   const url = apiUrl + "/" + type + (id ? "/" + id : "");
   const result = await doRetryOnTokenExpiration({
     method: "get", url,
   }, dispatch, getState);
-  return dispatch(loadedObjToEdit({ data: result.data }));
+  dispatch(loadedObjToEdit({ data: result.data, job: "edit" }));
 };

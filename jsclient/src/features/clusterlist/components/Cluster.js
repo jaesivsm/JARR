@@ -36,25 +36,25 @@ const mapDispatchToProps = (dispatch) => ({
     if (!expanded) {
       // panel is folded, we fetch the cluster
       dispatch(doFetchCluster(cluster.id));
-      return dispatch(changeReadCount({
+      dispatch(changeReadCount({
         feedsId: cluster["feeds_id"],
         categoriesId: cluster["categories_id"],
         action: "read" }));
-    }
-    if (unreadOnClose) {
+    } else if (unreadOnClose) {
       // panel is expanded and the filters implies
       // we have to mark cluster as unread
       dispatch(removeClusterSelection());
       dispatch(doEditCluster(cluster.id,
                              { read: false, "read_reason": null }));
-      return dispatch(changeReadCount(
+      dispatch(changeReadCount(
           { feedsId: cluster["feeds_id"],
             categoriesId: cluster["categories_id"],
             action: "unread" }));
+    } else {
+      // filters says everybody is displayed
+      // so we"re not triggering changes in cluster list
+      dispatch(removeClusterSelection());
     }
-    // filters says everybody is displayed
-    // so we"re not triggering changes in cluster list
-    return dispatch(removeClusterSelection());
   },
   toggleRead(e, cluster) {
     e.stopPropagation();
@@ -66,19 +66,19 @@ const mapDispatchToProps = (dispatch) => ({
       payload["read_reason"] = null;
     }
     dispatch(doEditCluster(cluster.id, payload));
-    return dispatch(changeReadCount({
+    dispatch(changeReadCount({
       feedsId: cluster["feeds_id"],
       categoriesId: cluster["categories_id"], action }));
   },
   toggleLiked(e, clusterId) {
     e.stopPropagation();
-    return dispatch(doEditCluster(clusterId, { liked: e.target.checked }));
+    dispatch(doEditCluster(clusterId, { liked: e.target.checked }));
   },
   readOnRedirect(e, cluster) {
     e.stopPropagation();
     dispatch(doEditCluster(cluster.id,
                            { read: true, "read_reason": "consulted" }));
-    return dispatch(changeReadCount({
+    dispatch(changeReadCount({
       feedsId: cluster["feeds_id"],
       categoriesId: cluster["categories_id"],
       action: "read" }));

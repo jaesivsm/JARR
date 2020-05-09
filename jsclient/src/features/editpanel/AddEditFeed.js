@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import PropTypes from "prop-types";
 import { connect } from "react-redux";
 // material components
@@ -9,12 +9,10 @@ import MenuItem from "@material-ui/core/MenuItem";
 import FormControl from "@material-ui/core/FormControl";
 import FormHelperText from "@material-ui/core/FormHelperText";
 // jarr
-import { closePanel } from "./editSlice";
-import { doCreateObj, doEditObj, doDeleteObj } from "../feedlist/feedSlice";
-import { doListClusters } from "../clusterlist/clusterSlice";
-import { defaultTo } from "./common";
+import { closePanel, editLoadedObj } from "./editSlice";
+import { doCreateObj, doEditObj } from "../feedlist/feedSlice";
 import StateTextInput from "./common/StateTextInput";
-import ClusterSettings, { fillMissingClusterOption } from "./common/ClusterSettings";
+import ClusterSettings from "./common/ClusterSettings";
 import FilterSettings from "./common/FilterSettings";
 import DeleteButton from "./common/DeleteButton";
 
@@ -25,35 +23,29 @@ const availableFeedTypes = ["classic", "json", "tumblr", "instagram",
                             "twitter"];
 const noUrlTypes = ["instagram", "soundcloud", "twitter"];
 
-const mapDispatchToProps = (dispatch) => ({
-  createFeed(e, feed) {
-    e.preventDefault();
-    if (!feed["category_id"]) {
-      delete feed["category_id"];
-    }
-    dispatch(doCreateObj(feed, "feed"));
-    return dispatch(closePanel());
-  },
-  editFeed(e, id, feed) {
-    e.preventDefault();
-    dispatch(doEditObj(id, feed, "feed"));
-    return dispatch(closePanel());
-  },
-  deleteFeed(e, id) {
-    e.preventDefault();
-    dispatch(doDeleteObj(id, "feed"));
-    dispatch(doListClusters({ categoryId: "all" }));
-    return dispatch(closePanel());
-  },
+function mapPropposedLinkStateToProps(state) {
+  return { link: state.edit.loadedObj.link,
+           links: state.edit.loadedObj.links,
+  };
+}
+
+const mapPropposedLinkDispatchToProps = (dispatch) => ({
+  edit(value) {
+    dispatch(editLoadedObj({ key: "link", value }));
+  }
 });
 
-function ProposedLinks({ link, links, onChange }) {
+
+function ProposedLinksComponent({ link, links, edit }) {
   const classes = editPanelStyle();
+  if (!links) {
+    return null;
+  }
   return (
       <FormControl>
         <FormHelperText>Other possible feed link have been found :</FormHelperText>
         <Select variant="outlined" value={link}
-            onChange={onChange}
+            onChange={(e) => edit(e.target.value)}
             className={classes.editPanelInput}
         >
             {links.map((proposedLink) => (
@@ -65,33 +57,63 @@ function ProposedLinks({ link, links, onChange }) {
   );
 }
 
-ProposedLinks.propTypes = {
-  link: PropTypes.string.isRequired,
-  links: PropTypes.array.isRequired,
-  onChange: PropTypes.func.isRequired,
+ProposedLinksComponent.propTypes = {
+  link: PropTypes.string,
+  links: PropTypes.array,
+  edit: PropTypes.func.isRequired,
 };
 
+const ProposedLinks = connect(mapPropposedLinkStateToProps,
+                              mapPropposedLinkDispatchToProps
+)(ProposedLinksComponent);
 
-function AddEditFeed({ job, feed, categories,
-                       createFeed, editFeed, deleteFeed }) {
-  const currentFeed = fillMissingClusterOption(feed, "feed", null);
-  defaultTo(currentFeed, "category_id", null);
-  defaultTo(currentFeed, "feed_type", "classic");
-  defaultTo(currentFeed, "filters", []);
-  delete currentFeed.links;
-  delete currentFeed["same_link_count"];
+function extractFromLoadedObj(state, key, def) {
+  if (state.edit.loadedObj && state.edit.loadedObj[key] !== undefined) {
+      return state.edit.loadedObj[key];
+  }
+  return def;
+}
 
-  const [state, setState] = useState(currentFeed);
+const mapDispatchToProps = (dispatch) => ({
+  commit(e, job) {
+    e.preventDefault();
+    if (job === "edit") {
+      dispatch(doEditObj("feed"));
+    } else {
+      dispatch(doCreateObj("feed"));
+    }
+    dispatch(closePanel());
+  },
+  edit(key, value) {
+    dispatch(editLoadedObj({ key, value }));
+  },
+});
+
+function mapStateToProps(state) {
+  return { catId: extractFromLoadedObj(state, "category_id", null),
+           feedType: extractFromLoadedObj(state, "feed_type", "classic"),
+           sameLinkCount: extractFromLoadedObj(state, "same_link_count", 0),
+           link: extractFromLoadedObj(state, "link", ""),
+           feedId: extractFromLoadedObj(state, "id", null),
+           categories: state.feeds.feedListRows.filter((row) => (
+               row.type === "categ" || row.type === "all-categ")
+           ).map((cat) => ({ id: cat.id, name: cat.str })),
+           };
+}
+
+function AddEditFeed({ job, categories, link, sameLinkCount,
+                       feedId, catId, feedType,
+                       edit, commit }) {
   const classes = editPanelStyle();
 
   let warning;
-  if(feed["same_link_count"]) {
+  if(sameLinkCount) {
     warning = (
       <Alert severity="info">
-        You have already {feed["same_link_count"]} feed with that link.
+        You have already {sameLinkCount} feed with that link.
       </Alert>
     );
-  } else if (!feed.link) {
+  } else if (!link) {
     warning = (
       <Alert severity="error">
         Provided URL doesn"t look like a feed we support and we couldn"t find a correct one.
@@ -99,36 +121,27 @@ function AddEditFeed({ job, feed, categories,
     );
   }
 
-  let proposedLinks = null;
-  if (feed.links) {
-    proposedLinks = <ProposedLinks link={feed.link} links={feed.links}
-                        onChange={(e) => setState({ ...state, link: e.target.value})}
-                    />;
-  }
-  const feedTypeHelper = (noUrlTypes.indexOf(state["feed_type"]) === -1 ? null :
-    <Alert severity="info">"{state["feed_type"]}" type doesn't need a full url for link. Just the username will suffice.</Alert>
+  const feedTypeHelper = (noUrlTypes.indexOf(feedType) === -1 ? null :
+    <Alert severity="info">"{feedType}" type doesn't need a full url for link. Just the username will suffice.</Alert>
   );
   return (
-    <form onSubmit={(e) => {
-      if (!feed.id) { createFeed(e, state); }
-      else {editFeed(e, feed.id, state);}
-    }}>
+    <form onSubmit={(e) => commit(e, job)}>
     <FormControl component="fieldset">
       {warning}
       <StateTextInput required={true} label="Feed title" name="title"
-        state={state} setState={setState} className={classes.editPanelInput}/>
+        className={classes.editPanelInput}/>
       <StateTextInput label="Feed description" name="description"
-        state={state} setState={setState} className={classes.editPanelInput} />
+        className={classes.editPanelInput} />
       <StateTextInput required={true} label="Feed link" name="link"
-        state={state} setState={setState} className={classes.editPanelInput}/>
-      {proposedLinks}
+        className={classes.editPanelInput}/>
+      <ProposedLinks />
       <StateTextInput label="Website link" name="site_link"
-        state={state} setState={setState} className={classes.editPanelInput} />
+        className={classes.editPanelInput} />
       <FormControl>
         <FormHelperText>Here you can change the category of the feed :</FormHelperText>
         <Select variant="outlined"
-          value={state["category_id"] ? state["category_id"] : 0}
-          onChange={(e) => (setState({ ...state, "category_id": e.target.value }))}
+          value={catId ? catId : 0}
+          onChange={(e) => edit("category_id", e.target.value)}
           className={classes.editPanelSelect}
         >
           {categories.map((cat) => (
@@ -140,8 +153,8 @@ function AddEditFeed({ job, feed, categories,
       </FormControl>
       <FormControl>
         <FormHelperText>A type has been selected for that feed, but you can change it to your liking:</FormHelperText>
-        <Select variant="outlined" value={state["feed_type"]}
-          onChange={(e) => (setState({ ...state, "feed_type": e.target.value }))}
+        <Select variant="outlined" value={feedType}
+          onChange={(e) => edit("feed_type", e.target.value)}
           className={classes.editPanelSelect}
         >
           {availableFeedTypes.map((type) => (
@@ -150,13 +163,14 @@ function AddEditFeed({ job, feed, categories,
         </Select>
         {feedTypeHelper}
       </FormControl>
-      <FilterSettings state={state} setState={setState} />
-      <ClusterSettings level="feed" state={state} setState={setState} />
+      <FilterSettings />
+      <ClusterSettings level="feed" />
       <div className={classes.editPanelButtons}>
-        <Button className={classes.editPanelBtn} variant="contained" color="primary" type="submit">
-          {job === "add" ? "Create" : "Edit"} Feed
+        <Button className={classes.editPanelBtn}
+          variant="contained" color="primary" type="submit">
+          {!feedId ? "Create" : "Edit"} Feed
         </Button>
-        <DeleteButton id={feed.id} type="feed" deleteFunc={deleteFeed} className={classes.deletePanelBtn}/>
+        <DeleteButton type="feed" className={classes.deletePanelBtn}/>
       </div>
     </FormControl>
     </form>
@@ -164,11 +178,15 @@ function AddEditFeed({ job, feed, categories,
 }
 
 AddEditFeed.propTypes = {
+  link: PropTypes.string,
+  sameLinkCount: PropTypes.number.isRequired,
+  feedId: PropTypes.number,
+  catId: PropTypes.number,
+  feedType: PropTypes.string.isRequired,
   job: PropTypes.string.isRequired,
-  feed: PropTypes.object.isRequired,
   categories: PropTypes.array.isRequired,
-  createFeed: PropTypes.func.isRequired,
-  editFeed: PropTypes.func.isRequired,
+  edit: PropTypes.func.isRequired,
+  commit: PropTypes.func.isRequired,
 };
 
-export default connect(null, mapDispatchToProps)(AddEditFeed);
+export default connect(mapStateToProps, mapDispatchToProps)(AddEditFeed);

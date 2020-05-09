@@ -1,17 +1,18 @@
 import React, { useState } from "react";
+import { connect } from "react-redux";
 import PropTypes from "prop-types";
 // material ui components
 import Fab from "@material-ui/core/Fab";
 import FormControl from "@material-ui/core/FormControl";
 import Select from "@material-ui/core/Select";
 import MenuItem from "@material-ui/core/MenuItem";
-import IconButton from "@material-ui/core/IconButton";
 import TextField from "@material-ui/core/TextField";
 import Typography from "@material-ui/core/Typography";
 import ExpansionPanel from "@material-ui/core/ExpansionPanel";
 import Alert from "@material-ui/lab/Alert";
 import ExpansionPanelSummary from "@material-ui/core/ExpansionPanelSummary";
 import ExpansionPanelDetails from "@material-ui/core/ExpansionPanelDetails";
+import IconButton from "@material-ui/core/IconButton";
 // material icons
 import HelpIcon from "@material-ui/icons/Help";
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
@@ -21,6 +22,7 @@ import PlusIcon from "@material-ui/icons/Add";
 import MinusIcon from "@material-ui/icons/Remove";
 // jarr
 import editPanelStyle from "../editPanelStyle";
+import { editLoadedObj } from "../editSlice";
 // constants
 const FiltersAction = { "mark as read": "mark as read",
                         "mark as unread": "mark as unread (default)",
@@ -39,42 +41,47 @@ const FiltersTrigger = {"match": "If", "no match": "If not", };
 const defaultFilter = { action: "mark as read", "action on": "match",
                         type: "simple match", pattern: "" };
 
+function mapStateToProps(state) {
+  return { filters: state.edit.loadedObj.filters ? state.edit.loadedObj.filters : [],
+  };
+}
+const mapDispatchToProps = (dispatch) => ({
+  edit(value) {
+    dispatch(editLoadedObj({ key: "filters", value }));
+  },
+});
 
-function FilterSettingLine({ index, length, action, trigger, pattern, type, state, setState }) {
+function FilterSettingLineComponent({ index, length, action, trigger, pattern, type, filters, edit }) {
   let moveUp;
   let moveDown;
   const classes = editPanelStyle();
   if (index !== 0) {
     moveUp = (
-      <IconButton onClick={() =>
-        setState({ ...state,
-                   filters: [ ...state.filters.slice(0, index - 1),
-                              state.filters[index],
-                              state.filters[index - 1],
-                              ...state.filters.slice(index + 1)],
-        })
-      } className={classes.editPanelFilterArrow} color="primary">
+      <IconButton onClick={() => edit(
+          [ ...filters.slice(0, index - 1),
+            filters[index],
+            filters[index - 1],
+            ...filters.slice(index + 1)])}
+          className={classes.editPanelFilterArrow} color="primary">
         <ArrowUpIcon />
       </IconButton>);
   }
   if (index !== length - 1 ) {
     moveDown = (
-      <IconButton onClick={() =>
-        setState({ ...state,
-                   filters: [ ...state.filters.slice(0, index),
-                              state.filters[index + 1],
-                              state.filters[index],
-                              ...state.filters.slice(index + 2)],
-        })
-      } className={classes.editPanelFilterArrow} color="primary">
+      <IconButton onClick={() => edit(
+          [ ...filters.slice(0, index),
+            filters[index + 1],
+            filters[index],
+            ...filters.slice(index + 2)])}
+          className={classes.editPanelFilterArrow} color="primary">
         <ArrowDownIcon />
       </IconButton>
     );
   }
-  const onChange = (key) => (e) => setState({ ...state,
-    filters: [ ...state.filters.slice(0, index),
-               { ...state.filters[index], [key]: e.target.value },
-               ...state.filters.slice(index + 1), ]});
+  const onChange = (key) => (e) => edit(
+    [ ...filters.slice(0, index),
+      { ...filters[index], [key]: e.target.value },
+      ...filters.slice(index + 1)]);
   return (
     <div className={classes.editPanelFilter}>
       <div className={classes.editPanelFilterArrows}>
@@ -108,10 +115,9 @@ function FilterSettingLine({ index, length, action, trigger, pattern, type, stat
           ))}
         </Select>
       </FormControl>
-      <IconButton onClick={() => setState(
-          { ...state,
-            filters: [ ...state.filters.slice(0, index),
-                       ...state.filters.slice(index + 1)]})}
+      <IconButton onClick={() => edit(
+            [ ...filters.slice(0, index),
+              ...filters.slice(index + 1)])}
         className={classes.editPanelFilterDelBtn}
         color="primary"
       >
@@ -121,14 +127,16 @@ function FilterSettingLine({ index, length, action, trigger, pattern, type, stat
   );
 }
 
-FilterSettingLine.propTypes = {
+FilterSettingLineComponent.propTypes = {
   action: PropTypes.string.isRequired,
   trigger: PropTypes.string.isRequired,
   pattern: PropTypes.string.isRequired,
   type: PropTypes.string.isRequired,
 };
 
-function FilterSettings({ state, setState }) {
+const FilterSettingLine = connect(mapStateToProps, mapDispatchToProps)(FilterSettingLineComponent);
+
+function FilterSettings({ filters, edit }) {
   const classes = editPanelStyle();
   const [showHelp, setShowHelp] = useState(false)
   let help;
@@ -157,24 +165,21 @@ function FilterSettings({ state, setState }) {
           <HelpIcon />
         </IconButton>
         {help}
-        {state.filters.map((filter, i) =>
+        {filters.map((filter, i) =>
           <FilterSettingLine
             key={"filter"+i}
             index={i}
-            length={state.filters.length}
+            length={filters.length}
             action={filter.action}
             trigger={filter["action on"]}
             pattern={filter.pattern}
             type={filter.type}
-            state={state}
-            setState={setState}
           />
         )}
         <div className={classes.editPanelFilterAddBtn}>
-          <Fab onClick={() => setState({ ...state,
-                                                filters: [ ...state.filters,
-                                                           { ...defaultFilter }]}
-          )} color="primary">
+          <Fab onClick={() => edit([ ...filters,
+                                    { ...defaultFilter }])}
+               color="primary">
             <PlusIcon />
           </Fab>
         </div>
@@ -184,7 +189,7 @@ function FilterSettings({ state, setState }) {
 }
 
 FilterSettings.propTypes = {
-  state: PropTypes.object.isRequired,
+  filters: PropTypes.array.isRequired,
 };
 
-export default FilterSettings;
+export default connect(mapStateToProps, mapDispatchToProps)(FilterSettings);

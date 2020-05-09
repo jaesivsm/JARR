@@ -44,20 +44,20 @@ function mapStateToProps(state) {
 
 const mapDispatchToProps = (dispatch) => ({
   filterClusters(filterValue) {
-    return dispatch(doListClusters({ filter: filterValue }));
+    dispatch(doListClusters({ filter: filterValue }));
   },
   markAllAsRead(onlySingles) {
     dispatch(doMarkAllAsRead(onlySingles));
     dispatch(markedAllAsRead({ onlySingles }));
   },
   toggleFeedList() {
-    return dispatch(toggleMenu(true));
+    dispatch(toggleMenu(true));
   },
   openEditPanel() {
-    return dispatch(doFetchObjForEdit("user"));
+    dispatch(doFetchObjForEdit("user"));
   },
   logout() {
-    return dispatch(doLogout());
+    dispatch(doLogout());
   },
 });
 

@@ -64,7 +64,7 @@ export const doLogin = (
     dispatch(tokenAcquired(result));
   } catch (err) {
     dispatch(loginFailed());
-    return dispatch(authError(err.response));
+    dispatch(authError(err.response));
   }
 };
 
@@ -81,9 +81,9 @@ export const doSignUp = (
       data: { login, password, email },
     });
     dispatch(responseRecieved());
-    return dispatch(attemptLogin({ login, password }));
+    dispatch(attemptLogin({ login, password }));
   } catch (err) {
-    return dispatch(authError(err.response));
+    dispatch(authError(err.response));
   }
 };
 
@@ -98,9 +98,9 @@ export const doInitRecovery = (
       url: apiUrl + "/auth/recovery",
       data: { login, email },
     });
-    return dispatch(responseRecieved({ recovery: result }));
+    dispatch(responseRecieved({ recovery: result }));
   } catch (err) {
-    return dispatch(responseRecieved({ recovery: err.response }));
+    dispatch(responseRecieved({ recovery: err.response }));
   }
 };
 
@@ -118,9 +118,9 @@ export const doRecovery = (
       data: { login, email, token, password },
     });
     dispatch(responseRecieved());
-    return dispatch(attemptLogin({ login, password }));
+    dispatch(attemptLogin({ login, password }));
   } catch (err) {
-    return dispatch(responseRecieved({ recovery: err.response }));
+    dispatch(responseRecieved({ recovery: err.response }));
   }
 };
 

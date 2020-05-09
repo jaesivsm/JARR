@@ -9,58 +9,63 @@ import FormControl from "@material-ui/core/FormControl";
 import TextField from "@material-ui/core/TextField";
 // jarr
 import StateTextInput from "./common/StateTextInput";
-import ClusterSettings, { fillMissingClusterOption } from "./common/ClusterSettings";
-import { closePanel } from "./editSlice";
+import ClusterSettings from "./common/ClusterSettings";
+import { closePanel, editLoadedObj } from "./editSlice";
 import { doEditObj } from "../feedlist/feedSlice";
 import editPanelStyle from "./editPanelStyle";
 
 const mapDispatchToProps = (dispatch) => ({
-  editSettings(e, settings, password) {
-    if (password) {
-      dispatch(doEditObj(null, { ...settings, password }, "user"));
-    } else {
-      dispatch(doEditObj(null, settings, "user"));
+  commit(e) {
+    e.preventDefault();
+    dispatch(doEditObj("user"));
+    dispatch(closePanel());
+  },
+  editPassword(password, passwordConf) {
+    if (password === passwordConf) {
+      dispatch(editLoadedObj({ key: "password", value: password}));
     }
-    return dispatch(closePanel());
   },
 });
 
-function SettingsPanel({ user, editSettings }) {
-  const [state, setState] = useState(fillMissingClusterOption(user, "user", null));
+function SettingsPanel({ editPassword, commit }) {
   const [pwdVal, setPwd] = useState("");
   const [pwdConfirm, setPwdConfirm] = useState("");
   const [showPasswd, setShowPasswd] = useState(false);
   const classes = editPanelStyle();
   return (
-    <form onSubmit={(e) => {
-      e.preventDefault();
-      if (pwdVal === pwdConfirm) {
-        editSettings(e, state, pwdVal);
-      }
-    }}>
+    <form onSubmit={(e) => commit(e)}>
     <FormControl component="fieldset">
       {["login", "email", "timezone"].map((key) => (
-          <StateTextInput key={key} label={key} name={key} state={state} setState={setState} disabled={key === "login"}  className={classes.editPanelInput}  />
+          <StateTextInput key={key} label={key} name={key}
+            disabled={key === "login"}
+            className={classes.editPanelInput}  />
        ))}
-      <ClusterSettings level="user" state={state} setState={setState} />
+      <ClusterSettings level="user" />
       <TextField label="Password" variant="outlined"
         className={classes.editPanelInput}
         value={pwdVal}
         error={pwdConfirm !== pwdVal}
         type={showPasswd ? "text" : "password"}
-        onChange={(e) => setPwd(e.target.value)} />
+        onChange={(e) => {
+          editPassword(e.target.value, pwdConfirm);
+          setPwd(e.target.value);
+        }} />
       <TextField label="Password confirmation" variant="outlined"
         className={classes.editPanelInput}
         value={pwdConfirm}
         error={pwdConfirm !== pwdVal}
         type={showPasswd ? "text" : "password"}
-        onChange={(e) => setPwdConfirm(e.target.value)} />
+        onChange={(e) => {
+          editPassword(pwdVal, e.target.value);
+          setPwdConfirm(e.target.value);
+        }} />
       <FormControlLabel control={<Switch
         checked={showPasswd}
         onChange={() => setShowPasswd(!showPasswd)}
         color="primary"
       />} label="Show password" />
-      <Button variant="contained" color="primary" type="submit" className={classes.editPanelBtn}>
+      <Button variant="contained" color="primary" type="submit"
+         className={classes.editPanelBtn}>
         Edit settings
       </Button>
     </FormControl>
@@ -69,8 +74,8 @@ function SettingsPanel({ user, editSettings }) {
 }
 
 SettingsPanel.propTypes = {
-  user: PropTypes.object.isRequired,
-  editSettings: PropTypes.func.isRequired,
+  commit: PropTypes.func.isRequired,
+  editPassword: PropTypes.func.isRequired,
 };
 
 export default connect(null, mapDispatchToProps)(SettingsPanel);
