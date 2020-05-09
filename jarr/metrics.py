@@ -23,7 +23,7 @@ FEED_LATENESS = Histogram('feed_lateness',
 
 FEED_EXPIRES = Histogram('feed_expires',
                          'detlta time in second observed when setting expires',
-                         [], buckets=BUCKETS_7D,
+                         ['feed_type'], buckets=BUCKETS_7D,
                          namespace='jarr', registry=REGISTRY)
 
 WORKER_BATCH = Histogram(

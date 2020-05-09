@@ -158,11 +158,9 @@ class FeedController(AbstractController):
         attrs['expires'] = min(expires)
         logger.info('saw %d articles in the past %r seconds, expiring at %r',
                     art_count, span_time, attrs['expires'])
-        try:
-            now = utc_now() if attrs['expires'].tzinfo else datetime.now()
-            FEED_EXPIRES.observe((now - attrs['expires']).total_seconds())
-        except (AttributeError, KeyError):
-            logger.info("couldn't observe delta for %r", attrs['expires'])
+        now = utc_now() if attrs['expires'].tzinfo else datetime.now()
+        FEED_EXPIRES.labels(feed_type=getattr(feed.feed_type, 'value', ''))\
+                .observe((now - attrs['expires']).total_seconds())
 
     def update(self, filters, attrs, return_objs=False, commit=True):
         self._ensure_icon(attrs)
