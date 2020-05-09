@@ -170,7 +170,7 @@ class FeedController(AbstractController):
                 attrs['expires'] = min_expires
                 logger.info("expiring too early, forcing expiring at %r",
                             min_expires)
-        except (AttributeError, KeyError):
+        except Exception:
             attrs['expires'] = max_expires
             method = 'defaulted to max'
 
