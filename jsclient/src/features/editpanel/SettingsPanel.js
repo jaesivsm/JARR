@@ -22,7 +22,7 @@ const mapDispatchToProps = (dispatch) => ({
   },
   editPassword(password, passwordConf) {
     if (password === passwordConf) {
-      return dispatch(editLoadedObj({ key: "password", value: password}));
+      dispatch(editLoadedObj({ key: "password", value: password}));
     }
   },
 });

@@ -27,7 +27,7 @@ function mapStateToProps(state) {
 const mapDispatchToProps = (dispatch) => ({
   toggleCatFolding(e, catId) {
     e.stopPropagation();
-    return dispatch(toggleFolding(catId));
+    dispatch(toggleFolding(catId));
   },
   listClusters(e, filters, isDesktop, isFolded, selectedCategoryId) {
     e.stopPropagation();
@@ -39,7 +39,7 @@ const mapDispatchToProps = (dispatch) => ({
     } else if (!isFolded && filters.categoryId && filters.categoryId === selectedCategoryId) {
       dispatch(toggleFolding(filters.categoryId));
     }
-    return dispatch(doListClusters(filters));
+    dispatch(doListClusters(filters));
   },
 });
 

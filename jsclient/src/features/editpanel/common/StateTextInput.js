@@ -9,7 +9,7 @@ function mapStateToProps(state) {
 }
 const mapDispatchToProps = (dispatch) => ({
   edit(e, key) {
-    return dispatch(editLoadedObj({ key, value: e.target.value }));
+    dispatch(editLoadedObj({ key, value: e.target.value }));
   },
 });
 

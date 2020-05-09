@@ -16,7 +16,7 @@ function mapStateToProps(state) {
 const mapDispatchToProps = (dispatch) => ({
   initRecovery(e, login, email) {
     e.preventDefault();
-    return dispatch(doInitRecovery(login, email));
+    dispatch(doInitRecovery(login, email));
   },
 });
 

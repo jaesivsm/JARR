@@ -22,8 +22,7 @@ function mapStateToProps(state) {
 const mapDispatchToProps = (dispatch) => ({
   recovery(e, params, password) {
     e.preventDefault();
-    return dispatch(doRecovery(params.login, params.email, params.token,
-                               password));
+    dispatch(doRecovery(params.login, params.email, params.token, password));
   },
 });
 

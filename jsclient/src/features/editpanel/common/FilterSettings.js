@@ -45,7 +45,7 @@ function mapStateToProps(state) {
 }
 const mapDispatchToProps = (dispatch) => ({
   edit(value) {
-    return dispatch(editLoadedObj({ key: "filters", value }));
+    dispatch(editLoadedObj({ key: "filters", value }));
   },
 });
 

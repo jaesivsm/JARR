@@ -18,11 +18,11 @@ import makeStyles from "./style";
 
 const mapDispatchToProps = (dispatch) => ({
   openEditPanel(id, objType) {
-    return dispatch(doFetchObjForEdit(objType, id));
+    dispatch(doFetchObjForEdit(objType, id));
   },
   deleteObj(id, type) {
     dispatch(doDeleteObj(id, type));
-    return dispatch(doListClusters({ categoryId: "all" }));
+    dispatch(doListClusters({ categoryId: "all" }));
   },
 });
 

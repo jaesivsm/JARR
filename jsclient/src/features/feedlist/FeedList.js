@@ -40,22 +40,22 @@ function mapStateToProps(state) {
 
 const mapDispatchToProps = (dispatch) => ({
   fetchFeed() {
-    return dispatch(doFetchFeeds());
+    dispatch(doFetchFeeds());
   },
   fetchUnreadCount() {
-    return dispatch(doFetchUnreadCount());
+    dispatch(doFetchUnreadCount());
   },
   toggleFeedList() {
-    return dispatch(toggleMenu(false));
+    dispatch(toggleMenu(false));
   },
   toggleAddPanel(objType) {
-    return dispatch(openPanel({ objType, isLoading: false }));
+    dispatch(openPanel({ objType, isLoading: false }));
   },
   toggleFolder() {
-    return dispatch(toggleAllFolding());
+    dispatch(toggleAllFolding());
   },
   setSearchFilter(searchStr) {
-    return dispatch(setSearchFilter(searchStr));
+    dispatch(setSearchFilter(searchStr));
   },
 });
 

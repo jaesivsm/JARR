@@ -193,7 +193,8 @@ export const doFetchUnreadCount = (): AppThunk => async (dispatch, getState) => 
 export const doCreateObj = (type): AppThunk => async (dispatch, getState) => {
   const result = await doRetryOnTokenExpiration({
     method: "post",
-    url: apiUrl + "/" + type + "?" + qs.stringify(getState().edit.loadedObj),
+    url: apiUrl + "/" + type,
+    data: getState().edit.loadedObj,
   }, dispatch, getState);
   dispatch(createdObj({ data: result.data, type }));
 };

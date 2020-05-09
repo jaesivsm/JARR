@@ -17,7 +17,7 @@ import editPanelStyle from "./editPanelStyle";
 
 const mapDispatchToProps = (dispatch) => ({
   close() {
-    return dispatch(closePanel());
+    dispatch(closePanel());
   },
 });
 

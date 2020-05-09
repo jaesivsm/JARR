@@ -85,7 +85,7 @@ const mapDispatchToProps = (dispatch) => ({
     dispatch(closePanel());
   },
   edit(key, value) {
-    return dispatch(editLoadedObj({ key, value }));
+    dispatch(editLoadedObj({ key, value }));
   },
 });
 
@@ -125,7 +125,7 @@ function AddEditFeed({ job, categories, link, sameLinkCount,
     <Alert severity="info">"{feedType}" type doesn't need a full url for link. Just the username will suffice.</Alert>
   );
   return (
-    <form>
+    <form onSubmit={(e) => commit(e, job)}>
     <FormControl component="fieldset">
       {warning}
       <StateTextInput required={true} label="Feed title" name="title"
@@ -167,7 +167,6 @@ function AddEditFeed({ job, categories, link, sameLinkCount,
       <ClusterSettings level="feed" />
       <div className={classes.editPanelButtons}>
         <Button className={classes.editPanelBtn}
-          onClick={(e) => commit(e, job)}
           variant="contained" color="primary" type="submit">
           {!feedId ? "Create" : "Edit"} Feed
         </Button>
