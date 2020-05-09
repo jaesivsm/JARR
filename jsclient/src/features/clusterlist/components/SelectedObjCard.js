@@ -21,6 +21,7 @@ const mapDispatchToProps = (dispatch) => ({
     return dispatch(doFetchObjForEdit(objType, id));
   },
   deleteObj(id, type) {
+    console.log(id, type);
     dispatch(doDeleteObj(id, type));
     return dispatch(doListClusters({ categoryId: "all" }));
   },
@@ -30,6 +31,7 @@ function SelectedObjCard({ id, str, type, iconUrl, errorCount, lastRetrieved,
                            openEditPanel, deleteObj }) {
   const objType = type === "feed" ? "feed" : "category";
   const classes = makeStyles();
+  console.log(id, type);
 
   return (
     <Card variant="outlined" className={classes.clusterListCard}>

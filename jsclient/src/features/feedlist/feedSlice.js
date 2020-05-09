@@ -154,21 +154,11 @@ const feedSlice = createSlice({
                })};
     },
     deletedObj(state, action) {
-      let type;
-      if (action.payload.objType === "feed") {
-        type = "feed";
-      } else if (action.payload.objType === "cateogry") {
-        type = "categ";
-      }
-      if (type) {
-        return { ...state,
-                 feedListRows: mergeCategoriesWithUnreads(
-                     state.feedListRows.filter((row) => (
-                         row.type !== type || row.id !== action.payload.id)),
-                     state.unreads, state.isParentFolded),
-                 };
-      }
-      return state;
+      const type = action.payload.objType === "category" ? "categ" : "feed";
+      return { ...state,
+               feedListRows: state.feedListRows.filter((row) => (
+                 row.type !== type || row.id !== action.payload.id)),
+              };
     },
   },
 });
@@ -224,8 +214,7 @@ export const doEditObj = (objType): AppThunk => async (dispatch, getState) => {
   }
 };
 
-export const doDeleteObj = (objType): AppThunk => async (dispatch, getState) => {
-  const id = getState().edit.loadedObj.id;
+export const doDeleteObj = (id, objType): AppThunk => async (dispatch, getState) => {
   await doRetryOnTokenExpiration({
     method: "delete",
     url: apiUrl + "/" + objType + (id ? "/" + id : ""),

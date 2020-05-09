@@ -14,7 +14,7 @@ function mapStateToProps(state) {
 const mapDispatchToProps = (dispatch) => ({
   deleteFunc(e, id, objType) {
     e.preventDefault();
-    dispatch(doDeleteObj(objType));
+    dispatch(doDeleteObj(id, objType));
     dispatch(doListClusters({ categoryId: "all" }));
     dispatch(closePanel());
   },
@@ -26,7 +26,8 @@ function DeleteButton({ id, type, deleteFunc, className }) {
   }
   return (
     <Button variant="contained" color="default" type="submit"
-      onClick={(e) => deleteFunc(e, id)} className={className}>
+        onClick={(e) => deleteFunc(e, id, type)}
+        className={className}>
       <WarningIcon />
       Delete {type}
     </Button>
