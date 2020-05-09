@@ -161,7 +161,8 @@ function FilterSettings({ filters, edit }) {
         <Typography className={classes.heading}>Filters Settings</Typography>
       </ExpansionPanelSummary>
       <ExpansionPanelDetails className={classes.editPanelClusterSettings}>
-        <IconButton onClick={() => setShowHelp(!showHelp)}>
+        <IconButton onClick={() => setShowHelp(!showHelp)}
+            className={classes.showHelpButton}>
           <HelpIcon />
         </IconButton>
         {help}

@@ -189,5 +189,13 @@ export default makeStyles((theme: Theme) =>
       textAlign: "center",
       padding: "20px 0",
     },
+    showHelpButton: {
+      width: 30,
+      height: 30,
+      margin: "0 auto",
+      position: "absolute",
+      right: 13,
+      top: 44,
+    },
   }),
 );
