@@ -200,10 +200,10 @@ export const doFetchUnreadCount = (): AppThunk => async (dispatch, getState) => 
   dispatch(loadedUnreadCounts({ unreads: result.data }));
 };
 
-export const doCreateObj = (obj, type): AppThunk => async (dispatch, getState) => {
+export const doCreateObj = (type): AppThunk => async (dispatch, getState) => {
   const result = await doRetryOnTokenExpiration({
     method: "post",
-    url: apiUrl + "/" + type + "?" + qs.stringify(obj),
+    url: apiUrl + "/" + type + "?" + qs.stringify(getState().edit.loadedObj),
   }, dispatch, getState);
   dispatch(createdObj({ data: result.data, type }));
 };
