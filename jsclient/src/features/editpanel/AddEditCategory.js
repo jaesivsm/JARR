@@ -6,8 +6,7 @@ import Button from "@material-ui/core/Button";
 import FormControl from "@material-ui/core/FormControl";
 // jarr
 import { closePanel } from "./editSlice";
-import { doCreateObj, doEditObj, doDeleteObj } from "../feedlist/feedSlice";
-import { doListClusters } from "../clusterlist/clusterSlice";
+import { doCreateObj, doEditObj } from "../feedlist/feedSlice";
 import ClusterSettings from "./common/ClusterSettings";
 import DeleteButton from "./common/DeleteButton";
 import StateTextInput from "./common/StateTextInput";
@@ -23,12 +22,6 @@ const mapDispatchToProps = (dispatch) => ({
   editCategory(e, id) {
     e.preventDefault();
     dispatch(doEditObj("category"));
-    return dispatch(closePanel());
-  },
-  deleteCategory(e, id) {
-    e.preventDefault();
-    dispatch(doDeleteObj("category"));
-    dispatch(doListClusters({ categoryId: "all" }));
     return dispatch(closePanel());
   },
 });
@@ -68,7 +61,7 @@ function AddEditCategory({ job, catId,
 
 AddEditCategory.propTypes = {
   job: PropTypes.string.isRequired,
-  catId: PropTypes.number.isRequired,
+  catId: PropTypes.number,
   createCategory: PropTypes.func.isRequired,
   editCategory: PropTypes.func.isRequired,
   deleteCategory: PropTypes.func.isRequired,

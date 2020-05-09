@@ -10,8 +10,7 @@ import FormControl from "@material-ui/core/FormControl";
 import FormHelperText from "@material-ui/core/FormHelperText";
 // jarr
 import { closePanel, editLoadedObj } from "./editSlice";
-import { doCreateObj, doEditObj, doDeleteObj } from "../feedlist/feedSlice";
-import { doListClusters } from "../clusterlist/clusterSlice";
+import { doCreateObj, doEditObj } from "../feedlist/feedSlice";
 import StateTextInput from "./common/StateTextInput";
 import ClusterSettings from "./common/ClusterSettings";
 import FilterSettings from "./common/FilterSettings";
@@ -48,12 +47,6 @@ const mapDispatchToProps = (dispatch) => ({
   editFeed(e, id) {
     e.preventDefault();
     dispatch(doEditObj("feed"));
-    return dispatch(closePanel());
-  },
-  deleteFeed(e, id) {
-    e.preventDefault();
-    dispatch(doDeleteObj("feed"));
-    dispatch(doListClusters({ categoryId: "all" }));
     return dispatch(closePanel());
   },
   edit(key, value) {
@@ -113,7 +106,7 @@ function mapStateToProps(state) {
 
 function AddEditFeed({ job, categories, link, sameLinkCount,
                        feedId, catId, feedType,
-                       createFeed, commitEditFeed, deleteFeed, edit }) {
+                       createFeed, commitEditFeed, edit }) {
   const classes = editPanelStyle();
 
   let warning;
@@ -182,8 +175,7 @@ function AddEditFeed({ job, categories, link, sameLinkCount,
         <Button className={classes.editPanelBtn} variant="contained" color="primary" type="submit">
           {job === "add" ? "Create" : "Edit"} Feed
         </Button>
-        <DeleteButton type="feed" deleteFunc={deleteFeed}
-          className={classes.deletePanelBtn}/>
+        <DeleteButton type="feed" className={classes.deletePanelBtn}/>
       </div>
     </FormControl>
     </form>
