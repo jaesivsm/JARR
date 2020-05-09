@@ -115,7 +115,13 @@ const clusterSlice = createSlice({
       return { ...state, loadedCluster: {}, requestedClusterId: null };
     },
     markedAllAsRead(state, action) {
-      return { ...state, clusters: [] };
+      if (!action.payload.onlySingles) {
+        return { ...state, clusters: [] };
+      }
+      return { ...state,
+               clusters: state.clusters.filter((cluster) =>
+                 cluster["feeds_id"].length > 1),
+      };
     },
   },
 });
