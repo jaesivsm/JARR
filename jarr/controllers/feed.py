@@ -12,7 +12,8 @@ from jarr.controllers.abstract import AbstractController
 from jarr.controllers.icon import IconController
 from jarr.lib.enums import FeedStatus
 from jarr.lib.utils import utc_now
-from jarr.metrics import FEED_EXPIRES
+from jarr.lib.const import UNIX_START
+from jarr.metrics import FEED_EXPIRES, FEED_LATENESS
 from jarr.models import Article, Category, Cluster, Feed, User
 
 DEFAULT_LIMIT = 0
@@ -94,6 +95,11 @@ class FeedController(AbstractController):
     def list_fetchable(self, limit=DEFAULT_LIMIT):
         now, feeds = utc_now(), list(self.list_late(limit))
         if feeds:
+            for feed in feeds:
+                if feed.last_retrieved == UNIX_START:
+                    continue
+                FEED_LATENESS.labels(feed_type=feed.feed_type.value)\
+                        .observe((now - feed.last_retrieved).total_seconds())
             self.update({'id__in': [feed.id for feed in feeds]},
                         {'last_retrieved': now})
         return feeds

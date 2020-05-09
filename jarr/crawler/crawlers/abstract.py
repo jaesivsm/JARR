@@ -11,7 +11,7 @@ from jarr.crawler.requests_utils import (response_calculated_etag_match,
 from jarr.lib.const import UNIX_START
 from jarr.lib.enums import FeedType
 from jarr.lib.utils import jarr_get, utc_now
-from jarr.metrics import FEED_FETCH, FEED_LATENESS
+from jarr.metrics import FEED_FETCH
 
 logger = logging.getLogger(__name__)
 
@@ -27,13 +27,6 @@ class AbstractCrawler:
         logger.log(level, 'feed responded with %s', result)
         FEED_FETCH.labels(feed_type=self.feed.feed_type.value,
                           result=result).inc()
-
-    def _metric_lateness(self, now):
-        if not self.feed.last_retrieved \
-                or self.feed.last_retrieved == UNIX_START:
-            return
-        FEED_LATENESS.labels(feed_type=self.feed.feed_type.value).observe(
-            (now - self.feed.last_retrieved).total_seconds())
 
     def set_feed_error(self, error=None, parsed_feed=None):
         error_count = self.feed.error_count + 1
@@ -51,7 +44,6 @@ class AbstractCrawler:
         now = utc_now()
         info = {'error_count': error_count, 'last_error': last_error,
                 'user_id': self.feed.user_id, 'last_retrieved': now}
-        self._metric_lateness(now)
         info.update(extract_feed_info({}))
 
         FEED_FETCH.labels(feed_type=self.feed.feed_type.value,
@@ -82,7 +74,6 @@ class AbstractCrawler:
                            self.feed.link, response.url)
             info['link'] = response.url
         if info:
-            self._metric_lateness(now)
             return FeedController(self.feed.user_id).update(
                     {'id': self.feed.id}, info)
         return None
