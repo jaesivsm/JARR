@@ -188,6 +188,6 @@ export default makeStyles((theme: Theme) =>
       width: "100%",
       textAlign: "center",
       padding: "20px 0",
-    }
+    },
   }),
 );

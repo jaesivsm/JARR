@@ -9,7 +9,7 @@ import IconButton from "@material-ui/core/IconButton";
 import TextField from "@material-ui/core/TextField";
 import Typography from "@material-ui/core/Typography";
 import ExpansionPanel from "@material-ui/core/ExpansionPanel";
-import Popover from "@material-ui/core/Popover";
+import Alert from "@material-ui/lab/Alert";
 import ExpansionPanelSummary from "@material-ui/core/ExpansionPanelSummary";
 import ExpansionPanelDetails from "@material-ui/core/ExpansionPanelDetails";
 // material icons
@@ -130,7 +130,19 @@ FilterSettingLine.propTypes = {
 
 function FilterSettings({ state, setState }) {
   const classes = editPanelStyle();
-  const [anchorEl, setAnchorEl] = useState(null)
+  const [showHelp, setShowHelp] = useState(false)
+  let help;
+  if(showHelp) {
+    help = (
+      <Alert>
+        <Typography>
+          <p>Filters are processed in the order you place them on every new articles that will be fetched for that feed.</p>
+          <p>Through filters you can modify the read, liked status, allow or forbid clustering new articles. You can also skip entierly the creation of an article match a filter.</p>
+          <p>Filters are processed one after another and you can revert the filter you applied just before. For example you might want to skip every article which title contains "Python" and 'unskip' every article containing "Monthy". This way you would see every article mentionning "Monthy Python" but none about python solely.</p>
+        </Typography>
+      </Alert>
+    );
+  }
   return (
     <ExpansionPanel className={classes.editPanelCluster} >
       <ExpansionPanelSummary
@@ -141,28 +153,10 @@ function FilterSettings({ state, setState }) {
         <Typography className={classes.heading}>Filters Settings</Typography>
       </ExpansionPanelSummary>
       <ExpansionPanelDetails className={classes.editPanelClusterSettings}>
-        <IconButton onClick={(e) => setAnchorEl(e.currentTarget)}>
+        <IconButton onClick={() => setShowHelp(!showHelp)}>
           <HelpIcon />
         </IconButton>
-        <Popover
-          open={Boolean(anchorEl)}
-          anchorEl={anchorEl}
-          onClose={() => setAnchorEl(null)}
-          anchorOrigin={{
-            vertical: 'bottom',
-            horizontal: 'center',
-          }}
-          transformOrigin={{
-            vertical: 'top',
-            horizontal: 'center',
-          }}
-        >
-          <Typography className={classes.typography}>
-            <p>Filters are processed in the order you place them on every new articles that will be fetched for that feed.</p>
-            <p>Through filters you can modify the read, liked status, allow or forbid clustering new articles. You can also skip entierly the creation of an article match a filter.</p>
-            <p>Filters are processed one after another and you can revert the filter you applied just before. For example you might want to skip every article which title contains "Python" and 'unskip' every article containing "Monthy". This way you would see every article mentionning "Monthy Python" but none about python solely.</p>
-          </Typography>
-        </Popover>
+        {help}
         {state.filters.map((filter, i) =>
           <FilterSettingLine
             key={"filter"+i}
