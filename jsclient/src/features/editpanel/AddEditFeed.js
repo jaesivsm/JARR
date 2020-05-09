@@ -32,7 +32,6 @@ function mapPropposedLinkStateToProps(state) {
 const mapPropposedLinkDispatchToProps = (dispatch) => ({
   edit(value) {
     dispatch(editLoadedObj({ key: "link", value }));
-    dispatch(editLoadedObj({ key: "links", value }));
   }
 });
 
@@ -59,7 +58,7 @@ function ProposedLinksComponent({ link, links, edit }) {
 }
 
 ProposedLinksComponent.propTypes = {
-  link: PropTypes.string.isRequired,
+  link: PropTypes.string,
   links: PropTypes.array,
   edit: PropTypes.func.isRequired,
 };
@@ -182,7 +181,7 @@ function AddEditFeed({ job, categories, link, sameLinkCount,
 AddEditFeed.propTypes = {
   link: PropTypes.string,
   sameLinkCount: PropTypes.number.isRequired,
-  feedId: PropTypes.number.isRequired,
+  feedId: PropTypes.number,
   catId: PropTypes.number,
   feedType: PropTypes.string.isRequired,
   job: PropTypes.string.isRequired,

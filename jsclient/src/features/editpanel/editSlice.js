@@ -15,7 +15,6 @@ const editSlice = createSlice({
   },
   reducers: {
     openPanel(state, action) {
-      console.log(action.payload);
       return { ...state, isOpen: true,
                objType: action.payload.objType,
                objId: action.payload.objId,
@@ -42,9 +41,9 @@ const editSlice = createSlice({
         // not the object that was asked for last, ignoring
         return state;
       }
-      return { ...state, isOpen: true, job: "edit",
-               editedKeys: [],
-               loadedObj: action.payload.data, };
+      return { ...state, isOpen: true, isLoading: false,
+               editedKeys: [], loadedObj: action.payload.data,
+               job: action.payload.job ? action.payload.job: state.job };
     },
     requestedBuildedFeed(state, action) {
       return { ...state, isLoading: true };
@@ -64,7 +63,8 @@ export const doBuildFeed = (url): AppThunk => async (dispatch, getState) => {
     method: "get",
     url: apiUrl + "/feed/build?" + qs.stringify({ url }),
   }, dispatch, getState);
-  dispatch(loadedObjToEdit({ data: result.data, noIdCheck: true }));
+  dispatch(loadedObjToEdit({ data: result.data, noIdCheck: true,
+                             job: "build" }));
 };
 
 export const doFetchObjForEdit = (type, id): AppThunk => async (dispatch, getState) => {
@@ -73,5 +73,5 @@ export const doFetchObjForEdit = (type, id): AppThunk => async (dispatch, getSta
   const result = await doRetryOnTokenExpiration({
     method: "get", url,
   }, dispatch, getState);
-  dispatch(loadedObjToEdit({ data: result.data }));
+  dispatch(loadedObjToEdit({ data: result.data, job: "edit" }));
 };

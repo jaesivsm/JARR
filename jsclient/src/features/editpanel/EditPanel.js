@@ -26,25 +26,19 @@ function mapStateToProps(state) {
            isLoading: state.edit.isLoading,
            job: state.edit.job,
            objType: state.edit.objType,
-           buildedFeed: state.edit.buildedFeed,
   };
 }
 
-function EditPanel({ isOpen, isLoading, job, objType,
-                     buildedFeed, close }) {
+function EditPanel({ isOpen, isLoading, job, objType, close }) {
   const classes = editPanelStyle();
   let form = <div className={classes.loadEditPanel}><CircularProgress /></div>;
-  if(job === "add" && objType === "feed") {
-    if(buildedFeed) {
-      form = <AddEditFeed job={job} />;
-    } else {
-      form = <BuildFeed isLoading={isLoading} />;
-    }
-  } else if (job === "edit" && objType === "feed") {
+  if (objType === "feed" && job === "add") {
+    form = <BuildFeed isLoading={isLoading} />;
+  } else if (objType === "feed") {
     form = <AddEditFeed job={job} />;
-  } else if ((job === "add" || job === "edit") && objType === "category") {
+  } else if (objType === "category") {
     form = <AddEditCategory job={job} />;
-  } else if (job === "edit" && objType === "user") {
+  } else if (objType === "user") {
     form = <SettingsPanel />;
   }
   return (
@@ -81,7 +75,6 @@ EditPanel.propTypes = {
   isLoading: PropTypes.bool.isRequired,
   job: PropTypes.string,
   objType: PropTypes.string,
-  buildedFeed: PropTypes.object,
   close: PropTypes.func.isRequired,
 };
 

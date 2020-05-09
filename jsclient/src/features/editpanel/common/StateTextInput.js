@@ -17,7 +17,7 @@ function StateTextInput({ label, name, loadedObj, edit, required, disabled, clas
   return (
     <TextField required={!!required} disabled={!!disabled} variant="outlined"
                label={label} name={name}
-               value={loadedObj ? loadedObj[name] : ""}
+               value={loadedObj[name] ? loadedObj[name] : ""}
                className={className}
                onChange={(e) => edit(e, name)}
     />
