@@ -48,7 +48,7 @@ const mapDispatchToProps = (dispatch) => ({
   },
   markAllAsRead(onlySingles) {
     dispatch(doMarkAllAsRead(onlySingles));
-    return dispatch(markedAllAsRead());
+    dispatch(markedAllAsRead({ onlySingles }));
   },
   toggleFeedList() {
     return dispatch(toggleMenu(true));
