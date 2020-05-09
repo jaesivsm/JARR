@@ -14,15 +14,14 @@ import StateTextInput from "./common/StateTextInput";
 import editPanelStyle from "./editPanelStyle";
 
 const mapDispatchToProps = (dispatch) => ({
-  createCategory(e) {
+  commit(e, job) {
     e.preventDefault();
-    dispatch(doCreateObj("category"));
-    return dispatch(closePanel());
-  },
-  editCategory(e, id) {
-    e.preventDefault();
-    dispatch(doEditObj("category"));
-    return dispatch(closePanel());
+    if (job === "edit") {
+      dispatch(doEditObj("category"));
+    } else {
+      dispatch(doCreateObj("category"));
+    }
+    dispatch(closePanel());
   },
 });
 
@@ -30,17 +29,11 @@ function mapStateToProps(state) {
   return { catId: state.edit.loadedObj.id };
 }
 
-function AddEditCategory({ job, catId, createCategory, editCategory }) {
+function AddEditCategory({ job, catId, commit }) {
   const classes = editPanelStyle();
 
   return (
-    <form onSubmit={(e) => {
-      if (job === "add") {
-        createCategory(e);
-      } else {
-        editCategory(e);
-      }
-    }}>
+    <form onSubmit={(e) => commit(e, job)}>
     <FormControl component="fieldset">
       <StateTextInput label="Category name" name="name"
         className={classes.editPanelInput} />
@@ -59,8 +52,7 @@ function AddEditCategory({ job, catId, createCategory, editCategory }) {
 AddEditCategory.propTypes = {
   job: PropTypes.string.isRequired,
   catId: PropTypes.number,
-  createCategory: PropTypes.func.isRequired,
-  editCategory: PropTypes.func.isRequired,
+  commit: PropTypes.func.isRequired,
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(AddEditCategory);

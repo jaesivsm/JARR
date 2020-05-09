@@ -15,27 +15,25 @@ import { doEditObj } from "../feedlist/feedSlice";
 import editPanelStyle from "./editPanelStyle";
 
 const mapDispatchToProps = (dispatch) => ({
-  editSettings(settings) {
+  commit(e) {
+    e.preventDefault();
     dispatch(doEditObj("user"));
-    return dispatch(closePanel());
+    dispatch(closePanel());
   },
-  edit(key, value) {
-    return dispatch(editLoadedObj({ key, value }));
+  editPassword(password, passwordConf) {
+    if (password === passwordConf) {
+      return dispatch(editLoadedObj({ key: "password", value: password}));
+    }
   },
 });
 
-function SettingsPanel({ editSettings }) {
+function SettingsPanel({ editPassword, commit }) {
   const [pwdVal, setPwd] = useState("");
   const [pwdConfirm, setPwdConfirm] = useState("");
   const [showPasswd, setShowPasswd] = useState(false);
   const classes = editPanelStyle();
   return (
-    <form onSubmit={(e) => {
-      e.preventDefault();
-      if (pwdVal === pwdConfirm) {
-        editSettings(pwdVal);
-      }
-    }}>
+    <form onSubmit={(e) => commit(e)}>
     <FormControl component="fieldset">
       {["login", "email", "timezone"].map((key) => (
           <StateTextInput key={key} label={key} name={key}
@@ -48,13 +46,19 @@ function SettingsPanel({ editSettings }) {
         value={pwdVal}
         error={pwdConfirm !== pwdVal}
         type={showPasswd ? "text" : "password"}
-        onChange={(e) => setPwd(e.target.value)} />
+        onChange={(e) => {
+          editPassword(e.target.value, pwdConfirm);
+          setPwd(e.target.value);
+        }} />
       <TextField label="Password confirmation" variant="outlined"
         className={classes.editPanelInput}
         value={pwdConfirm}
         error={pwdConfirm !== pwdVal}
         type={showPasswd ? "text" : "password"}
-        onChange={(e) => setPwdConfirm(e.target.value)} />
+        onChange={(e) => {
+          editPassword(pwdVal, e.target.value);
+          setPwdConfirm(e.target.value);
+        }} />
       <FormControlLabel control={<Switch
         checked={showPasswd}
         onChange={() => setShowPasswd(!showPasswd)}
@@ -70,7 +74,8 @@ function SettingsPanel({ editSettings }) {
 }
 
 SettingsPanel.propTypes = {
-  editSettings: PropTypes.func.isRequired,
+  commit: PropTypes.func.isRequired,
+  editPassword: PropTypes.func.isRequired,
 };
 
 export default connect(null, mapDispatchToProps)(SettingsPanel);

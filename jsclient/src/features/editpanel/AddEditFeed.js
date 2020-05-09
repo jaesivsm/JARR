@@ -30,31 +30,14 @@ function mapPropposedLinkStateToProps(state) {
 }
 
 const mapPropposedLinkDispatchToProps = (dispatch) => ({
-  edit(key, value) {
-    return dispatch(editLoadedObj({ key, value }));
+  edit(value) {
+    dispatch(editLoadedObj({ key: "link", value }));
+    dispatch(editLoadedObj({ key: "links", value }));
   }
 });
 
-const mapDispatchToProps = (dispatch) => ({
-  createFeed(e, feed) {
-    e.preventDefault();
-    if (!feed["category_id"]) {
-      delete feed["category_id"];
-    }
-    dispatch(doCreateObj("feed"));
-    return dispatch(closePanel());
-  },
-  editFeed(e, id) {
-    e.preventDefault();
-    dispatch(doEditObj("feed"));
-    return dispatch(closePanel());
-  },
-  edit(key, value) {
-    return dispatch(editLoadedObj({ key, value }));
-  },
-});
 
-function ProposedLinksComponent({ link, links, onChange }) {
+function ProposedLinksComponent({ link, links, edit }) {
   const classes = editPanelStyle();
   if (!links) {
     return null;
@@ -63,7 +46,7 @@ function ProposedLinksComponent({ link, links, onChange }) {
       <FormControl>
         <FormHelperText>Other possible feed link have been found :</FormHelperText>
         <Select variant="outlined" value={link}
-            onChange={onChange}
+            onChange={(e) => edit(e.target.value)}
             className={classes.editPanelInput}
         >
             {links.map((proposedLink) => (
@@ -77,8 +60,8 @@ function ProposedLinksComponent({ link, links, onChange }) {
 
 ProposedLinksComponent.propTypes = {
   link: PropTypes.string.isRequired,
-  links: PropTypes.array.isRequired,
-  onChange: PropTypes.func.isRequired,
+  links: PropTypes.array,
+  edit: PropTypes.func.isRequired,
 };
 
 const ProposedLinks = connect(mapPropposedLinkStateToProps,
@@ -91,6 +74,21 @@ function extractFromLoadedObj(state, key, def) {
   }
   return def;
 }
+
+const mapDispatchToProps = (dispatch) => ({
+  commit(e, job) {
+    e.preventDefault();
+    if (job === "edit") {
+      dispatch(doEditObj("feed"));
+    } else {
+      dispatch(doCreateObj("feed"));
+    }
+    dispatch(closePanel());
+  },
+  edit(key, value) {
+    return dispatch(editLoadedObj({ key, value }));
+  },
+});
 
 function mapStateToProps(state) {
   return { catId: extractFromLoadedObj(state, "category_id", null),
@@ -106,7 +104,7 @@ function mapStateToProps(state) {
 
 function AddEditFeed({ job, categories, link, sameLinkCount,
                        feedId, catId, feedType,
-                       createFeed, commitEditFeed, edit }) {
+                       edit, commit }) {
   const classes = editPanelStyle();
 
   let warning;
@@ -128,10 +126,7 @@ function AddEditFeed({ job, categories, link, sameLinkCount,
     <Alert severity="info">"{feedType}" type doesn't need a full url for link. Just the username will suffice.</Alert>
   );
   return (
-    <form onSubmit={(e) => {
-      if (!feedId) { createFeed(e); }
-      else {commitEditFeed(e);}
-    }}>
+    <form>
     <FormControl component="fieldset">
       {warning}
       <StateTextInput required={true} label="Feed title" name="title"
@@ -172,7 +167,9 @@ function AddEditFeed({ job, categories, link, sameLinkCount,
       <FilterSettings />
       <ClusterSettings level="feed" />
       <div className={classes.editPanelButtons}>
-        <Button className={classes.editPanelBtn} variant="contained" color="primary" type="submit">
+        <Button className={classes.editPanelBtn}
+          onClick={(e) => commit(e, job)}
+          variant="contained" color="primary" type="submit">
           {job === "add" ? "Create" : "Edit"} Feed
         </Button>
         <DeleteButton type="feed" className={classes.deletePanelBtn}/>
@@ -190,9 +187,8 @@ AddEditFeed.propTypes = {
   feedType: PropTypes.string.isRequired,
   job: PropTypes.string.isRequired,
   categories: PropTypes.array.isRequired,
-  createFeed: PropTypes.func.isRequired,
-  commitEditFeed: PropTypes.func.isRequired,
   edit: PropTypes.func.isRequired,
+  commit: PropTypes.func.isRequired,
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(AddEditFeed);

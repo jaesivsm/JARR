@@ -49,7 +49,7 @@ const mapDispatchToProps = (dispatch) => ({
   },
 });
 
-function FilterSettingLine({ index, length, action, trigger, pattern, type, filters, edit }) {
+function FilterSettingLineComponent({ index, length, action, trigger, pattern, type, filters, edit }) {
   let moveUp;
   let moveDown;
   const classes = editPanelStyle();
@@ -125,14 +125,14 @@ function FilterSettingLine({ index, length, action, trigger, pattern, type, filt
   );
 }
 
-FilterSettingLine.propTypes = {
+FilterSettingLineComponent.propTypes = {
   action: PropTypes.string.isRequired,
   trigger: PropTypes.string.isRequired,
   pattern: PropTypes.string.isRequired,
   type: PropTypes.string.isRequired,
 };
 
-const filterSettingLine = connect(mapStateToProps, mapDispatchToProps)(FilterSettingLine);
+const FilterSettingLine = connect(mapStateToProps, mapDispatchToProps)(FilterSettingLineComponent);
 
 function FilterSettings({ filters, edit }) {
   const classes = editPanelStyle();
@@ -148,7 +148,7 @@ function FilterSettings({ filters, edit }) {
       <ExpansionPanelDetails className={classes.editPanelClusterSettings}>
 
         {filters.map((filter, i) =>
-          <filterSettingLine
+          <FilterSettingLine
             key={"filter"+i}
             index={i}
             length={filters.length}
