@@ -169,7 +169,7 @@ function AddEditFeed({ job, categories, link, sameLinkCount,
         <Button className={classes.editPanelBtn}
           onClick={(e) => commit(e, job)}
           variant="contained" color="primary" type="submit">
-          {job === "add" ? "Create" : "Edit"} Feed
+          {!feedId ? "Create" : "Edit"} Feed
         </Button>
         <DeleteButton type="feed" className={classes.deletePanelBtn}/>
       </div>

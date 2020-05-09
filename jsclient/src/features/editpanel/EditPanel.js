@@ -31,8 +31,10 @@ function mapStateToProps(state) {
 
 function EditPanel({ isOpen, isLoading, job, objType, close }) {
   const classes = editPanelStyle();
-  let form = <div className={classes.loadEditPanel}><CircularProgress /></div>;
-  if (objType === "feed" && job === "add") {
+  let form;
+  if (isLoading) {
+    form = <div className={classes.loadEditPanel}><CircularProgress /></div>;
+  } else if (objType === "feed" && job === "add") {
     form = <BuildFeed isLoading={isLoading} />;
   } else if (objType === "feed") {
     form = <AddEditFeed job={job} />;
@@ -56,7 +58,6 @@ function EditPanel({ isOpen, isLoading, job, objType, close }) {
           <IconButton onClick={close}>
             <Close />
           </IconButton>
-          {isLoading ? <CircularProgress /> : null}
           <Typography className={classes.editPanelTitle}>
             {job.charAt(0).toUpperCase()}{job.slice(1)}ing {objType.charAt(0).toUpperCase()}{objType.slice(1)}
           </Typography>

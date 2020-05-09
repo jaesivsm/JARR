@@ -49,7 +49,7 @@ const mapDispatchToProps = (dispatch) => ({
     return dispatch(toggleMenu(false));
   },
   toggleAddPanel(objType) {
-    return dispatch(openPanel({ objType }));
+    return dispatch(openPanel({ objType, isLoading: false }));
   },
   toggleFolder() {
     return dispatch(toggleAllFolding());
