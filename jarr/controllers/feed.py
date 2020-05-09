@@ -1,6 +1,6 @@
 import logging
 from collections import OrderedDict, defaultdict
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 import dateutil.parser
 from sqlalchemy import and_
@@ -79,15 +79,14 @@ class FeedController(AbstractController):
         desactivated users are ignored.
         """
         now = utc_now()
-        max_ex = now + timedelta(seconds=conf.feed.max_expires)
-        min_delta = timedelta(seconds=conf.feed.min_expires)
-        query = self.get_active_feed().filter(
-                *(self._to_filters(
-                    __or__=[{'last_retrieved__lt': now - min_delta},
-                            {'last_retrieved__gt': now + min_delta}])
-                .union(self._to_filters(
-                    __or__=[{'expires__lt': now},
-                            {'expires__gt': max_ex}])))).order_by(Feed.expires)
+        min_expiring = now - timedelta(seconds=conf.feed.min_expires)
+        max_expiring = now - timedelta(seconds=conf.feed.max_expires)
+        filters = self._to_filters(
+            last_retrieved__lt=min_expiring,
+            __or__=[{'expires__lt': now, 'expires__ne': None},
+                    {'last_retrieved__lt': max_expiring,
+                     'last_retrieved__ne': None}])
+        query = self.get_active_feed().filter(*filters).order_by(Feed.expires)
         if limit:
             query = query.limit(limit)
         yield from query
@@ -144,29 +143,53 @@ class FeedController(AbstractController):
 
     def __update_default_expires(self, feed, attrs):
         now = utc_now()
-        expires = []
-        if attrs['expires']:
+        min_expires = now + timedelta(seconds=conf.feed.min_expires)
+        max_expires = now + timedelta(seconds=conf.feed.max_expires)
+        method = 'from header'
+        feed_type = getattr(feed.feed_type, 'value', '')
+        try:
             if not isinstance(attrs['expires'], datetime):
-                expires.append(dateutil.parser.parse(attrs['expires']))
-            else:
-                expires.append(attrs['expires'])
+                attrs['expires'] = dateutil.parser.parse(attrs['expires'])
+            if not attrs['expires'].tzinfo:
+                method = 'from header added tzinfo'
+                attrs['expires'] = attrs['expires'].replace(
+                        tzinfo=timezone.utc)
+            elif max_expires < attrs['expires']:
+                method = 'from header max limited'
+                attrs['expires'] = max_expires
+                logger.info("expiring too late, forcing expiring at %r",
+                            max_expires)
+            elif attrs['expires'] < min_expires:
+                method = 'from header min limited'
+                attrs['expires'] = min_expires
+                logger.info("expiring too early, forcing expiring at %r",
+                            min_expires)
+        except (AttributeError, KeyError):
+            attrs['expires'] = max_expires
+            method = 'defaulted to max'
 
-        span_time = timedelta(seconds=conf.feed.max_expires)
+        max_retrived_date = now - timedelta(seconds=conf.feed.max_expires)
+        span_time = conf.feed.max_expires - conf.feed.min_expires
         art_count = self.__actrl.read(feed_id=feed.id,
-                retrieved_date__gt=now - span_time).count()
-        expires.append(now + (span_time / (art_count or 1)))
-        attrs['expires'] = min(expires)
+                retrieved_date__gt=max_retrived_date).count()
+        if art_count:
+            proposed_expires = now + timedelta(
+                    seconds=span_time / art_count + conf.feed.min_expires)
+            if proposed_expires < attrs['expires']:
+                attrs['expires'] = proposed_expires
+                method = 'computed'
         logger.info('saw %d articles in the past %r seconds, expiring at %r',
                     art_count, span_time, attrs['expires'])
         now = utc_now() if attrs['expires'].tzinfo else datetime.now()
-        FEED_EXPIRES.labels(feed_type=getattr(feed.feed_type, 'value', ''))\
+        FEED_EXPIRES.labels(method=method, feed_type=feed_type)\
                 .observe((now - attrs['expires']).total_seconds())
 
     def update(self, filters, attrs, return_objs=False, commit=True):
         self._ensure_icon(attrs)
         self.__clean_feed_fields(attrs)
         stuff_to_denorm = bool({'title', 'category_id'}.intersection(attrs))
-        updating_expires = 'expires' in attrs
+        updating_expires = bool({'expires',
+                                 'last_retrieved'}.intersection(attrs))
 
         if stuff_to_denorm or updating_expires:
             for feed in self.read(**filters):

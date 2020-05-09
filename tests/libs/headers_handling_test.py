@@ -52,15 +52,3 @@ class HeadersHandlingTest(unittest.TestCase):
         headers = {'expires': (datetime.utcnow() + ok_delta).isoformat()}
         assert_in_range(extract_feed_info(headers)['expires'],
                         utc_now() + ok_delta)
-
-    @staticmethod
-    def test_lower_bound():
-        headers = {'cache-control': 'max-age=%d' % (conf.feed.min_expires / 2)}
-        assert_in_range(extract_feed_info(headers)['expires'],
-                utc_now() + timedelta(seconds=conf.feed.min_expires))
-
-    @staticmethod
-    def test_upper_bound():
-        headers = {'cache-control': 'max-age=%d' % (conf.feed.max_expires * 2)}
-        assert_in_range(extract_feed_info(headers)['expires'],
-                        utc_now() + timedelta(seconds=conf.feed.max_expires))

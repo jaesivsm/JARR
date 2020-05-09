@@ -80,8 +80,8 @@ conf = TheConf({'config_files': ['/etc/jarr/jarr.json', '~/.config/jarr.json'],
                               {'password': {'default': ''}}]},
             {'feed': [{'error_max': {'type': int, 'default': 6}},
                       {'error_threshold': {'type': int, 'default': 3}},
-                      {'min_expires': {'type': int, 'default': 60 * 10}},
-                      {'max_expires': {'type': int, 'default': 60 * 60 * 4}},
+                      {'min_expires': {'type': int, 'default': 3600 / 2}},
+                      {'max_expires': {'type': int, 'default': 7 * 24 * 3600}},
                       {'stop_fetch': {'default': 30, 'type': int}}]},
                       ]})
 
