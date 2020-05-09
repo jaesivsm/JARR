@@ -134,6 +134,25 @@ const feedSlice = createSlice({
                                                         state.isParentFolded),
       };
     },
+    editedObj(state, action) {
+      let str;
+      if (action.payload.data.name) {
+        str = action.payload.data.name;
+      } else if (action.payload.data.title) {
+        str = action.payload.data.title;
+      } else { // nor name or title have been edited, nothing to change
+        return state;
+      }
+      return { ...state,
+               feedListRows: state.feedListRows.map((row) => {
+                  if (((action.payload.objType === "feed" && row.type === "feed")
+                       || (action.payload.objType === "category" && row.type === "categ"))
+                       && action.payload.id === row.id) {
+                    return { ...row, str };
+                  }
+                  return row;
+               })};
+    },
     deletedObj(state, action) {
       let type;
       if (action.payload.objType === "feed") {
@@ -159,7 +178,7 @@ export const { requestedFeeds, loadedFeeds,
                toggleMenu, toggleAllFolding, toggleFolding,
                createdObj, setSearchFilter,
                changeReadCount,
-               deletedObj,
+               editedObj, deletedObj,
 } = feedSlice.actions;
 export default feedSlice.reducer;
 
@@ -195,12 +214,14 @@ export const doEditObj = (objType): AppThunk => async (dispatch, getState) => {
   editState.editedKeys.forEach((key) => {
     data[key] = editState.loadedObj[key];
   });
-  const result = await doRetryOnTokenExpiration({
+  await doRetryOnTokenExpiration({
     method: "put",
     url: apiUrl + "/" + objType + (objType !== "user" ? "/" + editState.loadedObj.id : ""),
     data: data,
   }, dispatch, getState);
-  return result;
+  if (objType !== "user") {
+    dispatch(editedObj({ id: editState.loadedObj.id, objType, data }));
+  }
 };
 
 export const doDeleteObj = (objType): AppThunk => async (dispatch, getState) => {

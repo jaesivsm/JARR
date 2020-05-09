@@ -15,6 +15,7 @@ const editSlice = createSlice({
   },
   reducers: {
     openPanel(state, action) {
+      console.log(action.payload);
       return { ...state, isOpen: true,
                objType: action.payload.objType,
                objId: action.payload.objId,
@@ -36,7 +37,8 @@ const editSlice = createSlice({
       };
     },
     loadedObjToEdit(state, action) {
-      if (state.objId !== action.payload.data.id || !action.payload.noIdCheck ) {
+      console.log(state.objId, action.payload);
+      if (state.objId !== action.payload.data.id && !action.payload.noIdCheck ) {
         // not the object that was asked for last, ignoring
         return state;
       }
