@@ -72,7 +72,7 @@ export const doRetryOnTokenExpiration = async (payload, dispatch, getState) => {
     if (err.response && err.response.status === 401
         && err.response.data && err.response.data.message
         && err.response.data.message === "Invalid token, Signature has expired") {
-      return dispatch(authError({ statusText: "EXPIRED" }));
+      dispatch(authError({ statusText: "EXPIRED" }));
     } else {
       return err.response;
     }

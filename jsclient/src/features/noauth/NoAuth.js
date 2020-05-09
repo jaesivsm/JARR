@@ -33,10 +33,10 @@ function mapStateToProps(state) {
 
 const mapDispatchToProps = (dispatch) => ({
   hiddenLogin (login, password) {
-    return dispatch(doLogin(login, password));
+    dispatch(doLogin(login, password));
   },
   clearStore() {
-    return dispatch(responseRecieved());
+    dispatch(responseRecieved());
   },
 });
 

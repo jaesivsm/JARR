@@ -11,7 +11,7 @@ import { doBuildFeed } from "./editSlice";
 const mapDispatchToProps = (dispatch) => ({
   doBuildFeed(e, feedUrl) {
     e.preventDefault();
-    return dispatch(doBuildFeed(feedUrl));
+    dispatch(doBuildFeed(feedUrl));
   },
 });
 

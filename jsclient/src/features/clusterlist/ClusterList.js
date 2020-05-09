@@ -54,10 +54,10 @@ function mapStateToProps(state) {
 
 const mapDispatchToProps = (dispatch) => ({
   listClusters(filters) {
-    return dispatch(doListClusters(filters));
+    dispatch(doListClusters(filters));
   },
   loadMoreClusters() {
-    return dispatch(doLoadMoreClusters());
+    dispatch(doLoadMoreClusters());
   },
 });
 

@@ -134,22 +134,31 @@ const feedSlice = createSlice({
                                                         state.isParentFolded),
       };
     },
+    editedObj(state, action) {
+      let str;
+      if (action.payload.data.name) {
+        str = action.payload.data.name;
+      } else if (action.payload.data.title) {
+        str = action.payload.data.title;
+      } else { // nor name or title have been edited, nothing to change
+        return state;
+      }
+      return { ...state,
+               feedListRows: state.feedListRows.map((row) => {
+                  if (((action.payload.objType === "feed" && row.type === "feed")
+                       || (action.payload.objType === "category" && row.type === "categ"))
+                       && action.payload.id === row.id) {
+                    return { ...row, str };
+                  }
+                  return row;
+               })};
+    },
     deletedObj(state, action) {
-      let type;
-      if (action.payload.objType === "feed") {
-        type = "feed";
-      } else if (action.payload.objType === "cateogry") {
-        type = "categ";
-      }
-      if (type) {
-        return { ...state,
-                 feedListRows: mergeCategoriesWithUnreads(
-                     state.feedListRows.filter((row) => (
-                         row.type !== type || row.id !== action.payload.id)),
-                     state.unreads, state.isParentFolded),
-                 };
-      }
-      return state;
+      const type = action.payload.objType === "category" ? "categ" : "feed";
+      return { ...state,
+               feedListRows: state.feedListRows.filter((row) => (
+                 row.type !== type || row.id !== action.payload.id)),
+              };
     },
   },
 });
@@ -159,7 +168,7 @@ export const { requestedFeeds, loadedFeeds,
                toggleMenu, toggleAllFolding, toggleFolding,
                createdObj, setSearchFilter,
                changeReadCount,
-               deletedObj,
+               editedObj, deletedObj,
 } = feedSlice.actions;
 export default feedSlice.reducer;
 
@@ -181,21 +190,29 @@ export const doFetchUnreadCount = (): AppThunk => async (dispatch, getState) => 
   dispatch(loadedUnreadCounts({ unreads: result.data }));
 };
 
-export const doCreateObj = (obj, type): AppThunk => async (dispatch, getState) => {
+export const doCreateObj = (type): AppThunk => async (dispatch, getState) => {
   const result = await doRetryOnTokenExpiration({
     method: "post",
-    url: apiUrl + "/" + type + "?" + qs.stringify(obj),
+    url: apiUrl + "/" + type,
+    data: getState().edit.loadedObj,
   }, dispatch, getState);
   dispatch(createdObj({ data: result.data, type }));
 };
 
-export const doEditObj = (id, obj, objType): AppThunk => async (dispatch, getState) => {
-  const result = await doRetryOnTokenExpiration({
+export const doEditObj = (objType): AppThunk => async (dispatch, getState) => {
+  const editState = getState().edit;
+  const data = {};
+  editState.editedKeys.forEach((key) => {
+    data[key] = editState.loadedObj[key];
+  });
+  await doRetryOnTokenExpiration({
     method: "put",
-    url: apiUrl + "/" + objType + (id ? "/" + id : ""),
-    data: obj,
+    url: apiUrl + "/" + objType + (objType !== "user" ? "/" + editState.loadedObj.id : ""),
+    data: data,
   }, dispatch, getState);
-  return result;
+  if (objType !== "user") {
+    dispatch(editedObj({ id: editState.loadedObj.id, objType, data }));
+  }
 };
 
 export const doDeleteObj = (id, objType): AppThunk => async (dispatch, getState) => {
