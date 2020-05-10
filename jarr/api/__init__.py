@@ -3,6 +3,7 @@ import logging
 from datetime import timedelta
 from functools import lru_cache
 
+from urllib.parse import SplitResult, urlunsplit
 from flask import Flask, got_request_exception, request_tearing_down
 from flask_cors import CORS
 from flask_jwt import JWT, JWTError
@@ -57,8 +58,17 @@ def setup_api(application):
         }
     }
 
-    api = Api(application, version='3.0', doc='/swagger', security='apikey',
-              authorizations=authorizations)
+    class JarrApi(Api):
+        # FIXME find a better solution to force scheme downward
+        @property
+        def specs_url(self):
+            return urlunsplit(conf.api.scheme,
+                              conf.api.server_name or '0.0.0.0:8000',
+                              'swagger.json', '', '')
+
+    api = JarrApi(application, version='3.0', doc='/', security='apikey',
+                  authorizations=authorizations,
+                  contact_mail=conf.api.admin_mail)
 
     from jarr.api import (feed, cluster, category, one_page_app, opml,
                           user, auth, oauth, metrics)
