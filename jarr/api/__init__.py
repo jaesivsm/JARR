@@ -62,9 +62,9 @@ def setup_api(application):
         # FIXME find a better solution to force scheme downward
         @property
         def specs_url(self):
-            return urlunsplit(conf.api.scheme,
-                              conf.api.server_name or '0.0.0.0:8000',
-                              'swagger.json', '', '')
+            netloc = conf.api.server_name or '0.0.0.0:8000'
+            return urlunsplit(SplitResult(conf.api.scheme, netloc,
+                                          'swagger.json', '', ''))
 
     api = JarrApi(application, version='3.0', doc='/', security='apikey',
                   authorizations=authorizations,
