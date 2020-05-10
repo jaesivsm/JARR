@@ -188,7 +188,7 @@ class FeedController(AbstractController):
                     art_count, span_time, attrs['expires'])
         now = utc_now() if attrs['expires'].tzinfo else datetime.now()
         FEED_EXPIRES.labels(method=method, feed_type=feed_type)\
-                .observe((now - attrs['expires']).total_seconds())
+                .observe((attrs['expires'] - now).total_seconds())
 
     def update(self, filters, attrs, return_objs=False, commit=True):
         self._ensure_icon(attrs)
