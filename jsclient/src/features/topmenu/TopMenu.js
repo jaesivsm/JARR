@@ -107,7 +107,7 @@ function TopMenu(props) {
                     setAnchorEl(null);
                     commandsDefs[key].onClick();
                 }}
-                  key={"command-" + key}
+                  key={`command-${key}`}
                 >
                   <ListItemIcon>
                     <IconButton edge="start" color="inherit"
@@ -119,7 +119,7 @@ function TopMenu(props) {
                 </MenuItem>);
       }
       return (<Tooltip title={commandsDefs[key].label}
-                key={"command" + key}
+                key={`command-${key}`}
               >
                 <IconButton color="inherit"
                   onClick={commandsDefs[key].onClick} className={classes.menuButton}

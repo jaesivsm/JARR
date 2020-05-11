@@ -11,7 +11,7 @@ function mergeCategoriesWithUnreads(feedListRows, unreads,
                                     isParentFolded) {
   const categories = [];
   return feedListRows.map((row) => {
-    const unread = unreads[row.type + "-" + row.id];
+    const unread = unreads[`${row.type}-${row.id}`];
     let index;
     if(row.type === "categ" || row.type === "all-categ") {
       index = categories.length * 3;
@@ -123,10 +123,10 @@ const feedSlice = createSlice({
       const unreads = { ...state.unreads };
       const readChange = action.payload.action === "unread" ? 1 : -1;
       action.payload.feedsId.forEach((feedId) => (
-        unreads["feed-" + feedId] += readChange
+        unreads[`feed-${feedId}`] += readChange
       ));
       action.payload.categoriesId.forEach((categoryId) => (
-        unreads["categ-" + categoryId] += readChange
+        unreads[`categ-${categoryId}`] += readChange
       ));
       return { ...state, unreads,
                feedListRows: mergeCategoriesWithUnreads(state.feedListRows,
@@ -135,23 +135,27 @@ const feedSlice = createSlice({
       };
     },
     editedObj(state, action) {
-      let str;
-      if (action.payload.data.name) {
-        str = action.payload.data.name;
+      const updated = {};
+      if (action.payload.data.name) {  // category
+        updated.str = action.payload.data.name;
+      } else if (action.payload.data["category_id"]) {
+        updated["category_id"] = action.payload.data["category_id"];
       } else if (action.payload.data.title) {
-        str = action.payload.data.title;
+        updated.str = action.payload.data.title;
       } else { // nor name or title have been edited, nothing to change
         return state;
       }
       return { ...state,
-               feedListRows: state.feedListRows.map((row) => {
-                  if (((action.payload.objType === "feed" && row.type === "feed")
+               feedListRows: mergeCategoriesWithUnreads(
+                 state.feedListRows.map((row) => {
+                    if (((action.payload.objType === "feed" && row.type === "feed")
                        || (action.payload.objType === "category" && row.type === "categ"))
                        && action.payload.id === row.id) {
-                    return { ...row, str };
-                  }
-                  return row;
-               })};
+                      return { ...row, ...updated };
+                    }
+                    return row;
+                  }), state.unreads, state.isParentFolded),
+      };
     },
     deletedObj(state, action) {
       const type = action.payload.objType === "category" ? "categ" : "feed";
@@ -176,7 +180,7 @@ export const doFetchFeeds = (): AppThunk => async (dispatch, getState) => {
   dispatch(requestedFeeds());
   const result = await doRetryOnTokenExpiration({
     method: "get",
-    url: apiUrl + "/list-feeds",
+    url: `${apiUrl}/list-feeds`,
   }, dispatch, getState);
   dispatch(loadedFeeds({ feedListRows: result.data }));
 };
@@ -185,7 +189,7 @@ export const doFetchUnreadCount = (): AppThunk => async (dispatch, getState) => 
   dispatch(requestedUnreadCounts());
   const result = await doRetryOnTokenExpiration({
     method: "get",
-    url: apiUrl + "/unreads",
+    url: `${apiUrl}/unreads`,
   }, dispatch, getState);
   dispatch(loadedUnreadCounts({ unreads: result.data }));
 };
@@ -193,7 +197,7 @@ export const doFetchUnreadCount = (): AppThunk => async (dispatch, getState) => 
 export const doCreateObj = (type): AppThunk => async (dispatch, getState) => {
   const result = await doRetryOnTokenExpiration({
     method: "post",
-    url: apiUrl + "/" + type,
+    url: `${apiUrl}/${type}`,
     data: getState().edit.loadedObj,
   }, dispatch, getState);
   dispatch(createdObj({ data: result.data, type }));
@@ -205,20 +209,20 @@ export const doEditObj = (objType): AppThunk => async (dispatch, getState) => {
   editState.editedKeys.forEach((key) => {
     data[key] = editState.loadedObj[key];
   });
-  await doRetryOnTokenExpiration({
-    method: "put",
-    url: apiUrl + "/" + objType + (objType !== "user" ? "/" + editState.loadedObj.id : ""),
-    data: data,
-  }, dispatch, getState);
   if (objType !== "user") {
     dispatch(editedObj({ id: editState.loadedObj.id, objType, data }));
   }
+  await doRetryOnTokenExpiration({
+    method: "put",
+    url: `${apiUrl}/${objType}${editState.loadedObj.id ? `/${editState.loadedObj.id}` : ""}`,
+    data,
+  }, dispatch, getState);
 };
 
 export const doDeleteObj = (id, objType): AppThunk => async (dispatch, getState) => {
   await doRetryOnTokenExpiration({
     method: "delete",
-    url: apiUrl + "/" + objType + (id ? "/" + id : ""),
+    url: `${apiUrl}/${objType}${id ? `/${id}` : ""}`,
   }, dispatch, getState);
   dispatch(deletedObj({ id, objType }));
 };
@@ -232,7 +236,7 @@ export const doMarkAllAsRead = (onlySingles): AppThunk => async (dispatch, getSt
   const stringifiedParams = qs.stringify(params);
   const result = await doRetryOnTokenExpiration({
     method: "put",
-    url: apiUrl + "/mark-all-as-read?" + stringifiedParams,
+    url: `${apiUrl}/mark-all-as-read?${stringifiedParams}`,
   }, dispatch, getState);
   dispatch(loadedUnreadCounts({ unreads: result.data }));
 };

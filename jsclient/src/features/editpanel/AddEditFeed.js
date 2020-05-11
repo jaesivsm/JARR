@@ -51,7 +51,7 @@ function ProposedLinksComponent({ link, links, edit }) {
             className={classes.editPanelInput}
         >
             {links.map((proposedLink) => (
-              <MenuItem key={"l" + links.indexOf(proposedLink)}
+              <MenuItem key={`l${links.indexOf(proposedLink)}`}
                 value={proposedLink}>{proposedLink}</MenuItem>
             ))}
         </Select>
@@ -130,11 +130,11 @@ function AddEditFeed({ job, categories, link, sameLinkCount,
     <form onSubmit={(e) => commit(e, job)}>
     <FormControl component="fieldset">
       {warning}
-      <StateTextInput required={true} label="Feed title" name="title"
+      <StateTextInput required label="Feed title" name="title"
         className={classes.editPanelInput}/>
       <StateTextInput label="Feed description" name="description"
         className={classes.editPanelInput} />
-      <StateTextInput required={true} label="Feed link" name="link"
+      <StateTextInput required label="Feed link" name="link"
         className={classes.editPanelInput}/>
       <ProposedLinks />
       <StateTextInput label="Website link" name="site_link"
@@ -151,7 +151,7 @@ function AddEditFeed({ job, categories, link, sameLinkCount,
           className={classes.editPanelSelect}
         >
           {categories.map((cat) => (
-            <MenuItem key={"cat-" + cat.id} value={cat.id ? cat.id: 0}>
+            <MenuItem key={`cat-${cat.id}`} value={cat.id ? cat.id: 0}>
               {cat.id ? cat.name : "All"}
             </MenuItem>
           ))}
@@ -164,7 +164,7 @@ function AddEditFeed({ job, categories, link, sameLinkCount,
           className={classes.editPanelSelect}
         >
           {availableFeedTypes.map((type) => (
-            <MenuItem key={"item-" + type} value={type}>{type}</MenuItem>
+            <MenuItem key={`item-${type}`} value={type}>{type}</MenuItem>
           ))}
         </Select>
         {feedTypeHelper}

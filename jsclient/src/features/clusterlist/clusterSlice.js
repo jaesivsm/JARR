@@ -140,7 +140,7 @@ export const doListClusters = (filters): AppThunk => async (dispatch, getState) 
   const requestedFilter = getState().clusters.requestedFilter;
   const result = await doRetryOnTokenExpiration({
     method: "get",
-    url: apiUrl + "/clusters?" + requestedFilter,
+    url: `${apiUrl}/clusters?${requestedFilter}`,
   }, dispatch, getState);
   dispatch(retrievedClustersList({ requestedFilter, clusters: result.data,
                                    strat: "replace" }));
@@ -151,7 +151,7 @@ export const doLoadMoreClusters = (): AppThunk => async (dispatch, getState) => 
   const requestedFilter = getState().clusters.requestedFilter;
   const result = await doRetryOnTokenExpiration({
     method: "get",
-    url: apiUrl + "/clusters?" + requestedFilter,
+    url: `${apiUrl}/clusters?${requestedFilter}`,
   }, dispatch, getState);
   dispatch(retrievedClustersList({ requestedFilter, clusters: result.data,
                                    strat: "append" }));
@@ -161,7 +161,7 @@ export const doFetchCluster = (clusterId): AppThunk => async (dispatch, getState
   dispatch(requestedCluster({ clusterId }));
   const result = await doRetryOnTokenExpiration({
     method: "get",
-    url: apiUrl + "/cluster/" + clusterId,
+    url: `${apiUrl}/cluster/${clusterId}`,
   }, dispatch, getState);
   dispatch(retrievedCluster({ cluster: result.data }));
 };
@@ -173,7 +173,7 @@ export const doEditCluster = (clusterId, payload): AppThunk => async (dispatch, 
   }
   await doRetryOnTokenExpiration({
     method: "put",
-    url: apiUrl + "/cluster/" + clusterId,
+    url: `${apiUrl}/cluster/${clusterId}`,
     data: payload,
   }, dispatch, getState);
   const clusterState = getState().clusters;

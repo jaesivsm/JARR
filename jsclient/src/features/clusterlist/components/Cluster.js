@@ -104,7 +104,7 @@ function Cluster({ cluster, loadedCluster,
     }
     content = (
       <ExpansionPanelDetails className={classes.content}
-                             key={"cl-" + cluster.id}>
+                             key={`cl-${cluster.id}`}>
         {content}
       </ExpansionPanelDetails>
     );
@@ -127,7 +127,7 @@ function Cluster({ cluster, loadedCluster,
           expandIcon={<ExpandMoreIcon />}
           aria-controls="panel1a-content"
           id="panel1a-header"
-          key={"cs-" + cluster.id}
+          key={`cs-${cluster.id}`}
           className={classes.summary}
         >
           <div className={classes.link}>
@@ -138,7 +138,7 @@ function Cluster({ cluster, loadedCluster,
               onClick={(e) => readOnRedirect(e, cluster)}>
               {[ ...new Set(cluster["feeds_id"])].filter((feedId) => icons[feedId])
                       .map((feedId) => <ClusterIcon
-                                          key={"i" + cluster.id + "f" + feedId}
+                                          key={`i${cluster.id}f${feedId}`}
                                           iconUrl={icons[feedId]} />
                            )
               }
@@ -147,14 +147,14 @@ function Cluster({ cluster, loadedCluster,
             <span className={classes.clusterDate}>{moment(cluster["main_date"]).fromNow()}</span>
           </div>
           <div>
-            <Checkbox checked={cluster.read} key={"c" + cluster.id + "r"}
+            <Checkbox checked={cluster.read} key={`c${cluster.id}r`}
               className={classes.titleAction}
               name="read" size="small" color="primary"
               aria-label="toggle read"
               onClick={(e) => e.stopPropagation()}
               onFocus={(e) => e.stopPropagation()}
               onChange={(e) => toggleRead(e, cluster)} />
-            <Checkbox checked={cluster.liked} key={"c" + cluster.id + "l"}
+            <Checkbox checked={cluster.liked} key={`c${cluster.id}l`}
               className={classes.titleAction}
               name="liked" size="small" color="primary"
               aria-label="toggle read"

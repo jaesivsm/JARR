@@ -72,7 +72,7 @@ function NoAuth({ isLoading, noToken, savedLogin, savedPassword, recovery, hidde
           <span onClick={(e) => setFormType("recover")}>Forgotten password ?</span>
         </Grid>
         <Grid item className={classes.googleButton}>
-          <form method="get" action={apiUrl + "/oauth/google"}>
+          <form method="get" action={`${apiUrl}/oauth/google`}>
             <Button variant="contained" type="submit" color="secondary">
               Login with Google
             </Button>

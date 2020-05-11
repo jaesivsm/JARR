@@ -37,8 +37,9 @@ class CrawlerMainTest(BaseJarrTest):
                          self.process_feed_patch.apply_async.call_count)
         self.assertEqual(0, self.clusteriser_patch.apply_async.call_count)
         self.assertEqual(0, self.feed_cleaner_patch.apply_async.call_count)
-        feed1, feed2 = list(FeedController().read().limit(2))
-        FeedController().update({'id': feed1.id}, {'status': 'to_delete'})
+        feed1, feed2, feed3 = list(FeedController().read().limit(3))
+        FeedController().update({'id__in': [feed1.id, feed3.id]},
+                                {'status': 'to_delete'})
         FeedController().update({'id': feed2.id},
                                 {'last_retrieved': epoch, 'expires': epoch})
         self.assertEqual(1, len(list(fctrl.list_fetchable())))

@@ -97,7 +97,8 @@ class FeedControllerTest(BaseJarrTest):
         self.assertEqual(count, len(list(fctrl.list_late())), msg)
         self.assertEqual(count, len(fctrl.list_fetchable()), msg)
 
-    def update_all_no_ctrl(self, **kwargs):
+    @staticmethod
+    def update_all_no_ctrl(**kwargs):
         for feed in FeedController().read():
             for key, value in kwargs.items():
                 setattr(feed, key, value)

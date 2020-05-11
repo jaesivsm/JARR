@@ -52,7 +52,7 @@ export const doRetryOnTokenExpiration = async (payload, dispatch, getState) => {
     try {
       const result = await axios({
         method: "get",
-        url: apiUrl + "/auth/refresh",
+        url: `${apiUrl}/auth/refresh`,
         headers: { "Authorization": state.auth.token }
       });
       dispatch(tokenAcquired(result));

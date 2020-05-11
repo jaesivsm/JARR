@@ -19,7 +19,7 @@ function ClusterIcon({ iconUrl }) {
   const classes = iconStyle();
   if (iconUrl) {
     return <img className={classes.clusterIcon} alt="" src={
-          apiUrl + "/feed/icon?" + qs.stringify({ url: iconUrl })} />;
+          `${apiUrl}/feed/icon?${qs.stringify({ url: iconUrl })}`} />;
   }
   return <LinkIcon className={classes.clusterIcon}
             color="disabled" fontSize="small"/>;

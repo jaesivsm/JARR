@@ -20,8 +20,8 @@ const iconStyle = makeStyles((theme: Theme) =>
 function FeedIcon({ iconUrl }) {
   const classes = iconStyle();
   if (iconUrl) {
-    return <img className={classes.feedIcon} alt="" src={
-          apiUrl + "/feed/icon?" + qs.stringify({ url: iconUrl })} />;
+    return <img className={classes.feedIcon} alt=""
+            src={`${apiUrl}/feed/icon?${qs.stringify({ url: iconUrl })}`} />;
   }
   return <LinkIcon className={classes.feedIcon}
             color="disabled" fontSize="small"/>;

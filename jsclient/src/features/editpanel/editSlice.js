@@ -61,7 +61,7 @@ export const doBuildFeed = (url): AppThunk => async (dispatch, getState) => {
   dispatch(requestedBuildedFeed());
   const result = await doRetryOnTokenExpiration({
     method: "get",
-    url: apiUrl + "/feed/build?" + qs.stringify({ url }),
+    url: `${apiUrl}/feed/build?${qs.stringify({ url })}`,
   }, dispatch, getState);
   dispatch(loadedObjToEdit({ data: result.data, noIdCheck: true,
                              job: "build" }));
@@ -69,7 +69,7 @@ export const doBuildFeed = (url): AppThunk => async (dispatch, getState) => {
 
 export const doFetchObjForEdit = (type, id): AppThunk => async (dispatch, getState) => {
   dispatch(openPanel({ job: "load", objId: id, objType: type, isLoading: true }));
-  const url = apiUrl + "/" + type + (id ? "/" + id : "");
+  const url = `${apiUrl}/${type}${id ? `/${id}` : ""}`;
   const result = await doRetryOnTokenExpiration({
     method: "get", url,
   }, dispatch, getState);

@@ -90,7 +90,7 @@ function ClusterList({ clusters, filters, loadedCluster,
     list = <div className={classes.loadingWrap}><CircularProgress /></div>;
   } else if (clusters.length) {
     list = clusters.map((cluster) => (
-        <Cluster key={"c-" + cluster.id}
+        <Cluster key={`c-${cluster.id}`}
           cluster={cluster}
           splitedMode={splitedMode}
         />)

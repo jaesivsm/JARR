@@ -138,7 +138,7 @@ const FilterSettingLine = connect(mapStateToProps, mapDispatchToProps)(FilterSet
 
 function FilterSettings({ filters, edit }) {
   const classes = editPanelStyle();
-  const [showHelp, setShowHelp] = useState(false)
+  const [showHelp, setShowHelp] = useState(false);
   let help;
   if(showHelp) {
     help = (
