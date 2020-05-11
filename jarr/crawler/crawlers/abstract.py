@@ -84,7 +84,11 @@ class AbstractCrawler:
     def create_missing_article(self, response):
         logger.info('%r - cache validation failed, challenging entries',
                     self.feed)
-        parsed = self.parse_feed_response(response)
+        try:
+            parsed = self.parse_feed_response(response)
+        except Exception as error:
+            self.set_feed_error(error=error)
+            return
         if parsed is None:
             return
 
@@ -115,10 +119,8 @@ class AbstractCrawler:
             article_created = True
             builder = entries[tuple(sorted(id_to_create.items()))]
             new_article = builder.enhance()
-            logger.info('%r creating %r for %r - %r', self.feed,
-                        new_article.get('title'), new_article.get('user_id'),
-                        id_to_create)
-            actrl.create(**new_article)
+            article = actrl.create(**new_article)
+            logger.info('%r created %r', self.feed, self.article)
 
         if not article_created:
             logger.info('%r all article matched in db, adding nothing',
