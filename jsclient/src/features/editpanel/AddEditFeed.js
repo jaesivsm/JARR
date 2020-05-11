@@ -118,13 +118,13 @@ function AddEditFeed({ job, categories, link, sameLinkCount,
   } else if (!link) {
     warning = (
       <Alert severity="error">
-        Provided URL doesn"t look like a feed we support and we couldn"t find a correct one.
+        Provided URL doesn&apos;t look like a feed we support and we couldn&apos;t find a correct one.
       </Alert>
     );
   }
 
   const feedTypeHelper = (noUrlTypes.indexOf(feedType) === -1 ? null :
-    <Alert severity="info">"{feedType}" type doesn't need a full url for link. Just the username will suffice.</Alert>
+    <Alert severity="info">&quot;{feedType}&quot; type doesn&apos;t need a full url for link. Just the username will suffice.</Alert>
   );
   return (
     <form onSubmit={(e) => commit(e, job)}>
@@ -172,7 +172,7 @@ function AddEditFeed({ job, categories, link, sameLinkCount,
       <FilterSettings />
       <ClusterSettings level="feed" />
       {!feedId ? <Alert>
-        Your feed will be created but articles won't appear right away. It might take a little while before you see content appear. Be patient :)
+        Your feed will be created but articles won&apos;t appear right away. It might take a little while before you see content appear. Be patient :)
       </Alert>: null}
       <div className={classes.editPanelButtons}>
         <Button className={classes.editPanelBtn}

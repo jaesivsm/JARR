@@ -61,8 +61,6 @@ const mapDispatchToProps = (dispatch) => ({
   },
 });
 
-
-
 function TopMenu(props) {
   const theme = useTheme();
   const classes = topMenuStyle();

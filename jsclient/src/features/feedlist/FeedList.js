@@ -101,7 +101,7 @@ function FeedList(props) {
     list = (
       <Alert severity="info" className={classes.welcome}>
         <p>Hello ! You seem to be new here, welcome !</p>
-        <p>JARR is a tool to aggregate news feed. Since you don't have any feed, there is nothing to display yet.</p>
+        <p>JARR is a tool to aggregate news feed. Since you don&apos;t have any feed, there is nothing to display yet.</p>
         <p>Click on {addFeedButton} here or at the top of this menu to add a new feed.</p>
         <p>JARR particularity is to allow clustering articles from various feeds to a condensed clusters. This allows a more dense and interesting news feed. You can of course control clustering settings from different level (user, category, and feed).</p>
         <p>You may later want to organize your feeds into categories, to do that add category by clicking on {addCategoryButton}.</p>

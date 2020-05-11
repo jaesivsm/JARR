@@ -197,5 +197,13 @@ export default makeStyles((theme: Theme) =>
       right: 13,
       top: 44,
     },
+    buildFeedHelpButton: {
+      width: 30,
+      height: 30,
+      margin: "0 auto",
+      position: "absolute",
+      right: 13,
+      top: 54,
+    },
   }),
 );

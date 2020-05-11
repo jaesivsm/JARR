@@ -3,16 +3,16 @@ import { connect } from "react-redux";
 import PropTypes from "prop-types";
 // material ui components
 import Fab from "@material-ui/core/Fab";
-import FormControl from "@material-ui/core/FormControl";
+import Alert from "@material-ui/lab/Alert";
 import Select from "@material-ui/core/Select";
 import MenuItem from "@material-ui/core/MenuItem";
 import TextField from "@material-ui/core/TextField";
 import Typography from "@material-ui/core/Typography";
+import IconButton from "@material-ui/core/IconButton";
+import FormControl from "@material-ui/core/FormControl";
 import ExpansionPanel from "@material-ui/core/ExpansionPanel";
-import Alert from "@material-ui/lab/Alert";
 import ExpansionPanelSummary from "@material-ui/core/ExpansionPanelSummary";
 import ExpansionPanelDetails from "@material-ui/core/ExpansionPanelDetails";
-import IconButton from "@material-ui/core/IconButton";
 // material icons
 import HelpIcon from "@material-ui/icons/Help";
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
@@ -143,11 +143,9 @@ function FilterSettings({ filters, edit }) {
   if(showHelp) {
     help = (
       <Alert>
-        <Typography>
-          <p>Filters are processed in the order you place them on every new articles that will be fetched for that feed.</p>
-          <p>Through filters you can modify the read, liked status, allow or forbid clustering new articles. You can also skip entierly the creation of an article match a filter.</p>
-          <p>Filters are processed one after another and you can revert the filter you applied just before. For example you might want to skip every article which title contains "Python" and 'unskip' every article containing "Monthy". This way you would see every article mentionning "Monthy Python" but none about python solely.</p>
-        </Typography>
+        <p>Filters are processed in the order you place them on every new articles that will be fetched for that feed.</p>
+        <p>Through filters you can modify the read, liked status, allow or forbid clustering new articles. You can also skip entierly the creation of an article match a filter.</p>
+        <p>Filters are processed one after another and you can revert the filter you applied just before. For example you might want to skip every article which title contains &quot;Python&quot; and &apos;unskip&apos; every article containing &quot;Monthy&quot;. This way you would see every article mentionning &quot;Monthy Python&quot; but none about python solely.</p>
       </Alert>
     );
   }
