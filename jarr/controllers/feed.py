@@ -181,16 +181,17 @@ class FeedController(AbstractController):
 
         art_count = self.__actrl.read(feed_id=feed.id,
                 retrieved_date__gt=now - max_delta * SPAN_FACTOR).count()
-        proposed_expires = now + max_delta / art_count / SPAN_FACTOR
         if not art_count and method == 'from header min limited':
             attrs['expires'] = now + 2 * min_delta
             method = 'no article, twice min time'
-        elif art_count and min_expires < proposed_expires < attrs['expires']:
-            attrs['expires'] = proposed_expires
-            method = 'computed'
-        elif art_count and proposed_expires < min_expires:
-            method = 'many articles, set to min expire'
-            attrs['expires'] = min_expires
+        elif art_count:
+            proposed_expires = now + max_delta / art_count / SPAN_FACTOR
+            if min_expires < proposed_expires < attrs['expires']:
+                attrs['expires'] = proposed_expires
+                method = 'computed'
+            if proposed_expires < min_expires:
+                method = 'many articles, set to min expire'
+                attrs['expires'] = min_expires
         exp_s = (attrs['expires'] - now).total_seconds()
         logger.info('%r : %d articles, expiring in %ds (%s)',
                     feed, art_count, exp_s, method)
