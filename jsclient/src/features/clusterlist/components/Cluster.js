@@ -58,8 +58,7 @@ const mapDispatchToProps = (dispatch) => ({
   },
   toggleRead(e, cluster) {
     e.stopPropagation();
-    const payload = { feedsId: cluster["feeds_id"],
-                      categoriesId: cluster["categories_id"] };
+    const payload = { feedsId: cluster["feeds_id"] };
     if (cluster.read && !e.target.checked) {
       dispatch(doEditCluster(cluster.id, { read: false, "read_reason": null }));
       dispatch(changeReadCount({ ...payload, action: "unread" }));

@@ -35,8 +35,9 @@ const defaultFilter = (row) => ( // will display row if
 );
 const feedSlice = createSlice({
   name: "feeds",
-  initialState: { loadingFeeds: true,
-                  loadingUnreadCounts: true,
+  initialState: { loadingFeeds: false,
+                  loadingUnreadCounts: false,
+                  unreadToFetch: true,
                   feedListRows: [],
                   unreads: {},
                   isParentFolded: storageGet("left-menu-folded") === "true",
@@ -94,7 +95,7 @@ const feedSlice = createSlice({
       };
     },
     loadedUnreadCounts(state, action) {
-      return { ...state, loadedUnreadCounts: false,
+      return { ...state, loadingUnreadCounts: false, unreadToFetch: false,
                unreads: action.payload.unreads,
                feedListRows: mergeCategoriesWithUnreads(state.feedListRows,
                                                         action.payload.unreads,
@@ -107,6 +108,7 @@ const feedSlice = createSlice({
     },
     createdObj(state, action) {
       const feedListRow = { unread: 0, id: action.payload.data.id };
+      const categoryAsFeed = { ...state.categoryAsFeed };
       if(action.payload.type === "category") {
         feedListRow.str = action.payload.data.name;
         feedListRow.type = "categ";
@@ -114,6 +116,7 @@ const feedSlice = createSlice({
         feedListRow.str = action.payload.data.title;
         feedListRow["category_id"] = action.payload.data["category_id"];
         feedListRow.type = "feed";
+        categoryAsFeed[action.payload.data.id] = action.payload.data["category_id"];
       }
       return { ...state,
                feedListRows: mergeCategoriesWithUnreads(
@@ -123,12 +126,29 @@ const feedSlice = createSlice({
     },
     changeReadCount(state, action) {
       const unreads = { ...state.unreads };
+      let shouldFetchUnread = false;
       const readChange = action.payload.action === "unread" ? 1 : -1;
       action.payload.feedsId.forEach((feedId) => {
-        unreads[`feed-${feedId}`] += readChange;
-        unreads[`categ-${state.categoryAsFeed[feedId]}`] += readChange;
+        const feedKey = `feed-${feedId}`;
+        const catKey = `categ-${state.categoryAsFeed[feedId]}`;
+        if (!unreads.hasOwnProperty(feedKey)) {
+          unreads[feedKey] = 0;
+        }
+        if (!unreads.hasOwnProperty(catKey)) {
+          unreads[catKey] = 0;
+        }
+        unreads[feedKey] += readChange;
+        if(unreads[feedKey] < 0) {
+          unreads[feedKey] = 0;
+          shouldFetchUnread = true;
+        }
+        unreads[catKey] += readChange;
+        if (unreads[catKey] < 0) {
+          unreads[catKey] = 0;
+          shouldFetchUnread = true;
+        }
       });
-      return { ...state, unreads,
+      return { ...state, unreads, unreadToFetch: shouldFetchUnread,
                feedListRows: mergeCategoriesWithUnreads(state.feedListRows,
                                                         unreads,
                                                         state.isParentFolded),

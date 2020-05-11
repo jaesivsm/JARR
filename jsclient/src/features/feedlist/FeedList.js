@@ -35,6 +35,7 @@ function mapStateToProps(state) {
            isFeedListOpen: state.feeds.isOpen,
            isEditPanelOpen: state.edit.isOpen,
            isLoading: state.feeds.loadingFeeds,
+           unreadToFetch: !state.feeds.loadingUnreadCounts && state.feeds.unreadToFetch,
   };
 }
 
@@ -59,27 +60,38 @@ const mapDispatchToProps = (dispatch) => ({
   },
 });
 
-function FeedList(props) {
+function FeedList({ itemCount, unreadToFetch,
+                    isFoldedFromParent, isFeedListOpen, isEditPanelOpen, isLoading,
+                    selectedFeedId, selectedCategoryId,
+
+                    fetchFeed, fetchUnreadCount,
+                    toggleFolder, toggleFeedList, toggleAddPanel,
+                    setSearchFilter,
+}) {
   const classes = feedListStyle();
-  const [everLoaded, setEverLoaded] = useState(false);
+  const [feedFetched, setFeedFetched] = useState(false);
   const [displaySearch, setDisplaySearch] = useState(false);
   const theme = useTheme();
   const isDesktop = useMediaQuery(theme.breakpoints.up("md"));
-  const isOpen = (props.isFeedListOpen === null ? isDesktop : props.isFeedListOpen) && !props.isEditPanelOpen;
+  const isOpen = (isFeedListOpen === null ? isDesktop : isFeedListOpen) && !isEditPanelOpen;
   useEffect(() => {
-    if (!everLoaded) {
-      props.fetchFeed();
-      props.fetchUnreadCount();
-      setEverLoaded(true);
+    if (!feedFetched) {
+      fetchFeed();
+      setFeedFetched(true);
     }
-  }, [everLoaded, props]);
+  }, [feedFetched, fetchFeed]);
+  useEffect(() => {
+    if (unreadToFetch) {
+      fetchUnreadCount();
+    }
+  }, [unreadToFetch, fetchUnreadCount]);
   let searchBar;
   if (displaySearch) {
     searchBar = (
       <div className={classes.drawerHeader}>
         <InputBase placeholder="Search feed…" autoFocus
-          onChange={(e) => props.setSearchFilter(e.target.value)} />
-        <IconButton onClick={() => {props.setSearchFilter(null); setDisplaySearch(false);} }>
+          onChange={(e) => setSearchFilter(e.target.value)} />
+        <IconButton onClick={() => {setSearchFilter(null); setDisplaySearch(false);} }>
           <Close />
         </IconButton>
       </div>
@@ -87,17 +99,17 @@ function FeedList(props) {
   }
 
   const addFeedButton = (
-    <IconButton onClick={() => props.toggleAddPanel("feed")}>
+    <IconButton onClick={() => toggleAddPanel("feed")}>
       <AddFeedIcon />
     </IconButton>);
   const addCategoryButton = (
-    <IconButton onClick={() => props.toggleAddPanel("category")}>
+    <IconButton onClick={() => toggleAddPanel("category")}>
       <AddCategoryIcon />
     </IconButton>);
   let list;
-  if (props.isLoading) {
+  if (isLoading) {
     list = <div className={classes.loadFeedList}><CircularProgress /></div>;
-  } else if (props.itemCount === 1 && !displaySearch) {
+  } else if (itemCount === 1 && !displaySearch) {
     list = (
       <Alert severity="info" className={classes.welcome}>
         <p>Hello ! You seem to be new here, welcome !</p>
@@ -109,7 +121,7 @@ function FeedList(props) {
     );
   } else {
     list = (
-      <FixedSizeList height={1000} width={isDesktop ? feedListWidth-1 : '100%'} itemCount={props.itemCount} itemSize={34}>
+      <FixedSizeList height={1000} width={isDesktop ? feedListWidth-1 : '100%'} itemCount={itemCount} itemSize={34}>
         {FeedRow}
       </FixedSizeList>
     );
@@ -129,14 +141,14 @@ function FeedList(props) {
         <div>
           <Tooltip title="Add new feed">{addFeedButton}</Tooltip>
           <Tooltip title="Add new category">{addCategoryButton}</Tooltip>
-          <Tooltip title={props.isFoldedFromParent ? "Unfold categories" : "Fold categories"}>
-            <IconButton onClick={props.toggleFolder}>
-             {props.isFoldedFromParent ? <UnFoldAllCategoriesIcon /> : <FoldAllCategoriesIcon />}
+          <Tooltip title={isFoldedFromParent ? "Unfold categories" : "Fold categories"}>
+            <IconButton onClick={toggleFolder}>
+             {isFoldedFromParent ? <UnFoldAllCategoriesIcon /> : <FoldAllCategoriesIcon />}
             </IconButton>
           </Tooltip>
           <Tooltip title="Search through feed list">
             <IconButton onClick={() => {
-              if(displaySearch) { props.setSearchFilter(null); }
+              if(displaySearch) { setSearchFilter(null); }
               setDisplaySearch(!displaySearch);
             }}>
               <SearchIcon />
@@ -145,7 +157,7 @@ function FeedList(props) {
         </div>
         <div>
           <Tooltip title="Hide feed list">
-            <IconButton onClick={props.toggleFeedList}>
+            <IconButton onClick={toggleFeedList}>
               <ChevronLeftIcon />
             </IconButton>
           </Tooltip>
@@ -160,18 +172,20 @@ function FeedList(props) {
 }
 
 FeedList.propTypes = {
-    itemCount: PropTypes.number.isRequired,
-    isFoldedFromParent: PropTypes.bool.isRequired,
-    isFeedListOpen: PropTypes.bool,
-    isEditPanelOpen: PropTypes.bool.isRequired,
-    isLoading: PropTypes.bool.isRequired,
-    selectedFeedId: PropTypes.number,
-    selectedCategoryId: PropTypes.number,
-    fetchFeed: PropTypes.func.isRequired,
-    fetchUnreadCount: PropTypes.func.isRequired,
-    toggleFeedList: PropTypes.func.isRequired,
-    toggleAddPanel: PropTypes.func.isRequired,
-    setSearchFilter: PropTypes.func.isRequired,
+  itemCount: PropTypes.number.isRequired,
+  unreadToFetch: PropTypes.bool.isRequired,
+  isFoldedFromParent: PropTypes.bool.isRequired,
+  isFeedListOpen: PropTypes.bool,
+  isEditPanelOpen: PropTypes.bool.isRequired,
+  isLoading: PropTypes.bool.isRequired,
+  selectedFeedId: PropTypes.number,
+  selectedCategoryId: PropTypes.number,
+  fetchFeed: PropTypes.func.isRequired,
+  fetchUnreadCount: PropTypes.func.isRequired,
+  toggleFolder: PropTypes.func.isRequired,
+  toggleFeedList: PropTypes.func.isRequired,
+  toggleAddPanel: PropTypes.func.isRequired,
+  setSearchFilter: PropTypes.func.isRequired,
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(FeedList);
