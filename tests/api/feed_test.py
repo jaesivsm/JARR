@@ -111,28 +111,35 @@ class FeedApiTest(JarrFlaskCommon):
         # changing feed attributes
         resp = self.jarr_client('put', 'feed', feed_id,
                                 data={'filters': self.valid_filters,
+                                      'cluster_wake_up': True,
                                       'title': 'changed'}, user='user1')
         self.assertStatusCode(204, resp)
         feed = self.jarr_client('get', 'feed', feed_id, user='user1').json
         self.assertEqual('changed', feed['title'])
         self.assertEqual(self.valid_filters, feed['filters'])
+        self.assertTrue(feed['cluster_wake_up'])
         resp = self.jarr_client('put', 'feed', feed_id,
                                 data={'title': 'changed2'}, user='user1')
         self.assertStatusCode(204, resp)
         feed = self.jarr_client('get', 'feed', feed_id, user='user1').json
+        self.assertTrue(feed['cluster_wake_up'])
         self.assertEqual('changed2', feed['title'])
+        self.assertEqual(self.valid_filters, feed['filters'])
         # put with no change
-        before = self.jarr_client('get', 'feed', feed_id, user='user1').json
-        resp = self.jarr_client('put', 'feed', feed_id,
-                                data={}, user='user1')
+        self.jarr_client('put', 'feed', feed_id, data={}, user='user1')
         feed = self.jarr_client('get', 'feed', feed_id, user='user1').json
-        self.assertEqual(before, feed)
+        self.assertTrue(feed['cluster_wake_up'])
+        self.assertEqual('changed2', feed['title'])
+        self.assertEqual(self.valid_filters, feed['filters'])
         # put with limited change
         resp = self.jarr_client('put', 'feed', feed_id,
-                                data={'title': 'changed again'}, user='user1')
+                                data={'title': 'changed again',
+                                      'cluster_enabled': False}, user='user1')
         feed = self.jarr_client('get', 'feed', feed_id, user='user1').json
-        self.assertEqual({k: v for k, v in before.items() if k != 'title'},
-                         {k: v for k, v in feed.items() if k != 'title'})
+        self.assertTrue(feed['cluster_wake_up'])
+        self.assertFalse(feed['cluster_enabled'])
+        self.assertEqual('changed again', feed['title'])
+        self.assertEqual(self.valid_filters, feed['filters'])
         # changing to other user category
         categories_resp = self.jarr_client('get', 'categories', user='user2')
         self.assertStatusCode(200, categories_resp)

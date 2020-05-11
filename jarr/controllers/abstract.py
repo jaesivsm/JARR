@@ -115,8 +115,11 @@ class AbstractController:
 
     def update(self, filters, attrs, return_objs=False, commit=True):
         if not attrs:
-            raise ValueError("attributes to update must not be empty")
-        result = self._get(**filters).update(attrs, synchronize_session=False)
+            logger.error("nothing to update, doing nothing")
+            result, commit = {}, False
+        else:
+            result = self._get(**filters).update(attrs,
+                                                 synchronize_session=False)
         if commit:
             session.flush()
             session.commit()

@@ -13,10 +13,11 @@ from jarr.metrics import SERVER
 
 oauth_ns = Namespace('oauth', description="OAuth related operations")
 oauth_callback_parser = oauth_ns.parser()
-oauth_callback_parser.add_argument('code', type=str, required=True)
+oauth_callback_parser.add_argument('code', type=str,
+                                   required=True, store_missing=False)
 oauth1_callback_parser = oauth_ns.parser()
-oauth1_callback_parser.add_argument('oauth_verifier',
-        type=str, required=True)
+oauth1_callback_parser.add_argument('oauth_verifier', type=str,
+                                    required=True, store_missing=False)
 
 
 # FROM http://blog.miguelgrinberg.com/post/oauth-authentication-with-flask
