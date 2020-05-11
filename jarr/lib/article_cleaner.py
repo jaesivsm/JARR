@@ -13,8 +13,8 @@ def __fix_addr(to_fix, reference, scheme=None):
     if reference:
         netloc = to_fix.netloc or reference.netloc
     return urlunparse(ParseResult(scheme=scheme, netloc=netloc,
-                    path=to_fix.path, query=to_fix.query,
-                    params=to_fix.params, fragment=to_fix.fragment))
+                      path=to_fix.path, query=to_fix.query,
+                      params=to_fix.params, fragment=to_fix.fragment))
 
 
 def _handle_img(img, parsed_article_url, fix_readability):
@@ -30,8 +30,9 @@ def _handle_img(img, parsed_article_url, fix_readability):
         splited_src = unquote(img.attrs['src']).split(', ')
         if len(splited_src) > 1:
             img.attrs['src'] = splited_src[0].split()[0]
-    if is_secure_served() and 'srcset' in img.attrs:
-        # removing active content when serving over https
+    if is_secure_served() and 'srcset' in img.attrs \
+            and not img.attrs['srcset'].startswith("https"):
+        # removing unsecure active content when serving over https
         del img.attrs['srcset']
     img_src = urlparse(img.attrs['src'])
     if not img_src.scheme or not img_src.netloc:
