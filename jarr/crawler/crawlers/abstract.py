@@ -1,8 +1,7 @@
 import logging
 
 from jarr.bootstrap import conf
-from jarr.controllers import (ArticleController, FeedBuilderController,
-                              FeedController)
+from jarr.controllers import ArticleController, FeedController
 from jarr.crawler.article_builders.classic import ClassicArticleBuilder
 from jarr.crawler.lib.headers_handling import (extract_feed_info,
                                                prepare_headers)
@@ -42,40 +41,30 @@ class AbstractCrawler:
         logger.debug("last error details %r", last_error)
         now = utc_now()
         info = {'error_count': error_count, 'last_error': last_error,
-                'user_id': self.feed.user_id, 'last_retrieved': now}
-        info.update(extract_feed_info({}))
+                'user_id': self.feed.user_id, 'last_retrieved': now,
+                'expires': None}  # forcing compute by controller
 
         FEED_FETCH.labels(feed_type=self.feed.feed_type.value,
                           result='error').inc()
         return FeedController().update({'id': self.feed.id}, info)
 
-    def clean_feed(self, response, parsed_feed=None, **info):
+    def clean_feed(self, response, **info):
         """Will reset the errors counters on a feed that have known errors"""
         now = utc_now()
-        info.update(extract_feed_info(response.headers, response.text))
         info.update({'error_count': 0, 'last_error': None,
-                     'last_retrieved': now})
+                     'last_retrieved': now, 'expires': None})
+        info.update(extract_feed_info(response.headers, response.text))
 
-        if parsed_feed is not None:  # updating feed with retrieved info
-            fb_contr = FeedBuilderController(self.feed.link, parsed_feed)
-            constructed = fb_contr.construct_from_xml_feed_content()
-            for key in 'description', 'site_link', 'icon_url':
-                if constructed.get(key):
-                    info[key] = constructed[key]
-
-        info = {key: value for key, value in info.items()
-                if getattr(self.feed, key) != value}
-
-        # updating link on permanent move /redirect
-        if response.history and self.feed.link != response.url and any(
-                resp.status_code in {301, 308} for resp in response.history):
+        feed_permanently_redirected = response.history \
+                and self.feed.link != response.url \
+                and any(r.status_code in {301, 308} for r in response.history)
+        if feed_permanently_redirected:
             logger.warning('%r feed moved from %r to %r', self.feed,
                            self.feed.link, response.url)
             info['link'] = response.url
         if info:
-            return FeedController(self.feed.user_id).update(
-                    {'id': self.feed.id}, info)
-        return None
+            FeedController(self.feed.user_id).update({'id': self.feed.id},
+                                                     info)
 
     def parse_feed_response(self, response):
         raise NotImplementedError()
@@ -83,11 +72,7 @@ class AbstractCrawler:
     def create_missing_article(self, response):
         logger.info('%r - cache validation failed, challenging entries',
                     self.feed)
-        try:
-            parsed = self.parse_feed_response(response)
-        except Exception as error:
-            self.set_feed_error(error=error)
-            return
+        parsed = self.parse_feed_response(response)
         if parsed is None:
             return
 
@@ -160,7 +145,12 @@ class AbstractCrawler:
             return
 
         if not self.is_cache_hit(response):
-            self.create_missing_article(response)
+            try:
+                self.create_missing_article(response)
+            except Exception as error:
+                self.set_feed_error(error=error)
+                return
+        self.clean_feed(response)
 
     def __repr__(self):
         return "<%s(%s)>" % (self.__class__.__name__, self.feed.title)

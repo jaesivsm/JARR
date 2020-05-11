@@ -51,9 +51,6 @@ def extract_feed_info(headers, text=None):
     _extract_max_age(headers, feed_info)
     if 'expires' not in feed_info:
         _extract_expires(headers, feed_info)
-
-    if not feed_info.get('expires'):
-        feed_info['expires'] = None  # forcing calculation by controller
     return feed_info
 
 

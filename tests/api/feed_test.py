@@ -121,9 +121,22 @@ class FeedApiTest(JarrFlaskCommon):
         self.assertStatusCode(204, resp)
         feed = self.jarr_client('get', 'feed', feed_id, user='user1').json
         self.assertEqual('changed2', feed['title'])
+        # put with no change
+        before = self.jarr_client('get', 'feed', feed_id, user='user1').json
+        resp = self.jarr_client('put', 'feed', feed_id,
+                                data={}, user='user1')
+        feed = self.jarr_client('get', 'feed', feed_id, user='user1').json
+        self.assertEqual(before, feed)
+        # put with limited change
+        resp = self.jarr_client('put', 'feed', feed_id,
+                                data={'title': 'changed again'}, user='user1')
+        feed = self.jarr_client('get', 'feed', feed_id, user='user1').json
+        self.assertEqual({k: v for k, v in before.items() if k != 'title'},
+                         {k: v for k, v in feed.items() if k != 'title'})
         # changing to other user category
         categories_resp = self.jarr_client('get', 'categories', user='user2')
         self.assertStatusCode(200, categories_resp)
+        feed = self.jarr_client('get', 'feed', feed_id, user='user1').json
         category = categories_resp.json[0]
         resp = self.jarr_client('put', 'feed', feed_id, user='user1',
                                 data={'category_id': category['id']})

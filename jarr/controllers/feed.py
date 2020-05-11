@@ -17,8 +17,8 @@ from jarr.metrics import FEED_EXPIRES, FEED_LATENESS
 from jarr.models import Article, Category, Cluster, Feed, User
 
 DEFAULT_LIMIT = 0
-DEFAULT_ART_SPAN_TIME = timedelta(seconds=conf.feed.max_expires)
 logger = logging.getLogger(__name__)
+SPAN_FACTOR = 2
 LIST_W_CATEG_MAPPING = OrderedDict((('id', Feed.id),
                                     ('str', Feed.title),
                                     ('icon_url', Feed.icon_url),
@@ -149,10 +149,15 @@ class FeedController(AbstractController):
 
     def __update_default_expires(self, feed, attrs):
         now = utc_now()
-        min_expires = now + timedelta(seconds=conf.feed.min_expires)
-        max_expires = now + timedelta(seconds=conf.feed.max_expires)
+        min_delta = timedelta(seconds=conf.feed.min_expires)
+        max_delta = timedelta(seconds=conf.feed.max_expires)
+        min_expires = now + min_delta
+        max_expires = now + max_delta
         method = 'from header'
         feed_type = getattr(feed.feed_type, 'value', '')
+        if attrs['expires'] is None:
+            attrs['expires'] = max_expires
+            method = 'defaulted to max'
         try:
             if not isinstance(attrs['expires'], datetime):
                 attrs['expires'] = dateutil.parser.parse(attrs['expires'])
@@ -163,30 +168,29 @@ class FeedController(AbstractController):
             elif max_expires < attrs['expires']:
                 method = 'from header max limited'
                 attrs['expires'] = max_expires
-                logger.info("expiring too late, forcing expiring at %r",
-                            max_expires)
+                logger.debug("%r expiring too late, forcing expire in %ds",
+                             feed, conf.feed.max_expires)
             elif attrs['expires'] < min_expires:
                 method = 'from header min limited'
                 attrs['expires'] = min_expires
-                logger.info("expiring too early, forcing expiring at %r",
-                            min_expires)
+                logger.debug("%r expiring too early, forcing expire in %ds",
+                             feed, conf.feed.min_expires)
         except Exception:
             attrs['expires'] = max_expires
             method = 'defaulted to max'
 
-        max_retrived_date = now - timedelta(seconds=conf.feed.max_expires)
-        span_time = conf.feed.max_expires - conf.feed.min_expires
         art_count = self.__actrl.read(feed_id=feed.id,
-                retrieved_date__gt=max_retrived_date).count()
+                retrieved_date__gt=now - max_delta * SPAN_FACTOR).count()
+        proposed_expires = now + max_delta / art_count / SPAN_FACTOR
         if not art_count and method == 'from header min limited':
-            attrs['expires'] = now + timedelta(
-                    seconds=2 * conf.feed.min_expires)
+            attrs['expires'] = now + 2 * min_delta
             method = 'no article, twice min time'
-        elif art_count and method == 'defaulted to max':
-            proposed_expires = now + timedelta(
-                    seconds=span_time / art_count + conf.feed.min_expires)
+        elif art_count and min_expires < proposed_expires < attrs['expires']:
             attrs['expires'] = proposed_expires
             method = 'computed'
+        elif art_count and proposed_expires < min_expires:
+            method = 'many articles, set to min expire'
+            attrs['expires'] = min_expires
         exp_s = (attrs['expires'] - now).total_seconds()
         logger.info('%r : %d articles, expiring in %ds (%s)',
                     feed, art_count, exp_s, method)
@@ -196,8 +200,7 @@ class FeedController(AbstractController):
         self._ensure_icon(attrs)
         self.__clean_feed_fields(attrs)
         stuff_to_denorm = bool({'title', 'category_id'}.intersection(attrs))
-        updating_expires = bool({'expires',
-                                 'last_retrieved'}.intersection(attrs))
+        updating_expires = 'expires' in attrs
 
         if stuff_to_denorm or updating_expires:
             for feed in self.read(**filters):
