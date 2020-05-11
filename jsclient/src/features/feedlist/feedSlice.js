@@ -43,6 +43,7 @@ const feedSlice = createSlice({
                   isOpen: triboolMapping[storageGet("left-menu-open")],
                   feedListFilter: defaultFilter,
                   icons: {},
+                  categoryAsFeed: {},
   },
   reducers: {
     requestedFeeds(state, action) {
@@ -78,14 +79,15 @@ const feedSlice = createSlice({
       })};
     },
     loadedFeeds(state, action) {
-
+      const categoryAsFeed = {};
       const icons = {};
       action.payload.feedListRows.forEach((row) => {
         if(row.type === "feed" && row["icon_url"]) {
           icons[row.id] = row["icon_url"];
+          categoryAsFeed[row.id] = row["category_id"];
         }
       });
-      return { ...state, icons, loadingFeeds: false,
+      return { ...state, icons, categoryAsFeed, loadingFeeds: false,
                feedListRows: mergeCategoriesWithUnreads(action.payload.feedListRows,
                                                         state.unreads,
                                                         state.isParentFolded),
@@ -122,12 +124,10 @@ const feedSlice = createSlice({
     changeReadCount(state, action) {
       const unreads = { ...state.unreads };
       const readChange = action.payload.action === "unread" ? 1 : -1;
-      action.payload.feedsId.forEach((feedId) => (
-        unreads[`feed-${feedId}`] += readChange
-      ));
-      action.payload.categoriesId.forEach((categoryId) => (
-        unreads[`categ-${categoryId}`] += readChange
-      ));
+      action.payload.feedsId.forEach((feedId) => {
+        unreads[`feed-${feedId}`] += readChange;
+        unreads[`categ-${state.categoryAsFeed[feedId]}`] += readChange;
+      });
       return { ...state, unreads,
                feedListRows: mergeCategoriesWithUnreads(state.feedListRows,
                                                         unreads,
@@ -136,10 +136,15 @@ const feedSlice = createSlice({
     },
     editedObj(state, action) {
       const updated = {};
+      const updatedState = {};
       if (action.payload.data.name) {  // category
         updated.str = action.payload.data.name;
       } else if (action.payload.data["category_id"]) {
         updated["category_id"] = action.payload.data["category_id"];
+        updatedState.categoryAsFeed = {
+          ...state.categoryAsFeed,
+          [action.payload.id]: action.payload.data["category_id"]}
+        ;
       } else if (action.payload.data.title) {
         updated.str = action.payload.data.title;
       } else { // nor name or title have been edited, nothing to change

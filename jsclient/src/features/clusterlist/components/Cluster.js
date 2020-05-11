@@ -58,17 +58,16 @@ const mapDispatchToProps = (dispatch) => ({
   },
   toggleRead(e, cluster) {
     e.stopPropagation();
-    const payload = { read: true, "read_reason": "marked" };
-    let action = "read";
-    if (!e.target.checked) {
-      action = "unread";
-      payload.read = false;
-      payload["read_reason"] = null;
+    const payload = { feedsId: cluster["feeds_id"],
+                      categoriesId: cluster["categories_id"] };
+    if (cluster.read && !e.target.checked) {
+      dispatch(doEditCluster(cluster.id, { read: false, "read_reason": null }));
+      dispatch(changeReadCount({ ...payload, action: "unread" }));
+    } else if (!cluster.read && e.target.checked) {
+
+      dispatch(doEditCluster(cluster.id, { read: true, "read_reason": "marked" }));
+      dispatch(changeReadCount({ ...payload, action: "read" }));
     }
-    dispatch(doEditCluster(cluster.id, payload));
-    dispatch(changeReadCount({
-      feedsId: cluster["feeds_id"],
-      categoriesId: cluster["categories_id"], action }));
   },
   toggleLiked(e, clusterId) {
     e.stopPropagation();
@@ -76,12 +75,14 @@ const mapDispatchToProps = (dispatch) => ({
   },
   readOnRedirect(e, cluster) {
     e.stopPropagation();
-    dispatch(doEditCluster(cluster.id,
-                           { read: true, "read_reason": "consulted" }));
-    dispatch(changeReadCount({
-      feedsId: cluster["feeds_id"],
-      categoriesId: cluster["categories_id"],
-      action: "read" }));
+    if (!cluster.read) {
+      dispatch(doEditCluster(cluster.id,
+                            { read: true, "read_reason": "consulted" }));
+      dispatch(changeReadCount({
+        feedsId: cluster["feeds_id"],
+        categoriesId: cluster["categories_id"],
+        action: "read" }));
+    }
   },
 });
 
