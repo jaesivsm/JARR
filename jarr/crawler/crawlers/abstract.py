@@ -8,7 +8,6 @@ from jarr.crawler.lib.headers_handling import (extract_feed_info,
                                                prepare_headers)
 from jarr.crawler.requests_utils import (response_calculated_etag_match,
                                          response_etag_match)
-from jarr.lib.const import UNIX_START
 from jarr.lib.enums import FeedType
 from jarr.lib.utils import jarr_get, utc_now
 from jarr.metrics import FEED_FETCH
@@ -120,7 +119,7 @@ class AbstractCrawler:
             builder = entries[tuple(sorted(id_to_create.items()))]
             new_article = builder.enhance()
             article = actrl.create(**new_article)
-            logger.info('%r created %r', self.feed, self.article)
+            logger.info('%r created %r', self.feed, article)
 
         if not article_created:
             logger.info('%r all article matched in db, adding nothing',
