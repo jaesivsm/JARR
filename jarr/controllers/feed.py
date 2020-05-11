@@ -178,17 +178,19 @@ class FeedController(AbstractController):
         span_time = conf.feed.max_expires - conf.feed.min_expires
         art_count = self.__actrl.read(feed_id=feed.id,
                 retrieved_date__gt=max_retrived_date).count()
-        if art_count:
+        if not art_count and method == 'from header min limited':
+            attrs['expires'] = now + timedelta(
+                    seconds=2 * conf.feed.min_expires)
+            method = 'no article, twice min time'
+        elif art_count and method == 'defaulted to max':
             proposed_expires = now + timedelta(
                     seconds=span_time / art_count + conf.feed.min_expires)
-            if proposed_expires < attrs['expires']:
-                attrs['expires'] = proposed_expires
-                method = 'computed'
-        logger.info('saw %d articles in the past %r seconds, expiring at %r',
-                    art_count, span_time, attrs['expires'])
-        now = utc_now() if attrs['expires'].tzinfo else datetime.now()
-        FEED_EXPIRES.labels(method=method, feed_type=feed_type)\
-                .observe((attrs['expires'] - now).total_seconds())
+            attrs['expires'] = proposed_expires
+            method = 'computed'
+        exp_s = (attrs['expires'] - now).total_seconds()
+        logger.info('%r : %d articles, expiring in %ds (%s)',
+                    feed, art_count, exp_s, method)
+        FEED_EXPIRES.labels(method=method, feed_type=feed_type).observe(exp_s)
 
     def update(self, filters, attrs, return_objs=False, commit=True):
         self._ensure_icon(attrs)
