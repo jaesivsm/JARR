@@ -39,7 +39,7 @@ class CrawlerTest(JarrFlaskCommon):
         self._is_secure_served \
                 = patch('jarr.lib.article_cleaner.is_secure_served')
         self._p_req = patch('jarr.crawler.crawlers.abstract.jarr_get')
-        self._p_con = patch('jarr.crawler.crawlers.abstract.FeedBuilderControl'
+        self._p_con = patch('jarr.crawler.crawlers.classic.FeedBuilderControl'
                             'ler.construct_from_xml_feed_content')
         self.is_secure_served = self._is_secure_served.start()
         self.jarr_req = self._p_req.start()
@@ -236,22 +236,5 @@ class CrawlerMethodsTest(unittest.TestCase):
         self.assertEqual('new_link', data['link'])
         self.assertTrue('title' not in data)
         self.assertTrue('description' not in data)
-        self.assertTrue('site_link' not in data)
-        self.assertTrue('icon_url' not in data)
-
-    @patch('jarr.crawler.crawlers.abstract'
-           '.FeedBuilderController.construct_from_xml_feed_content')
-    @patch('jarr.crawler.main.FeedController.update')
-    def test_clean_feed_w_constructed(self, fctrl_update, construct_feed_mock):
-        construct_feed_mock.return_value = {'description': 'new description'}
-        ClassicCrawler(self.feed).clean_feed(self.resp, True)
-
-        fctrl_update.assert_called_once()
-        filters, data = fctrl_update.mock_calls[0][1]
-        self.assertEqual(filters['id'], self.feed.id)
-
-        self.assertEqual('new description', data['description'])
-        self.assertTrue('link' not in data)
-        self.assertTrue('title' not in data)
         self.assertTrue('site_link' not in data)
         self.assertTrue('icon_url' not in data)

@@ -26,6 +26,8 @@ __returned_keys = ('main_title', 'id', 'liked', 'read', 'main_article_id',
 JR_FIELDS = {key: getattr(Cluster, key) for key in __returned_keys}
 JR_SQLA_FIELDS = [getattr(Cluster, key) for key in __returned_keys]
 JR_PAGE_LENGTH = 30
+WAKABLE_REASONS = {ReadReason.marked, ReadReason.mass_marked,
+                   ReadReason.filtered}
 
 
 def get_config(obj, attr):
@@ -157,8 +159,10 @@ class ClusterController(AbstractController):
             cluster.read = cluster.read and cluster_read
             cluster.read_reason = ReadReason.filtered
             logger.debug('marking as read because of filter %r', cluster)
-        elif get_config(article, 'cluster_wake_up') \
-                and get_config(cluster, 'cluster_wake_up'):
+        elif (cluster.read
+              and cluster.read_reason in WAKABLE_REASONS
+              and get_config(article, 'cluster_wake_up')
+              and get_config(cluster, 'cluster_wake_up')):
             cluster.read = False
             logger.debug('waking up %r', cluster)
         # once one article is liked the cluster is liked

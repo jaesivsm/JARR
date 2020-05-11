@@ -127,10 +127,7 @@ class FeedControllerTest(BaseJarrTest):
         for fd in fetchables:
             self.assert_in_range(now - timedelta(seconds=1),
                                  fd.last_retrieved, now)
-            self.assert_in_range(
-                    now + timedelta(seconds=conf.feed.min_expires),
-                    fd.expires,
-                    now + timedelta(seconds=conf.feed.max_expires))
+            self.assertEqual(unix, fd.expires)
         self.assert_late_count(0,
                 "no late feed to report because all just fetched")
         fctrl.update({}, {'expires': unix})
