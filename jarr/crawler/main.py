@@ -14,9 +14,11 @@ from jarr.metrics import WORKER, WORKER_BATCH
 
 urllib3.disable_warnings()
 logger = logging.getLogger(__name__)
+LOCK_EXPIRE = 4 * 60 * 60
+JARR_FEED_DEL_KEY = 'jarr.feed-deleting'
 
 
-def lock(prefix, expire=60 * 60):
+def lock(prefix, expire=LOCK_EXPIRE):
     def metawrapper(func):
         @wraps(func)
         def wrapper(args):
@@ -56,7 +58,8 @@ def clusterizer(user_id):
 @celery_app.task(name='crawler.feed_cleaner')
 @lock('feed-cleaner')
 def feed_cleaner(feed_id):
-    logger.warning("Feed cleaner - start")
+    logger.warning("Feed cleaner - start => %s", feed_id)
+    WORKER_BATCH.labels(worker_type='delete').observe(1)
     fctrl = FeedController()
     result = fctrl.update({'id': feed_id, 'status': FeedStatus.to_delete},
                           {'status': FeedStatus.deleting})
@@ -71,6 +74,8 @@ def feed_cleaner(feed_id):
                          feed_id)
         fctrl.update({'id': feed_id}, {'status': FeedStatus.to_delete})
         raise
+    finally:
+        REDIS_CONN.delete(JARR_FEED_DEL_KEY)
 
 
 @celery_app.task(name='crawler.scheduler')
@@ -87,11 +92,13 @@ def scheduler():
         process_feed.apply_async(args=[feed.id])
     # browsing feeds to delete
     feeds_to_delete = list(fctrl.read(status=FeedStatus.to_delete))
-    logger.info('%d to delete', len(feeds_to_delete))
-    WORKER_BATCH.labels(worker_type='delete').observe(len(feeds_to_delete))
-    for feed in feeds_to_delete:
-        logger.debug("scheduling to be delete %r", feed)
-        feed_cleaner.apply_async(args=[feed.id])
+    if feeds_to_delete and REDIS_CONN.setnx(JARR_FEED_DEL_KEY, 'true'):
+        REDIS_CONN.expire(JARR_FEED_DEL_KEY, LOCK_EXPIRE)
+        logger.info('%d to delete, deleting one', len(feeds_to_delete))
+        for feed in feeds_to_delete:
+            logger.debug("scheduling to be delete %r", feed)
+            feed_cleaner.apply_async(args=[feed.id])
+            break  # only one at a time
     # applying clusterizer
     for user_id in ArticleController.get_user_id_with_pending_articles():
         clusterizer.apply_async(args=[user_id])
