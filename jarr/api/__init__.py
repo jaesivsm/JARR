@@ -1,17 +1,15 @@
-"""Root package for all API endpoints."""
 import logging
 from datetime import timedelta
 from functools import lru_cache
-
 from urllib.parse import SplitResult, urlunsplit
+
 from flask import Flask, got_request_exception, request_tearing_down
 from flask_cors import CORS
 from flask_jwt import JWT, JWTError
 from flask_restx import Api
 from sqlalchemy.exc import IntegrityError
 
-from jarr.bootstrap import (commit_pending_sql, conf,
-                            rollback_pending_sql)
+from jarr.bootstrap import commit_pending_sql, conf, rollback_pending_sql
 from jarr.controllers import UserController
 from jarr.lib.utils import default_handler
 
@@ -58,17 +56,9 @@ def setup_api(application):
         }
     }
 
-    class JarrApi(Api):
-        # FIXME find a better solution to force scheme downward
-        @property
-        def specs_url(self):
-            netloc = conf.api.server_name or '0.0.0.0:8000'
-            return urlunsplit(SplitResult(conf.api.scheme, netloc,
-                                          'swagger.json', '', ''))
-
-    api = JarrApi(application, version='3.0', doc='/', security='apikey',
-                  authorizations=authorizations,
-                  contact_mail=conf.api.admin_mail)
+    api = Api(application, version='3.0', doc='/', security='apikey',
+              authorizations=authorizations,
+              contact_mail=conf.api.admin_mail)
 
     from jarr.api import (feed, cluster, category, one_page_app, opml,
                           user, auth, oauth, metrics)
