@@ -6,7 +6,6 @@ from jarr.controllers.cluster import ClusterController
 from jarr.lib.enums import ReadReason
 from jarr.metrics import READ
 
-ACCEPTED_LEVELS = {"success", "info", "warning", "error"}
 default_ns = Namespace("default", path="/")
 list_feeds_model = default_ns.model("ListFeeds", {
         "id": fields.Integer(),
@@ -39,7 +38,7 @@ filter_parser.add_argument("search_title",
 filter_parser.add_argument("search_content",
         type=inputs.boolean, default=False, store_missing=False,
         help="if True, the search_str will be looked for in content")
-filter_parser.add_argument("filter", type=str, store_missing=False,
+filter_parser.add_argument("filter", type=str,
         choices=["all", "unread", "liked"], default="unread",
         help="the boolean (all, unread or liked) filter to apply to clusters")
 filter_parser.add_argument("feed_id", type=int, store_missing=False,
