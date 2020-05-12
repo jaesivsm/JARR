@@ -3,6 +3,9 @@ import { createSlice } from "@reduxjs/toolkit";
 import { doRetryOnTokenExpiration } from "../../authSlice";
 import { apiUrl } from "../../const";
 
+const defaultFilter = { action: "mark as read", "action on": "match",
+                        type: "simple match", pattern: "" };
+
 const editSlice = createSlice({
   name: "feeds",
   initialState: { isOpen: false,
@@ -41,12 +44,63 @@ const editSlice = createSlice({
         // not the object that was asked for last, ignoring
         return state;
       }
+      const loadedObj = { ...action.payload.data };
+      if (loadedObj.filters) {
+        loadedObj.filters = loadedObj.filters.map((filter, i) => (
+          { id: `f${i}`, ...filter }
+        ));
+      }
       return { ...state, isOpen: true, isLoading: false,
-               editedKeys: [], loadedObj: action.payload.data,
+               editedKeys: [], loadedObj: loadedObj,
                job: action.payload.job ? action.payload.job: state.job };
     },
     requestedBuildedFeed(state, action) {
       return { ...state, isLoading: true };
+    },
+    addFilter(state, action) {
+      const filters = [ ...state.loadedObj.filters,
+                        { ...defaultFilter,
+                          id: `f${state.loadedObj.filters.length + 1}` }];
+      return { ...state,
+               editedKeys: [ ...state.editedKeys, "filters"],
+               loadedObj: { ...state.loadedObj, filters },
+      };
+    },
+    moveUpFilter(state, action) {
+      const filters = [ ...state.loadedObj.filters.slice(0, action.payload - 1),
+                        state.loadedObj.filters[action.payload],
+                        state.loadedObj.filters[action.payload - 1],
+                        ...state.loadedObj.filters.slice(action.payload + 1)];
+      return { ...state,
+               editedKeys: [ ...state.editedKeys, "filters"],
+               loadedObj: { ...state.loadedObj, filters },
+      };
+    },
+    moveDownFilter(state, action) {
+      const filters = [ ...state.loadedObj.filters.slice(0, action.payload),
+                        state.loadedObj.filters[action.payload + 1],
+                        state.loadedObj.filters[action.payload],
+                        ...state.loadedObj.filters.slice(action.payload + 2)];
+      return { ...state,
+               editedKeys: [ ...state.editedKeys, "filters"],
+               loadedObj: { ...state.loadedObj, filters },
+      };
+    },
+    editFilter(state, action) {
+      const { index, key, value } = action.payload;
+      state.loadedObj.filters[index][key] = value;
+      if (state.editedKeys.indexOf("filters") === -1) {
+        state.editedKeys.push("filters");
+      }
+      return state;
+    },
+    removeFilter(state, action) {
+      return { ...state,
+               editedKeys: [ ...state.editedKeys, "filters"],
+               loadedObj: { ...state.loadedObj,
+                            filters: [ ...state.loadedObj.filters.slice(0, action.payload),
+                                       ...state.loadedObj.filters.slice(action.payload + 1)] },
+      };
     },
   },
 });
@@ -54,6 +108,7 @@ const editSlice = createSlice({
 export const { openPanel, closePanel,
                requestedBuildedFeed,
                editLoadedObj, loadedObjToEdit,
+               addFilter, moveUpFilter, moveDownFilter, editFilter, removeFilter,
 } = editSlice.actions;
 export default editSlice.reducer;
 

@@ -8,9 +8,9 @@ import IconButton from "@material-ui/core/IconButton";
 import Close from "@material-ui/icons/Close";
 import CircularProgress from "@material-ui/core/CircularProgress";
 // jarr
-import BuildFeed from "./BuildFeed";
-import AddEditFeed from "./AddEditFeed";
-import AddEditCategory from "./AddEditCategory";
+import BuildFeed from "./Feed/Build";
+import AddEditFeed from "./Feed";
+import AddEditCategory from "./Category";
 import SettingsPanel from "./SettingsPanel";
 import { closePanel } from "./editSlice";
 import editPanelStyle from "./editPanelStyle";
@@ -29,7 +29,7 @@ function mapStateToProps(state) {
   };
 }
 
-function EditPanel({ isOpen, isLoading, job, objType, close }) {
+const EditPanel = ({ isOpen, isLoading, job, objType, close }) => {
   const classes = editPanelStyle();
   let form;
   if (isLoading) {
@@ -69,7 +69,7 @@ function EditPanel({ isOpen, isLoading, job, objType, close }) {
       </div>
     </Drawer>
   );
-}
+};
 
 EditPanel.propTypes = {
   isOpen: PropTypes.bool.isRequired,

@@ -37,8 +37,7 @@ function SettingsPanel({ editPassword, commit }) {
     <FormControl component="fieldset">
       {["login", "email", "timezone"].map((key) => (
           <StateTextInput key={key} label={key} name={key}
-            disabled={key === "login"}
-            className={classes.editPanelInput}  />
+            disabled={key === "login"} />
        ))}
       <ClusterSettings level="user" />
       <TextField label="Password" variant="outlined"

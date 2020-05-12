@@ -11,63 +11,19 @@ import FormControl from "@material-ui/core/FormControl";
 import FormControlLabel from "@material-ui/core/FormControlLabel";
 import FormHelperText from "@material-ui/core/FormHelperText";
 // jarr
-import { closePanel, editLoadedObj } from "./editSlice";
-import { doCreateObj, doEditObj } from "../feedlist/feedSlice";
-import StateTextInput from "./common/StateTextInput";
-import ClusterSettings from "./common/ClusterSettings";
-import FilterSettings from "./common/FilterSettings";
-import DeleteButton from "./common/DeleteButton";
-
-import editPanelStyle from "./editPanelStyle";
+import ProposedLinks from "./ProposedLinks";
+import FilterSettings from "./FilterSettings";
+import StateTextInput from "../common/StateTextInput";
+import ClusterSettings from "../common/ClusterSettings";
+import DeleteButton from "../common/DeleteButton";
+import editPanelStyle from "../editPanelStyle";
+import { closePanel, editLoadedObj } from "../editSlice";
+import { doCreateObj, doEditObj } from "../../feedlist/feedSlice";
 
 const availableFeedTypes = ["classic", "json", "tumblr", "instagram",
                             "soundcloud", "reddit", "fetch", "koreus",
                             "twitter"];
 const noUrlTypes = ["instagram", "soundcloud", "twitter"];
-
-function mapPropposedLinkStateToProps(state) {
-  return { link: state.edit.loadedObj.link,
-           links: state.edit.loadedObj.links,
-  };
-}
-
-const mapPropposedLinkDispatchToProps = (dispatch) => ({
-  edit(value) {
-    dispatch(editLoadedObj({ key: "link", value }));
-  }
-});
-
-
-function ProposedLinksComponent({ link, links, edit }) {
-  const classes = editPanelStyle();
-  if (!links) {
-    return null;
-  }
-  return (
-      <FormControl>
-        <FormHelperText>Other possible feed link have been found :</FormHelperText>
-        <Select variant="outlined" value={link}
-            onChange={(e) => edit(e.target.value)}
-            className={classes.editPanelInput}
-        >
-            {links.map((proposedLink) => (
-              <MenuItem key={`l${links.indexOf(proposedLink)}`}
-                value={proposedLink}>{proposedLink}</MenuItem>
-            ))}
-        </Select>
-      </FormControl>
-  );
-}
-
-ProposedLinksComponent.propTypes = {
-  link: PropTypes.string,
-  links: PropTypes.array,
-  edit: PropTypes.func.isRequired,
-};
-
-const ProposedLinks = connect(mapPropposedLinkStateToProps,
-                              mapPropposedLinkDispatchToProps
-)(ProposedLinksComponent);
 
 function extractFromLoadedObj(state, key, def) {
   if (state.edit.loadedObj && state.edit.loadedObj[key] !== undefined) {
@@ -124,21 +80,19 @@ function AddEditFeed({ job, categories, link, sameLinkCount,
   }
 
   const feedTypeHelper = (noUrlTypes.indexOf(feedType) === -1 ? null :
-    <Alert severity="info">&quot;{feedType}&quot; type doesn&apos;t need a full url for link. Just the username will suffice.</Alert>
+    <Alert severity="info">
+      &quot;{feedType}&quot; type doesn&apos;t need a full url for link. Just the username will suffice.
+    </Alert>
   );
   return (
     <form onSubmit={(e) => commit(e, job)}>
     <FormControl component="fieldset">
       {warning}
-      <StateTextInput required label="Feed title" name="title"
-        className={classes.editPanelInput}/>
-      <StateTextInput label="Feed description" name="description"
-        className={classes.editPanelInput} />
-      <StateTextInput required label="Feed link" name="link"
-        className={classes.editPanelInput}/>
+      <StateTextInput required label="Feed title" name="title" />
+      <StateTextInput label="Feed description" name="description" />
+      <StateTextInput required label="Feed link" name="link" />
       <ProposedLinks />
-      <StateTextInput label="Website link" name="site_link"
-        className={classes.editPanelInput} />
+      <StateTextInput label="Website link" name="site_link" />
       <FormControlLabel
         control={<Switch color="primary" checked={active}
                     onChange={() => edit("status", active ? "paused" : "active")} />}

@@ -5,13 +5,13 @@ import { connect } from "react-redux";
 import Button from "@material-ui/core/Button";
 import FormControl from "@material-ui/core/FormControl";
 // jarr
-import { closePanel } from "./editSlice";
-import { doCreateObj, doEditObj } from "../feedlist/feedSlice";
-import ClusterSettings from "./common/ClusterSettings";
-import DeleteButton from "./common/DeleteButton";
-import StateTextInput from "./common/StateTextInput";
+import ClusterSettings from "../common/ClusterSettings";
+import DeleteButton from "../common/DeleteButton";
+import StateTextInput from "../common/StateTextInput";
 
-import editPanelStyle from "./editPanelStyle";
+import { closePanel } from "../editSlice";
+import editPanelStyle from "../editPanelStyle";
+import { doCreateObj, doEditObj } from "../../feedlist/feedSlice";
 
 const mapDispatchToProps = (dispatch) => ({
   commit(e, job) {
@@ -35,8 +35,7 @@ function AddEditCategory({ job, catId, commit }) {
   return (
     <form onSubmit={(e) => commit(e, job)}>
     <FormControl component="fieldset">
-      <StateTextInput label="Category name" name="name"
-        className={classes.editPanelInput} />
+      <StateTextInput label="Category name" name="name" />
       <ClusterSettings level="category" />
       <div className={classes.editPanelButtons}>
         <Button className={classes.editPanelBtn} variant="contained" color="primary" type="submit">
