@@ -56,6 +56,7 @@ conf = TheConf({'config_files': ['/etc/jarr/jarr.json', '~/.config/jarr.json'],
             {'crawler': [{'idle_delay': {'default': 2 * 60, 'type': int}},
                          {'user_agent': {'default': 'Mozilla/5.0 (compatible; '
                                                     'jarr.info)'}},
+                         {'batch_size': {'default': 0, 'type': int}},
                          {'timeout': {'default': 30, 'type': int}}]},
             {'plugins': [{'readability_key': {'default': ''}},
                          {'rss_bridge': {'default': ''}}]},

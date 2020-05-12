@@ -16,7 +16,6 @@ from jarr.lib.const import UNIX_START
 from jarr.metrics import FEED_EXPIRES, FEED_LATENESS
 from jarr.models import Article, Category, Cluster, Feed, User
 
-DEFAULT_LIMIT = 0
 logger = logging.getLogger(__name__)
 SPAN_FACTOR = 2
 LIST_W_CATEG_MAPPING = OrderedDict((('id', Feed.id),
@@ -64,7 +63,7 @@ class FeedController(AbstractController):
                                            User.last_connection >= last_conn)
         return query
 
-    def list_late(self, limit=DEFAULT_LIMIT):
+    def list_late(self, limit=0):
         """Will list either late feeds or feeds with articles recently created.
 
         Late feeds are feeds which have been retrieved for the last time sooner
@@ -92,7 +91,7 @@ class FeedController(AbstractController):
             query = query.limit(limit)
         yield from query
 
-    def list_fetchable(self, limit=DEFAULT_LIMIT):
+    def list_fetchable(self, limit=0):
         now, feeds = utc_now(), list(self.list_late(limit))
         if feeds:
             for feed in feeds:

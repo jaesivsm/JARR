@@ -84,7 +84,7 @@ def scheduler():
     start = datetime.now()
     fctrl = FeedController()
     # browsing feeds to fetch
-    feeds = list(fctrl.list_fetchable())
+    feeds = list(fctrl.list_fetchable(conf.crawler.batch_size))
     WORKER_BATCH.labels(worker_type='delete').observe(len(feeds))
     logger.info('%d to enqueue', len(feeds))
     for feed in feeds:
