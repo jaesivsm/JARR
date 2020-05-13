@@ -13,11 +13,11 @@ import Alert from "@material-ui/lab/Alert";
 // jarr
 import Cluster from "./components/Cluster";
 import SelectedObjCard from "./components/SelectedObjCard";
-import { doListClusters, doLoadMoreClusters, filterClusters } from "./clusterSlice";
+import { doListClusters, doLoadMoreClusters } from "./clusterSlice";
 import makeStyles from "./components/style";
 import Articles from "./components/Articles";
 
-function mapStateToProps(state) {
+const mapStateToProps = (state) => {
   let selectedFilterObj;
   if(state.clusters.filters["feed_id"]) {
     selectedFilterObj = state.feeds.feedListRows.filter((row) => (
@@ -31,10 +31,7 @@ function mapStateToProps(state) {
 
   let clusters = [];
   if (!state.clusters.loading) {
-    clusters = state.clusters.clusters.filter(
-        filterClusters(state.clusters.requestedClusterId,
-                       state.clusters.filters.filter)
-    ).map((cluster) => `c-${cluster.id}`);
+    clusters = state.clusters.clusters.map((cluster) => `c-${cluster.id}`);
   }
   return { clusters,
            loadedCluster: state.clusters.loadedCluster,
@@ -50,7 +47,7 @@ function mapStateToProps(state) {
               && !!state.clusters.loadedCluster.id
               && state.clusters.requestedClusterId === state.clusters.loadedCluster.id),
   };
-}
+};
 
 const mapDispatchToProps = (dispatch) => ({
   listClusters(filters) {
@@ -61,14 +58,13 @@ const mapDispatchToProps = (dispatch) => ({
   },
 });
 
-
-function ClusterList({ clusters, filters, loadedCluster,
+const ClusterList = ({ clusters, filters, loadedCluster,
                        loading, doDisplayContent,
                        isFeedListOpen, isEditPanelOpen,
                        moreLoading, moreToFetch,
                        selectedFilterObj,
                        listClusters, loadMoreClusters, openEditPanel,
-                       }) {
+                       }) => {
   const theme = useTheme();
   const classes = makeStyles();
   const splitedMode = useMediaQuery(theme.breakpoints.up("md"));
@@ -159,7 +155,7 @@ function ClusterList({ clusters, filters, loadedCluster,
       {content}
     </main>
   );
-}
+};
 
 ClusterList.propTypes = {
   clusters: PropTypes.array.isRequired,

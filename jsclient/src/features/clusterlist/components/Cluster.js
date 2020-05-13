@@ -17,7 +17,7 @@ import LikedIcon from "@material-ui/icons/Star";
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import LikedIconBorder from "@material-ui/icons/StarBorder";
 // jarr
-import { doFetchCluster, doEditCluster, removeClusterSelection,
+import { doFetchCluster, doEditCluster, removeClusterSelection, showCluster,
 } from "../clusterSlice";
 import makeStyles from "./style";
 import { changeReadCount } from "../../feedlist/feedSlice";
@@ -30,11 +30,14 @@ const makeGetCluster = () => createSelector([ getCluster ], (cluster) => cluster
 const makeMapStateToProps = () => {
   const madeGetCluster = makeGetCluster();
   const mapStateToProps = (state, props) => {
-    return { requestedClusterId: state.clusters.requestedClusterId,
+    const cluster = madeGetCluster(state, props);
+    return { expanded: cluster.id === state.clusters.requestedClusterId,
              unreadOnClose: !state.clusters.filters.filter,
              icons: state.feeds.icons,
-             loadedCluster: state.clusters.loadedCluster,
-             cluster: madeGetCluster(state, props),
+             showContent: state.clusters.loadedCluster.id === cluster.id,
+             cluster,
+             doShow: showCluster(cluster, state.clusters.requestedClusterId,
+                                 state.clusters.filters.filter),
     };
   };
   return mapStateToProps;
@@ -94,22 +97,19 @@ const mapDispatchToProps = (dispatch) => ({
   },
 });
 
-function Cluster({ cluster, loadedCluster,
-                   icons, requestedClusterId, unreadOnClose,
+const Cluster = ({ index, cluster, loadedCluster,
+                   icons, doShow, expanded, showContent, unreadOnClose,
                    readOnRedirect, toggleRead, toggleLiked,
                    handleClickOnPanel, splitedMode,
-}) {
+}) => {
   const classes = makeStyles();
-  const expanded = requestedClusterId === cluster.id;
+  if(!doShow) { return null; }
   let content;
   if(!splitedMode && expanded) {
-    if (loadedCluster.id !== cluster.id) {
-      content = <div className={classes.loadingWrap}><CircularProgress /></div>;
+    if (showContent) {
+      content = <Articles />;
     } else {
-      content = (
-        <Articles content={loadedCluster.content}
-                  articles={loadedCluster.articles} />
-      );
+      content = <div className={classes.loadingWrap}><CircularProgress /></div>;
     }
     content = (
       <ExpansionPanelDetails className={classes.content}
@@ -180,10 +180,9 @@ function Cluster({ cluster, loadedCluster,
         {content}
       </ExpansionPanel>
     );
-}
+};
 
 Cluster.propTypes = {
-  loadedCluster: PropTypes.object,
   index: PropTypes.number.isRequired,
   cluster: PropTypes.shape({
     id: PropTypes.number.isRequired,
@@ -198,8 +197,10 @@ Cluster.propTypes = {
   }),
   icons: PropTypes.object.isRequired,
   unreadOnClose: PropTypes.bool.isRequired,
-  requestedClusterId: PropTypes.number,
+  expanded: PropTypes.bool.isRequired,
   splitedMode: PropTypes.bool.isRequired,
+  showContent: PropTypes.bool.isRequired,
+  doShow: PropTypes.bool.isRequired,
   // funcs
   readOnRedirect: PropTypes.func.isRequired,
   toggleRead: PropTypes.func.isRequired,

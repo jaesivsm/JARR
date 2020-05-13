@@ -3,16 +3,19 @@ import { createSlice } from "@reduxjs/toolkit";
 import { apiUrl, pageLength } from "../../const";
 import { doRetryOnTokenExpiration } from "../../authSlice";
 
-export const filterClusters = (requestedClusterId, filter) => (cluster) => (
-    // is selected cluster
-    (requestedClusterId && requestedClusterId === cluster.id)
-     // filters is on all
-     || filter === "all"
-     // cluster is not read and no filter
-     || (!cluster.read && !filter)
-     // cluster is liked and filtering on liked
-     || (cluster.liked && filter === "liked")
+export const showCluster = (cluster, requestedClusterId, filter) => (
+  // is selected cluster
+  (requestedClusterId && requestedClusterId === cluster.id)
+   // filters is on all
+   || filter === "all"
+   // cluster is not read and no filter
+   || (!cluster.read && !filter)
+   // cluster is liked and filtering on liked
+   || (cluster.liked && filter === "liked")
 );
+
+export const filterClusters = (requestedClusterId, filter) => (
+    (cluster) => showCluster(cluster, requestedClusterId, filter));
 
 const clusterSlice = createSlice({
   name: "cluster",
