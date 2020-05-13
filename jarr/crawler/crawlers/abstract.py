@@ -22,7 +22,7 @@ class AbstractCrawler:
         self.feed = feed
 
     def _metric_fetch(self, result, level=logging.INFO):
-        logger.log(level, 'feed responded with %s', result)
+        logger.log(level, '%r: responded with %s', self.feed, result)
         FEED_FETCH.labels(feed_type=self.feed.feed_type.value,
                           result=result).inc()
 
@@ -36,9 +36,9 @@ class AbstractCrawler:
             level = logging.WARNING
         else:
             level = logging.DEBUG
-        logger.log(level, '%r an error occured while fetching feed; '
-                   'bumping error count to %r', self.feed, error_count)
-        logger.debug("last error details %r", last_error)
+        logger.log(level, "%r: fetching feed error'd; error count -> %r",
+                        self.feed, error_count)
+        logger.debug("%r: last error details %r", self.feed, last_error)
         now = utc_now()
         info = {'error_count': error_count, 'last_error': last_error,
                 'user_id': self.feed.user_id, 'last_retrieved': now,
@@ -59,7 +59,7 @@ class AbstractCrawler:
                 and self.feed.link != response.url \
                 and any(r.status_code in {301, 308} for r in response.history)
         if feed_permanently_redirected:
-            logger.warning('%r feed moved from %r to %r', self.feed,
+            logger.warning('%r: feed moved from %r to %r', self.feed,
                            self.feed.link, response.url)
             info['link'] = response.url
         if info:
@@ -70,7 +70,7 @@ class AbstractCrawler:
         raise NotImplementedError()
 
     def create_missing_article(self, response):
-        logger.info('%r - cache validation failed, challenging entries',
+        logger.info('%r: cache validation failed, challenging entries',
                     self.feed)
         parsed = self.parse_feed_response(response)
         if parsed is None:
@@ -83,31 +83,31 @@ class AbstractCrawler:
             builder = self.article_builder(self.feed, entry)
             if builder.do_skip_creation:
                 skipped_list.append(builder.entry_ids)
-                logger.debug('skipping article')
+                logger.debug('%r: skipping article', self.feed)
                 continue
             entry_ids = builder.entry_ids
             entries[tuple(sorted(entry_ids.items()))] = builder
             ids.append(entry_ids)
         if not ids and skipped_list:
-            logger.debug('nothing to add (skipped %r) %r',
-                         skipped_list, parsed)
+            logger.debug('%r: nothing to add (skipped %r) %r',
+                         self.feed, skipped_list, parsed)
             return
-        logger.debug("%r found %d entries %r", self.feed, len(ids), ids)
+        logger.debug("%r: found %d entries %r", self.feed, len(ids), ids)
 
         article_created = False
         actrl = ArticleController(self.feed.user_id)
         new_entries_ids = list(actrl.challenge(ids=ids))
-        logger.debug("%r %d entries wern't matched and will be created",
+        logger.debug("%r: %d entries wern't matched and will be created",
                      self.feed, len(new_entries_ids))
         for id_to_create in new_entries_ids:
             article_created = True
             builder = entries[tuple(sorted(id_to_create.items()))]
             new_article = builder.enhance()
             article = actrl.create(**new_article)
-            logger.info('%r created %r', self.feed, article)
+            logger.info('%r: created %r', self.feed, article)
 
         if not article_created:
-            logger.info('%r all article matched in db, adding nothing',
+            logger.info('%r: all article matched in db, adding nothing',
                         self.feed)
 
     def get_url(self):
@@ -136,7 +136,7 @@ class AbstractCrawler:
         return False
 
     def crawl(self):
-        logger.debug('%r - crawling resources', self.feed)
+        logger.debug('%r: crawling resources', self.feed)
         try:
             response = self.request()
             response.raise_for_status()

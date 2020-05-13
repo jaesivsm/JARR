@@ -14,7 +14,7 @@ from jarr.metrics import WORKER, WORKER_BATCH
 
 urllib3.disable_warnings()
 logger = logging.getLogger(__name__)
-LOCK_EXPIRE = 4 * 60 * 60
+LOCK_EXPIRE = 60 * 60
 JARR_FEED_DEL_KEY = 'jarr.feed-deleting'
 
 
@@ -44,7 +44,7 @@ def lock(prefix, expire=LOCK_EXPIRE):
 @lock('process-feed')
 def process_feed(feed_id):
     crawler = FeedController().get_crawler(feed_id)
-    logger.warning("%r is gonna crawl %r", crawler, feed_id)
+    logger.warning("%r is gonna crawl", crawler)
     crawler.crawl()
 
 
@@ -88,7 +88,7 @@ def scheduler():
     WORKER_BATCH.labels(worker_type='delete').observe(len(feeds))
     logger.info('%d to enqueue', len(feeds))
     for feed in feeds:
-        logger.debug("scheduling to be fetched %r", feed)
+        logger.debug("%r: scheduling to be fetched", feed)
         process_feed.apply_async(args=[feed.id])
     # browsing feeds to delete
     feeds_to_delete = list(fctrl.read(status=FeedStatus.to_delete))
@@ -96,7 +96,7 @@ def scheduler():
         REDIS_CONN.expire(JARR_FEED_DEL_KEY, LOCK_EXPIRE)
         logger.info('%d to delete, deleting one', len(feeds_to_delete))
         for feed in feeds_to_delete:
-            logger.debug("scheduling to be delete %r", feed)
+            logger.debug("%r: scheduling to be delete", feed)
             feed_cleaner.apply_async(args=[feed.id])
             break  # only one at a time
     # applying clusterizer
