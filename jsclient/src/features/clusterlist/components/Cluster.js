@@ -1,19 +1,20 @@
-import React from "react";
 import clsx from "clsx";
+import React from "react";
+import moment from "moment";
 import PropTypes from "prop-types";
 import { connect } from "react-redux";
-import moment from "moment";
+import { createSelector } from "reselect";
 // material ui components
-import CircularProgress from "@material-ui/core/CircularProgress";
-import Typography from "@material-ui/core/Typography";
 import Link from "@material-ui/core/Link";
+import Checkbox from "@material-ui/core/Checkbox";
+import Typography from "@material-ui/core/Typography";
 import ExpansionPanel from "@material-ui/core/ExpansionPanel";
+import CircularProgress from "@material-ui/core/CircularProgress";
 import ExpansionPanelSummary from "@material-ui/core/ExpansionPanelSummary";
 import ExpansionPanelDetails from "@material-ui/core/ExpansionPanelDetails";
-import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
-import Checkbox from "@material-ui/core/Checkbox";
 // material ui icons
 import LikedIcon from "@material-ui/icons/Star";
+import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import LikedIconBorder from "@material-ui/icons/StarBorder";
 // jarr
 import { doFetchCluster, doEditCluster, removeClusterSelection,
@@ -23,12 +24,20 @@ import { changeReadCount } from "../../feedlist/feedSlice";
 import ClusterIcon from "../../../components/ClusterIcon";
 import Articles from "./Articles";
 
-function mapStateToProps(state) {
-  return { requestedClusterId: state.clusters.requestedClusterId,
-           unreadOnClose: !state.clusters.filters.filter,
-           icons: state.feeds.icons,
-           loadedCluster: state.clusters.loadedCluster,
+const getCluster = (state, props) => state.clusters.clusters[props.index];
+const makeGetCluster = () => createSelector([ getCluster ], (cluster) => cluster);
+
+const makeMapStateToProps = () => {
+  const madeGetCluster = makeGetCluster();
+  const mapStateToProps = (state, props) => {
+    return { requestedClusterId: state.clusters.requestedClusterId,
+             unreadOnClose: !state.clusters.filters.filter,
+             icons: state.feeds.icons,
+             loadedCluster: state.clusters.loadedCluster,
+             cluster: madeGetCluster(state, props),
+    };
   };
+  return mapStateToProps;
 }
 
 const mapDispatchToProps = (dispatch) => ({
@@ -175,6 +184,7 @@ function Cluster({ cluster, loadedCluster,
 
 Cluster.propTypes = {
   loadedCluster: PropTypes.object,
+  index: PropTypes.number.isRequired,
   cluster: PropTypes.shape({
     id: PropTypes.number.isRequired,
     read: PropTypes.bool.isRequired,
@@ -197,4 +207,4 @@ Cluster.propTypes = {
   handleClickOnPanel: PropTypes.func.isRequired,
 };
 
-export default connect(mapStateToProps, mapDispatchToProps)(Cluster);
+export default connect(makeMapStateToProps, mapDispatchToProps)(Cluster);

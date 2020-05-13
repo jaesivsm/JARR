@@ -34,7 +34,7 @@ function mapStateToProps(state) {
     clusters = state.clusters.clusters.filter(
         filterClusters(state.clusters.requestedClusterId,
                        state.clusters.filters.filter)
-    );
+    ).map((cluster) => `c-${cluster.id}`);
   }
   return { clusters,
            loadedCluster: state.clusters.loadedCluster,
@@ -89,12 +89,9 @@ function ClusterList({ clusters, filters, loadedCluster,
   if (loading) {
     list = <div className={classes.loadingWrap}><CircularProgress /></div>;
   } else if (clusters.length) {
-    list = clusters.map((cluster) => (
-        <Cluster key={`c-${cluster.id}`}
-          cluster={cluster}
-          splitedMode={splitedMode}
-        />)
-    );
+    console.log(clusters);
+    list = clusters.map((cluster, index) => (
+        <Cluster key={cluster} index={index} splitedMode={splitedMode} />));
     if (moreLoading && moreToFetch) {
       loadMoreButton = <CircularProgress />;
     } else if (moreToFetch) {
