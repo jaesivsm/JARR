@@ -22,7 +22,7 @@ function mergeCategoriesWithUnreads(feedListRows, unreads,
       index = categories.indexOf(row["category_id"]) * 3 + 2;
     }
     return { ...row, unread: unread ? unread : null, index,
-             folded: row.folded === undefined ? isParentFolded: row.folded };
+             folded: typeof(row.folded) === "undefined" ? isParentFolded: row.folded };
   }).sort((row1, row2) => (row1.index - row2.index));
 }
 
@@ -47,13 +47,9 @@ const feedSlice = createSlice({
                   categoryAsFeed: {},
   },
   reducers: {
-    requestedFeeds(state, action) {
-      return { ...state, loadingFeeds: true };
-    },
-    requestedUnreadCounts(state, action) {
-      return { ...state, loadingUnreadCounts: true };
-    },
-    setSearchFilter(state, action) {
+    requestedFeeds: (state, action) => ({ ...state, loadingFeeds: true }),
+    requestedUnreadCounts: (state, action) => ({ ...state, loadingUnreadCounts: true }),
+    setSearchFilter: (state, action) => {
       if (!action.payload) {
         return { ...state, feedListFilter: defaultFilter, };
       }
@@ -65,7 +61,7 @@ const feedSlice = createSlice({
                ),
       };
     },
-    toggleAllFolding(state, action) {
+    toggleAllFolding: (state, action) => {
       const newFolding = !state.isParentFolded;
       storageSet("left-menu-folded", newFolding);
       return { ...state,
@@ -74,12 +70,12 @@ const feedSlice = createSlice({
                }),
                isParentFolded: newFolding };
     },
-    toggleFolding(state, action) {
+    toggleFolding: (state, action) => {
       return { ...state, feedListRows: state.feedListRows.map((row) => {
           return { ...row, folded: action.payload === row["category_id"] || (row["type"] === "categ" && row.id === action.payload) ? !row.folded : row.folded };
       })};
     },
-    loadedFeeds(state, action) {
+    loadedFeeds: (state, action) => {
       const categoryAsFeed = {};
       const icons = {};
       action.payload.feedListRows.forEach((row) => {
@@ -94,19 +90,18 @@ const feedSlice = createSlice({
                                                         state.isParentFolded),
       };
     },
-    loadedUnreadCounts(state, action) {
-      return { ...state, loadingUnreadCounts: false, unreadToFetch: false,
-               unreads: action.payload.unreads,
-               feedListRows: mergeCategoriesWithUnreads(state.feedListRows,
-                                                        action.payload.unreads,
-                                                        state.isParentFolded),
-      };
-    },
-    toggleMenu(state, action) {
+    loadedUnreadCounts: (state, action) => ({
+      ...state, loadingUnreadCounts: false, unreadToFetch: false,
+      unreads: action.payload.unreads,
+      feedListRows: mergeCategoriesWithUnreads(state.feedListRows,
+                                               action.payload.unreads,
+                                               state.isParentFolded),
+    }),
+    toggleMenu: (state, action) => {
       storageSet("left-menu-open", action.payload);
       return { ...state, isOpen: action.payload };
     },
-    createdObj(state, action) {
+    createdObj: (state, action) => {
       const feedListRow = { unread: 0, id: action.payload.data.id };
       const categoryAsFeed = { ...state.categoryAsFeed };
       if(action.payload.type === "category") {
@@ -124,7 +119,7 @@ const feedSlice = createSlice({
                    state.unreads, state.isParentFolded),
       };
     },
-    changeReadCount(state, action) {
+    changeReadCount: (state, action) => {
       const unreads = { ...state.unreads };
       let shouldFetchUnread = false;
       const readChange = action.payload.action === "unread" ? 1 : -1;
@@ -154,7 +149,7 @@ const feedSlice = createSlice({
                                                         state.isParentFolded),
       };
     },
-    editedObj(state, action) {
+    editedObj: (state, action) => {
       const updated = {};
       const updatedState = {};
       if (action.payload.data.name) {  // category
@@ -182,7 +177,7 @@ const feedSlice = createSlice({
                   }), state.unreads, state.isParentFolded),
       };
     },
-    deletedObj(state, action) {
+    deletedObj: (state, action) => {
       const type = action.payload.objType === "category" ? "categ" : "feed";
       return { ...state,
                feedListRows: state.feedListRows.filter((row) => (

@@ -89,7 +89,6 @@ function ClusterList({ clusters, filters, loadedCluster,
   if (loading) {
     list = <div className={classes.loadingWrap}><CircularProgress /></div>;
   } else if (clusters.length) {
-    console.log(clusters);
     list = clusters.map((cluster, index) => (
         <Cluster key={cluster} index={index} splitedMode={splitedMode} />));
     if (moreLoading && moreToFetch) {

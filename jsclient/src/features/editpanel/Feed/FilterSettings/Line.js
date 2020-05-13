@@ -37,13 +37,10 @@ const makeGetFilter = () => createSelector([ getFilter ], (filter) => filter);
 
 const makeMapStateToProps = () => {
   const madeGetFilter = makeGetFilter();
-  const mapStateToProps = (state, props) => {
-    return { filter: madeGetFilter(state, props) };
-  }
-  return mapStateToProps
-}
+  return (state, props) => ({ filter: madeGetFilter(state, props) });
+};
 
-function FilterSettingLine({ index, position, filter }) {
+const FilterSettingLine = ({ index, position, filter }) => {
   let moveUpBtn;
   let moveDownBtn;
   const dispatch = useDispatch();
@@ -99,7 +96,7 @@ function FilterSettingLine({ index, position, filter }) {
       </IconButton>
     </div>
   );
-}
+};
 
 FilterSettingLine.propTypes = {
   index: PropTypes.number.isRequired,

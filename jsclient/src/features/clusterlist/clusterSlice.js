@@ -26,7 +26,7 @@ const clusterSlice = createSlice({
                   loadedCluster: {},
   },
   reducers: {
-    requestedClustersList(state, action) {
+    requestedClustersList: (state, action) => {
       const filters = { ...state.filters };
       if (filters["from_date"]) {
         delete filters["from_date"];
@@ -54,14 +54,14 @@ const clusterSlice = createSlice({
                requestedFilter: qs.stringify(filters),
       };
     },
-    requestedMoreCLusters(state, action) {
+    requestedMoreCLusters: (state, action) => {
       const filters = { ...state.filters,
                         "from_date": state.clusters[state.clusters.length - 1].main_date };
       return { ...state, filters, moreLoading: true,
                requestedFilter: qs.stringify(filters),
       };
     },
-    retrievedClustersList(state, action) {
+    retrievedClustersList: (state, action) => {
       if (action.payload.requestedFilter !== state.requestedFilter) {
         // dispatch from an earlier request that has been ignored
         return state;  // ignoring
@@ -76,13 +76,12 @@ const clusterSlice = createSlice({
                moreToFetch: action.payload.clusters.length >= pageLength,
                clusters: action.payload.clusters };
     },
-    requestedCluster(state, action) {
-      return { ...state,
-               requestedClusterId: action.payload.clusterId,
-               loadedCluster: {},
-      };
-    },
-    retrievedCluster(state, action) {
+    requestedCluster: (state, action) => ({
+      ...state,
+      requestedClusterId: action.payload.clusterId,
+      loadedCluster: {},
+    }),
+    retrievedCluster: (state, action) => {
       if (state.requestedClusterId !== action.payload.cluster.id) {
         return state; // not the object that was asked for last, ignoring
       }
@@ -97,12 +96,12 @@ const clusterSlice = createSlice({
                loadedCluster: action.payload.cluster,
       };
     },
-    updateClusterAttrs(state, action) {
+    updateClusterAttrs: (state, action) => {
       const alterCluster = (cluster) => {
         if (cluster.id === action.payload.clusterId) {
           return { ...cluster,
-                   read: action.payload.read === undefined ? cluster.read : action.payload.read,
-                   liked: action.payload.liked === undefined ? cluster.liked : action.payload.liked };
+                   read: typeof(action.payload.read) === "undefined" ? cluster.read : action.payload.read,
+                   liked: typeof(action.payload.liked) === "undefined" ? cluster.liked : action.payload.liked };
           }
           return cluster;
       };
@@ -111,10 +110,10 @@ const clusterSlice = createSlice({
                clusters: state.clusters.map(alterCluster),
       };
     },
-    removeClusterSelection(state, action) {
-      return { ...state, loadedCluster: {}, requestedClusterId: null };
-    },
-    markedAllAsRead(state, action) {
+    removeClusterSelection: (state, action) => ({
+      ...state, loadedCluster: {}, requestedClusterId: null,
+    }),
+    markedAllAsRead: (state, action) => {
       if (!action.payload.onlySingles) {
         return { ...state, clusters: [] };
       }

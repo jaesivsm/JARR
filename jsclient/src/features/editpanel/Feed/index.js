@@ -25,12 +25,12 @@ const availableFeedTypes = ["classic", "json", "tumblr", "instagram",
                             "twitter"];
 const noUrlTypes = ["instagram", "soundcloud", "twitter"];
 
-function extractFromLoadedObj(state, key, def) {
-  if (state.edit.loadedObj && state.edit.loadedObj[key] !== undefined) {
+const extractFromLoadedObj = (state, key, def) => {
+  if (state.edit.loadedObj && typeof(state.edit.loadedObj[key]) !== "undefined") {
       return state.edit.loadedObj[key];
   }
   return def;
-}
+};
 
 const mapDispatchToProps = (dispatch) => ({
   commit(e, job) {
@@ -47,22 +47,21 @@ const mapDispatchToProps = (dispatch) => ({
   },
 });
 
-function mapStateToProps(state) {
-  return { catId: extractFromLoadedObj(state, "category_id", null),
-           feedType: extractFromLoadedObj(state, "feed_type", "classic"),
-           sameLinkCount: extractFromLoadedObj(state, "same_link_count", 0),
-           link: extractFromLoadedObj(state, "link", ""),
-           feedId: extractFromLoadedObj(state, "id", null),
-           active: extractFromLoadedObj(state, "status", "active") === "active",
-           categories: state.feeds.feedListRows.filter((row) => (
-               row.type === "categ" || row.type === "all-categ")
-           ).map((cat) => ({ id: cat.id, name: cat.str })),
-           };
-}
+const mapStateToProps = (state) => ({
+  catId: extractFromLoadedObj(state, "category_id", null),
+  feedType: extractFromLoadedObj(state, "feed_type", "classic"),
+  sameLinkCount: extractFromLoadedObj(state, "same_link_count", 0),
+  link: extractFromLoadedObj(state, "link", ""),
+  feedId: extractFromLoadedObj(state, "id", null),
+  active: extractFromLoadedObj(state, "status", "active") === "active",
+  categories: state.feeds.feedListRows.filter((row) => (
+    row.type === "categ" || row.type === "all-categ")
+  ).map((cat) => ({ id: cat.id, name: cat.str })),
+});
 
-function AddEditFeed({ job, categories, link, sameLinkCount,
+const AddEditFeed = ({ job, categories, link, sameLinkCount,
                        feedId, catId, feedType, active,
-                       edit, commit }) {
+                       edit, commit }) => {
   const classes = editPanelStyle();
   let warning;
   if(sameLinkCount) {
@@ -138,7 +137,7 @@ function AddEditFeed({ job, categories, link, sameLinkCount,
     </FormControl>
     </form>
   );
-}
+};
 
 AddEditFeed.propTypes = {
   link: PropTypes.string,

@@ -16,17 +16,17 @@ import editPanelStyle from "../editPanelStyle";
 import { editLoadedObj } from "../editSlice";
 
 const clusteringConfOptions = {
-    "cluster_enabled": { "label": "Allow article clustering" },
-    "cluster_tfidf_enabled": { "label": "Allow article clustering by analysing its content through TFIDF"},
-    "cluster_same_category": { "label": "Allow clustering between articles in the same category" },
-    "cluster_same_feed": { "label": "Allow clustering between articles inside the same feed" },
-    "cluster_wake_up": { "label": "Allow clustering process to unread an article previously marked as read" }
+    "cluster_enabled": "Allow article clustering",
+    "cluster_tfidf_enabled": "Allow article clustering by analysing its content through TFIDF",
+    "cluster_same_category": "Allow clustering between articles in the same category",
+    "cluster_same_feed": "Allow clustering between articles inside the same feed",
+    "cluster_wake_up": "Allow clustering process to unread an article previously marked as read"
 };
 
 function mapStateToProps(state) {
   const clusterOptions = {};
   Object.keys(clusteringConfOptions).forEach((opt) => {
-      clusterOptions[opt] = state.edit.loadedObj[opt] !== undefined ? state.edit.loadedObj[opt] : null;
+      clusterOptions[opt] = typeof(state.edit.loadedObj[opt]) !== "undefined" ? state.edit.loadedObj[opt] : null;
 });
   return { clusterOptions };
 }
@@ -50,11 +50,11 @@ function ClusterSettings({ level, clusterOptions, edit }) {
         <Typography className={classes.heading}>Cluster Settings</Typography>
       </ExpansionPanelSummary>
       <ExpansionPanelDetails className={classes.editPanelClusterSettings}>
-        {Object.keys(clusteringConfOptions)
-               .map((opt) => (
+        {Object.entries(clusteringConfOptions)
+               .map(([opt, label]) => (
           <FormControl key={opt} className={classes.editPanelClusterCtrl}>
-            <InputLabel id={`${"label-"+opt}`} className={classes.editPanelClusterLabel}>{clusteringConfOptions[opt].label}</InputLabel>
-            <Select labelId={`${"label-"+opt}`} id={`${"select-"+opt}`}
+            <InputLabel id={`label-${opt}`} className={classes.editPanelClusterLabel}>{label}</InputLabel>
+            <Select labelId={`label-${opt}`} id={`select-${opt}`}
               className={classes.editPanelClusterSelect}
               value={`${clusterOptions[opt] === null && level === "user" ? true : clusterOptions[opt]}`}
               onChange={(e) => edit(e, opt)}>

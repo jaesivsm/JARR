@@ -20,7 +20,7 @@ const mapDispatchToProps = (dispatch) => ({
 });
 
 
-function BuildFeed({ isLoading, doBuildFeed }) {
+const BuildFeed = ({ isLoading, doBuildFeed }) => {
   const [feedUrl, setFeedUrl] = useState(null);
   const classes = editPanelStyle();
   const [showHelp, setShowHelp] = useState(false);
@@ -55,7 +55,7 @@ function BuildFeed({ isLoading, doBuildFeed }) {
     </FormControl>
     </form>
   );
-}
+};
 
 BuildFeed.propTypes = {
   doBuildFeed: PropTypes.func.isRequired,

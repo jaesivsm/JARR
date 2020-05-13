@@ -10,11 +10,10 @@ import FormHelperText from "@material-ui/core/FormHelperText";
 import editPanelStyle from "../editPanelStyle";
 import { editLoadedObj } from "../editSlice";
 
-function mapStateToProps(state) {
-  return { link: state.edit.loadedObj.link,
-           links: state.edit.loadedObj.links,
-  };
-}
+const mapStateToProps = (state) => ({
+  link: state.edit.loadedObj.link,
+  links: state.edit.loadedObj.links,
+});
 
 const mapDispatchToProp = (dispatch) => ({
   edit(value) {
@@ -22,7 +21,7 @@ const mapDispatchToProp = (dispatch) => ({
   }
 });
 
-function ProposedLinks({ link, links, edit }) {
+const ProposedLinks = ({ link, links, edit }) => {
   const classes = editPanelStyle();
   if (!links) {
     return null;
@@ -41,7 +40,7 @@ function ProposedLinks({ link, links, edit }) {
       </Select>
     </FormControl>
   );
-}
+};
 
 ProposedLinks.propTypes = {
   link: PropTypes.string,
@@ -49,4 +48,4 @@ ProposedLinks.propTypes = {
   edit: PropTypes.func.isRequired,
 };
 
-export default connect(mapStateToProps, mapDispatchToProp)(ProposedLinks)
+export default connect(mapStateToProps, mapDispatchToProp)(ProposedLinks);

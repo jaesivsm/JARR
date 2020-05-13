@@ -99,30 +99,30 @@ function TopMenu(props) {
               icon: <MarkAllNonClusterAsReadIcon /> },
   };
 
-  const commands = Object.keys(commandsDefs).map((key) => {
+  const commands = Object.entries(commandsDefs).map(([key, command]) => {
       if (burgered) {
         return (<MenuItem onClick={(e) => {
                     setAnchorEl(null);
-                    commandsDefs[key].onClick();
+                    command.onClick();
                 }}
                   key={`command-${key}`}
                 >
                   <ListItemIcon>
                     <IconButton edge="start" color="inherit"
                       className={classes.menuButton}>
-                      {commandsDefs[key].icon}
+                      {command.icon}
                     </IconButton>
                   </ListItemIcon>
-                  <Typography>{commandsDefs[key].label}</Typography>
+                  <Typography>{command.label}</Typography>
                 </MenuItem>);
       }
-      return (<Tooltip title={commandsDefs[key].label}
+      return (<Tooltip title={command.label}
                 key={`command-${key}`}
               >
                 <IconButton color="inherit"
-                  onClick={commandsDefs[key].onClick} className={classes.menuButton}
+                  onClick={command.onClick} className={classes.menuButton}
                 >
-                  {commandsDefs[key].icon}
+                  {command.icon}
                 </IconButton>
               </Tooltip>);
     }

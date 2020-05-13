@@ -121,7 +121,7 @@ function FeedList({ itemCount, unreadToFetch,
     );
   } else {
     list = (
-      <FixedSizeList height={1000} width={isDesktop ? feedListWidth-1 : '100%'} itemCount={itemCount} itemSize={34}>
+      <FixedSizeList height={1000} width={isDesktop ? feedListWidth-1 : "100%"} itemCount={itemCount} itemSize={34}>
         {FeedRow}
       </FixedSizeList>
     );

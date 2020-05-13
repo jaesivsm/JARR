@@ -14,14 +14,9 @@ const getValue = (state, props) =>
 const makeGetValue = () => createSelector([ getValue ], (value) => value);
 
 const makeMapStateToProps = () => {
-  const madeGetValue = makeGetValue()
-  const mapStateToProps = (state, props) => {
-    return {
-      value: madeGetValue(state, props)
-    }
-  }
-  return mapStateToProps
-}
+  const madeGetValue = makeGetValue();
+  return (state, props) => ({ value: madeGetValue(state, props) });
+};
 
 const StateTextInput = ({ label, name, required, disabled, value }) => {
   const dispatch = useDispatch();

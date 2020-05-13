@@ -1,7 +1,6 @@
 import logging
 from datetime import timedelta
 from functools import lru_cache
-from urllib.parse import SplitResult, urlunsplit
 
 from flask import Flask, got_request_exception, request_tearing_down
 from flask_cors import CORS

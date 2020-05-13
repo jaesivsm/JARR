@@ -19,7 +19,7 @@ import style from "./style";
 import FilterSettingLine from "./Line";
 import { addFilter } from "../../editSlice";
 
-export function mapStateToProps(state) {
+export const mapStateToProps = (state) => {
   return { filters: (state.edit.loadedObj.filters
                      ? state.edit.loadedObj.filters
                      : []).map((filter) => filter.id),
@@ -32,7 +32,7 @@ const mapDispatchToProps = (dispatch) => ({
   },
 });
 
-function FilterSettings({ filters, add }) {
+const FilterSettings = ({ filters, add }) => {
   const filterClasses = style();
   const classes = editPanelStyle();
   const [showHelp, setShowHelp] = useState(false);
@@ -76,7 +76,7 @@ function FilterSettings({ filters, add }) {
       </ExpansionPanelDetails>
     </ExpansionPanel>
   );
-}
+};
 
 FilterSettings.propTypes = {
   filters: PropTypes.array.isRequired,

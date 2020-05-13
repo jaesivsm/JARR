@@ -15,28 +15,26 @@ const authSlice = createSlice({
                   refreshedAt: null,
   },
   reducers: {
-    attemptLogin(state, action) {
+    attemptLogin: (state, action) => {
       const { login, password } = action.payload;
       return { ...state, login, password };
     },
-    loginFailed(state, action) {
-      return { token: null, login: null, password: null };
-    },
-    tokenAcquired(state, action) {
+    loginFailed: (state, action) => ({ token: null, login: null, password: null }),
+    tokenAcquired: (state, action) => {
       const token = action.payload.data["access_token"];
       storageSet("token", token, "session");
       return { ...state, token, refreshedAt: new Date().getTime() };
     },
-    tokenExpire(state, action) {
+    tokenExpire: (state, action) => {
       storageRemove("token", "session");
       return { ...state, token: null};
     },
-    doLogout() {
+    doLogout: () => {
       storageRemove("left-menu-open");
       storageRemove("token", "session");
       return { login: null, password: null, token: null };
-    }
-  }
+    },
+  },
 });
 
 export const { attemptLogin, loginFailed, tokenAcquired, tokenExpire, doLogout } = authSlice.actions;

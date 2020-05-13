@@ -17,29 +17,26 @@ const editSlice = createSlice({
                   editedKeys: [],
   },
   reducers: {
-    openPanel(state, action) {
-      return { ...state, isOpen: true,
-               isLoading: !!action.payload.isLoading,
-               objType: action.payload.objType,
-               objId: action.payload.objId,
-               job: action.payload.job ? action.payload.job : action.payload.objId ? "edit" : "add",
-      };
-    },
-    closePanel(state, action) {
-      return { ...state, isOpen: false,
-               objType: "", objId: null, job: "",
-               loadedObj: {},
-               editedKeys: [],
-      };
-    },
-    editLoadedObj(state, action) {
-      return { ...state,
-               editedKeys: [ ...state.editedKeys, action.payload.key ],
-               loadedObj: { ...state.loadedObj,
-                            [action.payload.key]: action.payload.value }
-      };
-    },
-    loadedObjToEdit(state, action) {
+    openPanel: (state, action) => ({
+      ...state, isOpen: true,
+      isLoading: !!action.payload.isLoading,
+      objType: action.payload.objType,
+      objId: action.payload.objId,
+      job: action.payload.job ? action.payload.job : action.payload.objId ? "edit" : "add",
+    }),
+    closePanel: (state, action) => ({
+      ...state, isOpen: false,
+      objType: "", objId: null, job: "",
+      loadedObj: {},
+      editedKeys: [],
+    }),
+    editLoadedObj: (state, action) => ({
+      ...state,
+      editedKeys: [ ...state.editedKeys, action.payload.key ],
+      loadedObj: { ...state.loadedObj,
+                   [action.payload.key]: action.payload.value }
+    }),
+    loadedObjToEdit: (state, action) => {
       if (state.objId !== action.payload.data.id && !action.payload.noIdCheck ) {
         // not the object that was asked for last, ignoring
         return state;
@@ -51,13 +48,11 @@ const editSlice = createSlice({
         ));
       }
       return { ...state, isOpen: true, isLoading: false,
-               editedKeys: [], loadedObj: loadedObj,
+               editedKeys: [], loadedObj,
                job: action.payload.job ? action.payload.job: state.job };
     },
-    requestedBuildedFeed(state, action) {
-      return { ...state, isLoading: true };
-    },
-    addFilter(state, action) {
+    requestedBuildedFeed: (state, action) => ({ ...state, isLoading: true }),
+    addFilter: (state, action) => {
       const filters = [ ...state.loadedObj.filters,
                         { ...defaultFilter,
                           id: `f${state.loadedObj.filters.length + 1}` }];
@@ -66,7 +61,7 @@ const editSlice = createSlice({
                loadedObj: { ...state.loadedObj, filters },
       };
     },
-    moveUpFilter(state, action) {
+    moveUpFilter: (state, action) => {
       const filters = [ ...state.loadedObj.filters.slice(0, action.payload - 1),
                         state.loadedObj.filters[action.payload],
                         state.loadedObj.filters[action.payload - 1],
@@ -86,22 +81,20 @@ const editSlice = createSlice({
                loadedObj: { ...state.loadedObj, filters },
       };
     },
-    editFilter(state, action) {
-      const { index, key, value } = action.payload;
-      state.loadedObj.filters[index][key] = value;
+    editFilter: (state, action) => {
+      state.loadedObj.filters[action.payload.index][action.payload.key] = action.payload.value;
       if (state.editedKeys.indexOf("filters") === -1) {
         state.editedKeys.push("filters");
       }
       return state;
     },
-    removeFilter(state, action) {
-      return { ...state,
-               editedKeys: [ ...state.editedKeys, "filters"],
-               loadedObj: { ...state.loadedObj,
-                            filters: [ ...state.loadedObj.filters.slice(0, action.payload),
-                                       ...state.loadedObj.filters.slice(action.payload + 1)] },
-      };
-    },
+    removeFilter: (state, action) => ({
+      ...state,
+      editedKeys: [ ...state.editedKeys, "filters"],
+      loadedObj: { ...state.loadedObj,
+      filters: [ ...state.loadedObj.filters.slice(0, action.payload),
+                 ...state.loadedObj.filters.slice(action.payload + 1)] },
+    }),
   },
 });
 
