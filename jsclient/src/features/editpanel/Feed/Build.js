@@ -10,7 +10,7 @@ import FormControl from "@material-ui/core/FormControl";
 import HelpIcon from "@material-ui/icons/Help";
 // jarr
 import editPanelStyle from "../editPanelStyle";
-import { doBuildFeed } from "../editSlice";
+import doBuildFeed from "../../../hooks/doBuildFeed";
 
 const mapDispatchToProps = (dispatch) => ({
   doBuildFeed(e, feedUrl) {

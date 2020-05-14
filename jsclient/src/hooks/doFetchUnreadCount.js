@@ -1,4 +1,4 @@
-import { requestedUnreadCounts, loadedUnreadCounts } from "../features/feedlist/feedSlice";
+import { requestedUnreadCounts, loadedUnreadCounts } from "../features/feedlist/slice";
 import { doRetryOnTokenExpiration } from "../authSlice";
 import { apiUrl } from "../const";
 

@@ -11,7 +11,7 @@ import ExpandLess from "@material-ui/icons/ExpandLess";
 import ExpandMore from "@material-ui/icons/ExpandMore";
 // jarr
 import doListClusters from "../../hooks/doListClusters";
-import { toggleMenu, toggleFolding } from "./feedSlice";
+import { toggleMenu, toggleFolding } from "./slice";
 import feedListStyle from "./feedListStyle";
 import FeedIcon from "../../components/FeedIcon";
 

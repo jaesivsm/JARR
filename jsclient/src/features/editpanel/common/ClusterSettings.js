@@ -13,7 +13,7 @@ import Typography from "@material-ui/core/Typography";
 import Select from "@material-ui/core/Select";
 
 import editPanelStyle from "../editPanelStyle";
-import { editLoadedObj } from "../editSlice";
+import { editLoadedObj } from "../slice";
 
 const clusteringConfOptions = {
     "cluster_enabled": "Allow article clustering",

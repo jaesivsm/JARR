@@ -28,10 +28,11 @@ import ExitToAppIcon from "@material-ui/icons/ExitToApp";
 // jarr
 import topMenuStyle from "./topMenuStyle";
 import { doLogout } from "../../authSlice";
-import { toggleMenu, doMarkAllAsRead } from "../feedlist/feedSlice";
+import { toggleMenu } from "../feedlist/slice";
 import { markedAllAsRead } from "../clusterlist/slice";
 import doListClusters from "../../hooks/doListClusters";
-import { doFetchObjForEdit } from "../editpanel/editSlice";
+import doFetchObjForEdit from "../../hooks/doFetchObjForEdit";
+import doMarkAllAsRead from "../../hooks/doMarkAllAsRead";
 
 
 function mapStateToProps(state) {

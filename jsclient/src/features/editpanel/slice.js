@@ -1,7 +1,4 @@
-import qs from "qs";
 import { createSlice } from "@reduxjs/toolkit";
-import { doRetryOnTokenExpiration } from "../../authSlice";
-import { apiUrl } from "../../const";
 
 const defaultFilter = { action: "mark as read", "action on": "match",
                         type: "simple match", pattern: "" };
@@ -104,22 +101,3 @@ export const { openPanel, closePanel,
                addFilter, moveUpFilter, moveDownFilter, editFilter, removeFilter,
 } = editSlice.actions;
 export default editSlice.reducer;
-
-export const doBuildFeed = (url): AppThunk => async (dispatch, getState) => {
-  dispatch(requestedBuildedFeed());
-  const result = await doRetryOnTokenExpiration({
-    method: "get",
-    url: `${apiUrl}/feed/build?${qs.stringify({ url })}`,
-  }, dispatch, getState);
-  dispatch(loadedObjToEdit({ data: result.data, noIdCheck: true,
-                             job: "build" }));
-};
-
-export const doFetchObjForEdit = (type, id): AppThunk => async (dispatch, getState) => {
-  dispatch(openPanel({ job: "load", objId: id, objType: type, isLoading: true }));
-  const url = `${apiUrl}/${type}${id ? `/${id}` : ""}`;
-  const result = await doRetryOnTokenExpiration({
-    method: "get", url,
-  }, dispatch, getState);
-  dispatch(loadedObjToEdit({ data: result.data, job: "edit" }));
-};

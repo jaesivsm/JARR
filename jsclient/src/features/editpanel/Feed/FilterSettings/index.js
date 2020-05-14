@@ -17,7 +17,7 @@ import PlusIcon from "@material-ui/icons/Add";
 import editPanelStyle from "../../editPanelStyle";
 import style from "./style";
 import FilterSettingLine from "./Line";
-import { addFilter } from "../../editSlice";
+import { addFilter } from "../../slice";
 
 export const mapStateToProps = (state) => {
   return { filters: (state.edit.loadedObj.filters

@@ -10,8 +10,8 @@ import TextField from "@material-ui/core/TextField";
 // jarr
 import StateTextInput from "./common/StateTextInput";
 import ClusterSettings from "./common/ClusterSettings";
-import { closePanel, editLoadedObj } from "./editSlice";
-import { doEditObj } from "../feedlist/feedSlice";
+import { closePanel, editLoadedObj } from "./slice";
+import doEditObj from "../../hooks/doEditObj";
 import editPanelStyle from "./editPanelStyle";
 
 const mapDispatchToProps = (dispatch) => ({

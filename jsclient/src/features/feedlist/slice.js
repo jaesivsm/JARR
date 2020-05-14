@@ -1,7 +1,4 @@
-import qs from "qs";
 import { createSlice } from "@reduxjs/toolkit";
-import { doRetryOnTokenExpiration } from "../../authSlice";
-import { apiUrl } from "../../const";
 import { storageGet, storageSet } from "../../storageUtils";
 
 const triboolMapping = {"true": true, "false": false, "null": null};
@@ -84,8 +81,20 @@ const feedSlice = createSlice({
           categoryAsFeed[row.id] = row["category_id"];
         }
       });
+      let feedListRows = action.payload.feedListRows;
+      if (state.feedListRows) {  // if we already have, we're going to preserve folding
+        const catAsFolding = {};
+        state.feedListRows.forEach((row) => {
+            if (row.type === "categ") {
+                catAsFolding[row.id] = row.folded;
+            }
+        });
+        feedListRows = feedListRows.map((row) => ({ ...row,
+            folded: row.type === "categ" ? catAsFolding[row.id] : catAsFolding[row["category_id"]],
+        }));
+      }
       return { ...state, icons, categoryAsFeed, loadingFeeds: false,
-               feedListRows: mergeCategoriesWithUnreads(action.payload.feedListRows,
+               feedListRows: mergeCategoriesWithUnreads(feedListRows,
                                                         state.unreads,
                                                         state.isParentFolded),
       };
@@ -100,24 +109,6 @@ const feedSlice = createSlice({
     toggleMenu: (state, action) => {
       storageSet("left-menu-open", action.payload);
       return { ...state, isOpen: action.payload };
-    },
-    createdObj: (state, action) => {
-      const feedListRow = { unread: 0, id: action.payload.data.id };
-      const categoryAsFeed = { ...state.categoryAsFeed };
-      if(action.payload.type === "category") {
-        feedListRow.str = action.payload.data.name;
-        feedListRow.type = "categ";
-      } else {
-        feedListRow.str = action.payload.data.title;
-        feedListRow["category_id"] = action.payload.data["category_id"];
-        feedListRow.type = "feed";
-        categoryAsFeed[action.payload.data.id] = action.payload.data["category_id"];
-      }
-      return { ...state,
-               feedListRows: mergeCategoriesWithUnreads(
-                   [ ...state.feedListRows, feedListRow ],
-                   state.unreads, state.isParentFolded),
-      };
     },
     changeReadCount: (state, action) => {
       const unreads = { ...state.unreads };
@@ -149,105 +140,13 @@ const feedSlice = createSlice({
                                                         state.isParentFolded),
       };
     },
-    editedObj: (state, action) => {
-      const updated = {};
-      const updatedState = {};
-      if (action.payload.data.name) {  // category
-        updated.str = action.payload.data.name;
-      } else if (action.payload.data["category_id"]) {
-        updated["category_id"] = action.payload.data["category_id"];
-        updatedState.categoryAsFeed = {
-          ...state.categoryAsFeed,
-          [action.payload.id]: action.payload.data["category_id"]}
-        ;
-      } else if (action.payload.data.title) {
-        updated.str = action.payload.data.title;
-      } else { // nor name or title have been edited, nothing to change
-        return state;
-      }
-      return { ...state,
-               feedListRows: mergeCategoriesWithUnreads(
-                 state.feedListRows.map((row) => {
-                    if (((action.payload.objType === "feed" && row.type === "feed")
-                       || (action.payload.objType === "category" && row.type === "categ"))
-                       && action.payload.id === row.id) {
-                      return { ...row, ...updated };
-                    }
-                    return row;
-                  }), state.unreads, state.isParentFolded),
-      };
-    },
-    deletedObj: (state, action) => {
-      const type = action.payload.objType === "category" ? "categ" : "feed";
-      return { ...state,
-               feedListRows: state.feedListRows.filter((row) => (
-                 row.type !== type || row.id !== action.payload.id)),
-              };
-    },
   },
 });
 
 export const { requestedFeeds, loadedFeeds,
                requestedUnreadCounts, loadedUnreadCounts,
                toggleMenu, toggleAllFolding, toggleFolding,
-               createdObj, setSearchFilter,
+               setSearchFilter,
                changeReadCount,
-               editedObj, deletedObj,
 } = feedSlice.actions;
 export default feedSlice.reducer;
-
-export const doFetchFeeds = (): AppThunk => async (dispatch, getState) => {
-  dispatch(requestedFeeds());
-  const result = await doRetryOnTokenExpiration({
-    method: "get",
-    url: `${apiUrl}/list-feeds`,
-  }, dispatch, getState);
-  dispatch(loadedFeeds({ feedListRows: result.data }));
-};
-
-export const doCreateObj = (type): AppThunk => async (dispatch, getState) => {
-  const result = await doRetryOnTokenExpiration({
-    method: "post",
-    url: `${apiUrl}/${type}`,
-    data: getState().edit.loadedObj,
-  }, dispatch, getState);
-  dispatch(createdObj({ data: result.data, type }));
-};
-
-export const doEditObj = (objType): AppThunk => async (dispatch, getState) => {
-  const editState = getState().edit;
-  const data = {};
-  editState.editedKeys.forEach((key) => {
-    data[key] = editState.loadedObj[key];
-  });
-  if (objType !== "user") {
-    dispatch(editedObj({ id: editState.loadedObj.id, objType, data }));
-  }
-  await doRetryOnTokenExpiration({
-    method: "put",
-    url: `${apiUrl}/${objType}${editState.loadedObj.id ? `/${editState.loadedObj.id}` : ""}`,
-    data,
-  }, dispatch, getState);
-};
-
-export const doDeleteObj = (id, objType): AppThunk => async (dispatch, getState) => {
-  await doRetryOnTokenExpiration({
-    method: "delete",
-    url: `${apiUrl}/${objType}${id ? `/${id}` : ""}`,
-  }, dispatch, getState);
-  dispatch(deletedObj({ id, objType }));
-};
-
-export const doMarkAllAsRead = (onlySingles): AppThunk => async (dispatch, getState) => {
-  const params = { ...getState().clusters.filters };
-  if(onlySingles) {
-      params["only_singles"] = true;
-  }
-  // dispatch(requestedMarkAllAsRead({ onlySingles })); // useless for now
-  const stringifiedParams = qs.stringify(params);
-  const result = await doRetryOnTokenExpiration({
-    method: "put",
-    url: `${apiUrl}/mark-all-as-read?${stringifiedParams}`,
-  }, dispatch, getState);
-  dispatch(loadedUnreadCounts({ unreads: result.data }));
-};

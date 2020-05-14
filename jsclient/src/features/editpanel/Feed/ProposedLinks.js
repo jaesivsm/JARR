@@ -8,7 +8,7 @@ import FormControl from "@material-ui/core/FormControl";
 import FormHelperText from "@material-ui/core/FormHelperText";
 // jarr
 import editPanelStyle from "../editPanelStyle";
-import { editLoadedObj } from "../editSlice";
+import { editLoadedObj } from "../slice";
 
 const mapStateToProps = (state) => ({
   link: state.edit.loadedObj.link,

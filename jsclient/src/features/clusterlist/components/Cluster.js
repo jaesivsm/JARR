@@ -21,7 +21,7 @@ import { removeClusterSelection, showCluster } from "../slice";
 import doEditCluster from "../../../hooks/doEditCluster";
 import doFetchCluster from "../../../hooks/doFetchCluster";
 import makeStyles from "./style";
-import { changeReadCount } from "../../feedlist/feedSlice";
+import { changeReadCount } from "../../feedlist/slice";
 import ClusterIcon from "../../../components/ClusterIcon";
 import Articles from "./Articles";
 

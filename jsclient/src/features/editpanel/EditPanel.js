@@ -12,7 +12,7 @@ import BuildFeed from "./Feed/Build";
 import AddEditFeed from "./Feed";
 import AddEditCategory from "./Category";
 import SettingsPanel from "./SettingsPanel";
-import { closePanel } from "./editSlice";
+import { closePanel } from "./slice";
 import editPanelStyle from "./editPanelStyle";
 
 const mapDispatchToProps = (dispatch) => ({

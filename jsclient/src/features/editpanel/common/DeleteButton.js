@@ -3,9 +3,9 @@ import PropTypes from "prop-types";
 import { connect } from "react-redux";
 import Button from "@material-ui/core/Button";
 import WarningIcon from "@material-ui/icons/Warning";
-import { closePanel } from "../editSlice";
+import { closePanel } from "../slice";
 import doListClusters from "../../../hooks/doListClusters";
-import { doDeleteObj } from "../../feedlist/feedSlice";
+import doDeleteObj from "../../../hooks/doDeleteObj";
 
 function mapStateToProps(state) {
   return { id: state.edit.loadedObj.id, };

@@ -9,9 +9,10 @@ import ClusterSettings from "../common/ClusterSettings";
 import DeleteButton from "../common/DeleteButton";
 import StateTextInput from "../common/StateTextInput";
 
-import { closePanel } from "../editSlice";
+import { closePanel } from "../slice";
 import editPanelStyle from "../editPanelStyle";
-import { doCreateObj, doEditObj } from "../../feedlist/feedSlice";
+import doCreateObj from "../../../hooks/doCreateObj";
+import doEditObj from "../../../hooks/doEditObj";
 
 const mapDispatchToProps = (dispatch) => ({
   commit(e, job) {

@@ -6,7 +6,7 @@ import { connect, useDispatch } from "react-redux";
 import TextField from "@material-ui/core/TextField";
 // jarr
 import style from "./style";
-import { editLoadedObj } from "../../editSlice";
+import { editLoadedObj } from "../../slice";
 
 const getValue = (state, props) =>
   state.edit.loadedObj[props.name] ? state.edit.loadedObj[props.name] : "";

@@ -17,8 +17,9 @@ import StateTextInput from "../common/StateTextInput";
 import ClusterSettings from "../common/ClusterSettings";
 import DeleteButton from "../common/DeleteButton";
 import editPanelStyle from "../editPanelStyle";
-import { closePanel, editLoadedObj } from "../editSlice";
-import { doCreateObj, doEditObj } from "../../feedlist/feedSlice";
+import { closePanel, editLoadedObj } from "../slice";
+import doCreateObj from "../../../hooks/doCreateObj";
+import doEditObj from "../../../hooks/doEditObj";
 
 const availableFeedTypes = ["classic", "json", "tumblr", "instagram",
                             "soundcloud", "reddit", "fetch", "koreus",

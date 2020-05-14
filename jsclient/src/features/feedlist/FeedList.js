@@ -23,12 +23,13 @@ import Alert from "@material-ui/lab/Alert";
 // jarrs
 import feedListStyle from "./feedListStyle";
 import FeedRow from "./FeedRow";
-import { doFetchFeeds, toggleAllFolding, toggleMenu,
+import { toggleAllFolding, toggleMenu,
          setSearchFilter,
-} from "./feedSlice";
-import { openPanel } from "../editpanel/editSlice";
+} from "./slice";
+import { openPanel } from "../editpanel/slice";
 import { feedListWidth } from "../../const";
 import doFetchUnreadCount from "../../hooks/doFetchUnreadCount";
+import doFetchFeeds from "../../hooks/doFetchFeeds";
 
 function mapStateToProps(state) {
   return { itemCount: state.feeds.feedListRows.filter(state.feeds.feedListFilter).length,

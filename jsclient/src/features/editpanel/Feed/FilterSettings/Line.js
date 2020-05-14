@@ -15,7 +15,7 @@ import ArrowDownIcon from "@material-ui/icons/ArrowDownward";
 // jarr
 import style from "./style";
 import { moveUpFilter, moveDownFilter, editFilter, removeFilter
-} from "../../editSlice";
+} from "../../slice";
 // constants
 const FiltersAction = { "mark as read": "mark as read",
                         "mark as unread": "mark as unread (default)",
