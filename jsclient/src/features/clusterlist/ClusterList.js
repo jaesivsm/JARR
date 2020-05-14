@@ -13,7 +13,8 @@ import Alert from "@material-ui/lab/Alert";
 // jarr
 import Cluster from "./components/Cluster";
 import SelectedObjCard from "./components/SelectedObjCard";
-import { doListClusters, doLoadMoreClusters } from "./clusterSlice";
+import doLoadMoreClusters from "../../hooks/doLoadMoreClusters";
+import doListClusters from "../../hooks/doListClusters";
 import makeStyles from "./components/style";
 import Articles from "./components/Articles";
 

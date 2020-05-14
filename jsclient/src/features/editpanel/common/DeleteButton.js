@@ -4,7 +4,7 @@ import { connect } from "react-redux";
 import Button from "@material-ui/core/Button";
 import WarningIcon from "@material-ui/icons/Warning";
 import { closePanel } from "../editSlice";
-import { doListClusters } from "../../clusterlist/clusterSlice";
+import doListClusters from "../../../hooks/doListClusters";
 import { doDeleteObj } from "../../feedlist/feedSlice";
 
 function mapStateToProps(state) {

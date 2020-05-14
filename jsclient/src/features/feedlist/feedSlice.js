@@ -205,15 +205,6 @@ export const doFetchFeeds = (): AppThunk => async (dispatch, getState) => {
   dispatch(loadedFeeds({ feedListRows: result.data }));
 };
 
-export const doFetchUnreadCount = (): AppThunk => async (dispatch, getState) => {
-  dispatch(requestedUnreadCounts());
-  const result = await doRetryOnTokenExpiration({
-    method: "get",
-    url: `${apiUrl}/unreads`,
-  }, dispatch, getState);
-  dispatch(loadedUnreadCounts({ unreads: result.data }));
-};
-
 export const doCreateObj = (type): AppThunk => async (dispatch, getState) => {
   const result = await doRetryOnTokenExpiration({
     method: "post",

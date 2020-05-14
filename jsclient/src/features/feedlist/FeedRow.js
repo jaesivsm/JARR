@@ -10,7 +10,7 @@ import ListItemText from "@material-ui/core/ListItemText";
 import ExpandLess from "@material-ui/icons/ExpandLess";
 import ExpandMore from "@material-ui/icons/ExpandMore";
 // jarr
-import { doListClusters } from "../clusterlist/clusterSlice";
+import doListClusters from "../../hooks/doListClusters";
 import { toggleMenu, toggleFolding } from "./feedSlice";
 import feedListStyle from "./feedListStyle";
 import FeedIcon from "../../components/FeedIcon";

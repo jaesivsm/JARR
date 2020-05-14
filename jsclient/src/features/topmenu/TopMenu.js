@@ -29,7 +29,8 @@ import ExitToAppIcon from "@material-ui/icons/ExitToApp";
 import topMenuStyle from "./topMenuStyle";
 import { doLogout } from "../../authSlice";
 import { toggleMenu, doMarkAllAsRead } from "../feedlist/feedSlice";
-import { doListClusters, markedAllAsRead } from "../clusterlist/clusterSlice";
+import { markedAllAsRead } from "../clusterlist/slice";
+import doListClusters from "../../hooks/doListClusters";
 import { doFetchObjForEdit } from "../editpanel/editSlice";
 
 

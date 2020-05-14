@@ -3,7 +3,7 @@ import thunk, { ThunkAction }from "redux-thunk";
 import authReducer from "../authSlice";
 import noAuthReducer from "../features/noauth/noAuthSlice";
 import feedsReducer from "../features/feedlist/feedSlice";
-import clustersReducer from "../features/clusterlist/clusterSlice";
+import clustersReducer from "../features/clusterlist/slice";
 import editReducer from "../features/editpanel/editSlice";
 
 export default configureStore({

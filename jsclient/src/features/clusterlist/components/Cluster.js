@@ -17,8 +17,9 @@ import LikedIcon from "@material-ui/icons/Star";
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import LikedIconBorder from "@material-ui/icons/StarBorder";
 // jarr
-import { doFetchCluster, doEditCluster, removeClusterSelection, showCluster,
-} from "../clusterSlice";
+import { removeClusterSelection, showCluster } from "../slice";
+import doEditCluster from "../../../hooks/doEditCluster";
+import doFetchCluster from "../../../hooks/doFetchCluster";
 import makeStyles from "./style";
 import { changeReadCount } from "../../feedlist/feedSlice";
 import ClusterIcon from "../../../components/ClusterIcon";

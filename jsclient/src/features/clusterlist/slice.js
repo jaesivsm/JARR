@@ -1,7 +1,6 @@
 import qs from "qs";
 import { createSlice } from "@reduxjs/toolkit";
-import { apiUrl, pageLength } from "../../const";
-import { doRetryOnTokenExpiration } from "../../authSlice";
+import { pageLength } from "../../const";
 
 export const showCluster = (cluster, requestedClusterId, filter) => (
   // is selected cluster
@@ -136,53 +135,3 @@ export const { requestedClustersList, retrievedClustersList,
                markedAllAsRead,
 } = clusterSlice.actions;
 export default clusterSlice.reducer;
-
-export const doListClusters = (filters): AppThunk => async (dispatch, getState) => {
-  dispatch(requestedClustersList({ filters }));
-  const requestedFilter = getState().clusters.requestedFilter;
-  const result = await doRetryOnTokenExpiration({
-    method: "get",
-    url: `${apiUrl}/clusters?${requestedFilter}`,
-  }, dispatch, getState);
-  dispatch(retrievedClustersList({ requestedFilter, clusters: result.data,
-                                   strat: "replace" }));
-};
-
-export const doLoadMoreClusters = (): AppThunk => async (dispatch, getState) => {
-  dispatch(requestedMoreCLusters());
-  const requestedFilter = getState().clusters.requestedFilter;
-  const result = await doRetryOnTokenExpiration({
-    method: "get",
-    url: `${apiUrl}/clusters?${requestedFilter}`,
-  }, dispatch, getState);
-  dispatch(retrievedClustersList({ requestedFilter, clusters: result.data,
-                                   strat: "append" }));
-};
-
-export const doFetchCluster = (clusterId): AppThunk => async (dispatch, getState) => {
-  dispatch(requestedCluster({ clusterId }));
-  const result = await doRetryOnTokenExpiration({
-    method: "get",
-    url: `${apiUrl}/cluster/${clusterId}`,
-  }, dispatch, getState);
-  dispatch(retrievedCluster({ cluster: result.data }));
-};
-
-export const doEditCluster = (clusterId, payload): AppThunk => async (dispatch, getState) => {
-  dispatch(updateClusterAttrs({ clusterId, ...payload }));
-  if (payload["read_reason"] === null) {
-    delete payload["read_reason"];
-  }
-  await doRetryOnTokenExpiration({
-    method: "put",
-    url: `${apiUrl}/cluster/${clusterId}`,
-    data: payload,
-  }, dispatch, getState);
-  const clusterState = getState().clusters;
-  if (clusterState.moreToFetch && clusterState.clusters.filter(
-        filterClusters(clusterState.requestedClusterId,
-                       clusterState.filters.filter)
-      ).length === (pageLength / 3 * 2)) {
-    dispatch(doLoadMoreClusters());
-  }
-};
