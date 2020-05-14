@@ -16,16 +16,19 @@ class CrawlerMainTest(BaseJarrTest):
         self._sched_async = patch('jarr.crawler.main.scheduler.apply_async')
         self._process_feed_patch = patch('jarr.crawler.main.process_feed')
         self._feed_cleaner_patch = patch('jarr.crawler.main.feed_cleaner')
+        self._metrics = patch('jarr.crawler.main.update_slow_metrics')
         self.clusteriser_patch = self._clusteriser_patch.start()
         self.process_feed_patch = self._process_feed_patch.start()
         self.feed_cleaner_patch = self._feed_cleaner_patch.start()
         self.scheduler_patch = self._sched_async.start()
+        self.metrics_patch = self._metrics.start()
 
     def tearDown(self):
         self._clusteriser_patch.stop()
         self._process_feed_patch.stop()
         self._feed_cleaner_patch.stop()
         self._sched_async.stop()
+        self._metrics.stop()
 
     def test_scheduler(self):
         scheduler()

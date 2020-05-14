@@ -8,9 +8,9 @@ from ep_celery import celery_app
 from hashlib import sha256
 from jarr.bootstrap import conf, REDIS_CONN
 from jarr.controllers import (ArticleController, ClusterController,
-                              FeedController)
+                              FeedController, UserController)
 from jarr.lib.enums import FeedStatus
-from jarr.metrics import WORKER, WORKER_BATCH
+from jarr.metrics import WORKER, WORKER_BATCH, USER
 
 urllib3.disable_warnings()
 logger = logging.getLogger(__name__)
@@ -78,6 +78,13 @@ def feed_cleaner(feed_id):
         REDIS_CONN.delete(JARR_FEED_DEL_KEY)
 
 
+@celery_app.task(name='jarr.slow-metrics')
+def update_slow_metrics():
+    uctrl = UserController()
+    USER.labels(status='any').set(uctrl.read().count())
+    USER.labels(status='active').set(uctrl.list_active().count())
+
+
 @celery_app.task(name='crawler.scheduler')
 def scheduler():
     logger.warning("Running scheduler")
@@ -105,3 +112,4 @@ def scheduler():
     scheduler.apply_async(countdown=conf.crawler.idle_delay)
     WORKER.labels(method='scheduler').observe(
             (datetime.now() - start).total_seconds())
+    update_slow_metrics.apply_async()
