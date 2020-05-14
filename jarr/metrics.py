@@ -1,5 +1,5 @@
 from prometheus_client import CollectorRegistry
-from prometheus_distributed_client import Counter, Histogram
+from prometheus_distributed_client import Gauge, Counter, Histogram
 
 REGISTRY = CollectorRegistry()
 BUCKETS_3H = [3, 4, 5, 6, 9, 12, 18, 26, 38, 57, 85, 126, 189, 282, 423, 633,
@@ -48,3 +48,5 @@ ARTICLE_CREATION = Counter('article_creation', 'Article Creation',
 SERVER = Counter('server_method', 'server taken actions',
                  ['uri', 'method', 'result'], namespace='jarr',
                  registry=REGISTRY)
+
+USER = Gauge('users', 'users', ['status'], namespace='jarr', registry=REGISTRY)
