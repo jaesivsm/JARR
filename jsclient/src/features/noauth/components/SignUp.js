@@ -20,7 +20,7 @@ function mapStateToProps(state) {
 const mapDispatchToProps = (dispatch) => ({
   signUp(e, formData) {
     e.preventDefault();
-    return dispatch(doSignUp(formData.login, formData.password, formData.email));
+    dispatch(doSignUp(formData.login, formData.password, formData.email));
   },
 });
 

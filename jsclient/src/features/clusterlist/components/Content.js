@@ -30,7 +30,7 @@ function Content({ content, hidden }) {
           title="JARR processed Player"
           id="ytplayer"
           type="text/html"
-          src={"http://www.youtube.com/embed/" + content.videoId}
+          src={`https://www.youtube.com/embed/${content.videoId}`}
           frameborder="0"
         />
       </div>

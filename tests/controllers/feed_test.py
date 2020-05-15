@@ -1,10 +1,11 @@
 from datetime import datetime, timedelta, timezone
-from tests.base import BaseJarrTest
-from tests.utils import update_on_all_objs
-from jarr.lib.utils import utc_now
-from jarr.bootstrap import conf
+
+from jarr.bootstrap import conf, session
 from jarr.controllers import (ArticleController, ClusterController,
                               FeedController, UserController)
+from jarr.lib.utils import utc_now
+from tests.base import BaseJarrTest
+from tests.utils import update_on_all_objs
 
 
 class FeedControllerTest(BaseJarrTest):
@@ -41,7 +42,7 @@ class FeedControllerTest(BaseJarrTest):
                 retrieved_date=clu.main_article.retrieved_date + timedelta(1),
         )
 
-        ClusterController.clusterize_pending_articles()
+        ClusterController(clu.user_id).clusterize_pending_articles()
         clu = ClusterController().get(id=10)
         self.assertEqual(2, len(clu.articles))
         fcontr.delete(clu.main_article.feed_id)
@@ -96,21 +97,24 @@ class FeedControllerTest(BaseJarrTest):
         self.assertEqual(count, len(list(fctrl.list_late())), msg)
         self.assertEqual(count, len(fctrl.list_fetchable()), msg)
 
+    @staticmethod
+    def update_all_no_ctrl(**kwargs):
+        for feed in FeedController().read():
+            for key, value in kwargs.items():
+                setattr(feed, key, value)
+            session.add(feed)
+        session.commit()
+
+    def assert_in_range(self, low, val, high):
+        self.assertTrue(low <= val,
+                        "%s > %s" % (low.isoformat(), val.isoformat()))
+        self.assertTrue(val <= high,
+                        "%s > %s" % (val.isoformat(), high.isoformat()))
+
     def test_fetchable(self):
         fctrl = FeedController()
         total = fctrl.read().count()
         unix = datetime(1970, 1, 1).replace(tzinfo=timezone.utc)
-
-        def assert_in_range(low, val, high):
-            self.assertTrue(low <= val,
-                            "%s > %s" % (low.isoformat(), val.isoformat()))
-            self.assertTrue(val <= high,
-                            "%s > %s" % (val.isoformat(), high.isoformat()))
-
-        def reset_all_last_retrieved():
-            last = utc_now() - timedelta(seconds=conf.feed.min_expires)
-            fctrl.update({}, {'last_retrieved': last})
-
         count = 0
         for fd in fctrl.list_late():
             count += 1
@@ -121,45 +125,45 @@ class FeedControllerTest(BaseJarrTest):
         fetchables = fctrl.list_fetchable()
         now = utc_now()
         for fd in fetchables:
-            assert_in_range(now - timedelta(seconds=1), fd.last_retrieved, now)
+            self.assert_in_range(now - timedelta(seconds=1),
+                                 fd.last_retrieved, now)
             self.assertEqual(unix, fd.expires)
         self.assert_late_count(0,
                 "no late feed to report because all just fetched")
+        fctrl.update({}, {'expires': unix})
+        now = utc_now()
+        for fd in fctrl.read():  # expires should be corrected
+            self.assert_in_range(
+                    now + timedelta(seconds=conf.feed.min_expires - 1),
+                    fd.expires,
+                    now + timedelta(seconds=conf.feed.min_expires + 1))
 
-        reset_all_last_retrieved()
-        self.assert_late_count(total,
-                "all last_retr and expires at unix time, all feed to fetch")
-        reset_all_last_retrieved()
-        fctrl.update({}, {'expires': utc_now() - timedelta(seconds=1)})
+        lr_not_matter = timedelta(seconds=conf.feed.min_expires + 10)
+        self.update_all_no_ctrl(expires=utc_now() - timedelta(seconds=1),
+                                last_retrieved=utc_now() - lr_not_matter)
         self.assert_late_count(total, "all feed just expired")
-        fctrl.update({}, {'expires': utc_now() + timedelta(seconds=1)})
+        self.update_all_no_ctrl(expires=utc_now() + timedelta(seconds=1))
         self.assert_late_count(0,
                 "all feed will expire in a second, none are expired")
 
-        reset_all_last_retrieved()
-        fctrl.update({}, {'expires': utc_now() + timedelta(seconds=1)})
-        self.assert_late_count(0,
-                "all feed will expire in a second, none are expired")
 
     def _test_fetching_anti_herding_mech(self, now):
         fctrl = FeedController()
         total = fctrl.read().count()
-        unix = datetime(1970, 1, 1, tzinfo=timezone.utc)
 
         half = timedelta(seconds=conf.feed.min_expires / 2)
         twice = timedelta(seconds=conf.feed.min_expires * 2)
+        long_ago = timedelta(seconds=conf.feed.max_expires * 2)
 
-        fctrl.update({}, {'expires': unix, 'last_retrieved': now + half})
+        self.update_all_no_ctrl(expires=now + half, last_retrieved=now)
         self.assert_late_count(0, "all have just been retrieved, none expired")
-        fctrl.update({}, {'expires': unix, 'last_retrieved': now - half})
-        self.assert_late_count(0, "all have just been retrieved, none expired")
+        self.update_all_no_ctrl(expires=now - twice, last_retrieved=now - half)
+        self.assert_late_count(0, "have been retrieved not too long ago")
 
-        fctrl.update({}, {'expires': unix, 'last_retrieved': now + twice})
+        self.update_all_no_ctrl(expires=now + twice,
+                                last_retrieved=now - long_ago)
         self.assert_late_count(total,
-                "all retrieved some time ago, all expired")
-        fctrl.update({}, {'expires': unix, 'last_retrieved': now - twice})
-        self.assert_late_count(total,
-                "all retrieved some time ago, all expired")
+                               "all retrieved some time ago, not expired")
 
     def test_fetching_anti_herding_mech_utctimezone(self):
         self._test_fetching_anti_herding_mech(utc_now())

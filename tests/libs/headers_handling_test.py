@@ -6,8 +6,8 @@ from jarr.lib.utils import utc_now
 from jarr.bootstrap import conf
 
 
-def assert_in_range(val, ref, sec_range=1):
-    low, high = ref - timedelta(seconds=1), ref + timedelta(seconds=1)
+def assert_in_range(val, ref, sec=2):
+    low, high = ref - timedelta(seconds=sec), ref + timedelta(seconds=sec)
     assert low <= val, "%s > %s: diff %ss" % (
             low.isoformat(), val.isoformat(), (val - low).total_seconds())
     assert val <= high, "%s > %s: diff %ss" % (
@@ -17,17 +17,15 @@ def assert_in_range(val, ref, sec_range=1):
 class HeadersHandlingTest(unittest.TestCase):
 
     def test_defaulting(self):
-        self.assertEqual(None, extract_feed_info({})['expires'])
+        self.assertFalse('expires' in extract_feed_info({}))
 
-        self.assertEqual(None,
-        extract_feed_info({'cache-control': ''})['expires'])
-        self.assertEqual(None,
-                extract_feed_info({'cache-control': 'garbage'})['expires'])
+        self.assertFalse('expires' in extract_feed_info({'cache-control': ''}))
+        self.assertFalse(
+                'expires' in extract_feed_info({'cache-control': 'garbage'}))
 
-        self.assertEqual(None,
-                extract_feed_info({'expires': ''})['expires'])
-        self.assertEqual(None,
-                extract_feed_info({'expires': 'garbage'})['expires'])
+        self.assertFalse('expires' in extract_feed_info({'expires': ''}))
+        self.assertFalse(
+                'expires' in extract_feed_info({'expires': 'garbage'}))
 
     @staticmethod
     def test_extract_max_age():
@@ -52,15 +50,3 @@ class HeadersHandlingTest(unittest.TestCase):
         headers = {'expires': (datetime.utcnow() + ok_delta).isoformat()}
         assert_in_range(extract_feed_info(headers)['expires'],
                         utc_now() + ok_delta)
-
-    @staticmethod
-    def test_lower_bound():
-        headers = {'cache-control': 'max-age=%d' % (conf.feed.min_expires / 2)}
-        assert_in_range(extract_feed_info(headers)['expires'],
-                utc_now() + timedelta(seconds=conf.feed.min_expires * 1.2))
-
-    @staticmethod
-    def test_upper_bound():
-        headers = {'cache-control': 'max-age=%d' % (conf.feed.max_expires * 2)}
-        assert_in_range(extract_feed_info(headers)['expires'],
-                        utc_now() + timedelta(seconds=conf.feed.max_expires))

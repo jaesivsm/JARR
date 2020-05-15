@@ -14,13 +14,9 @@ const noAuthSlice = createSlice({
   name: "noauth",
   initialState: { ...INITIAL_STATE },
   reducers: {
-    requestSent(state, action) {
-      return { ...state, loading: true };
-    },
-    responseRecieved(state, action) {
-      return { ...INITIAL_STATE, ...action.payload };
-    },
-    authError(state, action) {
+    requestSent: (state, action) => ({ ...state, loading: true }),
+    responseRecieved: (state, action) => ({ ...INITIAL_STATE, ...action.payload }),
+    authError: (state, action) => {
       state = { ...INITIAL_STATE };
       if (action.payload.statusText === "CONFLICT") {
         state.creationError = "Already in use. Please choose another login.";
@@ -36,9 +32,7 @@ const noAuthSlice = createSlice({
       }
       return state;
     },
-    alreadyExistingUser(state, action) {
-      return { ...state, loading: false };
-    },
+    alreadyExistingUser: (state, action) => ({ ...state, loading: false }),
   }
 });
 
@@ -56,7 +50,7 @@ export const doLogin = (
   dispatch(attemptLogin({ login, password }));
   try {
     const result = await axios.post(
-        apiUrl + "/auth",
+        `${apiUrl}/auth`,
         { login, password },
         { responseType: "json" },
     );
@@ -64,7 +58,7 @@ export const doLogin = (
     dispatch(tokenAcquired(result));
   } catch (err) {
     dispatch(loginFailed());
-    return dispatch(authError(err.response));
+    dispatch(authError(err.response));
   }
 };
 
@@ -77,13 +71,13 @@ export const doSignUp = (
   try {
     await axios({
       method: "post",
-      url: apiUrl + "/user",
+      url: `${apiUrl}/user`,
       data: { login, password, email },
     });
     dispatch(responseRecieved());
-    return dispatch(attemptLogin({ login, password }));
+    dispatch(attemptLogin({ login, password }));
   } catch (err) {
-    return dispatch(authError(err.response));
+    dispatch(authError(err.response));
   }
 };
 
@@ -95,12 +89,12 @@ export const doInitRecovery = (
   try {
     const result = await axios({
       method: "post",
-      url: apiUrl + "/auth/recovery",
+      url: `${apiUrl}/auth/recovery`,
       data: { login, email },
     });
-    return dispatch(responseRecieved({ recovery: result }));
+    dispatch(responseRecieved({ recovery: result }));
   } catch (err) {
-    return dispatch(responseRecieved({ recovery: err.response }));
+    dispatch(responseRecieved({ recovery: err.response }));
   }
 };
 
@@ -114,13 +108,13 @@ export const doRecovery = (
   try {
     await axios({
       method: "put",
-      url: apiUrl + "/auth/recovery",
+      url: `${apiUrl}/auth/recovery`,
       data: { login, email, token, password },
     });
     dispatch(responseRecieved());
-    return dispatch(attemptLogin({ login, password }));
+    dispatch(attemptLogin({ login, password }));
   } catch (err) {
-    return dispatch(responseRecieved({ recovery: err.response }));
+    dispatch(responseRecieved({ recovery: err.response }));
   }
 };
 
@@ -129,7 +123,7 @@ export const doValidOAuth = (code): AppThunk => async (dispatch) => {
     dispatch(requestSent());
     const result = await axios({
       method: "post",
-      url: apiUrl + "/oauth/callback/google",
+      url: `${apiUrl}/oauth/callback/google`,
       data: { code },
     });
     dispatch(responseRecieved());

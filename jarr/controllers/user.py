@@ -1,7 +1,10 @@
 import logging
+from datetime import timedelta
 
 from werkzeug.security import check_password_hash, generate_password_hash
 
+from jarr.bootstrap import conf
+from jarr.lib.utils import utc_now
 from jarr.models import User
 
 from .abstract import AbstractController
@@ -24,6 +27,10 @@ class UserController(AbstractController):
         user = self.get(login=username)
         if check_password_hash(user.password, password):
             return user
+
+    def list_active(self):
+        last_conn = utc_now() - timedelta(days=conf.feed.stop_fetch)
+        return self.read(is_active=True, last_connection__ge=last_conn)
 
     def create(self, **attrs):
         self._handle_password(attrs)

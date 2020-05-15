@@ -129,65 +129,26 @@ export default makeStyles((theme: Theme) =>
       transformOrigin: "top left",
       width: "100%"
     },
-    editPanelFilter: {
-      display: "table",
-      alignItems: "baseline",
-      flexDirection: "row",
-      marginBottom: 25,
-      marginLeft: 16,
-      marginRight: 16
-    },
-    editPanelFilterItem: {
-      display: "table-cell",
-      "& .MuiInput-root": {
-        height: 32,
-        justifyContent: "center"
-      },
-      "& .MuiTextField-root": {
-        height: 32,
-        justifyContent: "center",
-        "& input": {
-          padding: 0
-        }
-      }
-    },
-    editPanelFilterArrows: {
-      display: "flex",
-      flexDirection: "column",
-      justifyContent: "center",
-      left: 5,
-      position: "absolute"
-    },
-    editPanelFilterArrow: {
-      position: "relative",
-      padding: 0,
-      "& svg": {
-        height: 18,
-        width: 18,
-      }
-    },
-    editPanelFilterAddBtn: {
-      textAlign: "center",
-      width: "100%",
-      "& button": {
-        minHeight: "unset",
-        height: 35,
-        width: 35,
-      }
-    },
-    editPanelFilterDelBtn: {
-      position: "absolute",
-      right: 0,
-      padding: 8,
-      "& svg": {
-        height: 18,
-        width: 18
-      }
-    },
     loadEditPanel: {
       width: "100%",
       textAlign: "center",
       padding: "20px 0",
-    }
+    },
+    showHelpButton: {
+      width: 30,
+      height: 30,
+      margin: "0 auto",
+      position: "absolute",
+      right: 13,
+      top: 44,
+    },
+    buildFeedHelpButton: {
+      width: 30,
+      height: 30,
+      margin: "0 auto",
+      position: "absolute",
+      right: 13,
+      top: 54,
+    },
   }),
 );

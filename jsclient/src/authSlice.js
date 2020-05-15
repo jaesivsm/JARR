@@ -15,28 +15,26 @@ const authSlice = createSlice({
                   refreshedAt: null,
   },
   reducers: {
-    attemptLogin(state, action) {
+    attemptLogin: (state, action) => {
       const { login, password } = action.payload;
       return { ...state, login, password };
     },
-    loginFailed(state, action) {
-      return { token: null, login: null, password: null };
-    },
-    tokenAcquired(state, action) {
+    loginFailed: (state, action) => ({ token: null, login: null, password: null }),
+    tokenAcquired: (state, action) => {
       const token = action.payload.data["access_token"];
       storageSet("token", token, "session");
       return { ...state, token, refreshedAt: new Date().getTime() };
     },
-    tokenExpire(state, action) {
+    tokenExpire: (state, action) => {
       storageRemove("token", "session");
       return { ...state, token: null};
     },
-    doLogout() {
+    doLogout: () => {
       storageRemove("left-menu-open");
       storageRemove("token", "session");
       return { login: null, password: null, token: null };
-    }
-  }
+    },
+  },
 });
 
 export const { attemptLogin, loginFailed, tokenAcquired, tokenExpire, doLogout } = authSlice.actions;
@@ -52,7 +50,7 @@ export const doRetryOnTokenExpiration = async (payload, dispatch, getState) => {
     try {
       const result = await axios({
         method: "get",
-        url: apiUrl + "/auth/refresh",
+        url: `${apiUrl}/auth/refresh`,
         headers: { "Authorization": state.auth.token }
       });
       dispatch(tokenAcquired(result));
@@ -72,7 +70,7 @@ export const doRetryOnTokenExpiration = async (payload, dispatch, getState) => {
     if (err.response && err.response.status === 401
         && err.response.data && err.response.data.message
         && err.response.data.message === "Invalid token, Signature has expired") {
-      return dispatch(authError({ statusText: "EXPIRED" }));
+      dispatch(authError({ statusText: "EXPIRED" }));
     } else {
       return err.response;
     }

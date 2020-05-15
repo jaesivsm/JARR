@@ -12,7 +12,8 @@ parser = category_ns.parser()
 model = category_ns.model("Category", {'id': fields.Integer(readOnly=True)})
 set_clustering_options("category", model, parser)
 parser_edit = parser.copy()
-parser.add_argument('name', type=str, required=True, nullable=False)
+parser.add_argument('name', type=str, required=True, nullable=False,
+                    store_missing=False)
 set_model_n_parser(model, parser_edit, 'name', str, nullable=False)
 
 

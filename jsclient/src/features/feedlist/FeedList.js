@@ -23,11 +23,13 @@ import Alert from "@material-ui/lab/Alert";
 // jarrs
 import feedListStyle from "./feedListStyle";
 import FeedRow from "./FeedRow";
-import { doFetchFeeds, doFetchUnreadCount, toggleAllFolding, toggleMenu,
+import { toggleAllFolding, toggleMenu,
          setSearchFilter,
-} from "./feedSlice";
-import { openPanel } from "../editpanel/editSlice";
+} from "./slice";
+import { openPanel } from "../editpanel/slice";
 import { feedListWidth } from "../../const";
+import doFetchUnreadCount from "../../hooks/doFetchUnreadCount";
+import doFetchFeeds from "../../hooks/doFetchFeeds";
 
 function mapStateToProps(state) {
   return { itemCount: state.feeds.feedListRows.filter(state.feeds.feedListFilter).length,
@@ -35,51 +37,63 @@ function mapStateToProps(state) {
            isFeedListOpen: state.feeds.isOpen,
            isEditPanelOpen: state.edit.isOpen,
            isLoading: state.feeds.loadingFeeds,
+           unreadToFetch: !state.feeds.loadingUnreadCounts && state.feeds.unreadToFetch,
   };
 }
 
 const mapDispatchToProps = (dispatch) => ({
   fetchFeed() {
-    return dispatch(doFetchFeeds());
+    dispatch(doFetchFeeds());
   },
   fetchUnreadCount() {
-    return dispatch(doFetchUnreadCount());
+    dispatch(doFetchUnreadCount());
   },
   toggleFeedList() {
-    return dispatch(toggleMenu(false));
+    dispatch(toggleMenu(false));
   },
   toggleAddPanel(objType) {
-    return dispatch(openPanel({ objType }));
+    dispatch(openPanel({ objType, isLoading: false }));
   },
   toggleFolder() {
-    return dispatch(toggleAllFolding());
+    dispatch(toggleAllFolding());
   },
   setSearchFilter(searchStr) {
-    return dispatch(setSearchFilter(searchStr));
+    dispatch(setSearchFilter(searchStr));
   },
 });
 
-function FeedList(props) {
+function FeedList({ itemCount, unreadToFetch,
+                    isFoldedFromParent, isFeedListOpen, isEditPanelOpen, isLoading,
+                    selectedFeedId, selectedCategoryId,
+
+                    fetchFeed, fetchUnreadCount,
+                    toggleFolder, toggleFeedList, toggleAddPanel,
+                    setSearchFilter,
+}) {
   const classes = feedListStyle();
-  const [everLoaded, setEverLoaded] = useState(false);
+  const [feedFetched, setFeedFetched] = useState(false);
   const [displaySearch, setDisplaySearch] = useState(false);
   const theme = useTheme();
   const isDesktop = useMediaQuery(theme.breakpoints.up("md"));
-  const isOpen = (props.isFeedListOpen === null ? isDesktop : props.isFeedListOpen) && !props.isEditPanelOpen;
+  const isOpen = (isFeedListOpen === null ? isDesktop : isFeedListOpen) && !isEditPanelOpen;
   useEffect(() => {
-    if (!everLoaded) {
-      props.fetchFeed();
-      props.fetchUnreadCount();
-      setEverLoaded(true);
+    if (!feedFetched) {
+      fetchFeed();
+      setFeedFetched(true);
     }
-  }, [everLoaded, props]);
+  }, [feedFetched, fetchFeed]);
+  useEffect(() => {
+    if (unreadToFetch) {
+      fetchUnreadCount();
+    }
+  }, [unreadToFetch, fetchUnreadCount]);
   let searchBar;
   if (displaySearch) {
     searchBar = (
       <div className={classes.drawerHeader}>
         <InputBase placeholder="Search feed…" autoFocus
-          onChange={(e) => props.setSearchFilter(e.target.value)} />
-        <IconButton onClick={() => {props.setSearchFilter(null); setDisplaySearch(false);} }>
+          onChange={(e) => setSearchFilter(e.target.value)} />
+        <IconButton onClick={() => {setSearchFilter(null); setDisplaySearch(false);} }>
           <Close />
         </IconButton>
       </div>
@@ -87,21 +101,21 @@ function FeedList(props) {
   }
 
   const addFeedButton = (
-    <IconButton onClick={() => props.toggleAddPanel("feed")}>
+    <IconButton onClick={() => toggleAddPanel("feed")}>
       <AddFeedIcon />
     </IconButton>);
   const addCategoryButton = (
-    <IconButton onClick={() => props.toggleAddPanel("category")}>
+    <IconButton onClick={() => toggleAddPanel("category")}>
       <AddCategoryIcon />
     </IconButton>);
   let list;
-  if (props.isLoading) {
+  if (isLoading) {
     list = <div className={classes.loadFeedList}><CircularProgress /></div>;
-  } else if (props.itemCount === 1 && !displaySearch) {
+  } else if (itemCount === 1 && !displaySearch) {
     list = (
       <Alert severity="info" className={classes.welcome}>
         <p>Hello ! You seem to be new here, welcome !</p>
-        <p>JARR is a tool to aggregate news feed. Since you don't have any feed, there is nothing to display yet.</p>
+        <p>JARR is a tool to aggregate news feed. Since you don&apos;t have any feed, there is nothing to display yet.</p>
         <p>Click on {addFeedButton} here or at the top of this menu to add a new feed.</p>
         <p>JARR particularity is to allow clustering articles from various feeds to a condensed clusters. This allows a more dense and interesting news feed. You can of course control clustering settings from different level (user, category, and feed).</p>
         <p>You may later want to organize your feeds into categories, to do that add category by clicking on {addCategoryButton}.</p>
@@ -109,7 +123,7 @@ function FeedList(props) {
     );
   } else {
     list = (
-      <FixedSizeList height={1000} width={isDesktop ? feedListWidth-1 : '100%'} itemCount={props.itemCount} itemSize={34}>
+      <FixedSizeList height={1000} width={isDesktop ? feedListWidth-1 : "100%"} itemCount={itemCount} itemSize={34}>
         {FeedRow}
       </FixedSizeList>
     );
@@ -129,14 +143,14 @@ function FeedList(props) {
         <div>
           <Tooltip title="Add new feed">{addFeedButton}</Tooltip>
           <Tooltip title="Add new category">{addCategoryButton}</Tooltip>
-          <Tooltip title={props.isFoldedFromParent ? "Unfold categories" : "Fold categories"}>
-            <IconButton onClick={props.toggleFolder}>
-             {props.isFoldedFromParent ? <UnFoldAllCategoriesIcon /> : <FoldAllCategoriesIcon />}
+          <Tooltip title={isFoldedFromParent ? "Unfold categories" : "Fold categories"}>
+            <IconButton onClick={toggleFolder}>
+             {isFoldedFromParent ? <UnFoldAllCategoriesIcon /> : <FoldAllCategoriesIcon />}
             </IconButton>
           </Tooltip>
           <Tooltip title="Search through feed list">
             <IconButton onClick={() => {
-              if(displaySearch) { props.setSearchFilter(null); }
+              if(displaySearch) { setSearchFilter(null); }
               setDisplaySearch(!displaySearch);
             }}>
               <SearchIcon />
@@ -145,7 +159,7 @@ function FeedList(props) {
         </div>
         <div>
           <Tooltip title="Hide feed list">
-            <IconButton onClick={props.toggleFeedList}>
+            <IconButton onClick={toggleFeedList}>
               <ChevronLeftIcon />
             </IconButton>
           </Tooltip>
@@ -160,18 +174,20 @@ function FeedList(props) {
 }
 
 FeedList.propTypes = {
-    itemCount: PropTypes.number.isRequired,
-    isFoldedFromParent: PropTypes.bool.isRequired,
-    isFeedListOpen: PropTypes.bool,
-    isEditPanelOpen: PropTypes.bool.isRequired,
-    isLoading: PropTypes.bool.isRequired,
-    selectedFeedId: PropTypes.number,
-    selectedCategoryId: PropTypes.number,
-    fetchFeed: PropTypes.func.isRequired,
-    fetchUnreadCount: PropTypes.func.isRequired,
-    toggleFeedList: PropTypes.func.isRequired,
-    toggleAddPanel: PropTypes.func.isRequired,
-    setSearchFilter: PropTypes.func.isRequired,
+  itemCount: PropTypes.number.isRequired,
+  unreadToFetch: PropTypes.bool.isRequired,
+  isFoldedFromParent: PropTypes.bool.isRequired,
+  isFeedListOpen: PropTypes.bool,
+  isEditPanelOpen: PropTypes.bool.isRequired,
+  isLoading: PropTypes.bool.isRequired,
+  selectedFeedId: PropTypes.number,
+  selectedCategoryId: PropTypes.number,
+  fetchFeed: PropTypes.func.isRequired,
+  fetchUnreadCount: PropTypes.func.isRequired,
+  toggleFolder: PropTypes.func.isRequired,
+  toggleFeedList: PropTypes.func.isRequired,
+  toggleAddPanel: PropTypes.func.isRequired,
+  setSearchFilter: PropTypes.func.isRequired,
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(FeedList);

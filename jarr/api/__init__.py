@@ -1,4 +1,3 @@
-"""Root package for all API endpoints."""
 import logging
 from datetime import timedelta
 from functools import lru_cache
@@ -9,8 +8,7 @@ from flask_jwt import JWT, JWTError
 from flask_restx import Api
 from sqlalchemy.exc import IntegrityError
 
-from jarr.bootstrap import (commit_pending_sql, conf,
-                            rollback_pending_sql)
+from jarr.bootstrap import commit_pending_sql, conf, rollback_pending_sql
 from jarr.controllers import UserController
 from jarr.lib.utils import default_handler
 
@@ -57,8 +55,9 @@ def setup_api(application):
         }
     }
 
-    api = Api(application, version='3.0', doc='/swagger', security='apikey',
-              authorizations=authorizations)
+    api = Api(application, version='3.0', doc='/', security='apikey',
+              authorizations=authorizations,
+              contact_mail=conf.api.admin_mail)
 
     from jarr.api import (feed, cluster, category, one_page_app, opml,
                           user, auth, oauth, metrics)

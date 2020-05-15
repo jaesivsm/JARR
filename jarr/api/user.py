@@ -14,7 +14,8 @@ set_model_n_parser(model, parser, "email", str, nullable=False)
 set_model_n_parser(model, parser, "timezone", str, nullable=False)
 set_clustering_options("user", model, parser, nullable=False)
 parser_edit = parser.copy()
-parser_edit.add_argument("password", type=str, nullable=False)
+parser_edit.add_argument("password", type=str, nullable=False,
+                         store_missing=False)
 parser.add_argument("password", type=str, nullable=False, required=True)
 parser.add_argument("login", type=str, nullable=False, required=True)
 

@@ -113,7 +113,7 @@ class ArticleControllerTest(BaseJarrTest):
                 content="doesn't matter10",
                 link="doesn't matter either10")
 
-        ClusterController.clusterize_pending_articles()
+        ClusterController(USER_ID).clusterize_pending_articles()
 
         self.assertTrue(acontr.get(id=art1.id).cluster.read)
         self.assertFalse(acontr.get(id=art1.id).cluster.liked)

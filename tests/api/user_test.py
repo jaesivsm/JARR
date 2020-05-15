@@ -28,11 +28,13 @@ class UserTest(JarrFlaskCommon):
                    'Content-Type': 'application/json'}
         old_password = self.user2.password
 
-        data = {'email': 'not an email'}
+        data = {'email': 'not an email', 'cluster_wake_up': True}
         resp = self.jarr_client('put', 'user', data=data, headers=headers)
         self.assertStatusCode(200, resp)
         user2 = self.uctrl.get(id=self.user2.id)
         self.assertEqual(user2.email, 'not an email')
+        self.assertTrue(user2.cluster_wake_up)
+        self.assertEqual(old_password, user2.password)
 
         data = {'password': 'new password'}
         resp = self.jarr_client('put', 'user', data=data, headers=headers)
@@ -40,6 +42,7 @@ class UserTest(JarrFlaskCommon):
         updated_user = self.uctrl.get(id=self.user2.id)
         self.assertNotEqual(data['password'], updated_user.password)
         self.assertNotEqual(old_password, updated_user.password)
+        self.assertTrue(updated_user.cluster_wake_up)
 
         data = {'login': self.user.login}
         resp = self.jarr_client('put', 'user', data=data, headers=headers)

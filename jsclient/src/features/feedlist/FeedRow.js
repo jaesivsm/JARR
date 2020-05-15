@@ -10,8 +10,8 @@ import ListItemText from "@material-ui/core/ListItemText";
 import ExpandLess from "@material-ui/icons/ExpandLess";
 import ExpandMore from "@material-ui/icons/ExpandMore";
 // jarr
-import { doListClusters } from "../clusterlist/clusterSlice";
-import { toggleMenu, toggleFolding } from "./feedSlice";
+import doListClusters from "../../hooks/doListClusters";
+import { toggleMenu, toggleFolding } from "./slice";
 import feedListStyle from "./feedListStyle";
 import FeedIcon from "../../components/FeedIcon";
 
@@ -27,7 +27,7 @@ function mapStateToProps(state) {
 const mapDispatchToProps = (dispatch) => ({
   toggleCatFolding(e, catId) {
     e.stopPropagation();
-    return dispatch(toggleFolding(catId));
+    dispatch(toggleFolding(catId));
   },
   listClusters(e, filters, isDesktop, isFolded, selectedCategoryId) {
     e.stopPropagation();
@@ -39,7 +39,7 @@ const mapDispatchToProps = (dispatch) => ({
     } else if (!isFolded && filters.categoryId && filters.categoryId === selectedCategoryId) {
       dispatch(toggleFolding(filters.categoryId));
     }
-    return dispatch(doListClusters(filters));
+    dispatch(doListClusters(filters));
   },
 });
 
@@ -56,7 +56,7 @@ function FeedRow({ index, style, feedListRows,
     const icon = <FeedIcon iconUrl={obj["icon_url"]} />;
     return (
       <ListItem button
-          key={"f" + obj.id + (isSelected ? "s" : "") + obj.unread}
+          key={`f${obj.id}-${isSelected ? "s" : ""}-${obj.unread}`}
           style={style}
           className={classes.feedItem}
           selected={isSelected}
@@ -76,7 +76,7 @@ function FeedRow({ index, style, feedListRows,
   }
   return (
     <ListItem button
-        key={"c" + obj.id + (isSelected ? "s" : "") + obj.unread}
+        key={`c${obj.id}-${isSelected ? "s" : ""}-${obj.unread}`}
         style={style} selected={isSelected}
         onClick={(e) => (listClusters(e, { categoryId: isAllCateg ? "all" : obj.id}, isDesktop, obj.folded, selectedCategoryId ))}
         className={isAllCateg ? classes.catItemAll : classes.catItem}>

@@ -6,7 +6,6 @@ from jarr.controllers.cluster import ClusterController
 from jarr.lib.enums import ReadReason
 from jarr.metrics import READ
 
-ACCEPTED_LEVELS = {"success", "info", "warning", "error"}
 default_ns = Namespace("default", path="/")
 list_feeds_model = default_ns.model("ListFeeds", {
         "id": fields.Integer(),
@@ -31,24 +30,26 @@ midle_panel_model = default_ns.model("MiddlePanel", {
         "read": fields.Boolean(default=False),
 })
 filter_parser = default_ns.parser()
-filter_parser.add_argument("search_str", type=str,
+filter_parser.add_argument("search_str", type=str, store_missing=False,
         help="if specify will filter list with the specified string")
-filter_parser.add_argument("search_title", type=inputs.boolean, default=True,
+filter_parser.add_argument("search_title",
+        store_missing=False, type=inputs.boolean, default=True,
         help="if True, the search_str will be looked for in title")
 filter_parser.add_argument("search_content",
-        type=inputs.boolean, default=False,
+        type=inputs.boolean, default=False, store_missing=False,
         help="if True, the search_str will be looked for in content")
 filter_parser.add_argument("filter", type=str,
         choices=["all", "unread", "liked"], default="unread",
         help="the boolean (all, unread or liked) filter to apply to clusters")
-filter_parser.add_argument("feed_id", type=int,
+filter_parser.add_argument("feed_id", type=int, store_missing=False,
         help="the parent feed id to filter with")
-filter_parser.add_argument("category_id", type=int,
+filter_parser.add_argument("category_id", type=int, store_missing=False,
         help="the parent category id to filter with")
 filter_parser.add_argument("from_date", type=inputs.datetime_from_iso8601,
-                           help="for pagination")
+                           store_missing=False, help="for pagination")
 mark_as_read_parser = filter_parser.copy()
 mark_as_read_parser.add_argument("only_singles", type=bool, default=False,
+        store_missing=False,
         help="set to true to mark as read only cluster with one article")
 
 

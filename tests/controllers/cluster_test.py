@@ -40,13 +40,14 @@ class ClusterControllerTest(BaseJarrTest):
         self.assertEqual({4: 3, 5: 3, 6: 3, 10: 3, 11: 3, 12: 3},
                 ClusterController(3).count_by_feed(read=False))
 
-    def test_unread_on_cluster(self):
+    def _test_unread_on_cluster(self, read_reason):
         ccontr = ClusterController()
         fcontr = FeedController()
         cluster = ccontr.read().first()
         self.assertFalse(get_config(cluster, 'cluster_enabled'))
         self.assertTrue(get_config(cluster, 'cluster_wake_up'))
-        ccontr.update({'id': cluster.id}, {'read': True})
+        ccontr.update({'id': cluster.id}, {'read': True,
+                                           'read_reason': read_reason})
         target_feed = fcontr.read(id__ne=cluster.main_article.feed_id,
                                   user_id=cluster.user_id).first()
         self.assertFalse(get_config(target_feed, 'cluster_enabled'))
@@ -59,17 +60,23 @@ class ClusterControllerTest(BaseJarrTest):
         article = self._clone_article(ArticleController(),
                                       cluster.main_article, target_feed)
         self.assertTrue(get_config(article, 'cluster_wake_up'))
-        ClusterController.clusterize_pending_articles()
+        ClusterController(cluster.user_id).clusterize_pending_articles()
         self.assertEqual(2, len(article.cluster.articles))
         self.assertInCluster(article, cluster)
-        ccontr.get(id=cluster.id)
-        self.assertFalse(cluster.read)
+        return ccontr.get(id=cluster.id)
+
+    def test_no_unread_on_cluster(self):
+        self.assertTrue(self._test_unread_on_cluster('consulted').read)
+
+    def test_unread_on_cluster(self):
+        self.assertFalse(self._test_unread_on_cluster('marked').read)
 
     def test_adding_to_cluster_by_link(self):
         ccontr = ClusterController()
 
         cluster = ccontr.read().first()
-        ccontr.update({'id': cluster.id}, {'read': True})
+        ccontr.update({'id': cluster.id}, {'read': True,
+                                           'read_reason': 'marked'})
         cluster = ccontr.get(id=cluster.id)
         self.assertTrue(cluster.read)
         article = cluster.articles[0]
@@ -141,7 +148,8 @@ class ClusterControllerTest(BaseJarrTest):
                     content=article.content,
                     link=article.link)
 
-        ClusterController.clusterize_pending_articles()
+        for user_id in ArticleController.get_user_id_with_pending_articles():
+            ClusterController(user_id).clusterize_pending_articles()
         self.assertEqual(2 * total_articles, len(list(acontr.read())))
         self.assertEqual(2 * total_clusters, len(list(ccontr.read())))
 

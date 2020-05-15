@@ -111,19 +111,39 @@ class FeedApiTest(JarrFlaskCommon):
         # changing feed attributes
         resp = self.jarr_client('put', 'feed', feed_id,
                                 data={'filters': self.valid_filters,
+                                      'cluster_wake_up': True,
                                       'title': 'changed'}, user='user1')
         self.assertStatusCode(204, resp)
         feed = self.jarr_client('get', 'feed', feed_id, user='user1').json
         self.assertEqual('changed', feed['title'])
         self.assertEqual(self.valid_filters, feed['filters'])
+        self.assertTrue(feed['cluster_wake_up'])
         resp = self.jarr_client('put', 'feed', feed_id,
                                 data={'title': 'changed2'}, user='user1')
         self.assertStatusCode(204, resp)
         feed = self.jarr_client('get', 'feed', feed_id, user='user1').json
+        self.assertTrue(feed['cluster_wake_up'])
         self.assertEqual('changed2', feed['title'])
+        self.assertEqual(self.valid_filters, feed['filters'])
+        # put with no change
+        self.jarr_client('put', 'feed', feed_id, data={}, user='user1')
+        feed = self.jarr_client('get', 'feed', feed_id, user='user1').json
+        self.assertTrue(feed['cluster_wake_up'])
+        self.assertEqual('changed2', feed['title'])
+        self.assertEqual(self.valid_filters, feed['filters'])
+        # put with limited change
+        resp = self.jarr_client('put', 'feed', feed_id,
+                                data={'title': 'changed again',
+                                      'cluster_enabled': False}, user='user1')
+        feed = self.jarr_client('get', 'feed', feed_id, user='user1').json
+        self.assertTrue(feed['cluster_wake_up'])
+        self.assertFalse(feed['cluster_enabled'])
+        self.assertEqual('changed again', feed['title'])
+        self.assertEqual(self.valid_filters, feed['filters'])
         # changing to other user category
         categories_resp = self.jarr_client('get', 'categories', user='user2')
         self.assertStatusCode(200, categories_resp)
+        feed = self.jarr_client('get', 'feed', feed_id, user='user1').json
         category = categories_resp.json[0]
         resp = self.jarr_client('put', 'feed', feed_id, user='user1',
                                 data={'category_id': category['id']})
@@ -152,7 +172,7 @@ class FeedApiTest(JarrFlaskCommon):
         self.assertTrue(feed_id in [feed['id'] for feed in feeds])
         self.assertEqual('to_delete', [feed['status'] for feed in feeds
                                        if feed['id'] == feed_id][0])
-        feed_cleaner()
+        feed_cleaner(feed_id)
 
         feeds = self.jarr_client('get', 'feeds', user='user1').json
         self.assertFalse(feed_id in [feed['id'] for feed in feeds])

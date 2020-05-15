@@ -1,6 +1,6 @@
 import logging
-from collections import defaultdict, OrderedDict
-from datetime import datetime, timedelta
+from collections import OrderedDict, defaultdict
+from datetime import datetime, timedelta, timezone
 
 import dateutil.parser
 from sqlalchemy import and_
@@ -10,13 +10,15 @@ from werkzeug.exceptions import Forbidden
 from jarr.bootstrap import conf, session
 from jarr.controllers.abstract import AbstractController
 from jarr.controllers.icon import IconController
-from jarr.lib.utils import utc_now
-from jarr.models import Article, Category, Cluster, Feed, User
+from jarr.controllers.user import UserController
 from jarr.lib.enums import FeedStatus
+from jarr.lib.utils import utc_now
+from jarr.lib.const import UNIX_START
+from jarr.metrics import FEED_EXPIRES, FEED_LATENESS
+from jarr.models import Article, Category, Cluster, Feed, User
 
-DEFAULT_LIMIT = 0
-DEFAULT_ART_SPAN_TIME = timedelta(seconds=conf.feed.max_expires)
 logger = logging.getLogger(__name__)
+SPAN_FACTOR = 2
 LIST_W_CATEG_MAPPING = OrderedDict((('id', Feed.id),
                                     ('str', Feed.title),
                                     ('icon_url', Feed.icon_url),
@@ -56,13 +58,13 @@ class FeedController(AbstractController):
     def get_active_feed(self, **filters):
         filters['error_count__lt'] = conf.feed.error_max
         query = self.read(status=FeedStatus.active, **filters)
-        last_conn = utc_now() - timedelta(days=conf.feed.stop_fetch)
         if conf.feed.stop_fetch:
+            last_conn = utc_now() - timedelta(days=conf.feed.stop_fetch)
             return query.join(User).filter(User.is_active.__eq__(True),
                                            User.last_connection >= last_conn)
         return query
 
-    def list_late(self, limit=DEFAULT_LIMIT):
+    def list_late(self, limit=0):
         """Will list either late feeds or feeds with articles recently created.
 
         Late feeds are feeds which have been retrieved for the last time sooner
@@ -78,22 +80,26 @@ class FeedController(AbstractController):
         desactivated users are ignored.
         """
         now = utc_now()
-        max_ex = now + timedelta(seconds=conf.feed.max_expires)
-        min_delta = timedelta(seconds=conf.feed.min_expires)
-        query = self.get_active_feed().filter(
-                *(self._to_filters(
-                    __or__=[{'last_retrieved__lt': now - min_delta},
-                            {'last_retrieved__gt': now + min_delta}])
-                .union(self._to_filters(
-                    __or__=[{'expires__lt': now},
-                            {'expires__gt': max_ex}])))).order_by(Feed.expires)
+        min_expiring = now - timedelta(seconds=conf.feed.min_expires)
+        max_expiring = now - timedelta(seconds=conf.feed.max_expires)
+        filters = self._to_filters(
+            last_retrieved__lt=min_expiring,
+            __or__=[{'expires__lt': now, 'expires__ne': None},
+                    {'last_retrieved__lt': max_expiring,
+                     'last_retrieved__ne': None}])
+        query = self.get_active_feed().filter(*filters).order_by(Feed.expires)
         if limit:
             query = query.limit(limit)
         yield from query
 
-    def list_fetchable(self, limit=DEFAULT_LIMIT):
+    def list_fetchable(self, limit=0):
         now, feeds = utc_now(), list(self.list_late(limit))
         if feeds:
+            for feed in feeds:
+                if feed.last_retrieved == UNIX_START:
+                    continue
+                FEED_LATENESS.labels(feed_type=feed.feed_type.value)\
+                        .observe((now - feed.last_retrieved).total_seconds())
             self.update({'id__in': [feed.id for feed in feeds]},
                         {'last_retrieved': now})
         return feeds
@@ -143,19 +149,53 @@ class FeedController(AbstractController):
 
     def __update_default_expires(self, feed, attrs):
         now = utc_now()
-        expires = []
-        if attrs['expires']:
+        min_delta = timedelta(seconds=conf.feed.min_expires)
+        max_delta = timedelta(seconds=conf.feed.max_expires)
+        min_expires = now + min_delta
+        max_expires = now + max_delta
+        method = 'from header'
+        feed_type = getattr(feed.feed_type, 'value', '')
+        if attrs['expires'] is None:
+            attrs['expires'] = max_expires
+            method = 'defaulted to max'
+        try:
             if not isinstance(attrs['expires'], datetime):
-                expires.append(dateutil.parser.parse(attrs['expires']))
-            else:
-                expires.append(attrs['expires'])
+                attrs['expires'] = dateutil.parser.parse(attrs['expires'])
+            if not attrs['expires'].tzinfo:
+                method = 'from header added tzinfo'
+                attrs['expires'] = attrs['expires'].replace(
+                        tzinfo=timezone.utc)
+            elif max_expires < attrs['expires']:
+                method = 'from header max limited'
+                attrs['expires'] = max_expires
+                logger.debug("%r expiring too late, forcing expire in %ds",
+                             feed, conf.feed.max_expires)
+            elif attrs['expires'] < min_expires:
+                method = 'from header min limited'
+                attrs['expires'] = min_expires
+                logger.debug("%r expiring too early, forcing expire in %ds",
+                             feed, conf.feed.min_expires)
+        except Exception:
+            attrs['expires'] = max_expires
+            method = 'defaulted to max'
 
-        span_time = timedelta(seconds=conf.feed.max_expires)
         art_count = self.__actrl.read(feed_id=feed.id,
-                retrieved_date__gt=now - span_time).count()
-        expires.append(now + (span_time / (art_count or 1)))
-
-        attrs['expires'] = min(expires)
+                retrieved_date__gt=now - max_delta * SPAN_FACTOR).count()
+        if not art_count and method == 'from header min limited':
+            attrs['expires'] = now + 2 * min_delta
+            method = 'no article, twice min time'
+        elif art_count:
+            proposed_expires = now + max_delta / art_count / SPAN_FACTOR
+            if min_expires < proposed_expires < attrs['expires']:
+                attrs['expires'] = proposed_expires
+                method = 'computed'
+            if proposed_expires < min_expires:
+                method = 'many articles, set to min expire'
+                attrs['expires'] = min_expires
+        exp_s = (attrs['expires'] - now).total_seconds()
+        logger.info('%r : %d articles, expiring in %ds (%s)',
+                    feed, art_count, exp_s, method)
+        FEED_EXPIRES.labels(method=method, feed_type=feed_type).observe(exp_s)
 
     def update(self, filters, attrs, return_objs=False, commit=True):
         self._ensure_icon(attrs)

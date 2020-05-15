@@ -5,6 +5,7 @@
 
 import logging
 import random
+from redis import Redis
 
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
@@ -26,14 +27,18 @@ conf = TheConf({'config_files': ['/etc/jarr/jarr.json', '~/.config/jarr.json'],
             {'timezone': {'default': 'Europe/Paris', 'type': str}},
             {'app': [{'url': {'default': 'http://0.0.0.0:3000'}}]},
             {'api': [{'scheme': {'default': 'http'}},
+                     {'admin_mail': {'default': None}},
                      {'server_name': {'default': '', 'type': str}}]},
-            {'worker': [{'metrics': [{'port': {'type': int, 'default': 8001}}]
-                         }]},
             {'db': [{'pg_uri': {'default': 'postgresql://postgresql/jarr'}},
                     {'redis': [{'host': {'default': 'redis'}},
-                               {'db': {'default': 0, 'type': int}},
+                               {'db': {'default': 1, 'type': int}},
                                {'port': {'default': 6379, 'type': int}},
-                               {'password': {'default': None}}]}]},
+                               {'password': {'default': None}}]},
+                     {'metrics': [{'host': {'default': 'redis'}},
+                                  {'db': {'default': 2, 'type': int}},
+                                  {'port': {'default': 6379, 'type': int}},
+                                  {'password': {'default': None}}]},
+                    ]},
             {'celery': [{'broker': {'default': 'amqp://rabbitmq//'}},
                         {'backend': {'default': 'redis://redis:6379/0'}},
                         {'broker_url': {'default': 'amqp://rabbitmq//'}},
@@ -51,6 +56,7 @@ conf = TheConf({'config_files': ['/etc/jarr/jarr.json', '~/.config/jarr.json'],
             {'crawler': [{'idle_delay': {'default': 2 * 60, 'type': int}},
                          {'user_agent': {'default': 'Mozilla/5.0 (compatible; '
                                                     'jarr.info)'}},
+                         {'batch_size': {'default': 0, 'type': int}},
                          {'timeout': {'default': 30, 'type': int}}]},
             {'plugins': [{'readability_key': {'default': ''}},
                          {'rss_bridge': {'default': ''}}]},
@@ -76,8 +82,8 @@ conf = TheConf({'config_files': ['/etc/jarr/jarr.json', '~/.config/jarr.json'],
                               {'password': {'default': ''}}]},
             {'feed': [{'error_max': {'type': int, 'default': 6}},
                       {'error_threshold': {'type': int, 'default': 3}},
-                      {'min_expires': {'type': int, 'default': 60 * 10}},
-                      {'max_expires': {'type': int, 'default': 60 * 60 * 4}},
+                      {'min_expires': {'type': int, 'default': 3600 / 2}},
+                      {'max_expires': {'type': int, 'default': 7 * 24 * 3600}},
                       {'stop_fetch': {'default': 30, 'type': int}}]},
                       ]})
 
@@ -129,9 +135,12 @@ def rollback_pending_sql(*args, **kwargs):
 
 engine, session, Base = init_db()
 init_models()
-set_redis_conn(host=conf.db.redis.host,
-               db=conf.db.redis.db,
-               port=conf.db.redis.port)
+set_redis_conn(host=conf.db.metrics.host,
+               db=conf.db.metrics.db,
+               port=conf.db.metrics.port)
 init_logging(conf.log.path, log_level=logging.WARNING,
              modules=('the_conf',))
 init_logging(conf.log.path, log_level=conf.log.level)
+REDIS_CONN = Redis(host=conf.db.redis.host,
+                   db=conf.db.redis.db,
+                   port=conf.db.redis.port)

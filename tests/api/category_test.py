@@ -42,12 +42,21 @@ class CategoryApiTest(JarrFlaskCommon):
         resp = self.jarr_client('put', 'category', cat_id,
                 data={'name': 'changed name'}, user='user2')
         self.assertStatusCode(403, resp)
-        resp = self.jarr_client('put', 'category', cat_id,
-                data={'name': 'changed name'}, user='user1')
+        resp = self.jarr_client('put', 'category', cat_id, user='user1',
+                data={'name': 'changed name', 'cluster_wake_up': True})
         self.assertStatusCode(204, resp)
         cat = next(cat for cat in self.jarr_client('get', 'categories',
                 user='user1').json if cat['id'] == cat_id)
         self.assertEqual('changed name', cat['name'])
+        self.assertTrue(cat['cluster_wake_up'])
+        resp = self.jarr_client('put', 'category', cat_id, user='user1',
+                data={'cluster_enabled': False})
+        self.assertStatusCode(204, resp)
+        cat = next(cat for cat in self.jarr_client('get', 'categories',
+                user='user1').json if cat['id'] == cat_id)
+        self.assertEqual('changed name', cat['name'])
+        self.assertTrue(cat['cluster_wake_up'])
+        self.assertFalse(cat['cluster_enabled'])
 
     def test_CategoryResource_delete(self):
         cat_id = self.jarr_client('get', 'categories',

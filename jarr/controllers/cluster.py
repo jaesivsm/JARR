@@ -12,7 +12,7 @@ from jarr.controllers.article import ArticleController
 from jarr.lib.clustering_af.grouper import get_best_match_and_score
 from jarr.lib.enums import ClusterReason, ReadReason
 from jarr.lib.filter import process_filters
-from jarr.metrics import ARTICLE_CREATION, CLUSTERING
+from jarr.metrics import ARTICLE_CREATION, CLUSTERING, WORKER_BATCH
 from jarr.models import Article, Cluster, Feed
 from jarr.lib.content_generator import generate_content
 from jarr.utils import get_cluster_pref
@@ -26,6 +26,8 @@ __returned_keys = ('main_title', 'id', 'liked', 'read', 'main_article_id',
 JR_FIELDS = {key: getattr(Cluster, key) for key in __returned_keys}
 JR_SQLA_FIELDS = [getattr(Cluster, key) for key in __returned_keys]
 JR_PAGE_LENGTH = 30
+WAKABLE_REASONS = {ReadReason.marked, ReadReason.mass_marked,
+                   ReadReason.filtered}
 
 
 def get_config(obj, attr):
@@ -157,8 +159,10 @@ class ClusterController(AbstractController):
             cluster.read = cluster.read and cluster_read
             cluster.read_reason = ReadReason.filtered
             logger.debug('marking as read because of filter %r', cluster)
-        elif get_config(article, 'cluster_wake_up') \
-                and get_config(cluster, 'cluster_wake_up'):
+        elif (cluster.read
+              and cluster.read_reason in WAKABLE_REASONS
+              and get_config(article, 'cluster_wake_up')
+              and get_config(cluster, 'cluster_wake_up')):
             cluster.read = False
             logger.debug('waking up %r', cluster)
         # once one article is liked the cluster is liked
@@ -211,15 +215,18 @@ class ClusterController(AbstractController):
                     result="miss", match="none").inc()
         return self._create_from_article(article, filter_read, filter_liked)
 
-    @classmethod
-    def clusterize_pending_articles(cls):
+    def clusterize_pending_articles(self):
         results = []
-        for article in ArticleController().read(cluster_id=None):
+        actrl = ArticleController(self.user_id)
+        articles = list(actrl.read(cluster_id=None))
+        logger.info('got %d articles to clusterize', len(articles))
+        WORKER_BATCH.labels(worker_type='clusterizer').observe(len(articles))
+        for article in actrl.read(cluster_id=None):
             filter_result = process_filters(article.feed.filters,
                                             {'tags': article.tags,
                                              'title': article.title,
                                              'link': article.link})
-            result = cls(article.user_id).clusterize(article, filter_result).id
+            result = self.clusterize(article, filter_result).id
             results.append(result)
         return results
 

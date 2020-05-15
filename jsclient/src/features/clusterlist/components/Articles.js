@@ -13,6 +13,8 @@ import jarrIcon from "../../../components/JarrIcon.gif";
 
 function mapStateToProps(state) {
   return { icons: state.feeds.icons,
+           articles: state.clusters.loadedCluster.articles,
+           content: state.clusters.loadedCluster.content,
   };
 }
 const proccessedContentTitle = "proccessed content";

@@ -5,12 +5,13 @@ from datetime import datetime, timedelta, timezone
 
 from flask_migrate import Migrate, MigrateCommand
 from flask_script import Manager
+
+from jarr.api import create_app
+from jarr.bootstrap import Base, conf
+from jarr.controllers import FeedController, UserController
 from jarr.lib.utils import utc_now
 
-from jarr.bootstrap import conf, Base
-from jarr.controllers import FeedController, UserController
-
-from wsgi import application
+application = create_app()
 
 logger = logging.getLogger(__name__)
 Migrate(application, Base)

@@ -28,9 +28,11 @@ import ExitToAppIcon from "@material-ui/icons/ExitToApp";
 // jarr
 import topMenuStyle from "./topMenuStyle";
 import { doLogout } from "../../authSlice";
-import { toggleMenu, doMarkAllAsRead } from "../feedlist/feedSlice";
-import { doListClusters, markedAllAsRead } from "../clusterlist/clusterSlice";
-import { doFetchObjForEdit } from "../editpanel/editSlice";
+import { toggleMenu } from "../feedlist/slice";
+import { markedAllAsRead } from "../clusterlist/slice";
+import doListClusters from "../../hooks/doListClusters";
+import doFetchObjForEdit from "../../hooks/doFetchObjForEdit";
+import doMarkAllAsRead from "../../hooks/doMarkAllAsRead";
 
 
 function mapStateToProps(state) {
@@ -44,24 +46,22 @@ function mapStateToProps(state) {
 
 const mapDispatchToProps = (dispatch) => ({
   filterClusters(filterValue) {
-    return dispatch(doListClusters({ filter: filterValue }));
+    dispatch(doListClusters({ filter: filterValue }));
   },
   markAllAsRead(onlySingles) {
     dispatch(doMarkAllAsRead(onlySingles));
-    return dispatch(markedAllAsRead());
+    dispatch(markedAllAsRead({ onlySingles }));
   },
   toggleFeedList() {
-    return dispatch(toggleMenu(true));
+    dispatch(toggleMenu(true));
   },
   openEditPanel() {
-    return dispatch(doFetchObjForEdit("user"));
+    dispatch(doFetchObjForEdit("user"));
   },
   logout() {
-    return dispatch(doLogout());
+    dispatch(doLogout());
   },
 });
-
-
 
 function TopMenu(props) {
   const theme = useTheme();
@@ -101,30 +101,30 @@ function TopMenu(props) {
               icon: <MarkAllNonClusterAsReadIcon /> },
   };
 
-  const commands = Object.keys(commandsDefs).map((key) => {
+  const commands = Object.entries(commandsDefs).map(([key, command]) => {
       if (burgered) {
         return (<MenuItem onClick={(e) => {
                     setAnchorEl(null);
-                    commandsDefs[key].onClick();
+                    command.onClick();
                 }}
-                  key={"command-" + key}
+                  key={`command-${key}`}
                 >
                   <ListItemIcon>
                     <IconButton edge="start" color="inherit"
                       className={classes.menuButton}>
-                      {commandsDefs[key].icon}
+                      {command.icon}
                     </IconButton>
                   </ListItemIcon>
-                  <Typography>{commandsDefs[key].label}</Typography>
+                  <Typography>{command.label}</Typography>
                 </MenuItem>);
       }
-      return (<Tooltip title={commandsDefs[key].label}
-                key={"command" + key}
+      return (<Tooltip title={command.label}
+                key={`command-${key}`}
               >
                 <IconButton color="inherit"
-                  onClick={commandsDefs[key].onClick} className={classes.menuButton}
+                  onClick={command.onClick} className={classes.menuButton}
                 >
-                  {commandsDefs[key].icon}
+                  {command.icon}
                 </IconButton>
               </Tooltip>);
     }

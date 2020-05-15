@@ -1,18 +1,20 @@
 import qs from "qs";
 import { createSlice } from "@reduxjs/toolkit";
-import { apiUrl, pageLength } from "../../const";
-import { doRetryOnTokenExpiration } from "../../authSlice";
+import { pageLength } from "../../const";
 
-export const filterClusters = (requestedClusterId, filter) => (cluster) => (
-    // is selected cluster
-    (requestedClusterId && requestedClusterId === cluster.id)
-     // filters is on all
-     || filter === "all"
-     // cluster is not read and no filter
-     || (!cluster.read && !filter)
-     // cluster is liked and filtering on liked
-     || (cluster.liked && filter === "liked")
+export const showCluster = (cluster, requestedClusterId, filter) => (
+  // is selected cluster
+  (requestedClusterId && requestedClusterId === cluster.id)
+   // filters is on all
+   || filter === "all"
+   // cluster is not read and no filter
+   || (!cluster.read && !filter)
+   // cluster is liked and filtering on liked
+   || (cluster.liked && filter === "liked")
 );
+
+export const filterClusters = (requestedClusterId, filter) => (
+    (cluster) => showCluster(cluster, requestedClusterId, filter));
 
 const clusterSlice = createSlice({
   name: "cluster",
@@ -26,7 +28,7 @@ const clusterSlice = createSlice({
                   loadedCluster: {},
   },
   reducers: {
-    requestedClustersList(state, action) {
+    requestedClustersList: (state, action) => {
       const filters = { ...state.filters };
       if (filters["from_date"]) {
         delete filters["from_date"];
@@ -54,14 +56,14 @@ const clusterSlice = createSlice({
                requestedFilter: qs.stringify(filters),
       };
     },
-    requestedMoreCLusters(state, action) {
+    requestedMoreCLusters: (state, action) => {
       const filters = { ...state.filters,
                         "from_date": state.clusters[state.clusters.length - 1].main_date };
       return { ...state, filters, moreLoading: true,
                requestedFilter: qs.stringify(filters),
       };
     },
-    retrievedClustersList(state, action) {
+    retrievedClustersList: (state, action) => {
       if (action.payload.requestedFilter !== state.requestedFilter) {
         // dispatch from an earlier request that has been ignored
         return state;  // ignoring
@@ -76,13 +78,12 @@ const clusterSlice = createSlice({
                moreToFetch: action.payload.clusters.length >= pageLength,
                clusters: action.payload.clusters };
     },
-    requestedCluster(state, action) {
-      return { ...state,
-               requestedClusterId: action.payload.clusterId,
-               loadedCluster: {},
-      };
-    },
-    retrievedCluster(state, action) {
+    requestedCluster: (state, action) => ({
+      ...state,
+      requestedClusterId: action.payload.clusterId,
+      loadedCluster: {},
+    }),
+    retrievedCluster: (state, action) => {
       if (state.requestedClusterId !== action.payload.cluster.id) {
         return state; // not the object that was asked for last, ignoring
       }
@@ -97,12 +98,12 @@ const clusterSlice = createSlice({
                loadedCluster: action.payload.cluster,
       };
     },
-    updateClusterAttrs(state, action) {
+    updateClusterAttrs: (state, action) => {
       const alterCluster = (cluster) => {
         if (cluster.id === action.payload.clusterId) {
           return { ...cluster,
-                   read: action.payload.read === undefined ? cluster.read : action.payload.read,
-                   liked: action.payload.liked === undefined ? cluster.liked : action.payload.liked };
+                   read: typeof(action.payload.read) === "undefined" ? cluster.read : action.payload.read,
+                   liked: typeof(action.payload.liked) === "undefined" ? cluster.liked : action.payload.liked };
           }
           return cluster;
       };
@@ -111,11 +112,17 @@ const clusterSlice = createSlice({
                clusters: state.clusters.map(alterCluster),
       };
     },
-    removeClusterSelection(state, action) {
-      return { ...state, loadedCluster: {}, requestedClusterId: null };
-    },
-    markedAllAsRead(state, action) {
-      return { ...state, clusters: [] };
+    removeClusterSelection: (state, action) => ({
+      ...state, loadedCluster: {}, requestedClusterId: null,
+    }),
+    markedAllAsRead: (state, action) => {
+      if (!action.payload.onlySingles) {
+        return { ...state, clusters: [] };
+      }
+      return { ...state,
+               clusters: state.clusters.filter((cluster) =>
+                 cluster["feeds_id"].length > 1),
+      };
     },
   },
 });
@@ -128,53 +135,3 @@ export const { requestedClustersList, retrievedClustersList,
                markedAllAsRead,
 } = clusterSlice.actions;
 export default clusterSlice.reducer;
-
-export const doListClusters = (filters): AppThunk => async (dispatch, getState) => {
-  dispatch(requestedClustersList({ filters }));
-  const requestedFilter = getState().clusters.requestedFilter;
-  const result = await doRetryOnTokenExpiration({
-    method: "get",
-    url: apiUrl + "/clusters?" + requestedFilter,
-  }, dispatch, getState);
-  dispatch(retrievedClustersList({ requestedFilter, clusters: result.data,
-                                   strat: "replace" }));
-};
-
-export const doLoadMoreClusters = (): AppThunk => async (dispatch, getState) => {
-  dispatch(requestedMoreCLusters());
-  const requestedFilter = getState().clusters.requestedFilter;
-  const result = await doRetryOnTokenExpiration({
-    method: "get",
-    url: apiUrl + "/clusters?" + requestedFilter,
-  }, dispatch, getState);
-  dispatch(retrievedClustersList({ requestedFilter, clusters: result.data,
-                                   strat: "append" }));
-};
-
-export const doFetchCluster = (clusterId): AppThunk => async (dispatch, getState) => {
-  dispatch(requestedCluster({ clusterId }));
-  const result = await doRetryOnTokenExpiration({
-    method: "get",
-    url: apiUrl + "/cluster/" + clusterId,
-  }, dispatch, getState);
-  dispatch(retrievedCluster({ cluster: result.data }));
-};
-
-export const doEditCluster = (clusterId, payload): AppThunk => async (dispatch, getState) => {
-  dispatch(updateClusterAttrs({ clusterId, ...payload }));
-  if (payload["read_reason"] === null) {
-    delete payload["read_reason"];
-  }
-  await doRetryOnTokenExpiration({
-    method: "put",
-    url: apiUrl + "/cluster/" + clusterId,
-    data: payload,
-  }, dispatch, getState);
-  const clusterState = getState().clusters;
-  if (clusterState.moreToFetch && clusterState.clusters.filter(
-        filterClusters(clusterState.requestedClusterId,
-                       clusterState.filters.filter)
-      ).length === (pageLength / 3 * 2)) {
-    dispatch(doLoadMoreClusters());
-  }
-};

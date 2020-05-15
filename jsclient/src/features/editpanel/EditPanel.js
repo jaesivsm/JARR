@@ -8,16 +8,16 @@ import IconButton from "@material-ui/core/IconButton";
 import Close from "@material-ui/icons/Close";
 import CircularProgress from "@material-ui/core/CircularProgress";
 // jarr
-import BuildFeed from "./BuildFeed";
-import AddEditFeed from "./AddEditFeed";
-import AddEditCategory from "./AddEditCategory";
+import BuildFeed from "./Feed/Build";
+import AddEditFeed from "./Feed";
+import AddEditCategory from "./Category";
 import SettingsPanel from "./SettingsPanel";
-import { closePanel } from "./editSlice";
+import { closePanel } from "./slice";
 import editPanelStyle from "./editPanelStyle";
 
 const mapDispatchToProps = (dispatch) => ({
   close() {
-    return dispatch(closePanel());
+    dispatch(closePanel());
   },
 });
 
@@ -26,31 +26,22 @@ function mapStateToProps(state) {
            isLoading: state.edit.isLoading,
            job: state.edit.job,
            objType: state.edit.objType,
-           buildedFeed: state.edit.buildedFeed,
-           categories: state.feeds.feedListRows.filter((row) => (
-               row.type === "categ" || row.type === "all-categ")
-           ).map((cat) => ({ id: cat.id, name: cat.str })),
-           loadedObj: state.edit.loadedObj,
   };
 }
 
-function EditPanel({ isOpen, isLoading, job, objType,
-                     buildedFeed, loadedObj, categories,
-                     close }) {
+const EditPanel = ({ isOpen, isLoading, job, objType, close }) => {
   const classes = editPanelStyle();
-  let form = <div className={classes.loadEditPanel}><CircularProgress /></div>;
-  if(job === "add" && objType === "feed") {
-    if(buildedFeed) {
-      form = <AddEditFeed job={job} feed={buildedFeed} categories={categories} />;
-    } else {
-      form = <BuildFeed isLoading={isLoading} />;
-    }
-  } else if (job === "edit" && objType === "feed") {
-    form = <AddEditFeed job={job} feed={loadedObj} categories={categories} />;
-  } else if ((job === "add" || job === "edit") && objType === "category") {
-    form = <AddEditCategory job={job} category={loadedObj} />;
-  } else if (job === "edit" && objType === "user") {
-    form = <SettingsPanel user={loadedObj} />;
+  let form;
+  if (isLoading) {
+    form = <div className={classes.loadEditPanel}><CircularProgress /></div>;
+  } else if (objType === "feed" && job === "add") {
+    form = <BuildFeed isLoading={isLoading} />;
+  } else if (objType === "feed") {
+    form = <AddEditFeed job={job} />;
+  } else if (objType === "category") {
+    form = <AddEditCategory job={job} />;
+  } else if (objType === "user") {
+    form = <SettingsPanel />;
   }
   return (
     <Drawer
@@ -67,7 +58,6 @@ function EditPanel({ isOpen, isLoading, job, objType,
           <IconButton onClick={close}>
             <Close />
           </IconButton>
-          {isLoading ? <CircularProgress /> : null}
           <Typography className={classes.editPanelTitle}>
             {job.charAt(0).toUpperCase()}{job.slice(1)}ing {objType.charAt(0).toUpperCase()}{objType.slice(1)}
           </Typography>
@@ -79,16 +69,13 @@ function EditPanel({ isOpen, isLoading, job, objType,
       </div>
     </Drawer>
   );
-}
+};
 
 EditPanel.propTypes = {
   isOpen: PropTypes.bool.isRequired,
   isLoading: PropTypes.bool.isRequired,
-  categories: PropTypes.array,
   job: PropTypes.string,
   objType: PropTypes.string,
-  buildedFeed: PropTypes.object,
-  loadedObj: PropTypes.object,
   close: PropTypes.func.isRequired,
 };
 

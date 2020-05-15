@@ -13,11 +13,12 @@ import Alert from "@material-ui/lab/Alert";
 // jarr
 import Cluster from "./components/Cluster";
 import SelectedObjCard from "./components/SelectedObjCard";
-import { doListClusters, doLoadMoreClusters, filterClusters } from "./clusterSlice";
+import doLoadMoreClusters from "../../hooks/doLoadMoreClusters";
+import doListClusters from "../../hooks/doListClusters";
 import makeStyles from "./components/style";
 import Articles from "./components/Articles";
 
-function mapStateToProps(state) {
+const mapStateToProps = (state) => {
   let selectedFilterObj;
   if(state.clusters.filters["feed_id"]) {
     selectedFilterObj = state.feeds.feedListRows.filter((row) => (
@@ -31,10 +32,7 @@ function mapStateToProps(state) {
 
   let clusters = [];
   if (!state.clusters.loading) {
-    clusters = state.clusters.clusters.filter(
-        filterClusters(state.clusters.requestedClusterId,
-                       state.clusters.filters.filter)
-    );
+    clusters = state.clusters.clusters.map((cluster) => `c-${cluster.id}`);
   }
   return { clusters,
            loadedCluster: state.clusters.loadedCluster,
@@ -50,25 +48,24 @@ function mapStateToProps(state) {
               && !!state.clusters.loadedCluster.id
               && state.clusters.requestedClusterId === state.clusters.loadedCluster.id),
   };
-}
+};
 
 const mapDispatchToProps = (dispatch) => ({
   listClusters(filters) {
-    return dispatch(doListClusters(filters));
+    dispatch(doListClusters(filters));
   },
   loadMoreClusters() {
-    return dispatch(doLoadMoreClusters());
+    dispatch(doLoadMoreClusters());
   },
 });
 
-
-function ClusterList({ clusters, filters, loadedCluster,
+const ClusterList = ({ clusters, filters, loadedCluster,
                        loading, doDisplayContent,
                        isFeedListOpen, isEditPanelOpen,
                        moreLoading, moreToFetch,
                        selectedFilterObj,
                        listClusters, loadMoreClusters, openEditPanel,
-                       }) {
+                       }) => {
   const theme = useTheme();
   const classes = makeStyles();
   const splitedMode = useMediaQuery(theme.breakpoints.up("md"));
@@ -89,12 +86,8 @@ function ClusterList({ clusters, filters, loadedCluster,
   if (loading) {
     list = <div className={classes.loadingWrap}><CircularProgress /></div>;
   } else if (clusters.length) {
-    list = clusters.map((cluster) => (
-        <Cluster key={"c-" + cluster.id}
-          cluster={cluster}
-          splitedMode={splitedMode}
-        />)
-    );
+    list = clusters.map((cluster, index) => (
+        <Cluster key={cluster} index={index} splitedMode={splitedMode} />));
     if (moreLoading && moreToFetch) {
       loadMoreButton = <CircularProgress />;
     } else if (moreToFetch) {
@@ -163,7 +156,7 @@ function ClusterList({ clusters, filters, loadedCluster,
       {content}
     </main>
   );
-}
+};
 
 ClusterList.propTypes = {
   clusters: PropTypes.array.isRequired,

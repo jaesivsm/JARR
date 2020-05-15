@@ -10,19 +10,19 @@ import SettingsIcon from "@material-ui/icons/Build";
 import Typography from "@material-ui/core/Typography";
 import DeleteIcon from "@material-ui/icons/Delete";
 // jarr
-import { doFetchObjForEdit } from "../../editpanel/editSlice";
-import { doDeleteObj } from "../../feedlist/feedSlice";
-import { doListClusters } from "../clusterSlice";
+import doFetchObjForEdit from "../../../hooks/doFetchObjForEdit";
+import doDeleteObj from "../../../hooks/doDeleteObj";
+import doListClusters from "../../../hooks/doListClusters";
 import ClusterIcon from "../../../components/ClusterIcon";
 import makeStyles from "./style";
 
 const mapDispatchToProps = (dispatch) => ({
   openEditPanel(id, objType) {
-    return dispatch(doFetchObjForEdit(objType, id));
+    dispatch(doFetchObjForEdit(objType, id));
   },
   deleteObj(id, type) {
     dispatch(doDeleteObj(id, type));
-    return dispatch(doListClusters({ categoryId: "all" }));
+    dispatch(doListClusters({ categoryId: "all" }));
   },
 });
 

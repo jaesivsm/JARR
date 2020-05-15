@@ -1,34 +1,47 @@
-import React from "react";
 import clsx from "clsx";
+import React from "react";
+import moment from "moment";
 import PropTypes from "prop-types";
 import { connect } from "react-redux";
-import moment from "moment";
+import { createSelector } from "reselect";
 // material ui components
-import CircularProgress from "@material-ui/core/CircularProgress";
-import Typography from "@material-ui/core/Typography";
 import Link from "@material-ui/core/Link";
+import Checkbox from "@material-ui/core/Checkbox";
+import Typography from "@material-ui/core/Typography";
 import ExpansionPanel from "@material-ui/core/ExpansionPanel";
+import CircularProgress from "@material-ui/core/CircularProgress";
 import ExpansionPanelSummary from "@material-ui/core/ExpansionPanelSummary";
 import ExpansionPanelDetails from "@material-ui/core/ExpansionPanelDetails";
-import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
-import Checkbox from "@material-ui/core/Checkbox";
 // material ui icons
 import LikedIcon from "@material-ui/icons/Star";
+import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import LikedIconBorder from "@material-ui/icons/StarBorder";
 // jarr
-import { doFetchCluster, doEditCluster, removeClusterSelection,
-} from "../clusterSlice";
+import { removeClusterSelection, showCluster } from "../slice";
+import doEditCluster from "../../../hooks/doEditCluster";
+import doFetchCluster from "../../../hooks/doFetchCluster";
 import makeStyles from "./style";
-import { changeReadCount } from "../../feedlist/feedSlice";
+import { changeReadCount } from "../../feedlist/slice";
 import ClusterIcon from "../../../components/ClusterIcon";
 import Articles from "./Articles";
 
-function mapStateToProps(state) {
-  return { requestedClusterId: state.clusters.requestedClusterId,
-           unreadOnClose: !state.clusters.filters.filter,
-           icons: state.feeds.icons,
-           loadedCluster: state.clusters.loadedCluster,
+const getCluster = (state, props) => state.clusters.clusters[props.index];
+const makeGetCluster = () => createSelector([ getCluster ], (cluster) => cluster);
+
+const makeMapStateToProps = () => {
+  const madeGetCluster = makeGetCluster();
+  const mapStateToProps = (state, props) => {
+    const cluster = madeGetCluster(state, props);
+    return { expanded: cluster.id === state.clusters.requestedClusterId,
+             unreadOnClose: !state.clusters.filters.filter,
+             icons: state.feeds.icons,
+             showContent: state.clusters.loadedCluster.id === cluster.id,
+             cluster,
+             doShow: showCluster(cluster, state.clusters.requestedClusterId,
+                                 state.clusters.filters.filter),
+    };
   };
+  return mapStateToProps;
 }
 
 const mapDispatchToProps = (dispatch) => ({
@@ -36,75 +49,72 @@ const mapDispatchToProps = (dispatch) => ({
     if (!expanded) {
       // panel is folded, we fetch the cluster
       dispatch(doFetchCluster(cluster.id));
-      return dispatch(changeReadCount({
+      dispatch(changeReadCount({
         feedsId: cluster["feeds_id"],
         categoriesId: cluster["categories_id"],
         action: "read" }));
-    }
-    if (unreadOnClose) {
+    } else if (unreadOnClose) {
       // panel is expanded and the filters implies
       // we have to mark cluster as unread
       dispatch(removeClusterSelection());
       dispatch(doEditCluster(cluster.id,
                              { read: false, "read_reason": null }));
-      return dispatch(changeReadCount(
+      dispatch(changeReadCount(
           { feedsId: cluster["feeds_id"],
             categoriesId: cluster["categories_id"],
             action: "unread" }));
+    } else {
+      // filters says everybody is displayed
+      // so we"re not triggering changes in cluster list
+      dispatch(removeClusterSelection());
     }
-    // filters says everybody is displayed
-    // so we"re not triggering changes in cluster list
-    return dispatch(removeClusterSelection());
   },
   toggleRead(e, cluster) {
     e.stopPropagation();
-    const payload = { read: true, "read_reason": "marked" };
-    let action = "read";
-    if (!e.target.checked) {
-      action = "unread";
-      payload.read = false;
-      payload["read_reason"] = null;
+    const payload = { feedsId: cluster["feeds_id"] };
+    if (cluster.read && !e.target.checked) {
+      dispatch(doEditCluster(cluster.id, { read: false, "read_reason": null }));
+      dispatch(changeReadCount({ ...payload, action: "unread" }));
+    } else if (!cluster.read && e.target.checked) {
+
+      dispatch(doEditCluster(cluster.id, { read: true, "read_reason": "marked" }));
+      dispatch(changeReadCount({ ...payload, action: "read" }));
     }
-    dispatch(doEditCluster(cluster.id, payload));
-    return dispatch(changeReadCount({
-      feedsId: cluster["feeds_id"],
-      categoriesId: cluster["categories_id"], action }));
   },
   toggleLiked(e, clusterId) {
     e.stopPropagation();
-    return dispatch(doEditCluster(clusterId, { liked: e.target.checked }));
+    dispatch(doEditCluster(clusterId, { liked: e.target.checked }));
   },
   readOnRedirect(e, cluster) {
     e.stopPropagation();
-    dispatch(doEditCluster(cluster.id,
-                           { read: false, "read_reason": "consulted" }));
-    return dispatch(changeReadCount({
-      feedsId: cluster["feeds_id"],
-      categoriesId: cluster["categories_id"],
-      action: "read" }));
+    if (!cluster.read) {
+      dispatch(doEditCluster(cluster.id,
+                            { read: true, "read_reason": "consulted" }));
+      dispatch(changeReadCount({
+        feedsId: cluster["feeds_id"],
+        categoriesId: cluster["categories_id"],
+        action: "read" }));
+    }
   },
 });
 
-function Cluster({ cluster, loadedCluster,
-                   icons, requestedClusterId, unreadOnClose,
+const Cluster = ({ index, cluster, loadedCluster,
+                   icons, doShow, expanded, showContent, unreadOnClose,
                    readOnRedirect, toggleRead, toggleLiked,
                    handleClickOnPanel, splitedMode,
-}) {
+}) => {
   const classes = makeStyles();
-  const expanded = requestedClusterId === cluster.id;
+  if(!doShow) { return null; }
   let content;
   if(!splitedMode && expanded) {
-    if (loadedCluster.id !== cluster.id) {
-      content = <div className={classes.loadingWrap}><CircularProgress /></div>;
+    if (showContent) {
+      content = <Articles />;
     } else {
-      content = (
-        <Articles content={loadedCluster.content}
-                  articles={loadedCluster.articles} />
-      );
+      content = <div className={classes.loadingWrap}><CircularProgress /></div>;
     }
     content = (
       <ExpansionPanelDetails className={classes.content}
-                             key={"cl-" + cluster.id}>
+                             key={`cl-${cluster.id}`}>
         {content}
       </ExpansionPanelDetails>
     );
@@ -127,7 +137,7 @@ function Cluster({ cluster, loadedCluster,
           expandIcon={<ExpandMoreIcon />}
           aria-controls="panel1a-content"
           id="panel1a-header"
-          key={"cs-" + cluster.id}
+          key={`cs-${cluster.id}`}
           className={classes.summary}
         >
           <div className={classes.link}>
@@ -138,7 +148,7 @@ function Cluster({ cluster, loadedCluster,
               onClick={(e) => readOnRedirect(e, cluster)}>
               {[ ...new Set(cluster["feeds_id"])].filter((feedId) => icons[feedId])
                       .map((feedId) => <ClusterIcon
-                                          key={"i" + cluster.id + "f" + feedId}
+                                          key={`i${cluster.id}f${feedId}`}
                                           iconUrl={icons[feedId]} />
                            )
               }
@@ -147,14 +157,14 @@ function Cluster({ cluster, loadedCluster,
             <span className={classes.clusterDate}>{moment(cluster["main_date"]).fromNow()}</span>
           </div>
           <div>
-            <Checkbox checked={cluster.read} key={"c" + cluster.id + "r"}
+            <Checkbox checked={cluster.read} key={`c${cluster.id}r`}
               className={classes.titleAction}
               name="read" size="small" color="primary"
               aria-label="toggle read"
               onClick={(e) => e.stopPropagation()}
               onFocus={(e) => e.stopPropagation()}
               onChange={(e) => toggleRead(e, cluster)} />
-            <Checkbox checked={cluster.liked} key={"c" + cluster.id + "l"}
+            <Checkbox checked={cluster.liked} key={`c${cluster.id}l`}
               className={classes.titleAction}
               name="liked" size="small" color="primary"
               aria-label="toggle read"
@@ -171,10 +181,10 @@ function Cluster({ cluster, loadedCluster,
         {content}
       </ExpansionPanel>
     );
-}
+};
 
 Cluster.propTypes = {
-  loadedCluster: PropTypes.object,
+  index: PropTypes.number.isRequired,
   cluster: PropTypes.shape({
     id: PropTypes.number.isRequired,
     read: PropTypes.bool.isRequired,
@@ -188,8 +198,10 @@ Cluster.propTypes = {
   }),
   icons: PropTypes.object.isRequired,
   unreadOnClose: PropTypes.bool.isRequired,
-  requestedClusterId: PropTypes.number,
+  expanded: PropTypes.bool.isRequired,
   splitedMode: PropTypes.bool.isRequired,
+  showContent: PropTypes.bool.isRequired,
+  doShow: PropTypes.bool.isRequired,
   // funcs
   readOnRedirect: PropTypes.func.isRequired,
   toggleRead: PropTypes.func.isRequired,
@@ -197,4 +209,4 @@ Cluster.propTypes = {
   handleClickOnPanel: PropTypes.func.isRequired,
 };
 
-export default connect(mapStateToProps, mapDispatchToProps)(Cluster);
+export default connect(makeMapStateToProps, mapDispatchToProps)(Cluster);
