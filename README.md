@@ -10,23 +10,12 @@ JARR (which stands for Just Another RSS Reader) is a web-based news aggregator a
 
 JARR is under ongoing developments and functionnalities are regularly added.
 For past and futur updates see the [milestones](https://github.com/jaesivsm/JARR/milestones).
-However JARR is stable and can function as easily on a light installation with the python SimpleHTTP server and a PostGreSQL database.
 
-## Installing
+The particularity of this project is to allow for article Clustering either on links or on content through TF-IDF.
 
-**to be rewritten at v3**
+## Official instance
 
-## Upgrading
-
-The ``master`` branch should always be working and it is recommended you install the project using this one. Partial or unstable change maybe present in the ``develop`` branch even if it'll be avoided as much as we can.
-So if you're planning on using the project from the source, you should be using the ``master`` branch only, but, if you're proposing patches, please make your pull request against the ``develop`` branch.
-
-If you have already installed JARR and want to upgrade to a later version, you may encounter some problem if some change have appeared in the model. To fix this, upgrade your database with the following commaned :
-
-```bash
-
-./manager.py db upgrade
-```
+You can use the instance of JARR run by the maintainer on [app.jarr.info](https://app.jarr.info) or try out the api at [api.jarr.info](https://api.jarr.info).
 
 ## License
 
