@@ -1,16 +1,17 @@
 import logging
+from datetime import datetime, timedelta
+from functools import wraps
+from hashlib import sha256
 
 import urllib3
-from datetime import datetime
 
-from functools import wraps
 from ep_celery import celery_app
-from hashlib import sha256
-from jarr.bootstrap import conf, REDIS_CONN
+from jarr.bootstrap import REDIS_CONN, conf
 from jarr.controllers import (ArticleController, ClusterController,
                               FeedController, UserController)
 from jarr.lib.enums import FeedStatus
-from jarr.metrics import WORKER, WORKER_BATCH, USER
+from jarr.lib.utils import utc_now
+from jarr.metrics import USER, WORKER, WORKER_BATCH
 
 urllib3.disable_warnings()
 logger = logging.getLogger(__name__)
@@ -82,7 +83,12 @@ def feed_cleaner(feed_id):
 def update_slow_metrics():
     uctrl = UserController()
     USER.labels(status='any').set(uctrl.read().count())
-    USER.labels(status='active').set(uctrl.list_active().count())
+    threshold = utc_now() - timedelta(days=conf.feed.stop_fetch)
+    active = uctrl.read(is_active=True, last_connection__ge=threshold)
+    USER.labels(status='active').set(active.count())
+    long_term = uctrl.read(is_active=True, last_connection__ge=threshold,
+                           date_created__lt=threshold)
+    USER.labels(status='long_term').set(long_term.count())
 
 
 @celery_app.task(name='crawler.scheduler')
