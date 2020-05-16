@@ -17,6 +17,10 @@ The particularity of this project is to allow for article Clustering either on l
 
 You can use the instance of JARR run by the maintainer on [app.jarr.info](https://app.jarr.info) or try out the api at [api.jarr.info](https://api.jarr.info).
 
+## Installation
+
+To use and host your own instance of JARR please see [installation instruction](https://github.com/jaesivsm/JARR/blob/master/INSTALL.md)
+
 ## License
 
 JARR is under the [GNU Affero General Public License version 3](https://www.gnu.org/licenses/agpl-3.0.html).
