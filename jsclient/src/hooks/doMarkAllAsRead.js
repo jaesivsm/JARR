@@ -5,10 +5,12 @@ import { loadedUnreadCounts } from "../features/feedlist/slice";
 
 export default (onlySingles): AppThunk => async (dispatch, getState) => {
   const params = { ...getState().clusters.filters };
-  if(onlySingles) {
-      params["only_singles"] = true;
+  if(params.hasOwnProperty("from_date")) {
+    delete params["from_date"];
   }
-  // dispatch(requestedMarkAllAsRead({ onlySingles })); // useless for now
+  if(onlySingles) {
+    params["only_singles"] = true;
+  }
   const stringifiedParams = qs.stringify(params);
   const result = await doRetryOnTokenExpiration({
     method: "put",
