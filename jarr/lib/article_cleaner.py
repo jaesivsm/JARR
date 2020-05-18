@@ -1,8 +1,10 @@
 from urllib.parse import ParseResult, unquote, urlparse, urlunparse
 
+import trafilatura
 from bs4 import BeautifulSoup
 
 from jarr.bootstrap import is_secure_served
+from jarr.utils import jarr_get
 
 HTTPS_IFRAME_DOMAINS = ('vimeo.com', 'youtube.com', 'youtu.be')
 
@@ -83,3 +85,20 @@ def clean_urls(article_content, article_link, fix_readability=False):
         elif elem.name == 'iframe':
             _handle_iframe(elem)
     return str(parsed_content)
+
+
+def fetch_and_parse(link):
+    result = {}
+    try:
+        response = jarr_get(link)
+        parsed = trafilatura.extract(response.content,
+                                     xml_output=True, include_comments=False)
+        result['parsed_content'] = parsed
+        attrs = BeautifulSoup(parsed, 'html.parser').find_all('doc')[0].attrs
+        if attrs.get('title'):
+            result['title'] = attrs['title']
+        if 'categories' in attrs:
+            attrs['tags'] = set(attrs['categories'].split(';'))
+    except (AttributeError, KeyError, TimeoutError):
+        pass
+    return result

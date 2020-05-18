@@ -22,8 +22,7 @@ import doCreateObj from "../../../hooks/doCreateObj";
 import doEditObj from "../../../hooks/doEditObj";
 
 const availableFeedTypes = ["classic", "json", "tumblr", "instagram",
-                            "soundcloud", "reddit", "fetch", "koreus",
-                            "twitter"];
+                            "soundcloud", "reddit", "koreus", "twitter"];
 const noUrlTypes = ["instagram", "soundcloud", "twitter"];
 
 const extractFromLoadedObj = (state, key, def) => {
@@ -55,13 +54,14 @@ const mapStateToProps = (state) => ({
   link: extractFromLoadedObj(state, "link", ""),
   feedId: extractFromLoadedObj(state, "id", null),
   active: extractFromLoadedObj(state, "status", "active") === "active",
+  truncatedContent: extractFromLoadedObj(state, "truncated_content", false),
   categories: state.feeds.feedListRows.filter((row) => (
     row.type === "categ" || row.type === "all-categ")
   ).map((cat) => ({ id: cat.id, name: cat.str })),
 });
 
 const AddEditFeed = ({ job, categories, link, sameLinkCount,
-                       feedId, catId, feedType, active,
+                       feedId, catId, feedType, active, truncatedContent,
                        edit, commit }) => {
   const classes = editPanelStyle();
   let warning;
@@ -97,6 +97,10 @@ const AddEditFeed = ({ job, categories, link, sameLinkCount,
         control={<Switch color="primary" checked={active}
                     onChange={() => edit("status", active ? "paused" : "active")} />}
         label="Active feed" />
+      <FormControlLabel
+        control={<Switch color="primary" checked={truncatedContent}
+                    onChange={() => edit("truncated_content", !truncatedContent)} /> }
+        label="Active if this feed shows truncated content and you would like JARR to try to retrieve full articles" />
       <FormControl>
         <FormHelperText>Here you can change the category of the feed :</FormHelperText>
         <Select variant="outlined"
@@ -147,6 +151,7 @@ AddEditFeed.propTypes = {
   catId: PropTypes.number,
   feedType: PropTypes.string.isRequired,
   active: PropTypes.bool.isRequired,
+  truncatedContent: PropTypes.bool.isRequired,
   job: PropTypes.string.isRequired,
   categories: PropTypes.array.isRequired,
   edit: PropTypes.func.isRequired,

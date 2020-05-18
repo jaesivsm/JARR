@@ -1,15 +1,13 @@
 import logging
-import re
 from datetime import timedelta
 from hashlib import sha1
 
-from bs4 import BeautifulSoup
-from sqlalchemy import cast, func
-from sqlalchemy.dialects.postgresql import TSVECTOR
+from sqlalchemy import func
 from werkzeug.exceptions import Forbidden, Unauthorized
 
 from jarr.bootstrap import session
 from jarr.controllers import CategoryController, FeedController
+from jarr.lib.clustering_af.postgres_casting import to_vector
 from jarr.lib.utils import utc_now
 from jarr.models import Article, User
 
@@ -45,10 +43,6 @@ LANG_TO_PSQL_MAPPING = {'da': 'danish',
 
 class ArticleController(AbstractController):
     _db_cls = Article
-
-    @staticmethod
-    def lang_to_postgreq(lang):
-        return LANG_TO_PSQL_MAPPING.get(lang[:2].lower(), 'simple')
 
     def challenge(self, ids):
         """Will return each id that wasn't found in the database."""
@@ -89,13 +83,8 @@ class ArticleController(AbstractController):
                 feed.user_id == attrs['user_id'] or self.user_id is None):
             raise Forbidden("no right on feed %r" % feed.id)
         attrs['user_id'], attrs['category_id'] = feed.user_id, feed.category_id
-        vector = (attrs.get('title', ' ')
-                + ' ' + ' '.join(attrs.get('tags', []))
-                + ' ' + attrs.get('content', ' '))
-        vector = BeautifulSoup(vector, 'html.parser').text
-        vector = re.sub(r'\W', ' ', vector).strip()
-        if vector:
-            attrs['vector'] = cast(vector, TSVECTOR)
+        attrs['vector'] = to_vector(attrs.get('title'), attrs.get('tags'),
+                                    attrs.get('content'))
         attrs['link_hash'] = sha1(attrs['link'].encode('utf8')).digest()
         article = super().create(**attrs)
         return article

@@ -26,6 +26,10 @@ article_model = cluster_ns.model('Article', {
     'date': fields.DateTime()})
 content_model = cluster_ns.model('ComplexContent', {
     'type': fields.String(required=True),
+    'content': fields.String(),
+    'comments': fields.String(),
+    'link': fields.String(),
+    'tags': fields.List(fields.String),
     'alt': fields.String(),
     'src': fields.String(),
     'player': fields.String(),

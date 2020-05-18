@@ -7,7 +7,6 @@ Create Date: 2015-02-18 21:17:19.346998
 """
 import sqlalchemy as sa
 from alembic import op
-from jarr.bootstrap import conf
 
 
 revision = '48f561c0ce6'

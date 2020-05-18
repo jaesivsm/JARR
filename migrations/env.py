@@ -21,7 +21,7 @@ target_metadata = current_app.extensions['migrate'].db.metadata
 log_format = '%(levelname)s [%(name)s] %(message)s'
 init_logging(modules=('root', 'sqlalchemy'), log_format=log_format,
             log_level=logging.WARNING)
-init_logging(modules=('alembic'), log_format=log_format)
+init_logging(modules=('alembic',), log_format=log_format)
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:

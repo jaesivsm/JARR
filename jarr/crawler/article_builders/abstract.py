@@ -107,6 +107,8 @@ class AbstractArticleBuilder:
 
     def enhance(self, fetch_page=True):
         head = self._head(self.article['link'])
+        if self.feed.truncated_content:
+            fetch_page = False  # will be retrieved on clustering
         if head:
             self.article['link'] = head.url
             content_type = str(head.headers.get('Content-Type')) or ''

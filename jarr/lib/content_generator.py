@@ -15,9 +15,18 @@ def is_embedded_link(link):
     return YOUTUBE_RE.match(link)
 
 
-def generate_content(article):
+def generate_content(article, parsing_result=None):
     success = False
     if not article.article_type:
+        if parsing_result and parsing_result.get('parsed_content'):
+            content = {'type': 'fetched',
+                       'link': article.link,
+                       'content': parsing_result['parsed_content']}
+            if article.comments:
+                content['comments'] = article.comments
+            if parsing_result.get('tags'):
+                content['tags'] = parsing_result['tags']
+            return True, content
         logger.debug('%r no special type found doing nothing', article)
         return success, {}
     content = {'type': article.article_type.value}

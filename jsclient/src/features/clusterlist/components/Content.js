@@ -8,7 +8,7 @@ import makeStyles from "./style";
 
 function Content({ content, hidden }) {
   const classes = makeStyles();
-  let head, body;
+  let head, comments, body;
   if (content.type === "image") {
     head = (
       <p>
@@ -22,6 +22,32 @@ function Content({ content, hidden }) {
       <Typography hidden={!!hidden}>
         <img src={content.src} alt={content.alt} title={content.alt} />
       </Typography>
+    );
+  } else if (content.type === "fetched") {
+    if (content.comments) {
+      comments = (
+        <p>
+          <span>Comments</span>
+          <Link color="secondary" target="_blank" href={content.comments}>
+            {content.comments}
+          </Link>
+        </p>
+      );
+    }
+    head = (
+      <p>
+        <span>Link</span>
+        <Link color="secondary" target="_blank" href={content.link}>
+          {content.link}
+        </Link>
+      </p>
+    );
+    body = (
+      <div className={classes.articleInner}>
+        <Typography
+          dangerouslySetInnerHTML={{__html: content.content}}
+        />
+      </div>
     );
   } else if (content.type === "embedded" && content.player === "youtube") {
     body = (
@@ -39,6 +65,7 @@ function Content({ content, hidden }) {
   return (
     <div hidden={hidden} className={classes.article}>
       {head}
+      {comments}
       <Divider />
       {body}
     </div>

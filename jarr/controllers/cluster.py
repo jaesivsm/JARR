@@ -8,13 +8,14 @@ from sqlalchemy.orm import aliased
 from sqlalchemy.sql import exists, select
 
 from jarr.bootstrap import session
-from jarr.controllers.article import ArticleController
+from jarr.controllers.article import ArticleController, to_vector
+from jarr.lib.article_cleaner import fetch_and_parse
 from jarr.lib.clustering_af.grouper import get_best_match_and_score
+from jarr.lib.content_generator import generate_content
 from jarr.lib.enums import ClusterReason, ReadReason
 from jarr.lib.filter import process_filters
 from jarr.metrics import ARTICLE_CREATION, CLUSTERING, WORKER_BATCH
 from jarr.models import Article, Cluster, Feed
-from jarr.lib.content_generator import generate_content
 from jarr.utils import get_cluster_pref
 
 from .abstract import AbstractController
@@ -105,16 +106,12 @@ class ClusterController(AbstractController):
             return candidate.cluster
 
     def _get_cluster_by_similarity(self, article):
-        query = self._get_query_for_clustering(article,
+        neighbors = list(self._get_query_for_clustering(article,
                 # article is matchable
-                {'vector__ne': None}, filter_tfidf=True)
-
-        neighbors = [neighbor for neighbor in query
-                     if not neighbor.category_id
-                        or neighbor.category.cluster_tfidf_enabled]
+                {'vector__ne': None}, filter_tfidf=True))
 
         min_sample_size = get_cluster_pref(article.feed,
-                'tfidf_min_sample_size')
+                                           'tfidf_min_sample_size')
         if len(neighbors) < min_sample_size:
             logger.info('only %d docs against %d required, no TFIDF for %r',
                         len(neighbors), min_sample_size, article)
@@ -135,31 +132,29 @@ class ClusterController(AbstractController):
                           result="miss", match="tfidf").inc()
 
     def _create_from_article(self, article,
-                             cluster_read=None, cluster_liked=False):
-        cluster = Cluster()
-        cluster.user_id = article.user_id
-        cluster.main_link = article.link
-        cluster.main_date = article.date
-        cluster.main_feed_title = article.feed.title
-        cluster.main_title = article.title
-        cluster.main_article_id = article.id
-        cluster.read = bool(cluster_read)
-        cluster.liked = cluster_liked
+                             cluster_read=None, cluster_liked=False,
+                             parsing_result=None):
+        cluster = Cluster(user_id=article.user_id)
         article.cluster_reason = ClusterReason.original
-        self.enrich_cluster(cluster, article, cluster_read, cluster_liked)
-        return cluster
+        return self.enrich_cluster(cluster, article,
+                                   cluster_read, cluster_liked,
+                                   force_article_as_main=True,
+                                   parsing_result=parsing_result)
 
     @staticmethod
     def enrich_cluster(cluster, article,
                        cluster_read=None, cluster_liked=False,
-                       force_article_as_main=False):
+                       force_article_as_main=False, parsing_result=None):
+        parsing_result = parsing_result or {}
         article.cluster = cluster
-        # a cluster
-        if cluster_read is not None:
+        # handling read status
+        if cluster.read is None:  # no read status, new cluster
+            cluster.read = bool(cluster_read)
+        elif cluster_read is not None:  # filters indicate a read status
             cluster.read = cluster.read and cluster_read
             cluster.read_reason = ReadReason.filtered
             logger.debug('marking as read because of filter %r', cluster)
-        elif (cluster.read
+        elif (cluster.read  # waking up a cluster
               and cluster.read_reason in WAKABLE_REASONS
               and get_config(article, 'cluster_wake_up')
               and get_config(cluster, 'cluster_wake_up')):
@@ -167,13 +162,13 @@ class ClusterController(AbstractController):
             logger.debug('waking up %r', cluster)
         # once one article is liked the cluster is liked
         cluster.liked = cluster.liked or cluster_liked
-        if cluster.main_date > article.date or force_article_as_main:
-            cluster.main_title = article.title
+        if force_article_as_main or cluster.main_date > article.date:
+            cluster.main_title = parsing_result.get('title', article.title)
             cluster.main_date = article.date
             cluster.main_feed_title = article.feed.title
             cluster.main_article_id = article.id
         if not cluster.content:
-            success, content = generate_content(article)
+            success, content = generate_content(article, parsing_result)
             if success:
                 cluster.content = content
         session.add(cluster)
@@ -193,6 +188,17 @@ class ClusterController(AbstractController):
         filter_liked = filter_result.get('liked')
         logger.info('%r - processed filter: %r', article, filter_result)
         cluster_config = get_config(article.feed, 'cluster_enabled')
+
+        # fetching article so that vector comparison is made on full content
+        parsing_result = None
+        if article.feed.truncated_content:
+            parsing_result = fetch_and_parse(article.link)
+            if parsing_result.get('parsed_content'):
+                article.vector = to_vector(
+                        article.title, article.tags, article.content,
+                        parsing_result)
+
+        # clustering
         if allow_clustering and cluster_config:
             cluster = self._get_cluster_by_link(article)
             tfidf_config = get_config(article.feed, 'cluster_tfidf_enabled')
@@ -205,7 +211,8 @@ class ClusterController(AbstractController):
                              article)
             if cluster:
                 return self.enrich_cluster(cluster, article,
-                                           filter_read, filter_liked)
+                                           filter_read, filter_liked,
+                                           parsing_result=parsing_result)
         else:
             logger.debug("%r - no clustering because filters: %r, config: %r",
                          article, not allow_clustering, not cluster_config)
@@ -213,7 +220,8 @@ class ClusterController(AbstractController):
                     filters="allow" if allow_clustering else "forbid",
                     config="allow" if cluster_config else "forbid",
                     result="miss", match="none").inc()
-        return self._create_from_article(article, filter_read, filter_liked)
+        return self._create_from_article(article, filter_read, filter_liked,
+                                         parsing_result)
 
     def clusterize_pending_articles(self):
         results = []

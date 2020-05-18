@@ -26,6 +26,7 @@ class Feed(Base):
     # integration control
     feed_type = Column(Enum(FeedType),
                        default=FeedType.classic, nullable=False)
+    truncated_content = Column(Boolean, default=False, nullable=False)
 
     # clustering control
     cluster_enabled = Column(Boolean, default=None, nullable=True)

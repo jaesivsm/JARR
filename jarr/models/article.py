@@ -23,7 +23,6 @@ class Article(Base):
     lang = Column(String)
     date = Column(UTCDateTime, default=utc_now)
     retrieved_date = Column(UTCDateTime, default=utc_now)
-    readability_parsed = Column(Boolean, default=False)
 
     # integration control
     article_type = Column(Enum(ArticleType),
