@@ -103,7 +103,9 @@ def process_filters(filters, article, only_actions=None):
         _alter_result(filter_action, filter_result)
 
     if any(filter_result[key] != defaults[i] for i, key in enumerate(keys)):
-        logger.info('processing filters resulted on %r for %r',
-                    filter_result, article)
+        logger.info('processing filters resulted on %s for Art(f=%s, eid=%r)',
+                    ', '.join(['%s=%s' % (key, value)
+                               for key, value in filter_result.items()]),
+                    article.get('feed_id'), article.get('entry_id'))
 
     return filter_result

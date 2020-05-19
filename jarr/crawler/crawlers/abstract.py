@@ -153,4 +153,4 @@ class AbstractCrawler:
         self.clean_feed(response)
 
     def __repr__(self):
-        return "<%s(%s)>" % (self.__class__.__name__, self.feed.title)
+        return "<%s(%r)>" % (self.__class__.__name__, self.feed.title)

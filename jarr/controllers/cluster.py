@@ -231,7 +231,8 @@ class ClusterController(AbstractController):
         results = []
         actrl = ArticleController(self.user_id)
         articles = list(actrl.read(cluster_id=None))
-        logger.info('got %d articles to clusterize', len(articles))
+        logger.info('User(%s) got %d articles to clusterize',
+                    self.user_id, len(articles))
         WORKER_BATCH.labels(worker_type='clusterizer').observe(len(articles))
         for article in actrl.read(cluster_id=None):
             filter_result = process_filters(article.feed.filters,
