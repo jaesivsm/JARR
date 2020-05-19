@@ -92,7 +92,8 @@ def fetch_and_parse(link):
     try:
         response = jarr_get(link)
         parsed = trafilatura.extract(response.content,
-                                     xml_output=True, include_comments=False)
+                                     xml_output=True, include_comments=False,
+                                     include_formatting=True)
         result['parsed_content'] = parsed
         attrs = BeautifulSoup(parsed, 'html.parser').find_all('doc')[0].attrs
         if attrs.get('title'):

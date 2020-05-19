@@ -165,6 +165,7 @@ class ClusterController(AbstractController):
         if force_article_as_main or cluster.main_date > article.date:
             cluster.main_title = parsing_result.get('title', article.title)
             cluster.main_date = article.date
+            cluster.main_link = article.link
             cluster.main_feed_title = article.feed.title
             cluster.main_article_id = article.id
         if not cluster.content:
