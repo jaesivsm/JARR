@@ -12,7 +12,7 @@ from jarr.controllers.article import ArticleController, to_vector
 from jarr.lib.article_cleaner import fetch_and_parse
 from jarr.lib.clustering_af.grouper import get_best_match_and_score
 from jarr.lib.content_generator import generate_content
-from jarr.lib.enums import ClusterReason, ReadReason
+from jarr.lib.enums import ArticleType, ClusterReason, ReadReason
 from jarr.lib.filter import process_filters
 from jarr.metrics import ARTICLE_CREATION, CLUSTERING, WORKER_BATCH
 from jarr.models import Article, Cluster, Feed
@@ -201,7 +201,10 @@ class ClusterController(AbstractController):
         # clustering
         if allow_clustering and cluster_config:
             cluster = self._get_cluster_by_link(article)
-            tfidf_config = get_config(article.feed, 'cluster_tfidf_enabled')
+            tfidf_config = get_config(article.feed, 'cluster_tfidf_enabled') \
+                    and article.article_type not in {ArticleType.image,
+                                                     ArticleType.video,
+                                                     ArticleType.embedded}
             if not cluster and tfidf_config:
                 cluster = self._get_cluster_by_similarity(article)
             elif not cluster and not tfidf_config:
