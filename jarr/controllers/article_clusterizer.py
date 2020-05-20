@@ -1,20 +1,20 @@
 import logging
-from functools import partial
 from collections import defaultdict
 from datetime import timedelta
+from functools import partial
 
 from sqlalchemy import and_, or_
 
-from jarr.bootstrap import session, conf
+from jarr.bootstrap import conf, session
 from jarr.controllers import ArticleController
 from jarr.controllers.article import to_vector
 from jarr.lib.article_cleaner import fetch_and_parse
 from jarr.lib.clustering_af.grouper import get_best_match_and_score
 from jarr.lib.content_generator import generate_content
 from jarr.lib.enums import ArticleType, ClusterReason, ReadReason
-from jarr.metrics import ARTICLE_CREATION
-from jarr.signals import event
+from jarr.metrics import ARTICLE_CREATION, TFIDF_SCORE, WORKER_BATCH
 from jarr.models import Article, Cluster, Feed
+from jarr.signals import event
 from jarr.utils import get_tfidf_pref
 
 logger = logging.getLogger(__name__)
@@ -86,8 +86,13 @@ class Clusterizer:
                         len(neighbors), min_sample_size, article)
             cluster_event(context='tfidf', result='sample size forbird')
             return None
+        logger.info('%r TFIDF is gonna work with a corpus of %d documents',
+                    article.feed, len(neighbors))
+        WORKER_BATCH.labels(worker_type='tfidf_batch').observe(len(neighbors))
 
         best_match, score = get_best_match_and_score(article, neighbors)
+        TFIDF_SCORE.labels(
+                feed_type=article.feed.feed_type.value).observe(score)
         if score > get_tfidf_pref(article.feed, 'min_score'):
             article.cluster_reason = ClusterReason.tf_idf
             article.cluster_score = int(score * 1000)

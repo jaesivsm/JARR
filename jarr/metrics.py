@@ -26,9 +26,13 @@ FEED_EXPIRES = Histogram('feed_expires',
                          ['feed_type', 'method'], buckets=BUCKETS_7D,
                          namespace='jarr', registry=REGISTRY)
 
-WORKER_BATCH = Histogram(
-        'worker_batch', 'worker batch size', ['worker_type'],
-        buckets=BUCKETS_3H[:-7], namespace='jarr', registry=REGISTRY)
+WORKER_BATCH = Histogram('worker_batch', 'worker batch size', ['worker_type'],
+                         buckets=BUCKETS_3H[:-7], namespace='jarr',
+                         registry=REGISTRY)
+
+TFIDF_SCORE = Histogram('tfidf_score', 'TFIDF scores', ['feed_type'],
+                         buckets=[i / 100 for i in range(0, 100, 10)],
+                         namespace='jarr', registry=REGISTRY)
 
 WORKER = Histogram(
         'worker_method', 'worker taken actions', ['method'],

@@ -31,10 +31,10 @@ class ClusterController(AbstractController):
     def clusterize_pending_articles(self):
         results = []
         actrl = ArticleController(self.user_id)
-        articles = list(actrl.read(cluster_id=None))
+        art_count = actrl.read(cluster_id=None).count()
         logger.info('User(%s) got %d articles to clusterize',
-                    self.user_id, len(articles))
-        WORKER_BATCH.labels(worker_type='clusterizer').observe(len(articles))
+                    self.user_id, art_count)
+        WORKER_BATCH.labels(worker_type='clusterizer').observe(art_count)
         clusterizer = Clusterizer(self.user_id)
         for article in actrl.read(cluster_id=None):
             filter_result = process_filters(article.feed.filters,
