@@ -33,8 +33,9 @@ class BaseJarrTest(TestCase):
 
     def assertNotInCluster(self, article, cluster):
         self.assertNotEqual(article.cluster_id, cluster.id,
-                "article %r cluster %r is %r" % (
-                    article, article.cluster, cluster))
+                            "article %r cluster %r (because %r)"
+                            % (article, article.cluster,
+                               article.cluster_reason))
 
     def assertInCluster(self, article, cluster, reason=ClusterReason.link):
         self.assertEqual(article.cluster_id, cluster.id,

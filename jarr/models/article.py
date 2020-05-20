@@ -33,6 +33,7 @@ class Article(Base):
     vector = Column(TSVECTOR)
 
     _simple_vector = None
+    _simple_vector_magnitude = 0
 
     @property
     def simple_vector(self):
@@ -46,9 +47,22 @@ class Article(Base):
                     word, count = word_n_count.split(':')
                 except Exception:  # no :count if there's only one
                     self._simple_vector[word_n_count[1:-1]] = 1
+                    self._simple_vector_magnitude += 1
                 else:
                     self._simple_vector[word[1:-1]] = count.count(',')
+                    self._simple_vector_magnitude \
+                            += self._simple_vector[word[1:-1]]
         return self._simple_vector
+
+    @property
+    def simple_vector_magnitude(self):
+        if not self._simple_vector_magnitude:
+            self._simple_vector_magnitude = sum(self.simple_vector.values())
+        return self._simple_vector_magnitude
+
+    def reset_simple_vector(self):
+        self._simple_vector = None
+        _simple_vector_magnitude = 0
 
     # reasons
     cluster_reason = Column(Enum(ClusterReason), default=None)

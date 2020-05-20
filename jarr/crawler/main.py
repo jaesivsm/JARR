@@ -17,6 +17,7 @@ urllib3.disable_warnings()
 logger = logging.getLogger(__name__)
 LOCK_EXPIRE = 60 * 60
 JARR_FEED_DEL_KEY = 'jarr.feed-deleting'
+JARR_CLUSTERIZER_KEY = 'jarr.clusterizer.%d'
 
 
 def lock(prefix, expire=LOCK_EXPIRE):
@@ -54,6 +55,7 @@ def process_feed(feed_id):
 def clusterizer(user_id):
     logger.warning("Gonna clusterize pending articles")
     ClusterController(user_id).clusterize_pending_articles()
+    REDIS_CONN.delete(JARR_CLUSTERIZER_KEY % user_id)
 
 
 @celery_app.task(name='crawler.feed_cleaner')
@@ -98,7 +100,7 @@ def scheduler():
     fctrl = FeedController()
     # browsing feeds to fetch
     feeds = list(fctrl.list_fetchable(conf.crawler.batch_size))
-    WORKER_BATCH.labels(worker_type='delete').observe(len(feeds))
+    WORKER_BATCH.labels(worker_type='fetch-feed').observe(len(feeds))
     logger.info('%d to enqueue', len(feeds))
     for feed in feeds:
         logger.debug("%r: scheduling to be fetched", feed)
@@ -114,7 +116,10 @@ def scheduler():
             break  # only one at a time
     # applying clusterizer
     for user_id in ArticleController.get_user_id_with_pending_articles():
-        clusterizer.apply_async(args=[user_id])
+        if REDIS_CONN.setnx(JARR_CLUSTERIZER_KEY % user_id, 'true'):
+            REDIS_CONN.expire(JARR_CLUSTERIZER_KEY % user_id,
+                              conf.crawler.clusterizer_delay)
+            clusterizer.apply_async(args=[user_id])
     scheduler.apply_async(countdown=conf.crawler.idle_delay)
     WORKER.labels(method='scheduler').observe(
             (datetime.now() - start).total_seconds())

@@ -28,18 +28,14 @@ FEED_EXPIRES = Histogram('feed_expires',
 
 WORKER_BATCH = Histogram(
         'worker_batch', 'worker batch size', ['worker_type'],
-        buckets=BUCKETS_3H, namespace='jarr', registry=REGISTRY)
+        buckets=BUCKETS_3H[:-7], namespace='jarr', registry=REGISTRY)
 
 WORKER = Histogram(
         'worker_method', 'worker taken actions', ['method'],
         buckets=BUCKETS_3H, namespace='jarr', registry=REGISTRY)
 
-CLUSTERING = Counter('clustering', 'clustering context and decision',
-                     ['filters',  # filter allows clustering or not
-                      'config',  # config allows clustering or not
-                      'result',  # result is a match or not
-                      'match',  # method for the match
-                      ], namespace='jarr', registry=REGISTRY)
+EVENT = Counter('event', 'events', ['module', 'context', 'result'],
+                namespace='jarr', registry=REGISTRY)
 
 ARTICLE_CREATION = Counter('article_creation', 'Article Creation',
                            ['read', 'read_reason', 'cluster'],

@@ -15,4 +15,3 @@ def to_vector(title=None, tags=None, content=None, parsing_result=None):
     vector = re.sub(r'\W', ' ', vector).strip()
     if vector:
         return cast(vector, TSVECTOR)
-    return ''

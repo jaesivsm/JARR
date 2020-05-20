@@ -1,3 +1,4 @@
+import logging
 from urllib.parse import ParseResult, unquote, urlparse, urlunparse
 
 import trafilatura
@@ -7,6 +8,7 @@ from jarr.bootstrap import is_secure_served
 from jarr.utils import jarr_get
 
 HTTPS_IFRAME_DOMAINS = ('vimeo.com', 'youtube.com', 'youtu.be')
+logger = logging.getLogger(__name__)
 
 
 def __fix_addr(to_fix, reference, scheme=None):
@@ -100,6 +102,7 @@ def fetch_and_parse(link):
             result['title'] = attrs['title']
         if 'categories' in attrs:
             attrs['tags'] = set(attrs['categories'].split(';'))
-    except (AttributeError, KeyError, TimeoutError):
-        pass
+    except Exception as error:
+        logger.error("something wrong happened while trying to fetch %r: %r",
+                     link, error)
     return result

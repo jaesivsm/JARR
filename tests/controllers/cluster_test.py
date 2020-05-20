@@ -4,7 +4,8 @@ from random import randint
 from mock import Mock
 
 from jarr.controllers import ArticleController, FeedController
-from jarr.controllers.cluster import ClusterController, get_config
+from jarr.controllers.cluster import ClusterController
+from jarr.controllers.article_clusterizer import Clusterizer
 from jarr.lib.utils import utc_now
 from tests.base import BaseJarrTest
 from tests.utils import update_on_all_objs
@@ -44,22 +45,27 @@ class ClusterControllerTest(BaseJarrTest):
         ccontr = ClusterController()
         fcontr = FeedController()
         cluster = ccontr.read().first()
-        self.assertFalse(get_config(cluster, 'cluster_enabled'))
-        self.assertTrue(get_config(cluster, 'cluster_wake_up'))
+        clusterizer = Clusterizer()
+        self.assertFalse(clusterizer.get_config(cluster, 'cluster_enabled'))
+        self.assertTrue(clusterizer.get_config(cluster, 'cluster_wake_up'))
         ccontr.update({'id': cluster.id}, {'read': True,
                                            'read_reason': read_reason})
         target_feed = fcontr.read(id__ne=cluster.main_article.feed_id,
                                   user_id=cluster.user_id).first()
-        self.assertFalse(get_config(target_feed, 'cluster_enabled'))
+        clusterizer = Clusterizer()
+        self.assertFalse(clusterizer.get_config(
+            target_feed, 'cluster_enabled'))
         fcontr.update({'id__in': [f.id for f in cluster.feeds]
                                  + [target_feed.id]},
                       {'cluster_wake_up': True, 'cluster_enabled': True})
-        self.assertTrue(get_config(cluster, 'cluster_enabled'))
+        clusterizer = Clusterizer()
+        self.assertTrue(clusterizer.get_config(cluster, 'cluster_enabled'))
         target_feed = fcontr.read(id__ne=cluster.main_article.feed_id,
                                   user_id=cluster.user_id).first()
         article = self._clone_article(ArticleController(),
                                       cluster.main_article, target_feed)
-        self.assertTrue(get_config(article, 'cluster_wake_up'))
+        clusterizer = Clusterizer()
+        self.assertTrue(clusterizer.get_config(article, 'cluster_wake_up'))
         ClusterController(cluster.user_id).clusterize_pending_articles()
         self.assertEqual(2, len(article.cluster.articles))
         self.assertInCluster(article, cluster)
@@ -97,40 +103,54 @@ class ClusterControllerTest(BaseJarrTest):
         self.assertFalse(cluster.read)
 
     def test_similarity_clustering(self):
-        cluster_conf = {'tfidf_min_score': 0.6, 'tfidf_min_sample_size': 10}
+        cluster_conf = {'min_score': 0.6, 'min_sample_size': 10}
         user = Mock(cluster_conf=cluster_conf)
         category = Mock(cluster_conf=cluster_conf)
         feed = Mock(cluster_conf=cluster_conf, user=user, category=category)
         cluster = Mock()
         def gen_articles(factor):
             return [Mock(simple_vector={'Sarkozy': 1, 'garb': 1, 'justice': 1},
+                         simple_vector_magnitude=3,
                          feed=feed, cluster=cluster)] \
                  + [Mock(feed=feed,
-                        simple_vector={'Sark': 1, 'garbge': 1, 'vote': 1}),
+                         simple_vector_magnitude=3,
+                         simple_vector={'Sark': 1, 'garbge': 1, 'vote': 1}),
                     Mock(feed=feed,
-                        simple_vector={'Sark': 1, 'garbae': 1, 'debat': 1}),
+                         simple_vector_magnitude=3,
+                         simple_vector={'Sark': 1, 'garbae': 1, 'debat': 1}),
                     Mock(feed=feed,
-                        simple_vector={'Sark': 1, 'garbag': 1, 'blague': 1}),
+                         simple_vector_magnitude=3,
+                         simple_vector={'Sark': 1, 'garbag': 1, 'blague': 1}),
                     Mock(feed=feed,
-                        simple_vector={'Sark': 1, 'garage': 1, 'chans': 1})] \
+                         simple_vector_magnitude=3,
+                         simple_vector={'Sark': 1, 'garage': 1, 'chans': 1})] \
                             * factor
-        ccontr = ClusterController()
-        ccontr._get_query_for_clustering = Mock(return_value=gen_articles(2))
+        clusterizer = Clusterizer()
+        clusterizer._get_query_for_clustering = Mock(
+                return_value=gen_articles(2))
 
         matching_article = Mock(
+                simple_vector_magnitude=3,
                 simple_vector={'Morano': 1, 'garb': 1, 'justice': 1},
                 date=utc_now(), lang='fr', feed=feed)
 
-        self.assertIsNone(ccontr._get_cluster_by_similarity(matching_article))
-        ccontr._get_query_for_clustering = Mock(return_value=gen_articles(100))
-        self.assertEqual(ccontr._get_cluster_by_similarity(matching_article),
-                         cluster)
+        self.assertIsNone(clusterizer._get_cluster_by_similarity(
+            matching_article))
+        clusterizer.corpus = None
+        clusterizer._get_query_for_clustering \
+                = Mock(return_value=gen_articles(100))
+        self.assertEqual(clusterizer._get_cluster_by_similarity(
+            matching_article), cluster)
 
         solo_article = Mock(simple_vector={'Sark': 1, 'fleur': 1},
+                            simple_vector_magnitude=2,
                             date=utc_now(), lang='fr', feed=feed)
+        clusterizer.corpus = None
         self.assertNotEqual(cluster,
-                ccontr._get_cluster_by_similarity(solo_article))
-        self.assertIsNone(ccontr._get_cluster_by_similarity(solo_article))
+                clusterizer._get_cluster_by_similarity(solo_article))
+        clusterizer.corpus = None
+        self.assertIsNone(
+                clusterizer._get_cluster_by_similarity(solo_article))
 
     def test_no_mixup(self):
         acontr = ArticleController()

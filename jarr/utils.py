@@ -18,7 +18,7 @@ def jarr_get(*args, **kwargs):
     return common_get(*args, **kwargs)
 
 
-def get_cluster_pref(feed, pref_name):
+def get_tfidf_pref(feed, pref_name):
     """Tool to figure out clustering setting for a feed.
 
     For a given feed and a given attribute name will return a boolean
@@ -36,4 +36,4 @@ def get_cluster_pref(feed, pref_name):
         if not obj.cluster_conf[pref_name] and obj is not feed:
             continue
         return obj.cluster_conf.get(pref_name)
-    return getattr(conf.cluster_default, pref_name)
+    return getattr(conf.clustering.tfidf, pref_name)
