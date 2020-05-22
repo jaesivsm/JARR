@@ -30,16 +30,16 @@ class ArticleController(AbstractController):
         if self.user_id:
             filters['user_id'] = self.user_id
         return dict(session.query(Article.feed_id, func.count('id'))
-                              .filter(*self._to_filters(**filters))
-                              .group_by(Article.feed_id).all())
+                           .filter(*self._to_filters(**filters))
+                           .group_by(Article.feed_id).all())
 
     def count_by_user_id(self, **filters):
-        last_conn_max = utc_now() - timedelta(days=30)
+        conn_max = utc_now() - timedelta(days=30)
         return dict(session.query(Article.user_id, func.count(Article.id))
-                              .filter(*self._to_filters(**filters))
-                              .join(User).filter(User.is_active.__eq__(True),
-                                        User.last_connection >= last_conn_max)
-                              .group_by(Article.user_id).all())
+                           .filter(*self._to_filters(**filters))
+                           .join(User).filter(User.is_active.__eq__(True),
+                                              User.last_connection >= conn_max)
+                           .group_by(Article.user_id).all())
 
     @staticmethod
     def get_user_id_with_pending_articles():

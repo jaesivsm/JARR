@@ -44,7 +44,9 @@ class Article(Base):
             self._simple_vector = {}
         if self.vector is not None:
             for word_n_count in self.vector.split():
-                word, count = word_n_count.split(':')
+                word_n_count = word_n_count.split(':', 1)
+                word = word_n_count[0]
+                count = word_n_count[1] if len(word_n_count) > 1 else ''
                 word = word[1:-1]
                 self._simple_vector[word] = count.count(',') + 1
                 self._simple_vector_magnitude += self._simple_vector[word]
@@ -65,7 +67,7 @@ class Article(Base):
 
     def reset_simple_vector(self):
         self._simple_vector = None
-        _simple_vector_magnitude = 0
+        self._simple_vector_magnitude = 0
 
     # reasons
     cluster_reason = Column(Enum(ClusterReason), default=None)
