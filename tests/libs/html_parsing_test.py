@@ -1,11 +1,10 @@
 import unittest
-import urllib
 
 from mock import patch
 from requests import Response
 
-from jarr.lib.html_parsing import (extract_title, extract_tags,
-        extract_icon_url, extract_feed_links, extract_lang)
+from jarr.lib.html_parsing import (extract_feed_links, extract_icon_url,
+                                   extract_title)
 
 
 class HTMLParsingTest(unittest.TestCase):
@@ -29,19 +28,11 @@ class HTMLParsingTest(unittest.TestCase):
             resp._content = fd.read()
         return resp
 
-    def test_extract_tags(self):
-        self.assertEqual(set(), extract_tags(self.article))
-        self.assertEqual({'twitch', 'games'}, extract_tags(self.article2))
-
     def test_extract_title(self):
         self.assertEqual('Les plus belles boulangeries de Paris',
                           extract_title(self.article))
         self.assertEqual("Ceci n'est pas Old Boy - Owlboy (suite) "
                           "- Benzaie Live", extract_title(self.article2))
-
-    def test_extract_lang(self):
-        self.assertEqual('fr_FR', extract_lang(self.article))
-        self.assertEqual('fr', extract_lang(self.article2))
 
     def test_extract_feed_links(self):
         self.assertEqual(self.article.url + '/feed',

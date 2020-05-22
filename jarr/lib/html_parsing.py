@@ -95,39 +95,6 @@ def extract_title(response):
         pass
 
 
-def extract_lang(response):
-    lang = clean_lang(response.headers.get('Content-Language'))
-    if lang:
-        return lang
-    lang = clean_lang(extract_opg_prop(response, 'og:locale'))
-    if lang:
-        return lang
-    try:
-        return clean_lang(BeautifulSoup(response.content[:1000],
-                'html.parser').find('html').attrs['lang'])
-    except Exception:
-        pass
-
-
-def extract_tags(response):
-    """
-    From a requests.Response objects will return the tags.
-
-    Tags will be html and open graphs keywords."""
-    soup = get_soup(response.content, response.encoding)
-    if not soup:
-        return {}
-    tags = set()
-    keywords = soup.find_all('meta', {'name': 'keywords'})
-    if keywords:
-        tags = set(sum([keyword.attrs.get('content', '').split(',')
-                        for keyword in keywords], []))
-    tags = tags.union({meta.attrs.get('content', '')
-                       for meta in soup.find_all('meta',
-                                                 {'property': 'article:tag'})})
-    return {tag.lower().strip() for tag in tags if tag.strip()}
-
-
 def _check_keys(**kwargs):
     """ Returns a callable for BeautifulSoup.find_all.
 

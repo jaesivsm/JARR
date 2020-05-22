@@ -131,7 +131,7 @@ class AbstractArticleBuilder:
             self.article['tags'] = self.article['tags'].union(extract['tags'])
         elif not self.article.get('lang') \
                 and head.headers.get('Content-Language'):
-        # correcting lang from http headers
+            # correcting lang from http headers
             lang = head.headers['Content-Language'].split(',')[0]
             self.article['lang'] = lang
         return self.article
