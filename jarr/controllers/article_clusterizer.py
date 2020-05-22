@@ -139,18 +139,17 @@ class Clusterizer:
 
     def _create_from_article(self, article,
                              cluster_read=None, cluster_liked=False,
-                             parsing_result=None):
+                             parsed=None):
         cluster = Cluster(user_id=article.user_id)
         article.cluster_reason = ClusterReason.original
         return self.enrich_cluster(cluster, article,
                                    cluster_read, cluster_liked,
                                    force_article_as_main=True,
-                                   parsing_result=parsing_result)
+                                   parsed=parsed)
 
     def enrich_cluster(self, cluster, article,
                        cluster_read=None, cluster_liked=False,
-                       force_article_as_main=False, parsing_result=None):
-        parsing_result = parsing_result or {}
+                       force_article_as_main=False, parsed=None):
         article.cluster = cluster
         # handling read status
         if cluster.read is None:  # no read status, new cluster
@@ -168,13 +167,16 @@ class Clusterizer:
         # once one article is liked the cluster is liked
         cluster.liked = cluster.liked or cluster_liked
         if force_article_as_main or cluster.main_date > article.date:
-            cluster.main_title = parsing_result.get('title', article.title)
+            if parsed and parsed.title:
+                cluster.main_title = parsed.title
+            else:
+                cluster.main_title = article.title
             cluster.main_date = article.date
             cluster.main_link = article.link
             cluster.main_feed_title = article.feed.title
             cluster.main_article_id = article.id
-        if not cluster.content:
-            success, content = generate_content(article, parsing_result)
+        if not cluster.content and parsed:
+            success, content = generate_content(article, parsed)
             if success:
                 cluster.content = content
         self.add_to_corpus(article)
@@ -197,7 +199,7 @@ class Clusterizer:
         cluster_config = self.get_config(article.feed, 'cluster_enabled')
 
         # fetching article so that vector comparison is made on full content
-        parsing_result = None
+        parsed = None
         if article.feed.truncated_content:
             parsed, extract = get_goose(article.link)
             if parsed or extract:
@@ -222,6 +224,6 @@ class Clusterizer:
             if cluster:
                 return self.enrich_cluster(cluster, article,
                                            filter_read, filter_liked,
-                                           parsing_result=parsing_result)
+                                           parsed=parsed)
         return self._create_from_article(article, filter_read, filter_liked,
-                                         parsing_result)
+                                         parsed)
