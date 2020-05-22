@@ -7,8 +7,8 @@ from jarr.bootstrap import conf
 from jarr.lib.content_generator import is_embedded_link
 from jarr.lib.enums import ArticleType
 from jarr.lib.filter import FiltersAction, process_filters
-from jarr.lib.html_parsing import extract_lang, extract_tags, extract_title
 from jarr.lib.utils import utc_now
+from jarr.lib.article_cleaner import get_goose
 from jarr.utils import jarr_get
 
 logger = logging.getLogger(__name__)
@@ -106,29 +106,32 @@ class AbstractArticleBuilder:
             logger.error("couldn't fetch %r", url)
 
     def enhance(self, fetch_page=True):
-        head = self._head(self.article['link'])
         if self.feed.truncated_content:
-            fetch_page = False  # will be retrieved on clustering
-        if head:
-            self.article['link'] = head.url
-            content_type = str(head.headers.get('Content-Type')) or ''
-            if content_type.startswith('image/'):
-                fetch_page = False
-                self.article['article_type'] = ArticleType.image
-            elif content_type.startswith('video/'):
-                fetch_page = False
-                self.article['article_type'] = ArticleType.video
-            elif is_embedded_link(self.article['link']):
-                self.article['article_type'] = ArticleType.embedded
-            if fetch_page:
-                page = jarr_get(self.article['link'])
-                if not page:
-                    return self.article
-                if not self.article.get('title'):
-                    self.article['title'] = extract_title(page)
-                self.article['tags'] = self.article['tags'].union(
-                        extract_tags(page))
-                lang = extract_lang(page)
-                if lang:
-                    self.article['lang'] = lang
+            return self.article  # will be retrieved on clustering
+
+        head = self._head(self.article['link'])
+        if not head:
+            return self.article
+
+        self.article['link'] = head.url  # correcting link in case of redirect
+        content_type = str(head.headers.get('Content-Type')) or ''
+        if content_type.startswith('image/'):
+            fetch_page = False
+            self.article['article_type'] = ArticleType.image
+        elif content_type.startswith('video/'):
+            fetch_page = False
+            self.article['article_type'] = ArticleType.video
+        elif is_embedded_link(self.article['link']):
+            self.article['article_type'] = ArticleType.embedded
+        if fetch_page:
+            _, extract = get_goose(self.article['link'])
+            for key in 'link', 'title', 'lang':
+                if not self.article.get(key) and extract.get(key):
+                    self.article[key] = extract[key]
+            self.article['tags'] = self.article['tags'].union(extract['tags'])
+        elif not self.article.get('lang') \
+                and head.headers.get('Content-Language'):
+        # correcting lang from http headers
+            lang = head.headers['Content-Language'].split(',')[0]
+            self.article['lang'] = lang
         return self.article

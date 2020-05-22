@@ -1,12 +1,11 @@
 from datetime import timedelta
 from random import randint
 
-from mock import Mock
-
 from jarr.controllers import ArticleController, FeedController
-from jarr.controllers.cluster import ClusterController
 from jarr.controllers.article_clusterizer import Clusterizer
-from jarr.lib.utils import utc_now
+from jarr.controllers.cluster import ClusterController
+from jarr.lib.clustering_af.grouper import get_best_match_and_score
+from jarr.lib.clustering_af.postgres_casting import to_vector
 from tests.base import BaseJarrTest
 from tests.utils import update_on_all_objs
 
@@ -103,54 +102,42 @@ class ClusterControllerTest(BaseJarrTest):
         self.assertFalse(cluster.read)
 
     def test_similarity_clustering(self):
-        cluster_conf = {'min_score': 0.6, 'min_sample_size': 10}
-        user = Mock(cluster_conf=cluster_conf)
-        category = Mock(cluster_conf=cluster_conf)
-        feed = Mock(cluster_conf=cluster_conf, user=user, category=category)
-        cluster = Mock()
-        def gen_articles(factor):
-            return [Mock(simple_vector={'Sarkozy': 1, 'garb': 1, 'justice': 1},
-                         simple_vector_magnitude=3,
-                         feed=feed, cluster=cluster)] \
-                 + [Mock(feed=feed,
-                         simple_vector_magnitude=3,
-                         simple_vector={'Sark': 1, 'garbge': 1, 'vote': 1}),
-                    Mock(feed=feed,
-                         simple_vector_magnitude=3,
-                         simple_vector={'Sark': 1, 'garbae': 1, 'debat': 1}),
-                    Mock(feed=feed,
-                         simple_vector_magnitude=3,
-                         simple_vector={'Sark': 1, 'garbag': 1, 'blague': 1}),
-                    Mock(feed=feed,
-                         simple_vector_magnitude=3,
-                         simple_vector={'Sark': 1, 'garage': 1, 'chans': 1})] \
-                            * factor
-        clusterizer = Clusterizer()
-        clusterizer._get_query_for_clustering = Mock(
-                return_value=gen_articles(2))
+        words = 'Monthi Python Shrubberi Holi Graal life Brian'.split()
+        words2 = 'And now for something completely different'.split()
 
-        matching_article = Mock(
-                simple_vector_magnitude=3,
-                simple_vector={'Morano': 1, 'garb': 1, 'justice': 1},
-                date=utc_now(), lang='fr', feed=feed)
+        simple_vector = {word.lower(): i for i, word in enumerate(words, 1)}
+        content = ' '.join([(w + ' ') * i for i, w in enumerate(words, 1)])
+        actrl = ArticleController(2)
+        actrl.update({}, {'vector': to_vector({'content': content})})
+        for art in actrl.read():
+            self.assertEqual(art.simple_vector, simple_vector)
 
-        self.assertIsNone(clusterizer._get_cluster_by_similarity(
-            matching_article))
-        clusterizer.corpus = None
-        clusterizer._get_query_for_clustering \
-                = Mock(return_value=gen_articles(100))
-        self.assertEqual(clusterizer._get_cluster_by_similarity(
-            matching_article), cluster)
+        art1, art2, art3 = actrl.read().limit(3)
+        match, score = get_best_match_and_score(art1, [art2])
+        self.assertEqual(1, round(score, 10))
+        self.assertEqual(match, art2)
 
-        solo_article = Mock(simple_vector={'Sark': 1, 'fleur': 1},
-                            simple_vector_magnitude=2,
-                            date=utc_now(), lang='fr', feed=feed)
-        clusterizer.corpus = None
-        self.assertNotEqual(cluster,
-                clusterizer._get_cluster_by_similarity(solo_article))
-        clusterizer.corpus = None
-        self.assertIsNone(
-                clusterizer._get_cluster_by_similarity(solo_article))
+        content = ' '.join([(w + ' ') * i for i, w in enumerate(words2, 1)])
+        actrl.update({'id': art2.id},
+                     {'vector': to_vector({'content': content})})
+        art2 = actrl.get(id=art2.id)
+        self.assertEqual(art2.simple_vector, art1.simple_vector)
+        art2.reset_simple_vector()
+        self.assertNotEqual(art2.simple_vector, art1.simple_vector)
+
+        truncated_content = ' '.join([(w + ' ') * i
+                                      for i, w in enumerate(words[:-2], 1)])
+        actrl.update({'id__nin': [art1.id, art2.id, art3.id]},
+                     {'vector': to_vector({'content': truncated_content})})
+        for art in actrl.read():
+            art.reset_simple_vector()
+        match, score = get_best_match_and_score(art1, list(actrl.read()))
+        self.assertEqual(1, round(score, 10))
+        self.assertNotEqual(match, art2)
+        self.assertEqual(match, art3)
+        match, score = get_best_match_and_score(art1, [art2])
+        self.assertEqual(0, score)
+        self.assertEqual(match, art2)
 
     def test_no_mixup(self):
         acontr = ArticleController()

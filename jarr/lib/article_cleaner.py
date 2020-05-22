@@ -1,11 +1,10 @@
 import logging
+import goose3
 from urllib.parse import ParseResult, unquote, urlparse, urlunparse
 
-import trafilatura
 from bs4 import BeautifulSoup
 
-from jarr.bootstrap import is_secure_served
-from jarr.utils import jarr_get
+from jarr.bootstrap import conf, is_secure_served
 
 HTTPS_IFRAME_DOMAINS = ('vimeo.com', 'youtube.com', 'youtu.be')
 logger = logging.getLogger(__name__)
@@ -89,20 +88,20 @@ def clean_urls(article_content, article_link, fix_readability=False):
     return str(parsed_content)
 
 
-def fetch_and_parse(link):
-    result = {}
+def get_goose(link):
+    parsed, extract = None, {}
+    goose = goose3.Goose({"browser_user_agent": conf.crawler.user_agent})
     try:
-        response = jarr_get(link)
-        parsed = trafilatura.extract(response.content,
-                                     xml_output=True, include_comments=False,
-                                     include_formatting=True)
-        result['parsed_content'] = parsed
-        attrs = BeautifulSoup(parsed, 'html.parser').find_all('doc')[0].attrs
-        if attrs.get('title'):
-            result['title'] = attrs['title']
-        if 'categories' in attrs:
-            attrs['tags'] = set(attrs['categories'].split(';'))
+        parsed = goose.extract(link)
     except Exception as error:
         logger.error("something wrong happened while trying to fetch %r: %r",
                      link, error)
-    return result
+    if not parsed:
+        return parsed, extract
+    lang = parsed.opengraph.get('locale') or parsed.meta_lang
+    extract = {'lang': lang,
+               'link': parsed.final_url,
+               'tags': set(parsed.tags).union(
+                   parsed.meta_keywords.split(', ')),
+               'title': parsed.title}
+    return parsed, extract

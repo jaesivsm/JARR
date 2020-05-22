@@ -9,7 +9,7 @@ import logging
 from alembic import op
 import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
-from jarr.controllers.article import LANG_TO_PSQL_MAPPING
+from jarr.lib.clustering_af.postgres_casting import LANG_TO_PSQL_MAPPING
 
 revision = 'ce7bfcdd21fc'
 down_revision = '33c6542730e6'

@@ -5,10 +5,10 @@ from functools import partial
 
 from sqlalchemy import and_, or_
 
+from jarr.lib.article_cleaner import get_goose
 from jarr.bootstrap import conf, session
 from jarr.controllers import ArticleController
 from jarr.controllers.article import to_vector
-from jarr.lib.article_cleaner import fetch_and_parse
 from jarr.lib.clustering_af.grouper import get_best_match_and_score
 from jarr.lib.content_generator import generate_content
 from jarr.lib.enums import ArticleType, ClusterReason, ReadReason
@@ -199,12 +199,9 @@ class Clusterizer:
         # fetching article so that vector comparison is made on full content
         parsing_result = None
         if article.feed.truncated_content:
-            parsing_result = fetch_and_parse(article.link)
-            if parsing_result.get('parsed_content'):
-                article.reset_simple_vector()
-                article.vector = to_vector(
-                        article.title, article.tags, article.content,
-                        parsing_result)
+            parsed, extract = get_goose(article.link)
+            if parsed or extract:
+                article.vector = to_vector(extract, parsed)
                 session.add(article)
                 session.commit()
                 article = ArticleController().get(id=article.id)

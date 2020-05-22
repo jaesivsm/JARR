@@ -1,4 +1,5 @@
 import html
+from lxml import etree
 import logging
 import re
 
@@ -15,18 +16,22 @@ def is_embedded_link(link):
     return YOUTUBE_RE.match(link)
 
 
-def generate_content(article, parsing_result=None):
+def generate_content(article, parsed=None):
     success = False
     if not article.article_type:
-        if parsing_result and parsing_result.get('parsed_content'):
-            content = {'type': 'fetched',
-                       'link': article.link,
-                       'content': parsing_result['parsed_content']}
-            if article.comments:
+        if parsed:
+            content = {'type': 'fetched'}
+            try:
+                doc = parsed.doc[0]
+                content['content'] = etree.tostring(doc, encoding='utf8')
+                content['link'] = parsed.final_url
+                success = True
+            except Exception:
+                logger.exception("Could not rebuild parsed content for %r",
+                                 article)
+            if success and article.comments:
                 content['comments'] = article.comments
-            if parsing_result.get('tags'):
-                content['tags'] = parsing_result['tags']
-            return True, content
+            return success, content
         logger.debug('%r no special type found doing nothing', article)
         return success, {}
     content = {'type': article.article_type.value}

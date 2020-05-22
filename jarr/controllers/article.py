@@ -15,31 +15,6 @@ from .abstract import AbstractController
 
 logger = logging.getLogger(__name__)
 
-LANG_TO_PSQL_MAPPING = {'da': 'danish',
-                        'nl': 'dutch',
-                        'du': 'dutch',
-                        'en': 'english',
-                        'uk': 'english',
-                        'us': 'english',
-                        'fi': 'finnish',
-                        'fr': 'french',
-                        'de': 'german',
-                        'ge': 'german',
-                        'hu': 'hungarian',
-                        'it': 'italian',
-                        'no': 'norwegian',
-                        'pt': 'portuguese',
-                        'po': 'portuguese',
-                        'ro': 'romanian',
-                        'ru': 'russian',
-                        'es': 'spanish',
-                        'sv': 'swedish',
-                        'sw': 'swedish',
-                        'ts': 'turkish',
-                        'tk': 'turkish',
-                        'tw': 'turkish',
-                        'tr': 'turkish'}
-
 
 class ArticleController(AbstractController):
     _db_cls = Article
@@ -83,8 +58,7 @@ class ArticleController(AbstractController):
                 feed.user_id == attrs['user_id'] or self.user_id is None):
             raise Forbidden("no right on feed %r" % feed.id)
         attrs['user_id'], attrs['category_id'] = feed.user_id, feed.category_id
-        attrs['vector'] = to_vector(attrs.get('title'), attrs.get('tags'),
-                                    attrs.get('content'))
+        attrs['vector'] = to_vector(attrs)
         attrs['link_hash'] = sha1(attrs['link'].encode('utf8')).digest()
         article = super().create(**attrs)
         return article

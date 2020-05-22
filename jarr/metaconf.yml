@@ -26,6 +26,11 @@ parameters:
         type: bool
         help_txt: >-
           Allows you to set the default for TF-IDF (enabled / disabled).
+    - default_lang:
+        default: english
+        help_txt: >-
+          When no lang can be found in a article, casting to vector will
+          resolved to that language
     - min_sample_size:
         default: 10
         help_txt: Minimum size of the corpus against which running TF-IDF.

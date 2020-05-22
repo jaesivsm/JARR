@@ -1,4 +1,4 @@
-from sqlalchemy import (Binary, Boolean, Column, Enum, ForeignKeyConstraint,
+from sqlalchemy import (Binary, Column, Enum, ForeignKeyConstraint,
                         Index, Integer, PickleType, String)
 from sqlalchemy.dialects.postgresql import TSVECTOR
 from sqlalchemy.orm import relationship
@@ -7,6 +7,7 @@ from jarr.bootstrap import Base
 from jarr.lib.enums import ArticleType, ClusterReason
 from jarr.lib.utils import utc_now
 from jarr.models.utc_datetime_type import UTCDateTime
+from jarr.lib.clustering_af.vector import TFIDFVector
 
 
 class Article(Base):
@@ -43,15 +44,10 @@ class Article(Base):
             self._simple_vector = {}
         if self.vector is not None:
             for word_n_count in self.vector.split():
-                try:
-                    word, count = word_n_count.split(':')
-                except Exception:  # no :count if there's only one
-                    self._simple_vector[word_n_count[1:-1]] = 1
-                    self._simple_vector_magnitude += 1
-                else:
-                    self._simple_vector[word[1:-1]] = count.count(',')
-                    self._simple_vector_magnitude \
-                            += self._simple_vector[word[1:-1]]
+                word, count = word_n_count.split(':')
+                word = word[1:-1]
+                self._simple_vector[word] = count.count(',') + 1
+                self._simple_vector_magnitude += self._simple_vector[word]
         return self._simple_vector
 
     @property
@@ -59,6 +55,13 @@ class Article(Base):
         if not self._simple_vector_magnitude:
             self._simple_vector_magnitude = sum(self.simple_vector.values())
         return self._simple_vector_magnitude
+
+    def get_tfidf_vector(self, frequencies, corpus_size,
+                         will_be_left_member=False):
+        return TFIDFVector(self.simple_vector,
+                           self.simple_vector_magnitude,
+                           frequencies, corpus_size,
+                           will_be_left_member=will_be_left_member)
 
     def reset_simple_vector(self):
         self._simple_vector = None
