@@ -166,7 +166,10 @@ class Clusterizer:
             logger.debug('waking up %r', cluster)
         # once one article is liked the cluster is liked
         cluster.liked = cluster.liked or cluster_liked
-        if force_article_as_main or cluster.main_date > article.date:
+        if force_article_as_main or cluster.main_date > article.date \
+                or (not article.feed.truncated_content
+                    and all(cluster_article.feed.truncated_content
+                            for cluster_article in cluster.articles)):
             if parsed and parsed.title:
                 cluster.main_title = parsed.title
             else:
