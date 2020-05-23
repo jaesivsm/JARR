@@ -106,9 +106,6 @@ class AbstractArticleBuilder:
             logger.error("couldn't fetch %r", url)
 
     def enhance(self, fetch_page=True):
-        if self.feed.truncated_content:
-            return self.article  # will be retrieved on clustering
-
         head = self._head(self.article['link'])
         if not head:
             return self.article
@@ -123,6 +120,9 @@ class AbstractArticleBuilder:
             self.article['article_type'] = ArticleType.video
         elif is_embedded_link(self.article['link']):
             self.article['article_type'] = ArticleType.embedded
+
+        if self.feed.truncated_content:
+            fetch_page = False
         if fetch_page:
             _, extract = get_goose(self.article['link'])
             for key in 'link', 'title', 'lang':

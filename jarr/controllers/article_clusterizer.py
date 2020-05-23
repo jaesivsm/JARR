@@ -178,7 +178,7 @@ class Clusterizer:
             cluster.main_link = article.link
             cluster.main_feed_title = article.feed.title
             cluster.main_article_id = article.id
-        if not cluster.content and parsed:
+        if not cluster.content:
             success, content = generate_content(article, parsed)
             if success:
                 cluster.content = content
