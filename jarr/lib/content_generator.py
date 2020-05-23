@@ -16,14 +16,25 @@ def is_embedded_link(link):
     return YOUTUBE_RE.match(link)
 
 
+def from_goose_to_html(article, encoding="utf8"):
+    result = ""
+    current_node = article.top_node
+    while True:
+        result += etree.tostring(current_node,
+                                 encoding=encoding).decode(encoding)
+        current_node = current_node.getnext()
+        if current_node is None:
+            break
+    return result
+
+
 def generate_content(article, parsed=None):
     success = False
     if not article.article_type:
         if parsed:
             content = {'type': 'fetched'}
             try:
-                doc = parsed.doc[0]
-                content['content'] = etree.tostring(doc, encoding='utf8')
+                content['content'] = from_goose_to_html(parsed)
                 content['link'] = parsed.final_url
                 success = True
             except Exception:
