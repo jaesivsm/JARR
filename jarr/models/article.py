@@ -32,43 +32,6 @@ class Article(Base):
     # parsing
     tags = Column(PickleType, default=[])
     vector = Column(TSVECTOR)
-
-    _simple_vector = None
-    _simple_vector_magnitude = 0
-
-    @property
-    def simple_vector(self):
-        if self._simple_vector:
-            return self._simple_vector
-        if self._simple_vector is None:
-            self._simple_vector = {}
-        if self.vector is not None:
-            for word_n_count in self.vector.split():
-                word_n_count = word_n_count.split(':', 1)
-                word = word_n_count[0]
-                count = word_n_count[1] if len(word_n_count) > 1 else ''
-                word = word[1:-1]
-                self._simple_vector[word] = count.count(',') + 1
-                self._simple_vector_magnitude += self._simple_vector[word]
-        return self._simple_vector
-
-    @property
-    def simple_vector_magnitude(self):
-        if not self._simple_vector_magnitude:
-            self._simple_vector_magnitude = sum(self.simple_vector.values())
-        return self._simple_vector_magnitude
-
-    def get_tfidf_vector(self, frequencies, corpus_size,
-                         will_be_left_member=False):
-        return TFIDFVector(self.simple_vector,
-                           self.simple_vector_magnitude,
-                           frequencies, corpus_size,
-                           will_be_left_member=will_be_left_member)
-
-    def reset_simple_vector(self):
-        self._simple_vector = None
-        self._simple_vector_magnitude = 0
-
     # reasons
     cluster_reason = Column(Enum(ClusterReason), default=None)
     cluster_score = Column(Integer, default=None)
@@ -108,3 +71,63 @@ class Article(Base):
     def __repr__(self):
         """Represents and article."""
         return "<Article(feed_id=%s, id=%s)>" % (self.feed_id, self.id)
+
+    # TFIDF vectors
+    _simple_vector = None
+    _simple_vector_magnitude = 0
+
+    @property
+    def simple_vector(self):
+        if self._simple_vector:
+            return self._simple_vector
+        if self._simple_vector is None:
+            self._simple_vector = {}
+        if self.vector is not None:
+            for word_n_count in self.vector.split():
+                word_n_count = word_n_count.split(':', 1)
+                word = word_n_count[0]
+                count = word_n_count[1] if len(word_n_count) > 1 else ''
+                word = word[1:-1]
+                self._simple_vector[word] = count.count(',') + 1
+                self._simple_vector_magnitude += self._simple_vector[word]
+        return self._simple_vector
+
+    @property
+    def simple_vector_magnitude(self):
+        if not self._simple_vector_magnitude:
+            self._simple_vector_magnitude = sum(self.simple_vector.values())
+        return self._simple_vector_magnitude
+
+    def get_tfidf_vector(self, frequencies, corpus_size,
+                         will_be_left_member=False):
+        return TFIDFVector(self.simple_vector,
+                           self.simple_vector_magnitude,
+                           frequencies, corpus_size,
+                           will_be_left_member=will_be_left_member)
+
+    def reset_simple_vector(self):
+        self._simple_vector = None
+        self._simple_vector_magnitude = 0
+
+    _content_generator = None
+
+    @property
+    def content_generator(self):
+        from jarr.lib.content_generator import ContentGenerator
+        if self._content_generator is not None:
+            return self._content_generator
+
+        if self.article_type is not None:
+            for subcls in ContentGenerator.__subclasses__():
+                if self.article_type is subcls.article_type:
+                    self._content_generator = subcls(self)
+                    return self._content_generator
+
+        if self.feed.feed_type is not None:
+            for subcls in ContentGenerator.__subclasses__():
+                if self.feed.feed_type is subcls.feed_type:
+                    self._content_generator = subcls(self)
+                    return self._content_generator
+
+        self._content_generator = ContentGenerator(self)
+        return self._content_generator

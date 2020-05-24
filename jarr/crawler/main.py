@@ -45,7 +45,7 @@ def lock(prefix, expire=LOCK_EXPIRE):
 @celery_app.task(name='crawler.process_feed')
 @lock('process-feed')
 def process_feed(feed_id):
-    crawler = FeedController().get_crawler(feed_id)
+    crawler = FeedController().get(id=feed_id).crawler
     logger.warning("%r is gonna crawl", crawler)
     crawler.crawl()
 

@@ -5,12 +5,9 @@ from functools import partial
 
 from sqlalchemy import and_, or_
 
-from jarr.lib.article_cleaner import get_goose
 from jarr.bootstrap import conf, session
 from jarr.controllers import ArticleController
-from jarr.controllers.article import to_vector
 from jarr.lib.clustering_af.grouper import get_best_match_and_score
-from jarr.lib.content_generator import generate_content
 from jarr.lib.enums import ArticleType, ClusterReason, ReadReason
 from jarr.metrics import ARTICLE_CREATION, TFIDF_SCORE, WORKER_BATCH
 from jarr.models import Article, Cluster, Feed
@@ -138,18 +135,16 @@ class Clusterizer:
             yield candidate
 
     def _create_from_article(self, article,
-                             cluster_read=None, cluster_liked=False,
-                             parsed=None):
+                             cluster_read=None, cluster_liked=False):
         cluster = Cluster(user_id=article.user_id)
         article.cluster_reason = ClusterReason.original
         return self.enrich_cluster(cluster, article,
                                    cluster_read, cluster_liked,
-                                   force_article_as_main=True,
-                                   parsed=parsed)
+                                   force_article_as_main=True)
 
     def enrich_cluster(self, cluster, article,
                        cluster_read=None, cluster_liked=False,
-                       force_article_as_main=False, parsed=None):
+                       force_article_as_main=False):
         article.cluster = cluster
         # handling read status
         if cluster.read is None:  # no read status, new cluster
@@ -170,16 +165,13 @@ class Clusterizer:
                 or (not article.feed.truncated_content
                     and all(cluster_article.feed.truncated_content
                             for cluster_article in cluster.articles)):
-            if parsed and parsed.title:
-                cluster.main_title = parsed.title
-            else:
-                cluster.main_title = article.title
+            cluster.main_title = article.title
             cluster.main_date = article.date
             cluster.main_link = article.link
             cluster.main_feed_title = article.feed.title
             cluster.main_article_id = article.id
         if not cluster.content:
-            success, content = generate_content(article, parsed)
+            success, content = article.content_generator.generate()
             if success:
                 cluster.content = content
         self.add_to_corpus(article)
@@ -196,20 +188,14 @@ class Clusterizer:
         fitting that article."""
         filter_result = filter_result or {}
         allow_clustering = filter_result.get('clustering', True)
-        filter_read = filter_result.get('read')
-        filter_liked = filter_result.get('liked')
+        filter_read = filter_result.get('read', False)
+        filter_liked = filter_result.get('liked', False)
         logger.info('%r - processed filter: %r', article, filter_result)
         cluster_config = self.get_config(article.feed, 'cluster_enabled')
 
         # fetching article so that vector comparison is made on full content
-        parsed = None
-        if article.feed.truncated_content:
-            parsed, extract = get_goose(article.link)
-            if parsed or extract:
-                article.vector = to_vector(extract, parsed)
-                session.add(article)
-                session.commit()
-                article = ArticleController().get(id=article.id)
+        if article.feed.truncated_content and not article.article_type:
+            ArticleController(article.user_id).enhance(article)
 
         if not allow_clustering:
             cluster_event(context='clustering', result='filter forbid')
@@ -226,7 +212,5 @@ class Clusterizer:
                     cluster = self._get_cluster_by_similarity(article)
             if cluster:
                 return self.enrich_cluster(cluster, article,
-                                           filter_read, filter_liked,
-                                           parsed=parsed)
-        return self._create_from_article(article, filter_read, filter_liked,
-                                         parsed)
+                                           filter_read, filter_liked)
+        return self._create_from_article(article, filter_read, filter_liked)

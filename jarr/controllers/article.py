@@ -48,6 +48,23 @@ class ArticleController(AbstractController):
                            .group_by(Article.user_id)):
             yield row[0]
 
+    @staticmethod
+    def enhance(article):
+        save = False
+        vector = article.content_generator.get_vector()
+        if vector is not None:
+            article.vector = vector
+            article.reset_simple_vector()
+            save = True
+        for key in 'title', 'lang', 'tags':
+            value = article.content_generator.extracted_infos.get(key)
+            if value and getattr(article, key) != value:
+                setattr(article, key, value)
+                save = True
+        if save:
+            session.add(article)
+            session.commit()
+
     def create(self, **attrs):
         # handling special denorm for article rights
         if 'feed_id' not in attrs:
@@ -81,7 +98,8 @@ class ArticleController(AbstractController):
         If it's the only article of the cluster will delete the cluster
         Return True if the article is deleted at the end or not
         """
-        from jarr.controllers import ClusterController
+        from jarr.controllers.cluster import ClusterController
+        from jarr.controllers.article_clusterizer import Clusterizer
         if not article.cluster_id:
             return
         clu_ctrl = ClusterController(self.user_id)
@@ -98,16 +116,15 @@ class ArticleController(AbstractController):
         else:
             if cluster.main_article_id == article.id:
                 cluster.main_article_id = None
-                clu_ctrl.enrich_cluster(cluster, new_art,
-                                        cluster.read, cluster.liked,
-                                        force_article_as_main=True)
+                Clusterizer(article.user_id).enrich_cluster(
+                        cluster, new_art, cluster.read, cluster.liked,
+                        force_article_as_main=True)
         self.update({'id': article.id},
                     {'cluster_id': None,
                      'cluster_reason': None,
                      'cluster_score': None,
                      'cluster_tfidf_with': None,
                      'cluster_tfidf_neighbor_size': None})
-        return
 
     @staticmethod
     def delete_only_article(article, commit):

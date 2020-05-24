@@ -86,22 +86,3 @@ def clean_urls(article_content, article_link, fix_readability=False):
         elif elem.name == 'iframe':
             _handle_iframe(elem)
     return str(parsed_content)
-
-
-def get_goose(link):
-    parsed, extract = None, {}
-    goose = goose3.Goose({"browser_user_agent": conf.crawler.user_agent})
-    try:
-        parsed = goose.extract(link)
-    except Exception as error:
-        logger.error("something wrong happened while trying to fetch %r: %r",
-                     link, error)
-    if not parsed:
-        return parsed, extract
-    lang = parsed.opengraph.get('locale') or parsed.meta_lang
-    extract = {'lang': lang,
-               'link': parsed.final_url,
-               'tags': set(parsed.tags).union(
-                   parsed.meta_keywords.split(', ')),
-               'title': parsed.title}
-    return parsed, extract
