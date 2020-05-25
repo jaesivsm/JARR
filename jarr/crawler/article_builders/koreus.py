@@ -11,8 +11,19 @@ class KoreusArticleBuilder(ClassicArticleBuilder):
 
     @staticmethod
     def extract_link(entry):
-        summary_detail = BeautifulSoup(entry['summary_detail']['value'],
-                                       'html.parser')
+        text = None
+        if entry.get('summary_detail') \
+                and entry['summary_detail'].get('value'):
+            text = entry['summary_detail']['value']
+        elif entry.get('summary'):
+            text = entry['summary']
+        else:
+            for content in entry.get('content') or []:
+                if content and content.get('value'):
+                    text = content['value']
+        if text is None:
+            return super().extract_link(entry)
+        summary_detail = BeautifulSoup(text, 'html.parser')
         link = summary_detail.find_all('a')[0]
         return link.attrs['href']
 
