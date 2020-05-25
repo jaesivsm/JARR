@@ -1,6 +1,7 @@
 import html
 import logging
 import re
+from functools import lru_cache
 
 from goose3 import Goose
 from lxml import etree
@@ -26,7 +27,6 @@ class ContentGenerator:
 
     def __init__(self, article):
         self.article = article
-        self._fetched = False
         self._page = None
         self.extracted_infos = {}
 
@@ -48,7 +48,7 @@ class ContentGenerator:
         return True
 
     def get_vector(self):
-        if not self._fetched:
+        if self._page is None:
             self._get_goose()
         if self._page and self.extracted_infos:
             return to_vector(self.extracted_infos, self._page)
@@ -64,21 +64,9 @@ class ContentGenerator:
                 break
         return result
 
-    def generate(self):
-        if not self._fetched:
-            return False, {}
-        success, content = False, {'type': 'fetched'}
-        try:
-            content['content'] = self._from_goose_to_html()
-            content['link'] = self._page.final_url
-            success = True
-        except Exception:
-            logger.exception("Could not rebuild parsed content for %r",
-                             self.article)
-        if success and self.article.comments:
-            content['comments'] = self.article.comments
-        logger.debug('%r no special type found doing nothing', self.article)
-        return success, content
+    @staticmethod
+    def generate():
+        return False, {}
 
 
 class ImageContentGenerator(ContentGenerator):
@@ -120,11 +108,69 @@ class EmbeddedContentGenerator(ContentGenerator):
         return True, {}
 
 
-class RedditContentGenerator(ContentGenerator):
-    feed_type = FeedType.reddit
+class TruncatedContentGenerator(ContentGenerator):
 
     def generate(self):
-        if (self.article.article_type is None
-                and self.article.link == self.article.comments):
-            return False, {}  # original reddit post, nothing to process
-        return super().generate()
+        if self._page is None:
+            self._get_goose()
+        success, content = False, {'type': 'fetched'}
+        try:
+            content['content'] = self._from_goose_to_html()
+            content['link'] = self._page.final_url
+            success = True
+        except Exception:
+            logger.exception("Could not rebuild parsed content for %r",
+                             self.article)
+        if success and self.article.comments:
+            content['comments'] = self.article.comments
+        logger.debug('%r no special type found doing nothing', self.article)
+        return success, content
+
+
+class RedditContentGenerator(TruncatedContentGenerator):
+    feed_type = FeedType.reddit
+
+    @property
+    def is_pure_reddit_post(self):
+        return (self.article.article_type is None
+                and self.article.link == self.article.comments)
+
+    def get_vector(self):
+        if not self.is_pure_reddit_post:
+            return super().get_vector()
+
+    def generate(self):
+        if not self.is_pure_reddit_post:
+            return super().generate()
+        return False, {}  # original reddit post, nothing to process
+
+
+CONTENT_GENERATORS = {}
+
+
+def feed_mapping(subcls_):
+    if subcls_.feed_type:
+        CONTENT_GENERATORS[subcls_.feed_type] = subcls_
+    if subcls_.article_type:
+        CONTENT_GENERATORS[subcls_.article_type] = subcls_
+
+
+for subcls in ContentGenerator.__subclasses__():
+    feed_mapping(subcls)
+    for subsubcls in subcls.__subclasses__():
+        feed_mapping(subsubcls)
+
+
+@lru_cache()
+def get_content_generator(article):
+    if article.article_type and article.article_type in CONTENT_GENERATORS:
+        return CONTENT_GENERATORS[article.article_type](article)
+
+    if article.feed.feed_type \
+            and article.feed.feed_type in CONTENT_GENERATORS:
+        return CONTENT_GENERATORS[article.feed.feed_type](article)
+
+    if article.feed.truncated_content:
+        return TruncatedContentGenerator(article)
+
+    return ContentGenerator(article)

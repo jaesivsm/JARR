@@ -109,25 +109,7 @@ class Article(Base):
         self._simple_vector = None
         self._simple_vector_magnitude = 0
 
-    _content_generator = None
-
     @property
     def content_generator(self):
-        from jarr.lib.content_generator import ContentGenerator
-        if self._content_generator is not None:
-            return self._content_generator
-
-        if self.article_type is not None:
-            for subcls in ContentGenerator.__subclasses__():
-                if self.article_type is subcls.article_type:
-                    self._content_generator = subcls(self)
-                    return self._content_generator
-
-        if self.feed.feed_type is not None:
-            for subcls in ContentGenerator.__subclasses__():
-                if self.feed.feed_type is subcls.feed_type:
-                    self._content_generator = subcls(self)
-                    return self._content_generator
-
-        self._content_generator = ContentGenerator(self)
-        return self._content_generator
+        from jarr.lib.content_generator import get_content_generator
+        return get_content_generator(self)

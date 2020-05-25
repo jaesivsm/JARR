@@ -194,8 +194,7 @@ class Clusterizer:
         cluster_config = self.get_config(article.feed, 'cluster_enabled')
 
         # fetching article so that vector comparison is made on full content
-        if article.feed.truncated_content and not article.article_type:
-            ArticleController(article.user_id).enhance(article)
+        ArticleController(article.user_id).enhance(article)
 
         if not allow_clustering:
             cluster_event(context='clustering', result='filter forbid')

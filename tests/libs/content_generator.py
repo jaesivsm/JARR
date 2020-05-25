@@ -16,7 +16,7 @@ class ContentGeneratorTest(JarrFlaskCommon):
         article = self.actrl.read().first()
         ClusterController().delete(article.cluster_id, delete_articles=False)
         self.article = self.actrl.get(id=article.id)
-        setattr(self.article, '_content_generator', None)
+        content_generator.get_content_generator.cache_clear()
 
     def set_truncated_content(self, **kwargs):
         kwargs.update({'truncated_content': True})
@@ -24,21 +24,24 @@ class ContentGeneratorTest(JarrFlaskCommon):
 
     @patch('jarr.controllers.article.ArticleController.enhance')
     def test_article_image_enhancement(self, enhance=None):
-        self.actrl.update({'id': self.article.id}, {'article_type': 'image'})
+        self.actrl.update({'id': self.article.id}, {'article_type': 'image',
+                                                    'vector': None})
         self.assertEqual(content_generator.ImageContentGenerator,
                          self.article.content_generator.__class__)
         Clusterizer().main(self.article)
         self.assertEqual('image', self.article.cluster.content.get('type'))
         self.assertEqual(self.article.link,
                          self.article.cluster.content.get('src'))
-        self.assertEqual(0, enhance.call_count)
+        self.assertEqual(1, enhance.call_count)
+        self.assertIsNone(self.article.vector)
 
     @patch('jarr.controllers.article.ArticleController.enhance')
     def test_article_embedded_enhancement(self, enhance=None):
         self.actrl.update({'id': self.article.id},
                           {'article_type': 'embedded',
                            'link': "https://www.youtube.com/"
-                           "watch?v=scbrjaqM3Oc"})
+                           "watch?v=scbrjaqM3Oc",
+                           "vector": None})
         self.assertEqual(content_generator.EmbeddedContentGenerator,
                          self.article.content_generator.__class__)
         Clusterizer().main(self.article)
@@ -48,7 +51,8 @@ class ContentGeneratorTest(JarrFlaskCommon):
                          self.article.cluster.content.get('player'))
         self.assertEqual("scbrjaqM3Oc",
                          self.article.cluster.content.get('videoId'))
-        self.assertEqual(0, enhance.call_count)
+        self.assertEqual(1, enhance.call_count)
+        self.assertIsNone(self.article.vector)
 
     def test_article_image_enhancement_on_truncated(self):
         self.set_truncated_content()
@@ -62,7 +66,7 @@ class ContentGeneratorTest(JarrFlaskCommon):
     @patch('jarr.lib.content_generator.ContentGenerator._from_goose_to_html')
     def test_article_truncated_enhancement(self,
             from_goose=None, goose=None,
-            cg=content_generator.ContentGenerator):
+            cg=content_generator.TruncatedContentGenerator):
         from_goose.return_value = 'my collated content'
         patched_goose = Mock(opengraph={'locale': 'en'},
                              meta_lang='fr',
