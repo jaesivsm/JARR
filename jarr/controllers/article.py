@@ -54,7 +54,6 @@ class ArticleController(AbstractController):
         vector = article.content_generator.get_vector()
         if vector is not None:
             article.vector = vector
-            article.reset_simple_vector()
             save = True
         for key in 'title', 'lang', 'tags':
             value = article.content_generator.extracted_infos.get(key)

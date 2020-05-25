@@ -1,4 +1,5 @@
 from math import log10, sqrt
+from functools import lru_cache
 from collections import OrderedDict
 
 
@@ -88,3 +89,19 @@ class TFIDFVector(SparseVector):
         else:
             super().__init__((0 for term in term_frequencies),
                              will_be_left_member)
+
+
+@lru_cache()
+def get_simple_vector(vector):
+    if vector is None:
+        return None, 0
+    simple_vector = {}
+    size = 0
+    for word_n_count in vector.split():
+        word_n_count = word_n_count.split(':', 1)
+        word = word_n_count[0]
+        count = word_n_count[1] if len(word_n_count) > 1 else ''
+        word = word[1:-1]
+        simple_vector[word] = count.count(',') + 1
+        size += simple_vector[word]
+    return simple_vector, size

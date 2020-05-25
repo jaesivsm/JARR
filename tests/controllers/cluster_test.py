@@ -121,16 +121,12 @@ class ClusterControllerTest(BaseJarrTest):
         actrl.update({'id': art2.id},
                      {'vector': to_vector({'content': content})})
         art2 = actrl.get(id=art2.id)
-        self.assertEqual(art2.simple_vector, art1.simple_vector)
-        art2.reset_simple_vector()
         self.assertNotEqual(art2.simple_vector, art1.simple_vector)
 
         truncated_content = ' '.join([(w + ' ') * i
                                       for i, w in enumerate(words[:-2], 1)])
         actrl.update({'id__nin': [art1.id, art2.id, art3.id]},
                      {'vector': to_vector({'content': truncated_content})})
-        for art in actrl.read():
-            art.reset_simple_vector()
         match, score = get_best_match_and_score(art1, list(actrl.read()))
         self.assertEqual(1, round(score, 10))
         self.assertNotEqual(match, art2)
