@@ -132,8 +132,19 @@ class RedditContentGenerator(TruncatedContentGenerator):
 
     @property
     def is_pure_reddit_post(self):
-        return (self.article.article_type is None
-                and self.article.link == self.article.comments)
+        if self.article.article_type is not None:
+            return False
+        if self.article.link == self.article.comments:
+            return True
+        try:
+            head = requests.head(self.article.comments, allow_redirects=True,
+                                 timeout=conf.crawler.timeout)
+            head.raise_for_status()
+        except Exception:
+            return False
+        if self.article.link == head.url:
+            return True
+        return False
 
     def get_vector(self):
         if not self.is_pure_reddit_post:
