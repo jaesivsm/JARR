@@ -96,9 +96,8 @@ class ConstructFeedFromTest(unittest.TestCase):
         feed = FBC('http://twitter.com/jaesivsm/').construct()
         self.assertEqual({
             'feed_type': FeedType.twitter, 'link': 'jaesivsm',
-            'icon_url': 'https://abs.twimg.com/favicons/favicon.ico',
-            'site_link': 'https://twitter.com/jaesivsm/',
-            'title': 'François (@jaesivsm) | Twitter'}, feed)
+            'icon_url': 'https://twitter.com/favicon.ico',
+            'site_link': 'https://twitter.com/jaesivsm/'}, feed)
 
     def test_soundcloud(self):
         soundcloud = FBC('//soundcloud.com/popotes-podcast/').construct()
