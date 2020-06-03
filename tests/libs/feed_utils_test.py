@@ -84,20 +84,13 @@ class ConstructFeedFromTest(unittest.TestCase):
 
     def test_instagram(self):
         insta = FBC('http://www.instagram.com/jaesivsm/').construct()
-        self.assertEqual({
-            'feed_type': FeedType.instagram, 'link': 'jaesivsm',
-            'icon_url': 'https://www.instagram.com/static/'
-            'images/ico/favicon.ico/36b3ee2d91ed.ico',
-            'site_link': 'https://www.instagram.com/jaesivsm/',
-            'title': 'François (@jaesivsm) • Instagram photos and videos'},
-            insta)
+        self.assertEqual('jaesivsm', insta['link'])
+        self.assertEqual(FeedType.instagram, insta['feed_type'])
 
     def test_twitter(self):
         feed = FBC('http://twitter.com/jaesivsm/').construct()
-        self.assertEqual({
-            'feed_type': FeedType.twitter, 'link': 'jaesivsm',
-            'icon_url': 'https://twitter.com/favicon.ico',
-            'site_link': 'https://twitter.com/jaesivsm/'}, feed)
+        self.assertEqual('jaesivsm', feed['link'])
+        self.assertEqual(FeedType.twitter, feed['feed_type'])
 
     def test_soundcloud(self):
         soundcloud = FBC('//soundcloud.com/popotes-podcast/').construct()
@@ -111,15 +104,11 @@ class ConstructFeedFromTest(unittest.TestCase):
 
     def test_youtube(self):
         yt_channel = 'www.youtube.com/channel/UCOWsWZTiXkbvQvtWO9RA0gA'
-        youtube = FBC(yt_channel).construct()
-        self.assertEqual({
-            'feed_type': FeedType.classic,
-            'icon_url': 'https://s.ytimg.com/yts/img/favicon-vfl8qSV2F.ico',
-            'link': 'https://www.youtube.com/feeds/videos.xml'
-                    '?channel_id=UCOWsWZTiXkbvQvtWO9RA0gA',
-            'site_link': 'https://www.youtube.com/channel/'
-                         'UCOWsWZTiXkbvQvtWO9RA0gA',
-            'title': 'BenzaieLive'}, youtube)
+        feed = FBC(yt_channel).construct()
+        self.assertEqual(FeedType.classic, feed['feed_type'])
+        self.assertEqual('https://www.youtube.com/feeds/videos.xml'
+                         '?channel_id=UCOWsWZTiXkbvQvtWO9RA0gA', feed['link'])
+        self.assertEqual('BenzaieLive', feed['title'])
 
     def test_json(self):
         feed = FBC('https://daringfireball.net/feeds/json').construct()
