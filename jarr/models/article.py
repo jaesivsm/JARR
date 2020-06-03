@@ -63,7 +63,7 @@ class Article(Base):
             Index('ix_article_uid_fid_cluid', user_id, feed_id, cluster_id),
             Index('ix_article_uid_cid_cluid',
                   user_id, category_id, cluster_id),
-            Index('ix_article_eid_cid_uid', user_id, category_id, entry_id),
+            Index('ix_article_uid_fid_eid', user_id, feed_id, entry_id),
             Index('ix_article_uid_cid_linkh', user_id, category_id, link_hash),
             Index('ix_article_retrdate', retrieved_date),
     )

@@ -51,14 +51,15 @@ class ArticleController(AbstractController):
     @staticmethod
     def enhance(article):
         save = False
-        vector = article.content_generator.get_vector()
-        if vector is not None:
-            article.vector = vector
-            save = True
-        for key in 'title', 'lang', 'tags':
-            value = article.content_generator.extracted_infos.get(key)
-            if value and getattr(article, key) != value:
-                setattr(article, key, value)
+        if article.feed.truncated_content:
+            vector = article.content_generator.get_vector()
+            if vector is not None:
+                article.vector = vector
+                save = True
+            for key in 'title', 'lang', 'tags':
+                value = article.content_generator.extracted_infos.get(key)
+                if value and getattr(article, key) != value:
+                    setattr(article, key, value)
                 save = True
         if save:
             session.add(article)

@@ -20,7 +20,6 @@ list_feeds_model = default_ns.model("ListFeeds", {
 midle_panel_model = default_ns.model("MiddlePanel", {
         "id": fields.Integer(),
         "feeds_id": fields.List(fields.Integer()),
-        "categories_id": fields.List(fields.Integer()),
         "main_article_id": fields.Integer(),
         "main_feed_title": fields.String(),
         "main_title": fields.String(),

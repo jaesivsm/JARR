@@ -51,7 +51,6 @@ const mapDispatchToProps = (dispatch) => ({
       dispatch(doFetchCluster(cluster.id));
       dispatch(changeReadCount({
         feedsId: cluster["feeds_id"],
-        categoriesId: cluster["categories_id"],
         action: "read" }));
     } else if (unreadOnClose) {
       // panel is expanded and the filters implies
@@ -61,7 +60,6 @@ const mapDispatchToProps = (dispatch) => ({
                              { read: false, "read_reason": null }));
       dispatch(changeReadCount(
           { feedsId: cluster["feeds_id"],
-            categoriesId: cluster["categories_id"],
             action: "unread" }));
     } else {
       // filters says everybody is displayed
@@ -92,7 +90,6 @@ const mapDispatchToProps = (dispatch) => ({
                             { read: true, "read_reason": "consulted" }));
       dispatch(changeReadCount({
         feedsId: cluster["feeds_id"],
-        categoriesId: cluster["categories_id"],
         action: "read" }));
     }
   },
@@ -190,7 +187,6 @@ Cluster.propTypes = {
     read: PropTypes.bool.isRequired,
     liked: PropTypes.bool.isRequired,
     "feeds_id": PropTypes.array.isRequired,
-    "categories_id": PropTypes.array.isRequired,
     "main_title": PropTypes.string.isRequired,
     "main_link": PropTypes.string.isRequired,
     "main_feed_title": PropTypes.string.isRequired,

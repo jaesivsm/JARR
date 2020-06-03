@@ -61,15 +61,11 @@ class ClusterController(AbstractController):
                     .read(**art_filters).with_entities(Article.cluster_id)}
 
     @staticmethod
-    def _get_selected(fields, art_f_alias, art_c_alias, filter_on_category):
+    def _get_selected(fields, art_f_alias, art_c_alias):
         """Return selected fields"""
         selected_fields = list(fields.values())
         selected_fields.append(func.array_agg(art_f_alias.feed_id,
                 type_=ARRAY(Integer)).label('feeds_id'))
-        if filter_on_category:
-            selected_fields.append(func.array_agg(
-                    art_c_alias.category_id,
-                    type_=ARRAY(Integer)).label('categories_id'))
         return selected_fields
 
     def _join_on_exist(self, query, alias, attr, value, filters):
@@ -86,8 +82,7 @@ class ClusterController(AbstractController):
     @staticmethod
     def _iter_on_query(query):
         """For a given query will iter on it, transforming raw rows to proper
-        dictionnaries and handling the agreggation around feeds_id and
-        categories_id.
+        dictionnaries and handling the agreggation around feeds_id.
         """
 
         def _ensure_zero_list(clu, key):
@@ -98,26 +93,7 @@ class ClusterController(AbstractController):
             for key in JR_FIELDS:
                 row[key] = getattr(clu, key)
             row['feeds_id'] = clu.feeds_id
-            row['categories_id'] = _ensure_zero_list(clu, 'categories_id')
             yield row
-
-    def _light_no_filter_query(self, processed_filters,
-                               limit=JR_PAGE_LENGTH):
-        """If there's no filter to shorten the query (eg we're just selecting
-        all feed with no category) we make a request more adapted to the task.
-        """
-        sub_query = session.query(*JR_SQLA_FIELDS)\
-                           .filter(*processed_filters)\
-                           .order_by(Cluster.main_date.desc())\
-                           .cte('clu')
-
-        aggreg_feed = func.array_agg(Article.feed_id).label('feeds_id')
-        aggreg_cat = func.array_agg(Article.category_id).label('categories_id')
-        query = (session.query(sub_query, aggreg_feed, aggreg_cat)
-                .join(Article, Article.cluster_id == sub_query.c.id)
-                .filter(Article.user_id == self.user_id))
-        yield from self._iter_on_query(query.group_by(*sub_query.c)
-                .order_by(sub_query.c.main_date.desc()).limit(limit))
 
     def join_read(self, feed_id=None, limit=JR_PAGE_LENGTH, **filters):
         filter_on_cat = 'category_id' in filters
@@ -131,34 +107,30 @@ class ClusterController(AbstractController):
             return
 
         processed_filters = self._to_filters(**filters)
-        if feed_id is None and not filter_on_cat:
-            # no filter with an interesting index to use, using another query
-            yield from self._light_no_filter_query(processed_filters,
-                                                   JR_PAGE_LENGTH)
-            return
 
         art_feed_alias, art_cat_alias = aliased(Article), aliased(Article)
         # DESC of what's going on below :
         # base query with the above fields and the aggregations
         query = session.query(*self._get_selected(JR_FIELDS,
-                art_feed_alias, art_cat_alias, filter_on_cat))
+                art_feed_alias, art_cat_alias))
 
         # adding parent filter, but we can't just filter on one id, because
         # we'll miss all the other parent of the cluster
         if feed_id:
             query = self._join_on_exist(query, art_feed_alias,
                                         'feed_id', feed_id, processed_filters)
-        else:
-            query = query.join(art_feed_alias,
-                               and_(art_feed_alias.user_id == self.user_id,
-                                    art_feed_alias.cluster_id == Cluster.id,
-                                    *processed_filters))
-        if filter_on_cat:
+
+        elif filter_on_cat:
             # joining only if filtering on categories to lighten the query
             # as every article doesn't obligatorily have a category > outerjoin
             query = self._join_on_exist(query, art_cat_alias,
                                         'category_id', cat_id,
                                         processed_filters)
+        if not feed_id:
+            query = query.join(art_feed_alias,
+                               and_(art_feed_alias.user_id == self.user_id,
+                                    art_feed_alias.cluster_id == Cluster.id,
+                                    *processed_filters))
 
         # applying common filter (read / liked)
         # grouping all the fields so that agreg works on distant ids
