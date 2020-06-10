@@ -57,7 +57,7 @@ function Content({ content, hidden }) {
           id="ytplayer"
           type="text/html"
           src={`https://www.youtube.com/embed/${content.videoId}`}
-          frameborder="0"
+          frameBorder="0"
         />
       </div>
     );
