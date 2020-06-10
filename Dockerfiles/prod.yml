@@ -1,0 +1,49 @@
+version: '3'
+services:
+  jarr-server:
+    image: jaesivsm/jarr-server:develop
+    ports:
+      - "127.0.0.1:8500:8000"
+    volumes:
+      - /etc/jarr:/etc/jarr:ro
+    depends_on:
+      - postgres
+      - redis
+      - rabbitmq
+    networks:
+      jarr:
+      prometheus:
+        aliases:
+          - api.jarr.info
+  jarr-front:
+    build:
+      context: ./Dockerfiles/front
+    depends_on:
+      - jarr-server
+    networks:
+      - jarr
+  jarr-worker:
+    image: jaesivsm/jarr-worker:develop
+    volumes:
+      - /etc/jarr:/etc/jarr:ro
+    depends_on:
+      - postgres
+      - redis
+      - rabbitmq
+    networks:
+      - jarr
+  rabbitmq:
+    image: rabbitmq
+    networks:
+      - jarr
+  redis:
+    image: redis
+    networks:
+      - jarr
+  postgres:
+    image: postgres:11
+    networks:
+      - jarr
+
+networks:
+  jarr:
