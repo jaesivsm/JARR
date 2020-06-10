@@ -31,14 +31,18 @@ const mapDispatchToProps = (dispatch) => ({
   },
   listClusters(e, filters, isDesktop, isFolded, selectedCategoryId) {
     e.stopPropagation();
+    // hide menu if in splitted mode and we're openning a un-opened category or feed
     if(!isDesktop && (filters.feedId || (filters.categoryId && isFolded))) {
       dispatch(toggleMenu(false));
     }
+    // toggling folding of category on selection
+    /*
     if(isFolded && filters.categoryId){
       dispatch(toggleFolding(filters.categoryId));
     } else if (!isFolded && filters.categoryId && filters.categoryId === selectedCategoryId) {
       dispatch(toggleFolding(filters.categoryId));
     }
+    */
     dispatch(doListClusters(filters));
   },
 });
