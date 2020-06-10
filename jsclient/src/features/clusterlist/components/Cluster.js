@@ -118,7 +118,7 @@ const Cluster = ({ index, cluster, loadedCluster,
       content = <div className={classes.loadingWrap}><CircularProgress /></div>;
     }
     content = (
-      <ExpansionPanelDetails className={classes.content}
+      <ExpansionPanelDetails autoFocus className={classes.content}
                              key={`cl-${cluster.id}`}>
         {content}
       </ExpansionPanelDetails>
