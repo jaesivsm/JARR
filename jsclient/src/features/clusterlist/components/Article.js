@@ -6,7 +6,7 @@ import Divider from "@material-ui/core/Divider";
 
 import makeStyles from "./style";
 
-function Article({ article, hidden }) {
+function Article({ article, hidden, showTitle }) {
   const classes = makeStyles();
   let comments;
   if (article.comments) {
@@ -18,6 +18,7 @@ function Article({ article, hidden }) {
   }
   return (
     <div hidden={hidden} className={classes.article}>
+      <h1 hidden={!showTitle}>{article.title}</h1>
       <p>
         <span>Link</span>
         <Link color="secondary" target="_blank"
@@ -38,10 +39,12 @@ function Article({ article, hidden }) {
 
 Article.propTypes = {
   article: PropTypes.shape({
+    title: PropTypes.string.isRequired,
     link: PropTypes.string.isRequired,
     content: PropTypes.string.isRequired,
     comments: PropTypes.string,
   }),
+  showTitle: PropTypes.bool.isRequired,
   hidden: PropTypes.bool.isRequired,
 };
 

@@ -25,21 +25,18 @@ function Articles({ articles, icons, content }) {
 
   let contentTitle, contentTab;
   if (articles.length === 1 && !content) {
-    return <Article article={articles[0]} hidden={false} />;
+    return <Article article={articles[0]} />;
   } else if (content) {
     contentTitle = (
-      <Tab key="t-0"
+      <Tab key="t-0" label=""
         className={classes.tabs}
-      //
         icon={<img src={jarrIcon} alt={proccessedContentTitle}
                    title={proccessedContentTitle} />}
-        label={proccessedContentTitle}
         value={0} aria-controls="a-0"
       />
     );
     contentTab = <Content content={content} hidden={0 !== currentIndex} />;
   }
-  const isOnlyOneTitle = [...new Set(articles.map((a) => a.title))].length === 1;
   return (
     <>
       <Tabs indicatorColor="primary" textColor="primary"
@@ -48,20 +45,19 @@ function Articles({ articles, icons, content }) {
         {contentTitle}
         {articles.map((article, index) => {
           index = content ? index + 1 : index;
-          return (<Tab key={`t-${index}`}
-            className={classes.tabs}
-            icon={<ClusterIcon iconUrl={icons[article["feed_id"]]} />}
-            label={isOnlyOneTitle ? null : article.title}
-            value={index}
-            aria-controls={`a-${index}`}
-          />);
+          return (<Tab key={`t-${index}`} label=""
+                       className={classes.tabs}
+                       icon={<ClusterIcon iconUrl={icons[article["feed_id"]]} />}
+                       value={index}
+                       aria-controls={`a-${index}`}
+                  />);
         })}
       </Tabs>
       {contentTab}
       {articles.map((article, index) => {
         index = content ? index + 1 : index;
         return (
-          <Article
+          <Article showTitle
             key={`a-${index}-${index !== currentIndex ? "h" : ""}`}
             id={`a-${index}`}
             article={article}
