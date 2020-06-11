@@ -69,6 +69,9 @@ class Refresh(Resource):
         jwt = current_app.extensions["jwt"]
         user = UserController(current_identity.id).get(id=current_identity.id)
         access_token = jwt.jwt_encode_callback(user).decode("utf8")
+        UserController(user.id).update({"id": user.id},
+                                       {"last_connection": utc_now(),
+                                        "renew_password_token": ""})
         SERVER.labels(method="get", uri="/auth/refresh", result='2XX').inc()
         return {"access_token": "%s %s" % (conf.auth.jwt_header_prefix,
                                            access_token)}, 200
