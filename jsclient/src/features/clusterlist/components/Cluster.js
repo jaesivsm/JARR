@@ -86,8 +86,16 @@ const mapDispatchToProps = (dispatch) => ({
   readOnRedirect(e, cluster) {
     e.stopPropagation();
     if (!cluster.read) {
-      dispatch(doEditCluster(cluster.id,
-                            { read: true, "read_reason": "consulted" }));
+      // setting a slight timeout so that event loop isn't broken by
+      // the mark as read action (which would prevent link opening only with
+      // middle click)
+      const mark = () => dispatch(doEditCluster(
+          cluster.id, { read: true, "read_reason": "consulted" }));
+      if(e.type === "mouseup") {
+        setTimeout(mark, 1);
+      } else {
+        mark();
+      }
       dispatch(changeReadCount({
         feedsId: cluster["feeds_id"],
         action: "read" }));
@@ -138,10 +146,11 @@ const Cluster = ({ index, cluster, loadedCluster,
           className={classes.summary}
         >
           <div className={classes.link}>
-            <Link href={cluster["main_link"]} target="_blank"
-              aria-label="link to the resource"
-              color="secondary"
-              onFocus={(e) => e.stopPropagation()}
+            <Link href={cluster["main_link"]} target="_blank" color="secondary"
+              onMouseUp={(e) => {
+                // only middle click
+                if(e.button === 1) {readOnRedirect(e, cluster)}
+              }}
               onClick={(e) => readOnRedirect(e, cluster)}>
               {[ ...new Set(cluster["feeds_id"])].filter((feedId) => icons[feedId])
                       .map((feedId) => <ClusterIcon
