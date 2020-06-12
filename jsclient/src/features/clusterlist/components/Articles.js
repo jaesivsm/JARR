@@ -25,7 +25,7 @@ function Articles({ articles, icons, content }) {
 
   let contentTitle, contentTab;
   if (articles.length === 1 && !content) {
-    return <Article article={articles[0]} />;
+    return <Article article={articles[0]} hidden={false} showTitle={false} />;
   } else if (content) {
     contentTitle = (
       <Tab key="t-0" label=""

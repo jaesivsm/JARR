@@ -45,7 +45,7 @@ const makeMapStateToProps = () => {
 }
 
 const mapDispatchToProps = (dispatch) => ({
-  handleClickOnPanel(e, cluster, unreadOnClose, expanded) {
+  handleClickOnPanel(cluster, unreadOnClose, expanded) {
     if (!expanded) {
       // panel is folded, we fetch the cluster
       dispatch(doFetchCluster(cluster.id));
@@ -58,9 +58,8 @@ const mapDispatchToProps = (dispatch) => ({
       dispatch(removeClusterSelection());
       dispatch(doEditCluster(cluster.id,
                              { read: false, "read_reason": null }));
-      dispatch(changeReadCount(
-          { feedsId: cluster["feeds_id"],
-            action: "unread" }));
+      dispatch(changeReadCount({ feedsId: cluster["feeds_id"],
+                                 action: "unread" }));
     } else {
       // filters says everybody is displayed
       // so we"re not triggering changes in cluster list
@@ -118,8 +117,7 @@ const Cluster = ({ index, cluster, loadedCluster,
       content = <div className={classes.loadingWrap}><CircularProgress /></div>;
     }
     content = (
-      <ExpansionPanelDetails autoFocus className={classes.content}
-                             key={`cl-${cluster.id}`}>
+      <ExpansionPanelDetails className={classes.content} key={`cl-${cluster.id}`}>
         {content}
       </ExpansionPanelDetails>
     );
@@ -130,13 +128,9 @@ const Cluster = ({ index, cluster, loadedCluster,
         expanded={expanded}
         elevation={expanded ? 10: 2}
         TransitionProps={{ unmountOnExit: true }}
-        key={"c"
-             + (expanded ? "e" : "")
-             + (cluster.read ? "r" : "")
-             + (cluster.liked ? "l" : "")
-             + cluster.id}
-        onChange={(e) => handleClickOnPanel(e, cluster,
-                                            unreadOnClose, expanded)}
+        key={`c${expanded ? "e" : ""}${cluster.read ? "r" : ""}${cluster.liked ? "l" : ""}${cluster.id}`}
+        onChange={() => handleClickOnPanel(cluster,
+                                           unreadOnClose, expanded)}
       >
         <ExpansionPanelSummary
           expandIcon={<ExpandMoreIcon />}

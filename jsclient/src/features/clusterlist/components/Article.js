@@ -1,13 +1,25 @@
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import PropTypes from "prop-types";
 import Typography from "@material-ui/core/Typography";
 import Link from "@material-ui/core/Link";
 import Divider from "@material-ui/core/Divider";
+import { headerHeight } from "../../../const";
 
 import makeStyles from "./style";
 
 function Article({ article, hidden, showTitle }) {
   const classes = makeStyles();
+  const ref = useRef(null);
+  useEffect(() => {
+      if (ref.current) {
+          console.log(ref.current.offsetParent);
+        const offsetToParent = ref.current.offsetTop
+              + ref.current.offsetParent.offsetTop
+              - headerHeight * 2.3;
+        window.scrollTo({ left: 0, top: offsetToParent, behavior: "smooth" });
+      }
+  }, [ref])
+
   let comments;
   if (article.comments) {
     comments = (<p><span>Comments</span>
@@ -17,7 +29,7 @@ function Article({ article, hidden, showTitle }) {
                   </Link></p>);
   }
   return (
-    <div hidden={hidden} className={classes.article}>
+    <div hidden={hidden} className={classes.article} ref={ref}>
       <h1 hidden={!showTitle}>{article.title}</h1>
       <p>
         <span>Link</span>
