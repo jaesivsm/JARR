@@ -11,15 +11,14 @@ function Article({ article, hidden, showTitle }) {
   const classes = makeStyles();
   const ref = useRef(null);
   useEffect(() => {
-      if (ref.current) {
-          console.log(ref.current.offsetParent);
-        const offsetToParent = ref.current.offsetTop
-              + ref.current.offsetParent.offsetTop
-              - headerHeight * 2.3;
-        window.scrollTo({ left: 0, top: offsetToParent, behavior: "smooth" });
-      }
-  }, [ref])
-
+    if (ref.current) {
+      window.scrollTo({ left: 0,
+                        top: ref.current.offsetTop
+                            + ref.current.offsetParent.offsetTop
+                            - headerHeight * 2.3,
+                        behavior: "smooth" });
+    }
+  }, [ref]);
   let comments;
   if (article.comments) {
     comments = (<p><span>Comments</span>
