@@ -92,14 +92,6 @@ def process_filters(filters, article, only_actions=None):
         only_actions = set(FiltersAction)
     for filter_ in filters:
         filter_action = FiltersAction(filter_.get('action'))
-
-        if _is_filter_to_skip(filter_action, only_actions, article):
-            logger.debug('ignoring filter %r', filter_)
-            continue
-
-        if not _is_filter_matching(filter_, article):
-            continue
-
         _alter_result(filter_action, filter_result)
 
     if any(filter_result[key] != defaults[i] for i, key in enumerate(keys)):
