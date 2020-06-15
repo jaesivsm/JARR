@@ -7,6 +7,7 @@ from werkzeug.exceptions import BadRequest, NotFound, UnprocessableEntity
 
 from jarr.api.auth import model
 from jarr.api.common import get_ui_url
+from jarr.lib.utils import utc_now
 from jarr.bootstrap import conf
 from jarr.controllers import UserController
 from jarr.metrics import SERVER
