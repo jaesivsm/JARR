@@ -29,18 +29,6 @@ class FiltersTrigger(Enum):
     NO_MATCH = 'no match'
 
 
-def _is_filter_to_skip(filter_action, only_actions, article):
-    if filter_action not in only_actions:
-        return True
-    if filter_action in {FiltersType.REGEX, FiltersType.MATCH,
-            FiltersType.EXACT_MATCH} and 'title' not in article:
-        return True
-    if filter_action in {FiltersType.TAG_MATCH, FiltersType.TAG_CONTAINS} \
-            and 'tags' not in article:
-        return True
-    return False
-
-
 def _is_filter_matching(filter_, article):
     pattern = filter_.get('pattern', '')
     filter_type = FiltersType(filter_.get('type'))
@@ -92,7 +80,8 @@ def process_filters(filters, article, only_actions=None):
         only_actions = set(FiltersAction)
     for filter_ in filters:
         filter_action = FiltersAction(filter_.get('action'))
-        _alter_result(filter_action, filter_result)
+        if _is_filter_matching(filter_, article):
+            _alter_result(filter_action, filter_result)
 
     if any(filter_result[key] != defaults[i] for i, key in enumerate(keys)):
         logger.info('processing filters resulted on %s for Art(f=%s, eid=%r)',
