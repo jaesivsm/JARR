@@ -56,7 +56,7 @@ function Content({ content, hidden }) {
           title="JARR processed Player"
           id="ytplayer"
           type="text/html"
-          src={`https://www.youtube.com/embed/${content.videoId}`}
+          src={`https://www.youtube-nocookie.com/embed/${content.videoId}`}
           frameBorder="0"
         />
       </div>
