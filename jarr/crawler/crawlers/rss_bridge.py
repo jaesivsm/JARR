@@ -3,6 +3,7 @@ from urllib.parse import SplitResult, urlencode, urlsplit, urlunsplit
 from jarr.bootstrap import conf
 from jarr.crawler.crawlers.classic import ClassicCrawler
 from jarr.lib.enums import FeedType
+from jarr.crawler.article_builders.twitter import TwitterArticleBuilder
 
 
 class RssBridgeMixin:
@@ -35,3 +36,4 @@ class SoundcloudCrawler(RssBridgeMixin, ClassicCrawler):
 class TwitterCrawler(RssBridgeMixin, ClassicCrawler):
     feed_type = FeedType.twitter
     bridge = 'Twitter'
+    article_builder = TwitterArticleBuilder
