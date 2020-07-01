@@ -18,8 +18,7 @@ class RssBridgeAbstractCrawler(ClassicCrawler):
         query = {'action': 'display', 'format': self.bridge_format,
                  'bridge': self.bridge, 'u': self.feed.link}
 
-        return urlunsplit(SplitResult(scheme=split.scheme,
-                                      netloc=split.netloc,
+        return urlunsplit(SplitResult(scheme=split.scheme, netloc=split.netloc,
                                       path=split.path or '/',
                                       query=urlencode(query), fragment=''))
 
