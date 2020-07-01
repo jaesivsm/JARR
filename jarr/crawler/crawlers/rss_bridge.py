@@ -3,12 +3,13 @@ from urllib.parse import SplitResult, urlencode, urlsplit, urlunsplit
 from jarr.bootstrap import conf
 from jarr.crawler.crawlers.classic import ClassicCrawler
 from jarr.lib.enums import FeedType
-from jarr.crawler.article_builders.twitter import TwitterArticleBuilder
+from jarr.crawler.article_builders.rss_bridge import RSSBridgeArticleBuilder, RSSBridgeTwitterArticleBuilder
 
 
-class RssBridgeMixin:
+class RssBridgeAbstractCrawler(ClassicCrawler):
     bridge = None  # type: str
     bridge_format = 'AtomFormat'
+    article_builder = RSSBridgeArticleBuilder
 
     def get_url(self):
         split = urlsplit(conf.plugins.rss_bridge) \
@@ -23,17 +24,17 @@ class RssBridgeMixin:
                                       query=urlencode(query), fragment=''))
 
 
-class InstagramCrawler(RssBridgeMixin, ClassicCrawler):
+class InstagramCrawler(RssBridgeAbstractCrawler):
     feed_type = FeedType.instagram
     bridge = 'InstagramBridge'
 
 
-class SoundcloudCrawler(RssBridgeMixin, ClassicCrawler):
+class SoundcloudCrawler(RssBridgeAbstractCrawler):
     feed_type = FeedType.soundcloud
-    bridge = 'Soundcloud'
+    bridge = 'SoundcloudBridge'
 
 
-class TwitterCrawler(RssBridgeMixin, ClassicCrawler):
+class TwitterCrawler(RssBridgeAbstractCrawler):
     feed_type = FeedType.twitter
-    bridge = 'Twitter'
-    article_builder = TwitterArticleBuilder
+    bridge = 'TwitterBridge'
+    article_builder = RSSBridgeTwitterArticleBuilder

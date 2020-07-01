@@ -1,7 +1,17 @@
 from jarr.crawler.article_builders.classic import ClassicArticleBuilder
 
 
-class TwitterArticleBuilder(ClassicArticleBuilder):
+class RSSBridgeArticleBuilder(ClassicArticleBuilder):
+
+    @property
+    def do_skip_creation(self):
+        title = self.entry.get('title') or ''
+        if title.startswith('Bridge returned error'):
+            return True
+        return super().do_skip_creation
+
+
+class RSSBridgeTwitterArticleBuilder(RSSBridgeArticleBuilder):
 
     def __init__(self, feed, entry):
         super().__init__(feed, entry)
@@ -9,7 +19,7 @@ class TwitterArticleBuilder(ClassicArticleBuilder):
         self._link = None
         self._parse_rss_bridge_twitter_entry()
 
-    def _parse_rss_bridge_twitter_entry():
+    def _parse_rss_bridge_twitter_entry(self):
         try:
             for token in self.entry['title'].split()[::-1]:
                 if not token.startswith('https://t.co/'):
