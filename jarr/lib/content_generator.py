@@ -130,19 +130,20 @@ class TruncatedContentGenerator(ContentGenerator):
 class RedditContentGenerator(TruncatedContentGenerator):
     feed_type = FeedType.reddit
 
+    @staticmethod
+    def _get_root(url):
+        try:
+            return url.strip('/').rsplit('/', 1)[0]
+        except (AttributeError, TypeError, ValueError, IndexError):
+            return url
+
     @property
     def is_pure_reddit_post(self):
         if self.article.article_type is not None:
-            return False
-        if self.article.link == self.article.comments:
-            return True
-        try:
-            head = requests.head(self.article.comments, allow_redirects=True,
-                                 timeout=conf.crawler.timeout)
-            head.raise_for_status()
-        except Exception:
-            return False
-        if self.article.link == head.url:
+            return False  # not pure if has been identified as typed
+        link_root = self._get_root(self.article.link)
+        comment_root = self._get_root(self.article.comments)
+        if link_root and comment_root and link_root == comment_root:
             return True
         return False
 
