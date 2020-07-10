@@ -1,9 +1,10 @@
 from urllib.parse import SplitResult, urlencode, urlsplit, urlunsplit
 
 from jarr.bootstrap import conf
+from jarr.crawler.article_builders.rss_bridge import (
+    RSSBridgeArticleBuilder, RSSBridgeTwitterArticleBuilder)
 from jarr.crawler.crawlers.classic import ClassicCrawler
 from jarr.lib.enums import FeedType
-from jarr.crawler.article_builders.rss_bridge import RSSBridgeArticleBuilder, RSSBridgeTwitterArticleBuilder
 
 
 class RssBridgeAbstractCrawler(ClassicCrawler):
