@@ -18,7 +18,6 @@ class User(Base):
     email = Column(String(254))
     date_created = Column(UTCDateTime, default=utc_now)
     last_connection = Column(UTCDateTime, default=utc_now)
-    readability_key = Column(String, default='')
     renew_password_token = Column(String, default='')
 
     timezone = Column(String, default=conf.timezone)

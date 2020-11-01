@@ -8,6 +8,7 @@ from werkzeug.exceptions import Forbidden, Unauthorized
 from jarr.bootstrap import session
 from jarr.controllers import CategoryController, FeedController
 from jarr.lib.clustering_af.postgres_casting import to_vector
+from jarr.lib.url_cleaners import remove_utm_tags
 from jarr.lib.utils import utc_now
 from jarr.models import Article, User
 
@@ -76,7 +77,8 @@ class ArticleController(AbstractController):
             raise Forbidden("no right on feed %r" % feed.id)
         attrs['user_id'], attrs['category_id'] = feed.user_id, feed.category_id
         attrs['vector'] = to_vector(attrs)
-        attrs['link_hash'] = sha1(attrs['link'].encode('utf8')).digest()
+        attrs['link_hash'] = (sha1(remove_utm_tags(attrs['link']
+                                   ).encode('utf8')).digest())
         article = super().create(**attrs)
         return article
 
