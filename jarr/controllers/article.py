@@ -77,8 +77,11 @@ class ArticleController(AbstractController):
             raise Forbidden("no right on feed %r" % feed.id)
         attrs['user_id'], attrs['category_id'] = feed.user_id, feed.category_id
         attrs['vector'] = to_vector(attrs)
-        attrs['link_hash'] = (sha1(remove_utm_tags(attrs['link']
-                                   ).encode('utf8')).digest())
+        if 'link' in attrs:
+            attrs['link_hash'] = (sha1(remove_utm_tags(attrs['link']
+                                       ).encode('utf8')).digest())
+            if 'content' in attrs:
+                attrs['content'] = clean_urls(attrs['content'], attrs['link'])
         article = super().create(**attrs)
         return article
 
