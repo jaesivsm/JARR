@@ -1,11 +1,9 @@
 import logging
-from urllib.parse import (ParseResult, parse_qs, unquote, urlencode, urlparse,
-                          urlunparse)
+from urllib.parse import ParseResult, parse_qs, urlencode, urlparse, urlunparse
 
-import goose3
 from bs4 import BeautifulSoup
 
-from jarr.bootstrap import conf, is_secure_served
+from jarr.bootstrap import is_secure_served
 
 HTTPS_IFRAME_DOMAINS = ('vimeo.com', 'youtube.com', 'youtu.be')
 logger = logging.getLogger(__name__)
