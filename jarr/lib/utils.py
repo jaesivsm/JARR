@@ -59,10 +59,10 @@ def rebuild_url(url, base_split):
     return urllib.parse.urlunsplit(new_split)
 
 
-def to_hash(text, alg='md5', encoding='utf8'):
-    method = md5 if alg == 'md5' else sha1
+def digest(text, algo='md5', out='str', encoding='utf8'):
+    method = md5 if algo == 'md5' else sha1
     text = text.encode(encoding) if hasattr(text, 'encode') else text
-    return method(text).hexdigest()
+    return getattr(method(text), 'hexdigest' if out == 'str' else 'digest')()
 
 
 def jarr_get(url, timeout=None, user_agent=None, headers=None, **kwargs):
