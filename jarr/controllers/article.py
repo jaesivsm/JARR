@@ -1,6 +1,5 @@
 import logging
 from datetime import timedelta
-from hashlib import sha1
 
 from sqlalchemy import func
 from werkzeug.exceptions import Forbidden, Unauthorized
@@ -8,8 +7,8 @@ from werkzeug.exceptions import Forbidden, Unauthorized
 from jarr.bootstrap import session
 from jarr.controllers import CategoryController, FeedController
 from jarr.lib.clustering_af.postgres_casting import to_vector
-from jarr.lib.url_cleaners import remove_utm_tags
-from jarr.lib.utils import utc_now
+from jarr.lib.url_cleaners import clean_urls, remove_utm_tags
+from jarr.lib.utils import utc_now, to_hash
 from jarr.models import Article, User
 
 from .abstract import AbstractController
@@ -78,8 +77,7 @@ class ArticleController(AbstractController):
         attrs['user_id'], attrs['category_id'] = feed.user_id, feed.category_id
         attrs['vector'] = to_vector(attrs)
         if 'link' in attrs:
-            attrs['link_hash'] = (sha1(remove_utm_tags(attrs['link']
-                                       ).encode('utf8')).digest())
+            attrs['link_hash'] = to_hash(remove_utm_tags(attrs['link']), 'sha')
             if 'content' in attrs:
                 attrs['content'] = clean_urls(attrs['content'], attrs['link'])
         article = super().create(**attrs)
