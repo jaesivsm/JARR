@@ -6,7 +6,7 @@ import dateutil.parser
 
 from jarr.bootstrap import conf
 from jarr.lib.const import FEED_ACCEPT_HEADERS
-from jarr.lib.utils import rfc_1123_utc, to_hash, utc_now
+from jarr.lib.utils import digest, rfc_1123_utc, utc_now
 
 logger = logging.getLogger(__name__)
 MAX_AGE_RE = re.compile('max-age=([0-9]+)')
