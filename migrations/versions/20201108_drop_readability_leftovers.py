@@ -5,15 +5,16 @@ Revises: f5978c8a8740
 Create Date: 2020-11-08 20:28:31.145702
 
 """
+import logging
 
-# revision identifiers, used by Alembic.
+import sqlalchemy as sa
+from alembic import op
+
+logger = logging.getLogger(__name__)
 revision = 'f4543055e780'
 down_revision = 'f5978c8a8740'
 branch_labels = None
 depends_on = None
-
-from alembic import op
-import sqlalchemy as sa
 
 
 def upgrade():
