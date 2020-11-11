@@ -88,7 +88,7 @@ class AbstractArticleBuilder:
         self.article['lang'] = self.extract_lang(entry)
         self.article['comments'] = self.extract_comments(entry)
         if self.article.get('link'):
-            attrs['link_hash'] = self.to_hash(self.article['link'])
+            self.article['link_hash'] = self.to_hash(self.article['link'])
             if self.article.get('content'):
                 self.article['content'] = clean_urls(self.article['content'],
                                                      self.article['link'])
