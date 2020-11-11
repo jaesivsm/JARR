@@ -120,6 +120,7 @@ class AbstractArticleBuilder:
 
         if self.article['link'] != head.url:
             self.article['link'] = head.url  # fix link in case of redirect
+            # removing utm_tags from link_hash, to allow clustering despite em
             clean_link = remove_utm_tags(self.article['link'])
             if clean_link != self.article['link']:
                 clean_head = self._head(clean_link)
