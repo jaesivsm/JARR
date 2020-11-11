@@ -1,4 +1,5 @@
 from jarr.crawler.article_builders.classic import ClassicArticleBuilder
+from bs4 import BeautifulSoup
 
 
 class RSSBridgeArticleBuilder(ClassicArticleBuilder):
@@ -36,13 +37,13 @@ class RSSBridgeTwitterArticleBuilder(RSSBridgeArticleBuilder):
     def extract_link(self, entry):
         if self._link:
             return self._link
-        return entry.get('link')
+        return super().extract_link(entry)
 
     def extract_title(self, entry):
         if self._title:
             return self._title
-        return entry.get('title')
+        return super().extract_title(entry)
 
     @staticmethod
     def extract_comments(entry):
-        return entry.get('link')
+        return super().extract_comments(entry)

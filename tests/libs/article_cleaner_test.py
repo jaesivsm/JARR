@@ -20,7 +20,7 @@ class ConstructArticleTest(unittest.TestCase):
         self.head_patch = self._head_patch.start()
 
     def tearDown(self):
-        self._head_patch.stop
+        self._head_patch.stop()
 
     @property
     def entry(self):
