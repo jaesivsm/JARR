@@ -1,7 +1,10 @@
 import unittest
-from jarr.models.feed import Feed
-from jarr.lib.enums import FeedType
+
 from jarr.crawler.article_builders.reddit import RedditArticleBuilder
+from jarr.lib.content_generator import RedditContentGenerator
+from jarr.lib.enums import FeedType
+from jarr.models.article import Article
+from jarr.models.feed import Feed
 
 CONTENT = """<table><tr><td>
 <a href="https://www.reddit.com/r/Map_Porn/comments/5mxq4o/\
@@ -34,3 +37,26 @@ class RedditIntegrationTest(unittest.TestCase):
                          'https://www.reddit.com/r/Map_Porn/comments/5mxq4o/'
                          'map_of_irish_clans_in_times_of_henry_viii_1294/')
         self.assertEqual(builder.article['tags'], set())
+
+    def test_reddit_pureness(self):
+        link = 'https://www.reddit.com/r/france/comments/redditid/blabla/'
+        link2 = 'https://www.reddit.com/r/france/comments/redditid2/blablabla/'
+
+        # pure reddit post
+        art = Article(link=link, comments=link)
+        gen = RedditContentGenerator(art)
+        self.assertTrue(gen.is_pure_reddit_post)
+        self.assertIsNone(gen.get_vector())
+        self.assertEqual((False, {}), gen.generate())
+
+        # reddit linking external
+        art = Article(link='https://another.type/of/link', comments=link)
+        self.assertFalse(RedditContentGenerator(art).is_pure_reddit_post)
+
+        # reddit internal not pure
+        art = Article(link=link, comments=link2)
+        self.assertTrue(RedditContentGenerator(art).is_pure_reddit_post)
+
+        # image are not pure reddit
+        art = Article(link=link, comments=link, article_type='image')
+        self.assertFalse(RedditContentGenerator(art).is_pure_reddit_post)

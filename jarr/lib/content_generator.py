@@ -5,6 +5,7 @@ from functools import lru_cache
 
 from goose3 import Goose
 from lxml import etree
+import urllib.parse
 
 from jarr.bootstrap import conf
 from jarr.controllers.article import to_vector
@@ -134,24 +135,21 @@ class RedditContentGenerator(TruncatedContentGenerator):
         self._is_pure_reddit_post = None
         super().__init__(article)
 
-    @staticmethod
-    def _get_root(url):
-        try:
-            return url.strip('/').rsplit('/', 1)[0]
-        except (AttributeError, TypeError, ValueError, IndexError):
-            return url
-
     @property
     def is_pure_reddit_post(self):
         if self._is_pure_reddit_post is not None:
-            return self._is_pure_reddit_post
+            return self._is_pure_reddit_post  # no re-computing
         self._is_pure_reddit_post = False
         if self.article.article_type is not None:
-            return False  # not pure if has been identified as typed
-        link_root = self._get_root(self.article.link)
-        comment_root = self._get_root(self.article.comments)
-        if link_root and comment_root and link_root == comment_root:
-            self._is_pure_reddit_post = True
+            return self._is_pure_reddit_post
+        try:
+            split = urllib.parse.urlsplit(self.article.link)
+            paths = split.path.strip('/').split('/')
+            if ('reddit.com' in split.netloc
+                    and paths[0] == 'r' and paths[2] == 'comments'):
+                self._is_pure_reddit_post = True
+        except (AttributeError, IndexError):
+            pass
         return self._is_pure_reddit_post
 
     def get_vector(self):
