@@ -11,6 +11,7 @@ class RssBridgeAbstractCrawler(ClassicCrawler):
     bridge = None  # type: str
     bridge_format = 'AtomFormat'
     article_builder = RSSBridgeArticleBuilder
+    feed_type = None  # forcing this crawler to be ignored
 
     def get_url(self):
         split = urlsplit(conf.plugins.rss_bridge) \

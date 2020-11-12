@@ -89,10 +89,8 @@ class Feed(Base):
 
     @property
     def crawler(self):
-        from jarr.crawler.crawlers import AbstractCrawler, ClassicCrawler
-        crawler_clss = set(AbstractCrawler.__subclasses__()).union(
-                ClassicCrawler.__subclasses__())
-        for crawler_cls in crawler_clss:
+        from jarr.crawler.crawlers import AbstractCrawler
+        for crawler_cls in AbstractCrawler.browse_subcls():
             if self.feed_type is crawler_cls.feed_type:
                 return crawler_cls(self)
         raise ValueError('No crawler for %r' % self.feed_type)
