@@ -1,5 +1,7 @@
-from jarr.crawler.article_builders.classic import ClassicArticleBuilder
 from bs4 import BeautifulSoup
+
+from jarr.crawler.article_builders.classic import ClassicArticleBuilder
+from jarr.lib.enums import ArticleType
 
 
 class RSSBridgeArticleBuilder(ClassicArticleBuilder):
@@ -14,36 +16,26 @@ class RSSBridgeArticleBuilder(ClassicArticleBuilder):
 
 class RSSBridgeTwitterArticleBuilder(RSSBridgeArticleBuilder):
 
-    def __init__(self, feed, entry):
-        super().__init__(feed, entry)
-        self._title = None
-        self._link = None
-        self._parse_rss_bridge_twitter_entry()
-
-    def _parse_rss_bridge_twitter_entry(self):
+    def enhance(self):
         try:
-            for token in self.entry['title'].split()[::-1]:
-                if not token.startswith('https://t.co/'):
-                    continue  # token is not a shortened url
-                head = self._head(token)
-                if head.url.startswith('https://twitter'):
-                    continue  # url is twitter internal
-                self._link = head.url
-                token_position = entry['title'].find(token)
-                self._title = entry['title'][:token_position].strip()
-        except (AttributeError, IndexError, ValueError):
-            self._title = self._link = None
-
-    def extract_link(self, entry):
-        if self._link:
-            return self._link
-        return super().extract_link(entry)
-
-    def extract_title(self, entry):
-        if self._title:
-            return self._title
-        return super().extract_title(entry)
-
-    @staticmethod
-    def extract_comments(entry):
-        return super().extract_comments(entry)
+            content = self.entry['content'][0]['value']
+            content_type = self.entry['content'][0].get('type', 'text/html')
+        except (KeyError, IndexError):
+            return
+        if content_type != 'text/html':
+            return
+        soup = BeautifulSoup(content, 'html.parser')
+        og_link = self.article['link']
+        try:  # trying to find the last link in the tweet
+            last_link = soup.find_all('a')[-1]
+            self.article['link'] = last_link.attrs['href']
+        except (KeyError, AttributeError, TypeError, IndexError):
+            self.article['link'] = og_link
+        else:
+            try:  # link is the image if the link contains the images
+                img = last_link.find_all('img')[0]
+                self.article['link'] = img.attrs['src']
+                self.article['article_type'] = ArticleType.image
+            except (KeyError, AttributeError, TypeError, IndexError):
+                pass
+        return super().enhance()
