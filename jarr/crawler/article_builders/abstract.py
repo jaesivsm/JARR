@@ -69,7 +69,7 @@ class AbstractArticleBuilder:
         raise NotImplementedError()
 
     @staticmethod
-    def to_link_hash(link):
+    def to_hash(link):
         return digest(remove_utm_tags(link), algo='sha1', out='bytes')
 
     def construct(self, entry):
