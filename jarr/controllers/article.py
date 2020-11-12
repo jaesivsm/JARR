@@ -1,6 +1,5 @@
 import logging
 from datetime import timedelta
-from hashlib import sha1
 
 from sqlalchemy import func
 from werkzeug.exceptions import Forbidden, Unauthorized
@@ -8,7 +7,7 @@ from werkzeug.exceptions import Forbidden, Unauthorized
 from jarr.bootstrap import session
 from jarr.controllers import CategoryController, FeedController
 from jarr.lib.clustering_af.postgres_casting import to_vector
-from jarr.lib.utils import utc_now
+from jarr.lib.utils import digest, utc_now
 from jarr.models import Article, User
 
 from .abstract import AbstractController
@@ -76,9 +75,10 @@ class ArticleController(AbstractController):
             raise Forbidden("no right on feed %r" % feed.id)
         attrs['user_id'], attrs['category_id'] = feed.user_id, feed.category_id
         attrs['vector'] = to_vector(attrs)
-        attrs['link_hash'] = sha1(attrs['link'].encode('utf8')).digest()
-        article = super().create(**attrs)
-        return article
+        if not attrs.get('link_hash') and attrs.get('link'):
+            attrs['link_hash'] = digest(attrs['link'],
+                                        algo='sha1', out='bytes')
+        return super().create(**attrs)
 
     def update(self, filters, attrs, return_objs=False, commit=True):
         user_id = attrs.get('user_id', self.user_id)
