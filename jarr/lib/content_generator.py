@@ -3,6 +3,7 @@ import logging
 import re
 from functools import lru_cache
 
+import requests
 from goose3 import Goose
 from lxml import etree
 import urllib.parse

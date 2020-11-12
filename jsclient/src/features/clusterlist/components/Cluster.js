@@ -143,7 +143,7 @@ const Cluster = ({ index, cluster, loadedCluster,
             <Link href={cluster["main_link"]} target="_blank" color="secondary"
               onMouseUp={(e) => {
                 // only middle click
-                if(e.button === 1) {readOnRedirect(e, cluster)}
+                if(e.button === 1) {readOnRedirect(e, cluster)};
               }}
               onClick={(e) => readOnRedirect(e, cluster)}>
               {[ ...new Set(cluster["feeds_id"])].filter((feedId) => icons[feedId])

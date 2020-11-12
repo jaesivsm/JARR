@@ -1,10 +1,7 @@
 import logging
-from datetime import timedelta
 
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from jarr.bootstrap import conf
-from jarr.lib.utils import utc_now
 from jarr.models import User
 
 from .abstract import AbstractController

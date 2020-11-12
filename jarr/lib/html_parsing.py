@@ -6,7 +6,7 @@ from bs4 import BeautifulSoup, SoupStrainer
 
 from jarr.bootstrap import conf
 from jarr.lib.const import FEED_MIMETYPES
-from jarr.lib.utils import clean_lang, jarr_get, rebuild_url
+from jarr.lib.utils import jarr_get, rebuild_url
 
 logger = logging.getLogger(__name__)
 CHARSET_TAG = b'<meta charset='

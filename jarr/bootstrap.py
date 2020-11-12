@@ -4,7 +4,6 @@
 # required imports and code exection for basic functionning
 
 import logging
-import random
 from redis import Redis
 
 from sqlalchemy import create_engine
