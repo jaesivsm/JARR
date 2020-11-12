@@ -1,7 +1,6 @@
 import logging
 
-
-from jarr.lib.utils import to_hash
+from jarr.lib.utils import digest
 
 logger = logging.getLogger(__name__)
 
@@ -18,7 +17,7 @@ def response_etag_match(feed, resp):
 
 
 def response_calculated_etag_match(feed, resp):
-    if ('jarr/"%s"' % to_hash(resp.text)) == feed.etag:
+    if ('jarr/"%s"' % digest(resp.text)) == feed.etag:
         logger.info("%r: calculated hash matches (%d)",
                     feed, resp.status_code)
         return True

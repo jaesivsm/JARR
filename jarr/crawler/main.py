@@ -85,11 +85,14 @@ def feed_cleaner(feed_id):
 def update_slow_metrics():
     uctrl = UserController()
     USER.labels(status='any').set(uctrl.read().count())
-    threshold = utc_now() - timedelta(days=conf.feed.stop_fetch)
-    active = uctrl.read(is_active=True, last_connection__ge=threshold)
+    threshold_connection = utc_now() - timedelta(days=conf.feed.stop_fetch)
+    threshold_created = utc_now() - timedelta(days=conf.feed.stop_fetch + 1)
+    active = uctrl.read(is_active=True,
+                        last_connection__ge=threshold_connection)
     USER.labels(status='active').set(active.count())
-    long_term = uctrl.read(is_active=True, last_connection__ge=threshold,
-                           date_created__lt=threshold)
+    long_term = uctrl.read(is_active=True,
+                           last_connection__ge=threshold_connection,
+                           date_created__lt=threshold_created)
     USER.labels(status='long_term').set(long_term.count())
 
 
@@ -116,6 +119,8 @@ def scheduler():
             break  # only one at a time
     # applying clusterizer
     for user_id in ArticleController.get_user_id_with_pending_articles():
+        if not UserController().get(id=user_id).effectivly_active:
+            continue
         if REDIS_CONN.setnx(JARR_CLUSTERIZER_KEY % user_id, 'true'):
             REDIS_CONN.expire(JARR_CLUSTERIZER_KEY % user_id,
                               conf.crawler.clusterizer_delay)

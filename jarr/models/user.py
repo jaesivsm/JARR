@@ -1,4 +1,5 @@
 import re
+from datetime import timedelta
 
 from sqlalchemy import Boolean, Column, Integer, String, PickleType
 from sqlalchemy.orm import relationship, validates
@@ -17,7 +18,6 @@ class User(Base):
     email = Column(String(254))
     date_created = Column(UTCDateTime, default=utc_now)
     last_connection = Column(UTCDateTime, default=utc_now)
-    readability_key = Column(String, default='')
     renew_password_token = Column(String, default='')
 
     timezone = Column(String, default=conf.timezone)
@@ -54,6 +54,13 @@ class User(Base):
     clusters = relationship('Cluster', back_populates='user',
                             cascade='all, delete-orphan',
                             foreign_keys='[Cluster.user_id]')
+
+    @property
+    def effectivly_active(self):
+        if not self.is_active:
+            return False
+        activity_bound = utc_now() - timedelta(days=conf.feed.stop_fetch)
+        return self.last_connection > activity_bound
 
     @validates('login')
     @staticmethod
