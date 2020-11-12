@@ -130,6 +130,10 @@ class TruncatedContentGenerator(ContentGenerator):
 class RedditContentGenerator(TruncatedContentGenerator):
     feed_type = FeedType.reddit
 
+    def __init__(self, article):
+        self._is_pure_reddit_post = None
+        super().__init__(article)
+
     @staticmethod
     def _get_root(url):
         try:
@@ -139,13 +143,16 @@ class RedditContentGenerator(TruncatedContentGenerator):
 
     @property
     def is_pure_reddit_post(self):
+        if self._is_pure_reddit_post is not None:
+            return self._is_pure_reddit_post
+        self._is_pure_reddit_post = False
         if self.article.article_type is not None:
             return False  # not pure if has been identified as typed
         link_root = self._get_root(self.article.link)
         comment_root = self._get_root(self.article.comments)
         if link_root and comment_root and link_root == comment_root:
-            return True
-        return False
+            self._is_pure_reddit_post = True
+        return self._is_pure_reddit_post
 
     def get_vector(self):
         if not self.is_pure_reddit_post:
