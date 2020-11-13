@@ -35,6 +35,7 @@ class RSSBridgeIntegrationTest(unittest.TestCase):
         builder.enhance()
         self.assertEqual("https://www.enercoop.fr/content/licoornes-les-cooper"
                          "atives-du-monde-dapres", builder.article['link'])
+        self.assertEqual(entry['link'], builder.article['comments'])
         self.assertIsNone(builder.article.get('article_type'))
 
     def test_rss_twitter_bridge_img_handling(self):
@@ -45,4 +46,5 @@ class RSSBridgeIntegrationTest(unittest.TestCase):
         builder.enhance()
         self.assertEqual("https://pbs.twimg.com/media/EmZUUQxXcAAxMTp.jpg",
                          builder.article['link'])
+        self.assertEqual(entry['link'], builder.article['comments'])
         self.assertEqual('image', builder.article['article_type'].value)

@@ -26,11 +26,14 @@ class RSSBridgeTwitterArticleBuilder(RSSBridgeArticleBuilder):
             return
         soup = BeautifulSoup(content, 'html.parser')
         og_link = self.article['link']
+        og_comments = self.article.get('comments')
         try:  # trying to find the last link in the tweet
             last_link = soup.find_all('a')[-1]
+            self.article['comments'] = self.article['link']
             self.article['link'] = last_link.attrs['href']
         except (KeyError, AttributeError, TypeError, IndexError):
             self.article['link'] = og_link
+            self.article['comments'] = og_comments
         else:
             try:  # link is the image if the link contains the images
                 img = last_link.find_all('img')[0]
