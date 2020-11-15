@@ -40,6 +40,7 @@ function Articles({ articles, icons, content }) {
   return (
     <>
       <Tabs indicatorColor="primary" textColor="primary"
+        variant="scrollable" scrollButtons="auto"
         value={currentIndex}
         onChange={(e, v) => setCurrentIndex(v)}>
         {contentTitle}

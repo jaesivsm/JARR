@@ -10,7 +10,7 @@ export const jarrColors = {
     contrastText: "#ffffff"
   },
   background: {
-    default: "rgb(95,158,160, 0.6)"
+    default: "rgb(95, 158, 160, 0.6)"
   },
   danger: {
     main: "#F08080",

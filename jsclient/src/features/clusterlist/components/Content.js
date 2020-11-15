@@ -64,7 +64,7 @@ function Content({ content, hidden }) {
   }
   return (
     <div hidden={hidden} className={classes.article}>
-      <h1>Proccessed Content</h1>
+      <h3>{content.title}</h3>
       {head}
       {comments}
       <Divider />

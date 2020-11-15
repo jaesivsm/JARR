@@ -11,7 +11,7 @@ function Article({ article, hidden, showTitle }) {
   const classes = makeStyles();
   const ref = useRef(null);
   useEffect(() => {
-    if (ref.current) {
+    if (ref.current && ref.current.offsetTop && ref.current.offsetParent) {
       window.scrollTo({ left: 0,
                         top: ref.current.offsetTop
                             + ref.current.offsetParent.offsetTop
@@ -29,7 +29,7 @@ function Article({ article, hidden, showTitle }) {
   }
   return (
     <div hidden={hidden} className={classes.article} ref={ref}>
-      <h1 hidden={!showTitle}>{article.title}</h1>
+      <h3 hidden={!showTitle}>{article.title}</h3>
       <p>
         <span>Link</span>
         <Link color="secondary" target="_blank"
