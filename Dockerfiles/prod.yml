@@ -1,7 +1,9 @@
 version: '3'
 services:
   jarr-server:
-    image: jaesivsm/jarr-server:develop
+    build:
+      context: ../.
+      dockerfile: ./Dockerfiles/server
     ports:
       - "127.0.0.1:8500:8000"
     volumes:
@@ -12,18 +14,18 @@ services:
       - rabbitmq
     networks:
       jarr:
-      prometheus:
-        aliases:
-          - api.jarr.info
   jarr-front:
     build:
-      context: ./Dockerfiles/front
+      context: ../.
+      dockerfile: ./Dockerfiles/front
     depends_on:
       - jarr-server
     networks:
       - jarr
   jarr-worker:
-    image: jaesivsm/jarr-worker:develop
+    build:
+      context: ../.
+      dockerfile: ./Dockerfiles/server
     volumes:
       - /etc/jarr:/etc/jarr:ro
     depends_on:
