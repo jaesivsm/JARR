@@ -19,10 +19,14 @@ REDDIT_FEED = re.compile(SCHEME + r'(www.)?reddit.com/r/([\w\-_]+)/?(.*)$')
 INSTAGRAM_RE = re.compile(SCHEME + r'(www.)?instagram.com/([^ \t\n\r\f\v/]+)')
 TWITTER_RE = re.compile(SCHEME + r'(www.)?twitter.com/([^ \t\n\r\f\v/]+)')
 TUMBLR_RE = re.compile(SCHEME + r'([^ \t\n\r\f\v/]+).tumblr.com/.*$')
+YOUTUBE_CHANNEL_RE = re.compile(r'((http|https):\/\/)?(www\.)?youtube\.com\/'
+                                r'channel\/([a-zA-Z0-9\-]+)')
+
 SOUNDCLOUD_RE = re.compile(
         r'^https?://(www.)?soundcloud.com/([^ \t\n\r\f\v/]+)')
 KOREUS_RE = re.compile(r'^https?://feeds.feedburner.com/Koreus.*$')
 REDDIT_FEED_PATTERN = "https://www.reddit.com/r/%s/.rss"
+YOUTUBE_FEED_PATTERN = 'https://www.youtube.com/feeds/videos.xml?channel_id=%s'
 
 
 class FeedBuilderController:
@@ -160,6 +164,11 @@ class FeedBuilderController:
         if reddit_match and not reddit_match.group(3):
             feed['link'] = REDDIT_FEED_PATTERN % reddit_match.group(2)
             feed['feed_type'] = FeedType.reddit
+            return feed
+        youtube_match = YOUTUBE_CHANNEL_RE.match(feed['link'])
+        if youtube_match:
+            feed['site_link'] = feed['link']
+            feed['link'] = YOUTUBE_FEED_PATTERN % youtube_match.group(4)
         return feed
 
     @staticmethod
