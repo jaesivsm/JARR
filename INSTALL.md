@@ -40,6 +40,8 @@ make start-env COMPOSE_FILE=Dockerfiles/prod-example.yml
 make create-db COMPOSE_FILE=Dockerfiles/prod-example.yml
 
 # create JARR tables
+# /!\ this step will fail if you leave the default value for Database address,
+# you'll want to replace it with "postgresql" in the jarr.json configuration file
 make init-env COMPOSE_FILE=Dockerfiles/prod-example.yml
 ```
 ## Maintenance
