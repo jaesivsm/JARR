@@ -4,7 +4,7 @@ import types
 import urllib
 from datetime import datetime, timezone
 from enum import Enum
-from hashlib import md5
+from hashlib import md5, sha1
 
 import requests
 
@@ -59,9 +59,10 @@ def rebuild_url(url, base_split):
     return urllib.parse.urlunsplit(new_split)
 
 
-def to_hash(text):
-    return md5(text.encode('utf8') if hasattr(text, 'encode') else text)\
-            .hexdigest()
+def digest(text, algo='md5', out='str', encoding='utf8'):
+    method = md5 if algo == 'md5' else sha1
+    text = text.encode(encoding) if hasattr(text, 'encode') else text
+    return getattr(method(text), 'hexdigest' if out == 'str' else 'digest')()
 
 
 def jarr_get(url, timeout=None, user_agent=None, headers=None, **kwargs):

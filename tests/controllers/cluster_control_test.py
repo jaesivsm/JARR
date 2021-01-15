@@ -66,14 +66,14 @@ class ClusterControllerTest(BaseJarrTest):
         self.assertEqual(1, ArticleController().read().count())
 
         feed1 = FeedController(cluster.user_id).create(
-                title='new feed', cluster_conf={'tfidf_min_score': -1,
-                                                'tfidf_min_sample_size': 1})
+                title='new feed', cluster_conf={'min_score': -1,
+                                                'min_sample_size': 1})
         update_on_all_objs(articles=cluster.articles, feeds=[feed1],
                            cluster_tfidf_enabled=True, cluster_enabled=True)
         feed2 = FeedController(cluster.user_id).create(
                 cluster_enabled=True, cluster_tfidf_enabled=False,
-                title='new feed', cluster_conf={'tfidf_min_score': -1,
-                                                'tfidf_min_sample_size': 1})
+                title='new feed', cluster_conf={'min_score': -1,
+                                                'min_sample_size': 1})
 
         article = self.create_article_from(cluster, feed1,
                 link=cluster.main_article.link + 'do not match link')

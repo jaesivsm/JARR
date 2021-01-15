@@ -28,10 +28,6 @@ class UserController(AbstractController):
         if check_password_hash(user.password, password):
             return user
 
-    def list_active(self):
-        last_conn = utc_now() - timedelta(days=conf.feed.stop_fetch)
-        return self.read(is_active=True, last_connection__ge=last_conn)
-
     def create(self, **attrs):
         self._handle_password(attrs)
         return super().create(**attrs)

@@ -8,7 +8,7 @@ import makeStyles from "./style";
 
 function Content({ content, hidden }) {
   const classes = makeStyles();
-  let head, body;
+  let head, comments, body;
   if (content.type === "image") {
     head = (
       <p>
@@ -23,6 +23,32 @@ function Content({ content, hidden }) {
         <img src={content.src} alt={content.alt} title={content.alt} />
       </Typography>
     );
+  } else if (content.type === "fetched") {
+    if (content.comments) {
+      comments = (
+        <p>
+          <span>Comments</span>
+          <Link color="secondary" target="_blank" href={content.comments}>
+            {content.comments}
+          </Link>
+        </p>
+      );
+    }
+    head = (
+      <p>
+        <span>Link</span>
+        <Link color="secondary" target="_blank" href={content.link}>
+          {content.link}
+        </Link>
+      </p>
+    );
+    body = (
+      <div className={classes.articleInner}>
+        <Typography
+          dangerouslySetInnerHTML={{__html: content.content}}
+        />
+      </div>
+    );
   } else if (content.type === "embedded" && content.player === "youtube") {
     body = (
       <div className={classes.videoContainer}>
@@ -30,8 +56,8 @@ function Content({ content, hidden }) {
           title="JARR processed Player"
           id="ytplayer"
           type="text/html"
-          src={`https://www.youtube.com/embed/${content.videoId}`}
-          frameborder="0"
+          src={`https://www.youtube-nocookie.com/embed/${content.videoId}`}
+          frameBorder="0"
         />
       </div>
     );
@@ -39,6 +65,7 @@ function Content({ content, hidden }) {
   return (
     <div hidden={hidden} className={classes.article}>
       {head}
+      {comments}
       <Divider />
       {body}
     </div>

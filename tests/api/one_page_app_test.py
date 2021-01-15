@@ -58,9 +58,6 @@ class OnePageAppTest(JarrFlaskCommon):
 
     def test_cluster_listing(self):
         clusters = self.assertClusterCount(18)
-        self.assertEqual(12, len([cluster for cluster in clusters
-                                  if cluster['categories_id'] != [0]]),
-                         'not enough categories_id in %r' % clusters)
         self.assertClusterCount(18, {'filter': 'unread'})
         self.assertClusterCount(0, {'filter': 'liked'})
         self.jarr_client('put', 'cluster', clusters[0]['id'],
@@ -68,8 +65,6 @@ class OnePageAppTest(JarrFlaskCommon):
         self.assertClusterCount(1, {'filter': 'liked'})
         self.assertClusterCount(3, {'feed_id': 1}, {"feeds_id": [1]})
         self.assertClusterCount(3, {'feed_id': 2}, {"feeds_id": [2]})
-        self.assertClusterCount(3, {'category_id': 1}, {"categories_id": [1]})
-        self.assertClusterCount(6, {'category_id': 0}, {"categories_id": [0]})
 
     def test_search(self):
         self.assertClusterCount(0, {'search_str': 'test'})
@@ -86,8 +81,6 @@ class OnePageAppTest(JarrFlaskCommon):
         cat_id = self.user.categories[0].id
         clusters = self.assertClusterCount(3,
                 {'category_id': cat_id})
-        for cluster in clusters:
-            self.assertIn(cat_id, cluster['categories_id'])
 
     def test_middle_panel_filtered_on_feed(self):
         feed_id = self.user.feeds[0].id

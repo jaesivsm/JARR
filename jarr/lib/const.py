@@ -13,3 +13,5 @@ FEED_ACCEPT_HEADERS = ','.join(mtype + (';q=%0.1f' % qual if qual < 1 else '')
                                for mtype, qual in MIMETYPES)
 FEED_MIMETYPES = [mtype for mtype, quality in MIMETYPES if quality >= 0.5]
 REQUIRED_JSON_FEED = {'version', 'title'}
+GOOGLE_BOT_UA = ("Mozilla/5.0 (compatible; Googlebot/2.1; "
+                 "+http://www.google.com/bot.html)")

@@ -18,6 +18,14 @@ class AbstractCrawler:
     feed_type = None  # type: FeedType
     article_builder = ClassicArticleBuilder
 
+    @classmethod
+    def browse_subcls(cls, to_browse=None):
+        to_browse = to_browse or cls
+        if to_browse.feed_type is not None:
+            yield to_browse
+        for subcls in to_browse.__subclasses__():
+            yield from cls.browse_subcls(subcls)
+
     def __init__(self, feed):
         self.feed = feed
 
@@ -153,4 +161,4 @@ class AbstractCrawler:
         self.clean_feed(response)
 
     def __repr__(self):
-        return "<%s(%s)>" % (self.__class__.__name__, self.feed.title)
+        return "<%s(%r)>" % (self.__class__.__name__, self.feed.title)

@@ -1,21 +1,23 @@
 import logging
+from datetime import datetime, timedelta
+from functools import wraps
+from hashlib import sha256
 
 import urllib3
-from datetime import datetime
 
-from functools import wraps
 from ep_celery import celery_app
-from hashlib import sha256
-from jarr.bootstrap import conf, REDIS_CONN
+from jarr.bootstrap import REDIS_CONN, conf
 from jarr.controllers import (ArticleController, ClusterController,
                               FeedController, UserController)
 from jarr.lib.enums import FeedStatus
-from jarr.metrics import WORKER, WORKER_BATCH, USER
+from jarr.lib.utils import utc_now
+from jarr.metrics import USER, WORKER, WORKER_BATCH
 
 urllib3.disable_warnings()
 logger = logging.getLogger(__name__)
 LOCK_EXPIRE = 60 * 60
 JARR_FEED_DEL_KEY = 'jarr.feed-deleting'
+JARR_CLUSTERIZER_KEY = 'jarr.clusterizer.%d'
 
 
 def lock(prefix, expire=LOCK_EXPIRE):
@@ -43,7 +45,7 @@ def lock(prefix, expire=LOCK_EXPIRE):
 @celery_app.task(name='crawler.process_feed')
 @lock('process-feed')
 def process_feed(feed_id):
-    crawler = FeedController().get_crawler(feed_id)
+    crawler = FeedController().get(id=feed_id).crawler
     logger.warning("%r is gonna crawl", crawler)
     crawler.crawl()
 
@@ -53,6 +55,7 @@ def process_feed(feed_id):
 def clusterizer(user_id):
     logger.warning("Gonna clusterize pending articles")
     ClusterController(user_id).clusterize_pending_articles()
+    REDIS_CONN.delete(JARR_CLUSTERIZER_KEY % user_id)
 
 
 @celery_app.task(name='crawler.feed_cleaner')
@@ -82,7 +85,15 @@ def feed_cleaner(feed_id):
 def update_slow_metrics():
     uctrl = UserController()
     USER.labels(status='any').set(uctrl.read().count())
-    USER.labels(status='active').set(uctrl.list_active().count())
+    threshold_connection = utc_now() - timedelta(days=conf.feed.stop_fetch)
+    threshold_created = utc_now() - timedelta(days=conf.feed.stop_fetch + 1)
+    active = uctrl.read(is_active=True,
+                        last_connection__ge=threshold_connection)
+    USER.labels(status='active').set(active.count())
+    long_term = uctrl.read(is_active=True,
+                           last_connection__ge=threshold_connection,
+                           date_created__lt=threshold_created)
+    USER.labels(status='long_term').set(long_term.count())
 
 
 @celery_app.task(name='crawler.scheduler')
@@ -92,7 +103,7 @@ def scheduler():
     fctrl = FeedController()
     # browsing feeds to fetch
     feeds = list(fctrl.list_fetchable(conf.crawler.batch_size))
-    WORKER_BATCH.labels(worker_type='delete').observe(len(feeds))
+    WORKER_BATCH.labels(worker_type='fetch-feed').observe(len(feeds))
     logger.info('%d to enqueue', len(feeds))
     for feed in feeds:
         logger.debug("%r: scheduling to be fetched", feed)
@@ -108,7 +119,12 @@ def scheduler():
             break  # only one at a time
     # applying clusterizer
     for user_id in ArticleController.get_user_id_with_pending_articles():
-        clusterizer.apply_async(args=[user_id])
+        if not UserController().get(id=user_id).effectivly_active:
+            continue
+        if REDIS_CONN.setnx(JARR_CLUSTERIZER_KEY % user_id, 'true'):
+            REDIS_CONN.expire(JARR_CLUSTERIZER_KEY % user_id,
+                              conf.crawler.clusterizer_delay)
+            clusterizer.apply_async(args=[user_id])
     scheduler.apply_async(countdown=conf.crawler.idle_delay)
     WORKER.labels(method='scheduler').observe(
             (datetime.now() - start).total_seconds())

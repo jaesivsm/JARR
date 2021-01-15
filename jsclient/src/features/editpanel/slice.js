@@ -50,9 +50,13 @@ const editSlice = createSlice({
     },
     requestedBuildedFeed: (state, action) => ({ ...state, isLoading: true }),
     addFilter: (state, action) => {
-      const filters = [ ...state.loadedObj.filters,
-                        { ...defaultFilter,
-                          id: `f${state.loadedObj.filters.length + 1}` }];
+      let filters = state.loadedObj.filters;
+      if (filters) {
+        filters = [ ...filters,
+                    { ...defaultFilter, id: `f${filters.length + 1}` }];
+      } else {
+        filters = [ { ...defaultFilter, id: "f1" } ];
+      }
       return { ...state,
                editedKeys: [ ...state.editedKeys, "filters"],
                loadedObj: { ...state.loadedObj, filters },

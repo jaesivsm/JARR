@@ -10,7 +10,6 @@ from werkzeug.exceptions import Forbidden
 from jarr.bootstrap import conf, session
 from jarr.controllers.abstract import AbstractController
 from jarr.controllers.icon import IconController
-from jarr.controllers.user import UserController
 from jarr.lib.enums import FeedStatus
 from jarr.lib.utils import utc_now
 from jarr.lib.const import UNIX_START
@@ -50,8 +49,8 @@ class FeedController(AbstractController):
         yield {'id': None, 'str': None, 'type': 'all-categ'}
         yield from feeds.get(None, [])
         for cid, cname in session.query(Category.id, Category.name)\
-                    .filter(Category.user_id == self.user_id)\
-                    .order_by(Category.name.nullsfirst()):
+                .filter(Category.user_id == self.user_id)\
+                .order_by(Category.name.nullsfirst()):
             yield {'id': cid, 'str': cname, 'type': 'categ'}
             yield from feeds.get(cid, [])
 
@@ -132,7 +131,7 @@ class FeedController(AbstractController):
     def __denorm_cat_id_on_articles(self, feed, attrs):
         if 'category_id' in attrs:
             self.__actrl.update({'feed_id': feed.id},
-                    {'category_id': attrs['category_id']})
+                                {'category_id': attrs['category_id']})
 
     def __denorm_title_on_clusters(self, feed, attrs):
         if 'title' in attrs:
@@ -142,9 +141,9 @@ class FeedController(AbstractController):
             else:
                 where_clause = Article.feed_id == feed.id
             stmt = update(Cluster)\
-                    .where(and_(Article.id == Cluster.main_article_id,
-                                where_clause))\
-                    .values(dict(main_feed_title=attrs['title']))
+                .where(and_(Article.id == Cluster.main_article_id,
+                            where_clause))\
+                .values(dict(main_feed_title=attrs['title']))
             session.execute(stmt)
 
     def __update_default_expires(self, feed, attrs):
@@ -180,7 +179,7 @@ class FeedController(AbstractController):
             method = 'defaulted to max'
 
         art_count = self.__actrl.read(feed_id=feed.id,
-                retrieved_date__gt=now - max_delta * SPAN_FACTOR).count()
+            retrieved_date__gt=now - max_delta * SPAN_FACTOR).count()
         if not art_count and method == 'from header min limited':
             attrs['expires'] = now + 2 * min_delta
             method = 'no article, twice min time'
@@ -252,13 +251,3 @@ class FeedController(AbstractController):
                 and_(Cluster.user_id == feed.user_id,
                      Cluster.main_article_id.__eq__(None))))
         return super().delete(obj_id)
-
-    def get_crawler(self, feed_id):
-        from jarr.crawler.crawlers import AbstractCrawler, ClassicCrawler
-        feed = self.get(id=feed_id)
-        crawlers = set(AbstractCrawler.__subclasses__()).union(
-                ClassicCrawler.__subclasses__())
-        for crawler in crawlers:
-            if feed.feed_type is crawler.feed_type:
-                return crawler(feed)
-        raise ValueError('No crawler for %r' % feed.feed_type)

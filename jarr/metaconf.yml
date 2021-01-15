@@ -1,0 +1,174 @@
+config_file_environ:
+- JARR_CONFIG
+config_files:
+- /etc/jarr/jarr.json
+- ~/.config/jarr.json
+source_order:
+- env
+- files
+parameters:
+- jarr_testing:
+    default: false
+    type: bool
+    help_txt: >-
+      Indicate if this is a testing configuration (to avoid mixup with prod /
+      dev ones). Tests won't run if false.
+- clustering:
+  - time_delta:
+      default: 20
+      help_txt: >-
+        Number of days around the article date in which jarr will search for
+        similar articles. This value will directly impact the size of the
+        clustering request and TF-IDF calculation. Increase with care.
+  - tfidf:
+    - enabled:
+        default: true
+        type: bool
+        help_txt: >-
+          Allows you to set the default for TF-IDF (enabled / disabled).
+    - default_lang:
+        default: english
+        help_txt: >-
+          When no lang can be found in a article, casting to vector will
+          resolved to that language
+    - min_sample_size:
+        default: 10
+        help_txt: Minimum size of the corpus against which running TF-IDF.
+    - min_score:
+        default: 0.75
+        help_txt: >-
+          TF-IDF score over which cluster an article,
+          1 is exact similarity and will only match the exact same content,
+          0 is no similarity and will match with any document.
+    - size_factor:
+        default: 5
+        help_txt: >-
+          Limiting factor for text size to be considered by TF-IDF.
+          For example, takin a factor of 10 and a text of 50 words, JARR won't
+          consider texts below 5 words or above 500 to compare with it.
+    - min_vector_size:
+        default: 20
+        help_txt: >-
+          Minimum vector size to be allowed in a TF-IDF corpus.
+- crawler:
+  - idle_delay:
+      default: 120
+      help_txt: >-
+        Minimum delay (in seconds) that the scheduler sets for its next run.
+        As the scheduler is always the last task in the queue, it will be run
+        only after this delay as soon as a worker is free. If other processes
+        take too long, it might be longer.
+  - clusterizer_delay:
+      default: 600
+      help_txt: >-
+        Number of seconds after which the clusterizer may run again for the
+        same user.
+  - batch_size:
+      default: 0
+      type: int
+      help_txt: >-
+        Number of late feeds the scheduler should consider at each run,
+        0 mean every one of them.
+  - timeout:
+      default: 30
+      help_txt: Timeout delay for requests executed by the crawler.
+  - user_agent:
+      default: Mozilla/5.0 (compatible; jarr.info)
+      help_txt: User-Agent for requests executed by the crawler.
+- feed:
+  - error_max:
+      default: 6
+      help_txt: >-
+        Number of consecutive error that JARR will tolerate for a same feed
+        before stopping fetching it.
+  - error_threshold:
+      default: 3
+      help_txt: >-
+        Number of consecutive error after which JARR shall alert the user its
+        feed is encountering issues.
+  - min_expires:
+      default: 1800
+      help_txt: >-
+        The minimum number of seconds between two fetchs of the same feed,
+        the default is set to half an hour.
+  - max_expires:
+      default: 604800
+      help_txt: >-
+        The maximum number of seconds between two fetchs of the same feed,
+        the default is set to a week.
+  - stop_fetch:
+      default: 30
+      help_txt: >-
+        The number of days after which, if a user hasn't been connected, JARR
+        will stop refreshing his feeds.
+- timezone: {'default': 'Europe/Paris'}
+- app:
+  - url: {'default': 'http://0.0.0.0:3000'}
+- api:
+  - scheme: {'default': 'http'}
+  - admin_mail: {'default': ''}
+  - server_name: {'default': '', 'type': 'str'}
+- db:
+  - pg_uri: {'default': 'postgresql://postgresql/jarr'}
+  - redis:
+    - host: {'default': 'redis'}
+    - db: {'default': 1}
+    - port: {'default': 6379}
+    - password: {'default': ''}
+  - metrics:
+    - host: {'default': 'redis'}
+    - db: {'default': 2}
+    - port: {'default': 6379}
+    - password: {'default': ''}
+- celery:
+  - broker: {'default': 'amqp://rabbitmq//'}
+  - backend: {'default': 'redis://redis:6379/0'}
+  - broker_url: {'default': 'amqp://rabbitmq//'}
+  - task_serializer: {'default': 'json'}
+  - result_serializer: {'default': 'json'}
+  - timezone: {'default': 'Europe/Paris'}
+  - enable_utc: {'default': true}
+  - imports: {'default': ['ep_celery', 'jarr.crawler.main']}
+  - task_default_queue: {'default': 'jarr'}
+  - task_default_exchange: {'default': 'jarr'}
+- log:
+  - level: {'default': 30}
+  - path: {'default': 'jarr.log'}
+- plugins:
+  - rss_bridge:
+      default: ''
+- auth:
+  - secret_key:
+      help_txt: Salt for cryptografic purpose.
+      required: true
+  - jwt_header_prefix:
+      default: JWT
+  - expiration_sec:
+      default: 86400
+      help_txt: Expiration delay in second of the JWT token.
+  - allow_signup:
+      default: true
+      help_txt: Allow or not people to create account of your instance of JARR.
+- oauth:
+  - allow_signup:
+      default: false
+      help_txt: Allow or not people to crete account through OAuth methods.
+  - twitter:
+    - id: {'default': ''}
+    - secret: {'default': ''}
+  - facebook:
+    - id: {'default': ''}
+    - secret: {'default': ''}
+  - google:
+    - id: {'default': ''}
+    - secret: {'default': ''}
+  - linuxfr:
+    - id: {'default': ''}
+    - secret: {'default': ''}
+- notification:
+  - email: {'default': ''}
+  - host: {'default': ''}
+  - starttls: {'default': true}
+  - port: {'default': 587}
+  - login: {'default': ''}
+  - password: {'default': ''}

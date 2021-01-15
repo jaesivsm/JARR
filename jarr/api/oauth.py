@@ -7,6 +7,7 @@ from werkzeug.exceptions import BadRequest, NotFound, UnprocessableEntity
 
 from jarr.api.auth import model
 from jarr.api.common import get_ui_url
+from jarr.lib.utils import utc_now
 from jarr.bootstrap import conf
 from jarr.controllers import UserController
 from jarr.metrics import SERVER
@@ -65,6 +66,8 @@ class OAuthSignInMixin(Resource):  # pragma: no cover
                 login = '%s_%s' % (cls.provider, username or social_id)
             user = ucontr.create(**{'%s_identity' % cls.provider: social_id,
                                     'login': login, 'email': email})
+        ucontr.update({"id": user.id}, {"last_connection": utc_now(),
+                                        "renew_password_token": ""})
         jwt_ext = current_app.extensions['jwt']
         access_token = jwt_ext.jwt_encode_callback(user).decode('utf8')
         SERVER.labels(result="2XX", **labels).inc()

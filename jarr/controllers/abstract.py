@@ -66,6 +66,10 @@ class AbstractController:
             if key == '__or__':
                 db_filters.add(or_(*[and_(*cls._to_filters(**sub_filter))
                                      for sub_filter in value]))
+            elif key == '__and__':
+                for sub_filter in value:
+                    for k, v in sub_filter.items():
+                        db_filters.add(cls._to_comparison(k, cls._db_cls)(v))
             else:
                 db_filters.add(cls._to_comparison(key, cls._db_cls)(value))
         return db_filters

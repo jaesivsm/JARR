@@ -1,8 +1,15 @@
 import html
 import logging
 import re
+from functools import lru_cache
 
-from jarr.lib.enums import ArticleType
+from goose3 import Goose
+from lxml import etree
+import urllib.parse
+
+from jarr.bootstrap import conf
+from jarr.controllers.article import to_vector
+from jarr.lib.enums import ArticleType, FeedType
 
 logger = logging.getLogger(__name__)
 IMG_ALT_MAX_LENGTH = 100
@@ -15,30 +22,172 @@ def is_embedded_link(link):
     return YOUTUBE_RE.match(link)
 
 
-def generate_content(article):
-    success = False
-    if not article.article_type:
-        logger.debug('%r no special type found doing nothing', article)
-        return success, {}
-    content = {'type': article.article_type.value}
-    if article.article_type is ArticleType.video:
-        logger.debug('no action implemented for video yet')
-    elif article.article_type is ArticleType.image:
-        logger.info('%r constructing image content from article', article)
-        content['alt'] = article.title or article.content
-        content['alt'] = html.escape(content['alt'][:IMG_ALT_MAX_LENGTH])
-        content['src'] = article.link
-        success = True
-    elif article.article_type is ArticleType.embedded:
-        if YOUTUBE_RE.match(article.link):
+class ContentGenerator:
+    article_type = None
+    feed_type = None
+
+    def __init__(self, article):
+        self.article = article
+        self._page = None
+        self.extracted_infos = {}
+
+    def _get_goose(self):
+        goose = Goose({"browser_user_agent": conf.crawler.user_agent})
+        try:
+            self._page = goose.extract(self.article.link)
+        except Exception as error:
+            logger.error("something wrong happened while trying to fetch "
+                         "%r: %r", self.article.link, error)
+        if not self._page:
+            return False
+        lang = self._page.opengraph.get('locale') or self._page.meta_lang
+        self.extracted_infos['lang'] = lang
+        self.extracted_infos['link'] = self._page.final_url
+        keywords = set(self._page.meta_keywords.split(', '))
+        self.extracted_infos['tags'] = set(self._page.tags).union(keywords)
+        self.extracted_infos['title'] = self._page.title
+        return True
+
+    def get_vector(self):
+        if self._page is None:
+            self._get_goose()
+        if self._page and self.extracted_infos:
+            return to_vector(self.extracted_infos, self._page)
+
+    def _from_goose_to_html(self, encoding="utf8"):
+        result = ""
+        current_node = self._page.top_node
+        while True:
+            result += etree.tostring(current_node,
+                                     encoding=encoding).decode(encoding)
+            current_node = current_node.getnext()
+            if current_node is None:
+                break
+        return result
+
+    @staticmethod
+    def generate():
+        return False, {}
+
+
+class ImageContentGenerator(ContentGenerator):
+    article_type = ArticleType.image
+
+    def get_vector(self):
+        return None
+
+    def generate(self):
+        logger.info('%r constructing image content from article',
+                    self.article)
+        text = self.article.title or self.article.content
+        content = {'type': self.article.article_type.value,
+                   'alt': html.escape(text[:IMG_ALT_MAX_LENGTH]),
+                   'src': self.article.link}
+        return True, content
+
+
+class EmbeddedContentGenerator(ContentGenerator):
+    article_type = ArticleType.embedded
+
+    def get_vector(self):
+        return None
+
+    def generate(self):
+        yt_match = YOUTUBE_RE.match(self.article.link)
+        if yt_match:
             logger.info('%r constructing embedded youtube content '
-                        'from article', article)
-            content['player'] = 'youtube'
+                        'from article', self.article)
             try:
-                content['videoId'] = YOUTUBE_RE.match(article.link).group(5)
-                success = True
+                return True, {'type': self.article.article_type.value,
+                              'player': 'youtube',
+                              'videoId': yt_match.group(5)}
             except IndexError:
                 pass
         else:
-            logger.warning('embedded video not recognized %r', article.link)
-    return success, content
+            logger.warning('embedded video not recognized %r',
+                           self.article.link)
+        return True, {}
+
+
+class TruncatedContentGenerator(ContentGenerator):
+
+    def generate(self):
+        if self._page is None:
+            self._get_goose()
+        success, content = False, {'type': 'fetched'}
+        try:
+            content['content'] = self._from_goose_to_html()
+            content['link'] = self._page.final_url
+            success = True
+        except Exception:
+            logger.exception("Could not rebuild parsed content for %r",
+                             self.article)
+        if success and self.article.comments:
+            content['comments'] = self.article.comments
+        logger.debug('%r no special type found doing nothing', self.article)
+        return success, content
+
+
+class RedditContentGenerator(TruncatedContentGenerator):
+    feed_type = FeedType.reddit
+
+    def __init__(self, article):
+        self._is_pure_reddit_post = None
+        super().__init__(article)
+
+    @property
+    def is_pure_reddit_post(self):
+        if self._is_pure_reddit_post is not None:
+            return self._is_pure_reddit_post  # no re-computing
+        self._is_pure_reddit_post = False
+        if self.article.article_type is not None:
+            return self._is_pure_reddit_post
+        try:
+            split = urllib.parse.urlsplit(self.article.link)
+            paths = split.path.strip('/').split('/')
+            if ('reddit.com' in split.netloc
+                    and paths[0] == 'r' and paths[2] == 'comments'):
+                self._is_pure_reddit_post = True
+        except (AttributeError, IndexError):
+            pass
+        return self._is_pure_reddit_post
+
+    def get_vector(self):
+        if not self.is_pure_reddit_post:
+            return super().get_vector()
+
+    def generate(self):
+        if not self.is_pure_reddit_post:
+            return super().generate()
+        return False, {}  # original reddit post, nothing to process
+
+
+CONTENT_GENERATORS = {}
+
+
+def feed_mapping(subcls_):
+    if subcls_.feed_type:
+        CONTENT_GENERATORS[subcls_.feed_type] = subcls_
+    if subcls_.article_type:
+        CONTENT_GENERATORS[subcls_.article_type] = subcls_
+
+
+for subcls in ContentGenerator.__subclasses__():
+    feed_mapping(subcls)
+    for subsubcls in subcls.__subclasses__():
+        feed_mapping(subsubcls)
+
+
+@lru_cache()
+def get_content_generator(article):
+    if article.article_type and article.article_type in CONTENT_GENERATORS:
+        return CONTENT_GENERATORS[article.article_type](article)
+
+    if article.feed.feed_type \
+            and article.feed.feed_type in CONTENT_GENERATORS:
+        return CONTENT_GENERATORS[article.feed.feed_type](article)
+
+    if article.feed.truncated_content:
+        return TruncatedContentGenerator(article)
+
+    return ContentGenerator(article)

@@ -36,7 +36,6 @@ export default (filters): AppThunk => async (dispatch, getState) => {
       // and that length isn't the max length possible for a page
       && result.data.length !== pageLength
   ) {
-      console.log(expectedCount, result.data.length);
     dispatch(doFetchUnreadCount());
   }
 };

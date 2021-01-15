@@ -1,4 +1,4 @@
-from sqlalchemy import (Binary, Boolean, Column, Enum, ForeignKeyConstraint,
+from sqlalchemy import (Binary, Column, Enum, ForeignKeyConstraint,
                         Index, Integer, PickleType, String)
 from sqlalchemy.dialects.postgresql import TSVECTOR
 from sqlalchemy.orm import relationship
@@ -7,6 +7,7 @@ from jarr.bootstrap import Base
 from jarr.lib.enums import ArticleType, ClusterReason
 from jarr.lib.utils import utc_now
 from jarr.models.utc_datetime_type import UTCDateTime
+from jarr.lib.clustering_af.vector import TFIDFVector, get_simple_vector
 
 
 class Article(Base):
@@ -23,7 +24,6 @@ class Article(Base):
     lang = Column(String)
     date = Column(UTCDateTime, default=utc_now)
     retrieved_date = Column(UTCDateTime, default=utc_now)
-    readability_parsed = Column(Boolean, default=False)
 
     # integration control
     article_type = Column(Enum(ArticleType),
@@ -32,25 +32,6 @@ class Article(Base):
     # parsing
     tags = Column(PickleType, default=[])
     vector = Column(TSVECTOR)
-
-    _simple_vector = None
-
-    @property
-    def simple_vector(self):
-        if self._simple_vector:
-            return self._simple_vector
-        if self._simple_vector is None:
-            self._simple_vector = {}
-        if self.vector is not None:
-            for word_n_count in self.vector.split():
-                try:
-                    word, count = word_n_count.split(':')
-                except Exception:  # no :count if there's only one
-                    self._simple_vector[word_n_count[1:-1]] = 1
-                else:
-                    self._simple_vector[word[1:-1]] = count.count(',')
-        return self._simple_vector
-
     # reasons
     cluster_reason = Column(Enum(ClusterReason), default=None)
     cluster_score = Column(Integer, default=None)
@@ -82,7 +63,7 @@ class Article(Base):
             Index('ix_article_uid_fid_cluid', user_id, feed_id, cluster_id),
             Index('ix_article_uid_cid_cluid',
                   user_id, category_id, cluster_id),
-            Index('ix_article_eid_cid_uid', user_id, category_id, entry_id),
+            Index('ix_article_uid_fid_eid', user_id, feed_id, entry_id),
             Index('ix_article_uid_cid_linkh', user_id, category_id, link_hash),
             Index('ix_article_retrdate', retrieved_date),
     )
@@ -90,3 +71,23 @@ class Article(Base):
     def __repr__(self):
         """Represents and article."""
         return "<Article(feed_id=%s, id=%s)>" % (self.feed_id, self.id)
+
+    # TFIDF vectors
+    @property
+    def simple_vector(self):
+        return get_simple_vector(self.vector)[0]
+
+    @property
+    def simple_vector_magnitude(self):
+        return get_simple_vector(self.vector)[1]
+
+    def get_tfidf_vector(self, frequencies, corpus_size,
+                         will_be_left_member=False):
+        vector, size = get_simple_vector(self.vector)
+        return TFIDFVector(vector, size, frequencies, corpus_size,
+                           will_be_left_member=will_be_left_member)
+
+    @property
+    def content_generator(self):
+        from jarr.lib.content_generator import get_content_generator
+        return get_content_generator(self)

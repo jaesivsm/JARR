@@ -7,9 +7,8 @@ from jarr.bootstrap import conf
 from jarr.lib.content_generator import is_embedded_link
 from jarr.lib.enums import ArticleType
 from jarr.lib.filter import FiltersAction, process_filters
-from jarr.lib.html_parsing import extract_lang, extract_tags, extract_title
-from jarr.lib.utils import utc_now
-from jarr.utils import jarr_get
+from jarr.lib.url_cleaners import clean_urls, remove_utm_tags
+from jarr.lib.utils import digest, utc_now
 
 logger = logging.getLogger(__name__)
 
@@ -69,6 +68,10 @@ class AbstractArticleBuilder:
     def extract_comments(entry):
         raise NotImplementedError()
 
+    @staticmethod
+    def to_hash(link):
+        return digest(remove_utm_tags(link), algo='sha1', out='bytes')
+
     def construct(self, entry):
         self.article = self.template_article()
         if not entry:
@@ -84,6 +87,11 @@ class AbstractArticleBuilder:
         self.article['content'] = self.extract_content(entry)
         self.article['lang'] = self.extract_lang(entry)
         self.article['comments'] = self.extract_comments(entry)
+        if self.article.get('link'):
+            self.article['link_hash'] = self.to_hash(self.article['link'])
+            if self.article.get('content'):
+                self.article['content'] = clean_urls(self.article['content'],
+                                                     self.article['link'])
 
     @classmethod
     def _head(cls, url, reraise=False):
@@ -105,28 +113,30 @@ class AbstractArticleBuilder:
         except Exception:
             logger.error("couldn't fetch %r", url)
 
-    def enhance(self, fetch_page=True):
+    def enhance(self):
         head = self._head(self.article['link'])
-        if head:
-            self.article['link'] = head.url
-            content_type = str(head.headers.get('Content-Type')) or ''
-            if content_type.startswith('image/'):
-                fetch_page = False
-                self.article['article_type'] = ArticleType.image
-            elif content_type.startswith('video/'):
-                fetch_page = False
-                self.article['article_type'] = ArticleType.video
-            elif is_embedded_link(self.article['link']):
-                self.article['article_type'] = ArticleType.embedded
-            if fetch_page:
-                page = jarr_get(self.article['link'])
-                if not page:
-                    return self.article
-                if not self.article.get('title'):
-                    self.article['title'] = extract_title(page)
-                self.article['tags'] = self.article['tags'].union(
-                        extract_tags(page))
-                lang = extract_lang(page)
-                if lang:
-                    self.article['lang'] = lang
+        if not head:
+            return self.article
+
+        if self.article['link'] != head.url:
+            self.article['link'] = head.url  # fix link in case of redirect
+            # removing utm_tags from link_hash, to allow clustering despite em
+            clean_link = remove_utm_tags(self.article['link'])
+            if clean_link != self.article['link']:
+                clean_head = self._head(clean_link)
+                if clean_head:
+                    self.article['link_hash'] = self.to_hash(clean_head.url)
+        content_type = str(head.headers.get('Content-Type')) or ''
+        if content_type.startswith('image/'):
+            self.article['article_type'] = ArticleType.image
+        elif content_type.startswith('video/'):
+            self.article['article_type'] = ArticleType.video
+        elif is_embedded_link(self.article['link']):
+            self.article['article_type'] = ArticleType.embedded
+
+        if not self.article.get('lang') \
+                and head.headers.get('Content-Language'):
+            # correcting lang from http headers
+            lang = head.headers['Content-Language'].split(',')[0]
+            self.article['lang'] = lang
         return self.article

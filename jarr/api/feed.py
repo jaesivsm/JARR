@@ -51,6 +51,7 @@ parser.add_argument('filters', type=list, location='json', nullable=False,
                     store_missing=False)
 # clustering options
 set_clustering_options("feed", model, parser)
+set_model_n_parser(model, parser, 'truncated_content', bool, nullable=False)
 set_model_n_parser(model, parser, 'feed_type', FeedType, nullable=False)
 set_model_n_parser(model, parser, 'category_id', int, nullable=False)
 set_model_n_parser(model, parser, 'site_link', str, nullable=False)

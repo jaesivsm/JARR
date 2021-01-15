@@ -26,6 +26,7 @@ class Feed(Base):
     # integration control
     feed_type = Column(Enum(FeedType),
                        default=FeedType.classic, nullable=False)
+    truncated_content = Column(Boolean, default=False, nullable=False)
 
     # clustering control
     cluster_enabled = Column(Boolean, default=None, nullable=True)
@@ -85,3 +86,11 @@ class Feed(Base):
     @staticmethod
     def validates_description(key, value):
         return str(value).strip()
+
+    @property
+    def crawler(self):
+        from jarr.crawler.crawlers import AbstractCrawler
+        for crawler_cls in AbstractCrawler.browse_subcls():
+            if self.feed_type is crawler_cls.feed_type:
+                return crawler_cls(self)
+        raise ValueError('No crawler for %r' % self.feed_type)

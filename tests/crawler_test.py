@@ -12,7 +12,7 @@ from jarr.crawler.requests_utils import (response_calculated_etag_match,
                                          response_etag_match)
 from jarr.lib.enums import FeedType
 from jarr.lib.const import UNIX_START
-from jarr.lib.utils import to_hash
+from jarr.lib.utils import digest
 from jarr.models.feed import Feed
 from tests.base import JarrFlaskCommon
 
@@ -37,7 +37,7 @@ class CrawlerTest(JarrFlaskCommon):
         with open(self.feed_path) as fd:
             self._content = fd.read()
         self._is_secure_served \
-                = patch('jarr.lib.article_cleaner.is_secure_served')
+            = patch('jarr.lib.url_cleaners.is_secure_served')
         self._p_req = patch('jarr.crawler.crawlers.abstract.jarr_get')
         self._p_con = patch('jarr.crawler.crawlers.classic.FeedBuilderControl'
                             'ler.construct_from_xml_feed_content')
@@ -56,7 +56,7 @@ class CrawlerTest(JarrFlaskCommon):
                             headers=self.resp_headers, history=[],
                             content=self._content, text=self._content)
                 resp.raise_for_status.return_value = self.resp_raise
-                resp.json = lambda : json.loads(self._content)
+                resp.json = lambda: json.loads(self._content)
                 return resp
 
             url = url.split(conf.api_root)[1].strip('/')
@@ -142,8 +142,8 @@ class CrawlerTest(JarrFlaskCommon):
         crawler()
 
         self.assertEqual(BASE_COUNT, ArticleController().read().count())
-        self._reset_feeds_freshness(etag='jarr/"%s"' % to_hash(self._content))
-        self.resp_headers = {'etag': 'jarr/"%s"' % to_hash(self._content)}
+        self._reset_feeds_freshness(etag='jarr/"%s"' % digest(self._content))
+        self.resp_headers = {'etag': 'jarr/"%s"' % digest(self._content)}
 
         crawler()
         self.assertEqual(BASE_COUNT, ArticleController().read().count())
@@ -169,12 +169,12 @@ class CrawlerMethodsTest(unittest.TestCase):
     def setUp(self):
         super().setUp()
         self.feed = Feed(user_id=1, id=1, title='title',
-                description='description', etag='', error_count=5,
-                feed_type=FeedType.classic, link='link')
+                         description='description', etag='', error_count=5,
+                         feed_type=FeedType.classic, link='link')
         self.resp = Mock(text='text', headers={}, status_code=304, history=[])
 
     def test_etag_matching_w_constructed_etag(self):
-        self.feed.etag = 'jarr/"%s"' % to_hash('text')
+        self.feed.etag = 'jarr/"%s"' % digest('text')
         self.assertFalse(response_etag_match(self.feed, self.resp))
         self.assertTrue(response_calculated_etag_match(self.feed, self.resp))
 

@@ -5,12 +5,13 @@ import urllib
 
 from feedparser import FeedParserDict
 from feedparser import parse as fp_parse
+from requests.exceptions import ReadTimeout
 
-from jarr.lib.const import FEED_MIMETYPES, REQUIRED_JSON_FEED
+from jarr.lib.const import FEED_MIMETYPES, GOOGLE_BOT_UA, REQUIRED_JSON_FEED
+from jarr.lib.enums import FeedType
 from jarr.lib.html_parsing import (extract_feed_links, extract_icon_url,
                                    extract_opg_prop, extract_title)
-from jarr.lib.enums import FeedType
-from jarr.utils import jarr_get
+from jarr.lib.utils import jarr_get
 
 SCHEME = r'(?:https?:)?\/\/'
 logger = logging.getLogger(__name__)
@@ -18,10 +19,14 @@ REDDIT_FEED = re.compile(SCHEME + r'(www.)?reddit.com/r/([\w\-_]+)/?(.*)$')
 INSTAGRAM_RE = re.compile(SCHEME + r'(www.)?instagram.com/([^ \t\n\r\f\v/]+)')
 TWITTER_RE = re.compile(SCHEME + r'(www.)?twitter.com/([^ \t\n\r\f\v/]+)')
 TUMBLR_RE = re.compile(SCHEME + r'([^ \t\n\r\f\v/]+).tumblr.com/.*$')
+YOUTUBE_CHANNEL_RE = re.compile(r'((http|https):\/\/)?(www\.)?youtube\.com\/'
+                                r'channel\/([a-zA-Z0-9\-]+)')
+
 SOUNDCLOUD_RE = re.compile(
         r'^https?://(www.)?soundcloud.com/([^ \t\n\r\f\v/]+)')
 KOREUS_RE = re.compile(r'^https?://feeds.feedburner.com/Koreus.*$')
 REDDIT_FEED_PATTERN = "https://www.reddit.com/r/%s/.rss"
+YOUTUBE_FEED_PATTERN = 'https://www.youtube.com/feeds/videos.xml?channel_id=%s'
 
 
 class FeedBuilderController:
@@ -159,18 +164,30 @@ class FeedBuilderController:
         if reddit_match and not reddit_match.group(3):
             feed['link'] = REDDIT_FEED_PATTERN % reddit_match.group(2)
             feed['feed_type'] = FeedType.reddit
+            return feed
+        youtube_match = YOUTUBE_CHANNEL_RE.match(feed['link'])
+        if youtube_match:
+            feed['site_link'] = feed['link']
+            feed['link'] = YOUTUBE_FEED_PATTERN % youtube_match.group(4)
         return feed
+
+    @staticmethod
+    def http_get(url):
+        try:
+            return jarr_get(url)
+        except (ReadTimeout, TimeoutError):
+            return jarr_get(url, user_agent=GOOGLE_BOT_UA)
 
     def construct(self):
         feed = {'feed_type': FeedType.classic, 'link': self.url}
         feed = self._handle_known_malfunctionning_link(feed)
 
-        self.feed_response = jarr_get(feed['link'])
+        self.feed_response = self.http_get(feed['link'])
         # is an XML feed
         if self.is_parsed_feed():
             feed.update(self.construct_from_feed_content())
             if feed.get('site_link'):
-                self.page_response = jarr_get(feed['site_link'])
+                self.page_response = self.http_get(feed['site_link'])
                 feed = dict(self.parse_webpage(), **feed)
         else:  # is a regular webpage
             del feed['link']
@@ -178,7 +195,7 @@ class FeedBuilderController:
             self.feed_response = None
             feed = dict(self.parse_webpage(), **feed)
             if feed.get('link'):
-                self.feed_response = jarr_get(feed['link'])
+                self.feed_response = self.http_get(feed['link'])
                 feed.update(self.construct_from_feed_content())
 
         # marking integration feed

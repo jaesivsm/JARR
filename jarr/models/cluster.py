@@ -52,10 +52,8 @@ class Cluster(Base):
             ForeignKeyConstraint([user_id], ['user.id'], ondelete='CASCADE'),
             Index('ix_cluster_uid_date',
                   user_id, main_date.desc().nullslast()),
-            Index('ix_cluster_liked_uid_date',
-                  liked, user_id, main_date.desc().nullslast()),
-            Index('ix_cluster_read_uid_date',
-                  read, user_id, main_date.desc().nullslast()),
+            Index('ix_cluster_liked_uid', liked, user_id),
+            Index('ix_cluster_read_uid', read, user_id),
             # used by cluster deletion in FeedController.delete
             Index('ix_cluster_uid_martid',
                   user_id, main_article_id.nullsfirst()),

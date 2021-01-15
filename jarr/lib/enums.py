@@ -15,7 +15,6 @@ class FeedType(Enum):
     instagram = 'instagram'
     soundcloud = 'soundcloud'
     reddit = 'reddit'
-    fetch = 'fetch'
     koreus = 'koreus'
     twitter = 'twitter'
 
