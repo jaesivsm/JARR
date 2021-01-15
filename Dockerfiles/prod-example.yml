@@ -6,8 +6,9 @@ services:
       dockerfile: ./Dockerfiles/server
     ports:
       - "127.0.0.1:8500:8000"
+    # You'll a folder with at least jarr.json, logging.ini and gunicorn.py
     volumes:
-      - /etc/jarr:/etc/jarr:ro
+      - ../example_conf/:/etc/jarr:ro
     depends_on:
       - postgres
       - redis
@@ -26,8 +27,9 @@ services:
     build:
       context: ../.
       dockerfile: ./Dockerfiles/server
+    # You'll a folder with at least jarr.json, logging.ini and gunicorn.py
     volumes:
-      - /etc/jarr:/etc/jarr:ro
+      - ../example_conf/:/etc/jarr:ro
     depends_on:
       - postgres
       - redis
@@ -46,6 +48,13 @@ services:
     image: postgres:11
     networks:
       - jarr
+    # remove that on real prod env and set proper db password
+    environment:
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_HOST_AUTH_METHOD=trust
+    # Directory in which your db will save its data, change it to some absolute path
+    # volumes:
+    #  - ../.jarr-data:/var/lib/postgresql/data
 
 networks:
   jarr:
