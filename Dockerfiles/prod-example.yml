@@ -44,7 +44,7 @@ services:
     image: redis
     networks:
       - jarr
-  postgres:
+  postgresql:
     image: postgres:11
     networks:
       - jarr
