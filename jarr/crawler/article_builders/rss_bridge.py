@@ -41,4 +41,4 @@ class RSSBridgeTwitterArticleBuilder(RSSBridgeArticleBuilder):
                 self.article['article_type'] = ArticleType.image
             except (KeyError, AttributeError, TypeError, IndexError):
                 pass
-        return super().enhance()
+        yield from super().enhance()

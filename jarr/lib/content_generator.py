@@ -77,7 +77,19 @@ class VideoContentGenerator(ContentGenerator):
         return None
 
     def generate(self):
-        return False, {}
+        return True, {'type': self.article.article_type.value,
+                      'src': self.article.link}
+
+
+class AudioContentGenerator(ContentGenerator):
+    article_type = ArticleType.audio
+
+    def get_vector(self):
+        return None
+
+    def generate(self):
+        return True, {'type': self.article.article_type.value,
+                      'src': self.article.link}
 
 
 class ImageContentGenerator(ContentGenerator):

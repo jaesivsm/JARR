@@ -59,8 +59,8 @@ def rebuild_url(url, base_split):
     return urllib.parse.urlunsplit(new_split)
 
 
-def digest(text, algo='md5', out='str', encoding='utf8'):
-    method = md5 if algo == 'md5' else sha1
+def digest(text, alg='md5', out='str', encoding='utf8'):
+    method = md5 if alg == 'md5' else sha1
     text = text.encode(encoding) if hasattr(text, 'encode') else text
     return getattr(method(text), 'hexdigest' if out == 'str' else 'digest')()
 

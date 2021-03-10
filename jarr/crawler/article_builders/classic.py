@@ -13,6 +13,10 @@ logger = logging.getLogger(__name__)
 
 class ClassicArticleBuilder(AbstractArticleBuilder):
 
+    def __init__(self, feed, entry):
+        super.__init__(feed, entry)
+        self._links = set()
+
     @staticmethod
     def extract_id(entry):
         if entry.get('entry_id'):
@@ -45,9 +49,10 @@ class ClassicArticleBuilder(AbstractArticleBuilder):
                 for tag in entry.get('tags', [])
                 if tag.get('term', '').strip()}
 
-    @staticmethod
-    def extract_link(entry):
-        return entry.get('link')
+    def extract_link(self, entry):
+        link = entry.get('link')
+        self._links.add(link)
+        return link
 
     @staticmethod
     def extract_content(entry):
@@ -72,3 +77,22 @@ class ClassicArticleBuilder(AbstractArticleBuilder):
     @staticmethod
     def extract_comments(entry):
         return entry.get('comments')
+
+    def _head(self, url, reraise=False):
+        head = super()._head(url, reraise=False)
+        if head is not None:
+            self._links.add(head.url)
+        return head
+
+    def _all_articles(self):
+        yield self.article
+        if not self.article.get('link_hash'):
+            # ensuring link_hash, to ensure clustering on link_hash
+            self.article['link_hash'] = self.to_hash(clean_head.url)
+        for link in (self.entry.get('links') or []):
+            if link.get('href') in self._links:
+                continue
+            article = {key: value for key, value in self.articles.items()
+                       if key in {'title', 'lang', 'link_hash', 'entry_id'}}
+            self._feed_content_type(link.get('type'), article)
+            yield article
