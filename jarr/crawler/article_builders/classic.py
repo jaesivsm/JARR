@@ -2,11 +2,10 @@ import html
 import json
 import logging
 from datetime import timezone
-from hashlib import sha1
 
 import dateutil.parser
-
 from jarr.crawler.article_builders.abstract import AbstractArticleBuilder
+from jarr.lib.utils import digest
 
 logger = logging.getLogger(__name__)
 
@@ -25,9 +24,8 @@ class ClassicArticleBuilder(AbstractArticleBuilder):
             return entry['id']
         if entry.get('link'):
             # entry_id is part of an index, limiting size here
-            return sha1(entry['link'].encode('utf8')).hexdigest()
-        return sha1(json.dumps(entry,
-                               sort_keys=True).encode('utf8')).hexdigest()
+            return digest(entry['link'], alg='sha1')
+        return digest(json.dumps(entry, sort_keys=True), alg='sha1')
 
     @staticmethod
     def extract_date(entry):
