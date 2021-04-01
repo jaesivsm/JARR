@@ -19,7 +19,7 @@ pep8:
 	$(RUN) pycodestyle --ignore=E126,E127,E128,W503 jarr/ --exclude=jarr/migrations
 
 mypy:
-	$(RUN) mypy jarr --ignore-missing-imports
+	$(RUN) mypy jarr --ignore-missing-imports --exclude=jarr/crawler/lib/__init__.py
 
 lint: pep8 mypy
 
