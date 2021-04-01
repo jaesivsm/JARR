@@ -70,6 +70,16 @@ class ContentGenerator:
         return False, {}
 
 
+class VideoContentGenerator(ContentGenerator):
+    article_type = ArticleType.video
+
+    def get_vector(self):
+        return None
+
+    def generate(self):
+        return False, {}
+
+
 class ImageContentGenerator(ContentGenerator):
     article_type = ArticleType.image
 
@@ -166,9 +176,9 @@ CONTENT_GENERATORS = {}
 
 
 def feed_mapping(subcls_):
-    if subcls_.feed_type:
+    if subcls_.feed_type is not None:
         CONTENT_GENERATORS[subcls_.feed_type] = subcls_
-    if subcls_.article_type:
+    if subcls_.article_type is not None:
         CONTENT_GENERATORS[subcls_.article_type] = subcls_
 
 
