@@ -64,6 +64,7 @@ function Content({ content, hidden }) {
   }
   return (
     <div hidden={hidden} className={classes.article}>
+      <h3>{content.title}</h3>
       {head}
       {comments}
       <Divider />

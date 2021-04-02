@@ -3,6 +3,7 @@ import logging
 import re
 from functools import lru_cache
 
+import requests
 from goose3 import Goose
 from lxml import etree
 import urllib.parse
@@ -92,6 +93,7 @@ class ImageContentGenerator(ContentGenerator):
         text = self.article.title or self.article.content
         content = {'type': self.article.article_type.value,
                    'alt': html.escape(text[:IMG_ALT_MAX_LENGTH]),
+                   'title': self.article.title,
                    'src': self.article.link}
         return True, content
 
@@ -109,6 +111,7 @@ class EmbeddedContentGenerator(ContentGenerator):
                         'from article', self.article)
             try:
                 return True, {'type': self.article.article_type.value,
+                              'title': self.article.title,
                               'player': 'youtube',
                               'videoId': yt_match.group(5)}
             except IndexError:
@@ -128,6 +131,7 @@ class TruncatedContentGenerator(ContentGenerator):
         try:
             content['content'] = self._from_goose_to_html()
             content['link'] = self._page.final_url
+            content['title'] = getattr(self._page, 'title', self.article.title)
             success = True
         except Exception:
             logger.exception("Could not rebuild parsed content for %r",

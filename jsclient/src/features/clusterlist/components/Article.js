@@ -1,13 +1,24 @@
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import PropTypes from "prop-types";
 import Typography from "@material-ui/core/Typography";
 import Link from "@material-ui/core/Link";
 import Divider from "@material-ui/core/Divider";
+import { headerHeight } from "../../../const";
 
 import makeStyles from "./style";
 
-function Article({ article, hidden }) {
+function Article({ article, hidden, showTitle }) {
   const classes = makeStyles();
+  const ref = useRef(null);
+  useEffect(() => {
+    if (ref.current && ref.current.offsetTop && ref.current.offsetParent) {
+      window.scrollTo({ left: 0,
+                        top: ref.current.offsetTop
+                            + ref.current.offsetParent.offsetTop
+                            - headerHeight * 2.3,
+                        behavior: "smooth" });
+    }
+  }, [ref]);
   let comments;
   if (article.comments) {
     comments = (<p><span>Comments</span>
@@ -17,7 +28,8 @@ function Article({ article, hidden }) {
                   </Link></p>);
   }
   return (
-    <div hidden={hidden} className={classes.article}>
+    <div hidden={hidden} className={classes.article} ref={ref}>
+      <h3 hidden={!showTitle}>{article.title}</h3>
       <p>
         <span>Link</span>
         <Link color="secondary" target="_blank"
@@ -38,10 +50,12 @@ function Article({ article, hidden }) {
 
 Article.propTypes = {
   article: PropTypes.shape({
+    title: PropTypes.string.isRequired,
     link: PropTypes.string.isRequired,
     content: PropTypes.string.isRequired,
     comments: PropTypes.string,
   }),
+  showTitle: PropTypes.bool.isRequired,
   hidden: PropTypes.bool.isRequired,
 };
 
