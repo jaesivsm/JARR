@@ -122,7 +122,7 @@ class AbstractArticleBuilder:
             article['article_type'] = ArticleType.video
         elif content_type.startswith('audio/'):
             article['article_type'] = ArticleType.audio
-        elif is_embedded_link(self.article['link']):
+        elif is_embedded_link(article['link']):
             article['article_type'] = ArticleType.embedded
 
     def _all_articles(self):

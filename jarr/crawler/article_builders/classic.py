@@ -75,9 +75,14 @@ class ClassicArticleBuilder(AbstractArticleBuilder):
         known_links = {self.article['link'], self.extract_link(self.entry)}
         yield self.article
         for link in (self.entry.get('links') or []):
-            if link.get('href') in known_links:
+            try:
+                content_type = link['type']
+                link = link['href']
+            except (KeyError, TypeError):
                 continue
-            copy = {key: value for key, value in self.articles.items()
+            known_links.add(link)
+            copy = {key: value for key, value in self.article.items()
                     if key in {'title', 'lang', 'link_hash', 'entry_id'}}
-            self._feed_content_type(link.get('type'), copy)
+            copy['link'] = link
+            self._feed_content_type(content_type, copy)
             yield copy
