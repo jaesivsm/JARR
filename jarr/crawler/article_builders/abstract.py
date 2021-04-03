@@ -4,7 +4,7 @@ import requests
 from requests.exceptions import MissingSchema
 
 from jarr.bootstrap import conf
-from jarr.lib.content_generator import is_embedded_link
+from jarr.lib.content_generator import is_embedded_link, YOUTUBE_RE
 from jarr.lib.enums import ArticleType
 from jarr.lib.filter import FiltersAction, process_filters
 from jarr.lib.url_cleaners import clean_urls, remove_utm_tags
@@ -114,6 +114,14 @@ class AbstractArticleBuilder:
             logger.error("couldn't fetch %r", url)
 
     def enhance(self):
+        if is_embedded_link(self.article['link']):
+            self.article['article_type'] = ArticleType.embedded
+            try:  # let's not fetch youtube page, avoid consent page redirect
+                video_id = YOUTUBE_RE.match(self.article['link']).group(5)
+                self.article['link_hash'] = self.to_hash(video_id)
+            except IndexError:
+                pass
+            return self.article
         head = self._head(self.article['link'])
         if not head:
             return self.article
@@ -131,8 +139,6 @@ class AbstractArticleBuilder:
             self.article['article_type'] = ArticleType.image
         elif content_type.startswith('video/'):
             self.article['article_type'] = ArticleType.video
-        elif is_embedded_link(self.article['link']):
-            self.article['article_type'] = ArticleType.embedded
 
         if not self.article.get('lang') \
                 and head.headers.get('Content-Language'):

@@ -81,11 +81,11 @@ class ConstructArticleTest(unittest.TestCase):
         self.assertEqual(1, article['feed_id'])
 
     def test_image_content(self):
-        resp = self.response2
+        entry, resp = self.entry2, self.response2
         resp.headers['content-type'] = 'image/png'
+        entry['link'] = resp.url = 'https://domain.tld/to-img.png'
         self.head_patch.return_value = resp
-        article = ClassicArticleBuilder(Feed(id=1, user_id=1),
-                                        self.entry2).enhance()
+        article = ClassicArticleBuilder(Feed(id=1, user_id=1), entry).enhance()
         self.assertEqual(ArticleType.image, article['article_type'])
 
     def test_embedded_content(self):
@@ -94,7 +94,6 @@ class ConstructArticleTest(unittest.TestCase):
                                         self.entry2).enhance()
 
         self.assertEqual('yt:video:scbrjaqM3Oc', article['entry_id'])
-        self.assertEqual(self.response2.url, article['link'])
         self.assertEqual("Ceci n'est pas Old Boy - Owlboy (suite) - "
                          "Benzaie Live", article['title'])
         self.assertEqual(1, article['user_id'])
