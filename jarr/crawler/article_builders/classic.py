@@ -80,6 +80,8 @@ class ClassicArticleBuilder(AbstractArticleBuilder):
                 link = link['href']
             except (KeyError, TypeError):
                 continue
+            if link in known_links:
+                continue
             known_links.add(link)
             copy = {key: value for key, value in self.article.items()
                     if key in {'title', 'lang', 'link_hash', 'entry_id'}}
