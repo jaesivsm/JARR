@@ -59,7 +59,7 @@ class ArticleController(AbstractController):
                 value = article.content_generator.extracted_infos.get(key)
                 if value and getattr(article, key) != value:
                     setattr(article, key, value)
-                save = True
+                    save = True
         if save:
             session.add(article)
             session.commit()

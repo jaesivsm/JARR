@@ -2,6 +2,7 @@ from sqlalchemy import (Binary, Column, Enum, ForeignKeyConstraint,
                         Index, Integer, PickleType, String)
 from sqlalchemy.dialects.postgresql import TSVECTOR
 from sqlalchemy.orm import relationship
+from functools import cached_property
 
 from jarr.bootstrap import Base
 from jarr.lib.enums import ArticleType, ClusterReason
@@ -87,7 +88,7 @@ class Article(Base):
         return TFIDFVector(vector, size, frequencies, corpus_size,
                            will_be_left_member=will_be_left_member)
 
-    @property
+    @cached_property
     def content_generator(self):
         from jarr.lib.content_generator import get_content_generator
         return get_content_generator(self)

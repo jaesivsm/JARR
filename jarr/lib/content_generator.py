@@ -69,6 +69,14 @@ class ContentGenerator:
     def generate():
         return False, {}
 
+    @classmethod
+    def is_compatible(cls, content):
+        if not content:
+            return True
+        if clS.article_type is not None:
+            return cls.article_type is content.get('type')
+        return False
+
 
 class VideoContentGenerator(ContentGenerator):
     article_type = ArticleType.video
@@ -77,7 +85,7 @@ class VideoContentGenerator(ContentGenerator):
         return None
 
     def generate(self):
-        return True, {'type': self.article.article_type.value,
+        return True, {'type': self.article_type.value,
                       'src': self.article.link}
 
 
@@ -88,7 +96,7 @@ class AudioContentGenerator(ContentGenerator):
         return None
 
     def generate(self):
-        return True, {'type': self.article.article_type.value,
+        return True, {'type': self.article_type.value,
                       'src': self.article.link}
 
 
@@ -102,7 +110,7 @@ class ImageContentGenerator(ContentGenerator):
         logger.info('%r constructing image content from article',
                     self.article)
         text = self.article.title or self.article.content
-        content = {'type': self.article.article_type.value,
+        content = {'type': self.article_type.value,
                    'alt': html.escape(text[:IMG_ALT_MAX_LENGTH]),
                    'src': self.article.link}
         return True, content
