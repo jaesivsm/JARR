@@ -81,12 +81,11 @@ class ConstructArticleTest(unittest.TestCase):
         self.assertEqual(1, article['feed_id'])
 
     def test_image_content(self):
-        resp = self.response2
+        entry, resp = self.entry2, self.response2
         resp.headers['content-type'] = 'image/png'
-        resp.url = 'https://domain.tld/to-img.png'
+        entry['link'] = resp.url = 'https://domain.tld/to-img.png'
         self.head_patch.return_value = resp
-        article = ClassicArticleBuilder(Feed(id=1, user_id=1),
-                                        self.entry2).enhance()
+        article = ClassicArticleBuilder(Feed(id=1, user_id=1), entry).enhance()
         self.assertEqual(ArticleType.image, article['article_type'])
 
     def test_embedded_content(self):
