@@ -84,13 +84,10 @@ class ClassicArticleBuilder(AbstractArticleBuilder):
 
     def _all_articles(self):
         yield self.article
-        if not self.article.get('link_hash'):
-            # ensuring link_hash, to ensure clustering on link_hash
-            self.article['link_hash'] = self.to_hash(clean_head.url)
         for link in (self.entry.get('links') or []):
             if link.get('href') in self._links:
                 continue
-            article = {key: value for key, value in self.articles.items()
+            copy = {key: value for key, value in self.articles.items()
                        if key in {'title', 'lang', 'link_hash', 'entry_id'}}
-            self._feed_content_type(link.get('type'), article)
-            yield article
+            self._feed_content_type(link.get('type'), copy)
+            yield copy
