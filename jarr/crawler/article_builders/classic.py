@@ -72,7 +72,9 @@ class ClassicArticleBuilder(AbstractArticleBuilder):
         return entry.get('comments')
 
     def _all_articles(self):
-        known_links = {self.article['link'], self.extract_link(self.entry)}
+        known_links = {self.article['link'],
+                       self.extract_link(self.entry),
+                       self.article['comments']}
         yield self.article
         for link in (self.entry.get('links') or []):
             try:

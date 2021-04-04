@@ -32,19 +32,24 @@ class RSSBridgeIntegrationTest(unittest.TestCase):
             entry = json.load(fd)
         builder = RSSBridgeTwitterArticleBuilder(self.feed, entry)
         self.assertEqual(entry['link'], builder.article['link'])
-        builder.enhance()
+        articles = list(builder.enhance())
+        self.assertEqual(1, len(articles))
+        article = articles[0]
         self.assertEqual("https://www.enercoop.fr/content/licoornes-les-cooper"
-                         "atives-du-monde-dapres", builder.article['link'])
-        self.assertEqual(entry['link'], builder.article['comments'])
-        self.assertIsNone(builder.article.get('article_type'))
+                         "atives-du-monde-dapres", article['link'])
+        self.assertEqual(entry['link'], article['comments'])
+        self.assertIsNone(article.get('article_type'))
 
     def test_rss_twitter_bridge_img_handling(self):
         with open('tests/fixtures/img_tweet.json') as fd:
             entry = json.load(fd)
         builder = RSSBridgeTwitterArticleBuilder(self.feed, entry)
         self.assertEqual(entry['link'], builder.article['link'])
-        builder.enhance()
-        self.assertEqual("https://pbs.twimg.com/media/EmZUUQxXcAAxMTp.jpg",
-                         builder.article['link'])
-        self.assertEqual(entry['link'], builder.article['comments'])
-        self.assertEqual('image', builder.article['article_type'].value)
+        articles = list(builder.enhance())
+        self.assertEqual(2, len(articles))
+        self.assertTrue(any("https://pbs.twimg.com/media/EmZUUQxXcAAxMTp.jpg"
+                            in article['link'] for article in articles))
+        self.assertTrue(any(entry['link'] == article['comments']
+                            for article in articles))
+        self.assertTrue(any('image' == article['article_type'].value
+                            for article in articles))
