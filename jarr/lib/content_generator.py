@@ -73,7 +73,7 @@ class ContentGenerator:
     def is_compatible(cls, content):
         if not content:
             return True
-        if clS.article_type is not None:
+        if cls.article_type is not None:
             return cls.article_type is content.get('type')
         return False
 
