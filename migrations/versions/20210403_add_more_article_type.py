@@ -7,6 +7,7 @@ create date: 2021-04-03 19:57:53.312419
 """
 import logging
 from alembic import op
+from sqlalchemy.dialects import postgresql
 from jarr.lib.enums import ArticleType
 
 revision = '511346f4372e'
