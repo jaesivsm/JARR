@@ -47,9 +47,7 @@ class RSSBridgeIntegrationTest(unittest.TestCase):
         self.assertEqual(entry['link'], builder.article['link'])
         articles = list(builder.enhance())
         self.assertEqual(2, len(articles))
-        self.assertTrue(any("https://pbs.twimg.com/media/EmZUUQxXcAAxMTp.jpg"
-                            in article['link'] for article in articles))
-        self.assertTrue(any(entry['link'] == article['link']
-                            for article in articles))
-        self.assertTrue(any(ArticleType.image == article.get('article_type')
-                            for article in articles))
+        self.assertEqual(entry['link'], articles[0]['link'])
+        self.assertTrue("https://pbs.twimg.com/media/EmZUUQxXcAAxMTp.jpg"
+                        in articles[1]['link'])
+        self.assertEqual(ArticleType.image, articles[1]['article_type'])
