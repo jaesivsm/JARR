@@ -1,7 +1,6 @@
 from bs4 import BeautifulSoup
 
 from jarr.crawler.article_builders.classic import ClassicArticleBuilder
-from jarr.lib.enums import ArticleType
 
 
 class RSSBridgeArticleBuilder(ClassicArticleBuilder):
