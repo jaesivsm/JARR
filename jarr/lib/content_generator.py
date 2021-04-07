@@ -69,14 +69,6 @@ class ContentGenerator:
     def generate():
         return False, {}
 
-    @classmethod
-    def is_compatible(cls, content):
-        if not content:
-            return True
-        if cls.article_type is not None:
-            return cls.article_type is content.get('type')
-        return False
-
 
 class MediaContentGeneratorMixin:
 
