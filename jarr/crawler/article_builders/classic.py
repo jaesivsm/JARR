@@ -78,6 +78,8 @@ class ClassicArticleBuilder(AbstractArticleBuilder):
         yield self.article
         for link in (self.entry.get('links') or []):
             try:
+                if link['rel'] != 'enclosure':
+                    continue
                 content_type = link['type']
                 link = link['href']
             except (KeyError, TypeError):
