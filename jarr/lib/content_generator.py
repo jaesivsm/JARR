@@ -78,42 +78,28 @@ class ContentGenerator:
         return False
 
 
-class VideoContentGenerator(ContentGenerator):
+class MediaContentGeneratorMixin:
+
+    def get_vector(self):
+        return None
+
+    def generate(self):
+        text = self.article.title or self.article.content
+        return True, {'type': self.article_type.value,
+                      'alt': html.escape(text[:IMG_ALT_MAX_LENGTH]),
+                      'src': self.article.link}
+
+
+class VideoContentGenerator(ContentGenerator, MediaContentGeneratorMixin):
     article_type = ArticleType.video
 
-    def get_vector(self):
-        return None
 
-    def generate(self):
-        return True, {'type': self.article_type.value,
-                      'src': self.article.link}
-
-
-class AudioContentGenerator(ContentGenerator):
+class AudioContentGenerator(ContentGenerator, MediaContentGeneratorMixin):
     article_type = ArticleType.audio
 
-    def get_vector(self):
-        return None
 
-    def generate(self):
-        return True, {'type': self.article_type.value,
-                      'src': self.article.link}
-
-
-class ImageContentGenerator(ContentGenerator):
+class ImageContentGenerator(ContentGenerator, MediaContentGeneratorMixin):
     article_type = ArticleType.image
-
-    def get_vector(self):
-        return None
-
-    def generate(self):
-        logger.info('%r constructing image content from article',
-                    self.article)
-        text = self.article.title or self.article.content
-        content = {'type': self.article_type.value,
-                   'alt': html.escape(text[:IMG_ALT_MAX_LENGTH]),
-                   'src': self.article.link}
-        return True, content
 
 
 class EmbeddedContentGenerator(ContentGenerator):
@@ -128,7 +114,7 @@ class EmbeddedContentGenerator(ContentGenerator):
             logger.info('%r constructing embedded youtube content '
                         'from article', self.article)
             try:
-                return True, {'type': self.article.article_type.value,
+                return True, {'type': self.article_type.value,
                               'player': 'youtube',
                               'videoId': yt_match.group(5)}
             except IndexError:
