@@ -1,11 +1,11 @@
 import json
 import unittest
 
-from mock import patch
-
 from jarr.crawler.article_builders.rss_bridge import (
     RSSBridgeArticleBuilder, RSSBridgeTwitterArticleBuilder)
+from jarr.lib.enums import ArticleType
 from jarr.models.feed import Feed
+from mock import patch
 
 
 class RSSBridgeIntegrationTest(unittest.TestCase):
@@ -49,7 +49,7 @@ class RSSBridgeIntegrationTest(unittest.TestCase):
         self.assertEqual(2, len(articles))
         self.assertTrue(any("https://pbs.twimg.com/media/EmZUUQxXcAAxMTp.jpg"
                             in article['link'] for article in articles))
-        self.assertTrue(any(entry['link'] == article['comments']
+        self.assertTrue(any(entry['link'] == article['link']
                             for article in articles))
-        self.assertTrue(any('image' == article['article_type'].value
+        self.assertTrue(any(ArticleType.image == article.get('article_type')
                             for article in articles))
