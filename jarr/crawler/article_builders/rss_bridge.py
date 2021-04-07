@@ -34,11 +34,4 @@ class RSSBridgeTwitterArticleBuilder(RSSBridgeArticleBuilder):
         except (KeyError, AttributeError, TypeError, IndexError):
             self.article['link'] = og_link
             self.article['comments'] = og_comments
-        else:
-            try:  # link is the image if the link contains the images
-                img = last_link.find_all('img')[0]
-                self.article['link'] = img.attrs['src']
-                self.article['article_type'] = ArticleType.image
-            except (KeyError, AttributeError, TypeError, IndexError):
-                pass
         yield from super().enhance()

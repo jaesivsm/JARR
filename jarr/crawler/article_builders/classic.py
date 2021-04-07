@@ -87,7 +87,7 @@ class ClassicArticleBuilder(AbstractArticleBuilder):
             if link in known_links:
                 continue
             known_links.add(link)
-            enclosure = self.tempalte_article()
+            enclosure = self.template_article()
             enclosure['order_in_cluster'] = i
             for key, value in self.article.items():
                 if key in {'title', 'lang', 'link_hash', 'entry_id'}:
