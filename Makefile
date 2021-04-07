@@ -5,7 +5,7 @@ SERVER_PORT = 8000
 SERVER_ADDR = 0.0.0.0
 DB_VER = $(shell pipenv run ./manager.py db heads | sed -e 's/ .*//g')
 COMPOSE_FILE ?= Dockerfiles/dev-env.yml
-RUN = pipenv run
+RUN = PIPENV_IGNORE_VIRTUALENVS=1 pipenv run
 COMPOSE = $(RUN) docker-compose --project-name jarr --file $(COMPOSE_FILE)
 TEST = tests/
 DB_NAME ?= jarr
