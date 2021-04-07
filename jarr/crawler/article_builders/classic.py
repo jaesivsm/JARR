@@ -76,7 +76,7 @@ class ClassicArticleBuilder(AbstractArticleBuilder):
                        self.extract_link(self.entry),
                        self.article['comments']}
         yield self.article
-        for link in (self.entry.get('links') or []):
+        for i, link in enumerate(self.entry.get('links') or []):
             try:
                 if link['rel'] != 'enclosure':
                     continue
@@ -87,8 +87,11 @@ class ClassicArticleBuilder(AbstractArticleBuilder):
             if link in known_links:
                 continue
             known_links.add(link)
-            copy = {key: value for key, value in self.article.items()
-                    if key in {'title', 'lang', 'link_hash', 'entry_id'}}
-            copy['link'] = link
-            self._feed_content_type(content_type, copy)
-            yield copy
+            enclosure = self.tempalte_article()
+            enclosure['order_in_cluster'] = i
+            for key, value in self.article.items():
+                if key in {'title', 'lang', 'link_hash', 'entry_id'}:
+                    enclosure[key] = value
+            enclosure['link'] = link
+            self._feed_content_type(content_type, enclosure)
+            yield enclosure

@@ -34,6 +34,7 @@ class AbstractArticleBuilder:
         return {'feed_id': self.feed.id,
                 'category_id': self.feed.category_id,
                 'user_id': self.feed.user_id,
+                'order_in_cluster': 0,
                 'retrieved_date': utc_now()}
 
     @staticmethod

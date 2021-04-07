@@ -25,6 +25,7 @@ class Article(Base):
     lang = Column(String)
     date = Column(UTCDateTime, default=utc_now)
     retrieved_date = Column(UTCDateTime, default=utc_now)
+    order_in_cluster = Column(Integer)
 
     # integration control
     article_type = Column(Enum(ArticleType),
