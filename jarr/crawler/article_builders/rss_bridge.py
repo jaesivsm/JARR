@@ -30,7 +30,7 @@ class RSSBridgeTwitterArticleBuilder(RSSBridgeArticleBuilder):
             all_links = [link for link in soup.find_all('a')
                          if not link.find_all('img')  # no image
                          # and no profil pic
-                         and 'pic.twitter.com' not in link.text]
+                         and og_link not in link.attrs['href']]
             if all_links:
                 self.article['comments'] = self.article['link']
                 self.article['link'] = all_links[-1].attrs['href']
