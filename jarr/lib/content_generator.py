@@ -200,6 +200,9 @@ def get_content_generator(article):
 
 
 def merge_content(cluster, article, content):
+    if cluster.content.get('type') == 'fetched':
+        return
+    content = article.content_generator.generate()
     if content['type'] == cluster.content['type']:
         cluster.content = {'type': 'multi-%s' % cluster.content['type'],
                            'contents': [cluster.content, content]}

@@ -170,12 +170,8 @@ class Clusterizer:
             cluster.main_link = article.link
             cluster.main_feed_title = article.feed.title
             cluster.main_article_id = article.id
-        content = article.content_generator.generate()
-        if content and not cluster.content:
-            cluster.content = content
-        elif content:
-            from jarr.lib.content_generator import merge_content
-            cluster.content = merge_content(cluster, article, content)
+        from jarr.lib.content_generator import merge_content
+        merge_content(cluster, article)
         self.add_to_corpus(article)
         session.add(cluster)
         session.add(article)

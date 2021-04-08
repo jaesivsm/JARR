@@ -58,3 +58,29 @@ class JsonArticleBuilder(AbstractArticleBuilder):
     @staticmethod
     def extract_comments(entry):
         return entry.get('url') or entry.get('external_url')
+
+    def _all_articles(self):
+        known_links = {self.article['link'],
+                       self.extract_link(self.entry),
+                       self.article['comments']}
+        yield self.article
+        for i, link in enumerate(self.entry.get('attachments') or []):
+            try:
+                content_type = link['mime_type']
+                title = link.get('title')
+                link = link['url']
+            except (KeyError, TypeError):
+                continue
+            if link in known_links:
+                continue
+            known_links.add(link)
+            enclosure = self.template_article()
+            enclosure['order_in_cluster'] = i
+            for key, value in self.article.items():
+                if key in {'title', 'lang', 'link_hash', 'entry_id'}:
+                    enclosure[key] = value
+            enclosure['link'] = link
+            if title:
+                enclosure['title'] = title
+            self._feed_content_type(content_type, enclosure)
+            yield enclosure
