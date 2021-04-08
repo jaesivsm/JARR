@@ -9,6 +9,7 @@ from jarr.bootstrap import conf, session
 from jarr.controllers import ArticleController
 from jarr.lib.clustering_af.grouper import get_best_match_and_score
 from jarr.lib.enums import ArticleType, ClusterReason, ReadReason
+from jarr.lib.content_generator import merge_content
 from jarr.metrics import ARTICLE_CREATION, TFIDF_SCORE, WORKER_BATCH
 from jarr.models import Article, Cluster, Feed
 from jarr.signals import event
@@ -170,10 +171,11 @@ class Clusterizer:
             cluster.main_link = article.link
             cluster.main_feed_title = article.feed.title
             cluster.main_article_id = article.id
-        if not cluster.content:
-            success, content = article.content_generator.generate()
-            if success:
-                cluster.content = content
+        content = article.content_generator.generate()
+        if content and not cluster.content:
+            cluster.content = content
+        elif content:
+            cluster.content = merge_content(cluster, article, content)
         self.add_to_corpus(article)
         session.add(cluster)
         session.add(article)

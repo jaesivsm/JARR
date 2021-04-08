@@ -67,7 +67,7 @@ class ContentGenerator:
 
     @staticmethod
     def generate():
-        return False, {}
+        return {}
 
 
 class MediaContentGeneratorMixin:
@@ -77,9 +77,8 @@ class MediaContentGeneratorMixin:
 
     def generate(self):
         text = self.article.title or self.article.content
-        return True, {'type': self.article_type.value,
-                      'alt': html.escape(text[:IMG_ALT_MAX_LENGTH]),
-                      'src': self.article.link}
+        return {'type': self.article_type.value, 'src': self.article.link,
+                'alt': html.escape(text[:IMG_ALT_MAX_LENGTH])}
 
 
 class VideoContentGenerator(ContentGenerator, MediaContentGeneratorMixin):
@@ -106,15 +105,14 @@ class EmbeddedContentGenerator(ContentGenerator):
             logger.info('%r constructing embedded youtube content '
                         'from article', self.article)
             try:
-                return True, {'type': self.article_type.value,
-                              'player': 'youtube',
-                              'videoId': yt_match.group(5)}
+                return {'type': self.article_type.value, 'player': 'youtube',
+                        'videoId': yt_match.group(5)}
             except IndexError:
                 pass
         else:
             logger.warning('embedded video not recognized %r',
                            self.article.link)
-        return True, {}
+        return {}
 
 
 class TruncatedContentGenerator(ContentGenerator):
@@ -122,18 +120,18 @@ class TruncatedContentGenerator(ContentGenerator):
     def generate(self):
         if self._page is None:
             self._get_goose()
-        success, content = False, {'type': 'fetched'}
+        content = {'type': 'fetched'}
         try:
             content['content'] = self._from_goose_to_html()
             content['link'] = self._page.final_url
-            success = True
         except Exception:
             logger.exception("Could not rebuild parsed content for %r",
                              self.article)
-        if success and self.article.comments:
+            return {}
+        if self.article.comments:
             content['comments'] = self.article.comments
         logger.debug('%r no special type found doing nothing', self.article)
-        return success, content
+        return content
 
 
 class RedditContentGenerator(TruncatedContentGenerator):
@@ -167,7 +165,7 @@ class RedditContentGenerator(TruncatedContentGenerator):
     def generate(self):
         if not self.is_pure_reddit_post:
             return super().generate()
-        return False, {}  # original reddit post, nothing to process
+        return {}  # original reddit post, nothing to process
 
 
 CONTENT_GENERATORS = {}
@@ -199,3 +197,11 @@ def get_content_generator(article):
         return TruncatedContentGenerator(article)
 
     return ContentGenerator(article)
+
+
+def merge_content(cluster, article, content):
+    if content['type'] == cluster.content['type']:
+        cluster.content = {'type': 'multi-%s' % cluster.content['type'],
+                           'contents': [cluster.content, content]}
+    elif cluster.content['type'] == 'multi-%s' % content['type']:
+        cluster.content['contents'].append(content)
