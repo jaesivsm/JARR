@@ -72,17 +72,9 @@ class ContentGenerator:
     def generate_and_merge(self, cluster):
         article_content = self.generate()
         if not article_content:
-            return False
-        if not cluster.content:
-            cluster.content = article_content
-            return True
-        cluster.content['multi'] = True
-        if cluster.content['type'] == 'mixed':
-            cluster.content['contents'].append(article_content)
-        elif cluster.content['type'] == article_content['type']:
-            cluster.content = {'type': 'mixed', 'multi': True,
-                               'contents': [cluster.content,
-                                            article_content]}
+            return
+        cluster.content = migrate_content(cluster.content)
+        cluster.contents['contents'].append(article_content)
 
 
 class EmbeddedContentGenerator(ContentGenerator):
@@ -97,8 +89,7 @@ class EmbeddedContentGenerator(ContentGenerator):
             logger.info('%r constructing embedded youtube content '
                         'from article', self.article)
             try:
-                return {'type': self.article_type.value, 'player': 'youtube',
-                        'videoId': yt_match.group(5)}
+                return {'type': 'youtube', 'link': yt_match.group(5)}
             except IndexError:
                 pass
         else:
@@ -191,12 +182,14 @@ def get_content_generator(article):
     return ContentGenerator(article)
 
 
-def merge_content(cluster, article, content):
-    if cluster.content.get('type') == 'fetched':
-        return
-    content = article.content_generator.generate()
-    if content['type'] == cluster.content['type']:
-        cluster.content = {'type': 'multi-%s' % cluster.content['type'],
-                           'contents': [cluster.content, content]}
-    elif cluster.content['type'] == 'multi-%s' % content['type']:
-        cluster.content['contents'].append(content)
+def migrate_content(content: dict):
+    if not content:
+        return {}
+    if content.get('v') == 2:
+        return content
+    if content['type'] in {'image', 'audio', 'video'}:
+        return {}
+    if content['type'] == 'embedded':  # migrating original embedded
+        return {'v': 2, 'contents': [{'type': content['player'],
+                                      'link': content['videoId']}]}
+    return {'v': 2, 'contents': [content]}

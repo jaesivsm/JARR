@@ -5,6 +5,7 @@ from werkzeug.exceptions import Forbidden, NotFound
 from jarr.api.common import parse_meaningful_params
 from jarr.controllers import ClusterController
 from jarr.lib.enums import ReadReason
+from jarr.lib.content_generator import migrate_content
 from jarr.metrics import READ
 
 cluster_ns = Namespace('cluster', description='Cluster related operations')
@@ -23,22 +24,19 @@ article_model = cluster_ns.model('Article', {
     'title': fields.String(),
     'content': fields.String(),
     'comments': fields.String(),
+    'article_type': fields.String(skip_none=False),
     'date': fields.DateTime()})
 content_model = cluster_ns.model('ComplexContent', {
     'type': fields.String(required=True),
+    'multi': fields.Boolean(default=False),
     'content': fields.String(),
     'comments': fields.String(),
-    'link': fields.String(),
-    'tags': fields.List(fields.String),
-    'alt': fields.String(),
-    'src': fields.String(),
-    'player': fields.String(),
-    'videoId': fields.String()})
+    'link': fields.String()})
 model = cluster_ns.model('Cluster', {
     'id': fields.Integer(),
     'read': fields.Boolean(),
     'liked': fields.Boolean(),
-    'content': fields.Nested(content_model, skip_none=True),
+    'contents': fields.Nested(content_model, skip_none=True, as_list=True),
     'main_feed_title': fields.String(),
     'main_article_id': fields.Integer(),
     'articles': fields.Nested(article_model, as_list=True),
@@ -63,6 +61,7 @@ class ClusterResource(Resource):
         if cluster.user_id != current_identity.id:
             raise Forbidden()
         code = 200
+        cluster.content = migrate_content(cluster.content)
         if not cluster.read:
             cluc.update({'id': cluster_id},
                         {'read': True,
@@ -71,6 +70,7 @@ class ClusterResource(Resource):
             cluster.read = True
             cluster.read_reason = ReadReason.read
             code = 226
+        cluster.contents = cluster.content
         return cluster, code
 
     @staticmethod
