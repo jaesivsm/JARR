@@ -183,8 +183,7 @@ class Clusterizer:
             cluster.main_link = article.link
             cluster.main_feed_title = article.feed.title
             cluster.main_article_id = article.id
-        from jarr.lib.content_generator import merge_content
-        merge_content(cluster, article)
+        article.content_generator.generate_and_merge(cluster)
         self.add_to_corpus(article)
         session.add(cluster)
         session.add(article)

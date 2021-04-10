@@ -69,28 +69,20 @@ class ContentGenerator:
     def generate():
         return {}
 
-
-class MediaContentGeneratorMixin:
-
-    def get_vector(self):
-        return None
-
-    def generate(self):
-        text = self.article.title or self.article.content
-        return {'type': self.article_type.value, 'src': self.article.link,
-                'alt': html.escape(text[:IMG_ALT_MAX_LENGTH])}
-
-
-class VideoContentGenerator(ContentGenerator, MediaContentGeneratorMixin):
-    article_type = ArticleType.video
-
-
-class AudioContentGenerator(ContentGenerator, MediaContentGeneratorMixin):
-    article_type = ArticleType.audio
-
-
-class ImageContentGenerator(ContentGenerator, MediaContentGeneratorMixin):
-    article_type = ArticleType.image
+    def generate_and_merge(self, cluster):
+        article_content = self.generate()
+        if not article_content:
+            return False
+        if not cluster.content:
+            cluster.content = article_content
+            return True
+        cluster.content['multi'] = True
+        if cluster.content['type'] == 'mixed':
+            cluster.content['contents'].append(article_content)
+        elif cluster.content['type'] == article_content['type']:
+            cluster.content = {'type': 'mixed', 'multi': True,
+                               'contents': [cluster.content,
+                                            article_content]}
 
 
 class EmbeddedContentGenerator(ContentGenerator):
