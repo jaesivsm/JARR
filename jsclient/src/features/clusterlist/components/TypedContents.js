@@ -8,38 +8,34 @@ export const articleTypes = ["image", "audio", "video"];
 
 export function TypedContents({ type, articles, hidden }) {
   const classes = makeStyles();
-  let body;
+  let body = [];
+  let processed = [];
   if (articles.length === 0) { return ; }
-  if (type === "image") {
-    body = (
-      <Typography hidden={!!hidden}>
-        {articles.map((article) =>
-            <img key={`i-${article.link}`}
-                 src={article.link} alt={article.title} title={article.title} />)}
-      </Typography>
-    );
-  } else if (type === "audio") {
-    body = (
-      <Typography hidden={!!hidden}>
-        {articles.map((article) =>
-          <audio controls key={`v-${article.link}`}>
-            <source src={article.link} />
-          </audio>)}
-      </Typography>
-    );
-  } else if (type === "video") {
-    body = (
-      <Typography hidden={!!hidden}>
-        {articles.map((article) =>
-          <video controls key={`a-${article.link}`}>
-            <source src={article.link} />
-          </video>)}
-      </Typography>
-    );
-  }
+  articles.forEach((article) => {
+    if(processed.includes(article.link)) {
+      return ;
+    }
+    processed.push(article.link);
+    if (type === "image") {
+      body.push(<img key={`i-${article.link}`}
+                     src={article.link}
+                     alt={article.title} title={article.title} />);
+    } else if (type === "audio") {
+      body.push(<audio controls key={`v-${article.link}`}>
+                  <source src={article.link} />
+                </audio>);
+    } else if (type === "video") {
+      body.push(<video controls key={`a-${article.link}`}>
+                  <source src={article.link} />
+                </video>);
+    }
+  });
+
   return (
     <div hidden={hidden} className={classes.article}>
-      {body}
+      <Typography hidden={!!hidden}>
+        {body}
+      </Typography>
     </div>
   );
 }
