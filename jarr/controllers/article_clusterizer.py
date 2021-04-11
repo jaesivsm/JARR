@@ -188,7 +188,8 @@ class Clusterizer:
         session.add(cluster)
         session.add(article)
         session.commit()
-        ARTICLE_CREATION.labels(read_reason=cluster.read_reason.value,
+        read_reason = cluster.read_reason.value if cluster.read_reason else ''
+        ARTICLE_CREATION.labels(read_reason=read_reason,
                                 read='read' if cluster.read else 'unread',
                                 cluster=article.cluster_reason.value).inc()
         return cluster

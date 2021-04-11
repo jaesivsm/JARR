@@ -74,7 +74,7 @@ class ContentGenerator:
         if not article_content:
             return
         cluster.content = migrate_content(cluster.content)
-        cluster.contents['contents'].append(article_content)
+        cluster.content['contents'].append(article_content)
 
 
 class EmbeddedContentGenerator(ContentGenerator):
