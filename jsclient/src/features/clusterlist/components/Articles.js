@@ -4,6 +4,10 @@ import { connect } from "react-redux";
 
 import Tab from "@material-ui/core/Tab";
 import Tabs from "@material-ui/core/Tabs";
+import ImageIcon from "@material-ui/icons/MusicNote";
+import AudioIcon from "@material-ui/icons/MusicNote";
+import VideoIcon from "@material-ui/icons/Movie";
+import YoutubeIcon from "@material-ui/icons/Youtube";
 
 import Article from "./Article";
 import {articleTypes, TypedContents} from "./TypedContents";
@@ -28,6 +32,7 @@ function Articles({ articles, icons, contents }) {
   let pages = [];
   let index = 0;
   let typedArticles;
+  let icon;
 
   // if no content, and no special type, returning simple article
   if (articles.length === 1 && !(articles[0].article_type in articleTypes) && !contents) {
@@ -35,32 +40,39 @@ function Articles({ articles, icons, contents }) {
   }
   if (contents.length !== 0) {
     contents.forEach((content) => {
+      if (content.type === "youtube") {
+        icon = <YoutubeIcon />;
+      } else {
+        icon = <img src={jarrIcon}
+                    alt={proccessedContentTitle}
+                    title={proccessedContentTitle} />;
+      }
       tabs.push(
-        <Tab key={`t-${index}`}
-          className={classes.tabs}
-          icon={<img src={jarrIcon}
-                     alt={proccessedContentTitle}
-                     title={proccessedContentTitle} />}
-          value={index} aria-controls={`a-${index}`}
+        <Tab key={`t-${index}`} value={index}
+             icon={icon}
+             className={classes.tabs} aria-controls={`a-${index}`}
         />
       );
       pages.push(
-          <ProcessedContent
-            content={content}
-            hidden={index === currentIndex}
-          />
+        <ProcessedContent content={content} hidden={index === currentIndex} />
       );
       index += 1;
     });
   }
   articleTypes.forEach((type) => {
     typedArticles = articles.filter((article) => article.article_type === type);
+    if (type === "image") {
+      icon = <ImageIcon />;
+    } else if (type === "audio") {
+      icon = <AudioIcon />;
+    } else if (type === "video") {
+      icon = <VideoIcon />;
+    }
     if (typedArticles.length !== 0) {
       tabs.push(
-        <Tab key={`t-${index}`}
-          className={classes.tabs}
-          icon={<img src={jarrIcon} alt={type} title={type} />}
-          value={index} aria-controls={`a-${index}`}
+        <Tab key={`t-${index}`} value={index}
+             icon={icon}
+             className={classes.tabs} aria-controls={`a-${index}`}
         />
       );
       pages.push(
