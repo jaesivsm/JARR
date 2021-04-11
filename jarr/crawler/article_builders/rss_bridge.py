@@ -1,7 +1,6 @@
 from bs4 import BeautifulSoup
 
 from jarr.crawler.article_builders.classic import ClassicArticleBuilder
-from jarr.lib.enums import ArticleType
 
 
 class RSSBridgeArticleBuilder(ClassicArticleBuilder):
@@ -28,17 +27,14 @@ class RSSBridgeTwitterArticleBuilder(RSSBridgeArticleBuilder):
         og_link = self.article['link']
         og_comments = self.article.get('comments')
         try:  # trying to find the last link in the tweet
-            last_link = soup.find_all('a')[-1]
-            self.article['comments'] = self.article['link']
-            self.article['link'] = last_link.attrs['href']
+            all_links = [link for link in soup.find_all('a')
+                         if not link.find_all('img')  # no image
+                         # and no profil pic
+                         and og_link not in link.attrs['href']]
+            if all_links:
+                self.article['comments'] = self.article['link']
+                self.article['link'] = all_links[-1].attrs['href']
         except (KeyError, AttributeError, TypeError, IndexError):
             self.article['link'] = og_link
             self.article['comments'] = og_comments
-        else:
-            try:  # link is the image if the link contains the images
-                img = last_link.find_all('img')[0]
-                self.article['link'] = img.attrs['src']
-                self.article['article_type'] = ArticleType.image
-            except (KeyError, AttributeError, TypeError, IndexError):
-                pass
-        return super().enhance()
+        yield from super().enhance()

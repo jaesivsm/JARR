@@ -17,7 +17,11 @@
     "react-window": "^1.8.5",
     "redux": "^4.0.5",
     "thunk": "^0.0.1",
-    "typescript": "^3.8.3"
+    "typescript": "^3.8.3",
+    "react-dev-utils": "^11.0.4",
+    "ssri": "^8.0.1",
+    "node-notifier": "^8.0.1",
+    "object-path": "^0.11.5"
   },
   "scripts": {
     "start": "react-scripts start",

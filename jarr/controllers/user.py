@@ -1,13 +1,8 @@
 import logging
-from datetime import timedelta
 
-from werkzeug.security import check_password_hash, generate_password_hash
-
-from jarr.bootstrap import conf
-from jarr.lib.utils import utc_now
+from jarr.controllers.abstract import AbstractController
 from jarr.models import User
-
-from .abstract import AbstractController
+from werkzeug.security import check_password_hash, generate_password_hash
 
 logger = logging.getLogger(__name__)
 
@@ -37,7 +32,7 @@ class UserController(AbstractController):
         return super().update(filters, attrs, return_objs, commit)
 
     def delete(self, obj_id, commit=True):
-        from jarr.controllers import ClusterController, ArticleController
+        from jarr.controllers import ArticleController, ClusterController
         fltr = {"user_id": obj_id}
         ClusterController(self.user_id).update(fltr, {"main_article_id": None})
         ArticleController(self.user_id).update(fltr, {"cluster_id": None})

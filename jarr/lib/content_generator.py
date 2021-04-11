@@ -67,33 +67,14 @@ class ContentGenerator:
 
     @staticmethod
     def generate():
-        return False, {}
+        return {}
 
-
-class VideoContentGenerator(ContentGenerator):
-    article_type = ArticleType.video
-
-    def get_vector(self):
-        return None
-
-    def generate(self):
-        return False, {}
-
-
-class ImageContentGenerator(ContentGenerator):
-    article_type = ArticleType.image
-
-    def get_vector(self):
-        return None
-
-    def generate(self):
-        logger.info('%r constructing image content from article',
-                    self.article)
-        text = self.article.title or self.article.content
-        content = {'type': self.article.article_type.value,
-                   'alt': html.escape(text[:IMG_ALT_MAX_LENGTH]),
-                   'src': self.article.link}
-        return True, content
+    def generate_and_merge(self, cluster):
+        article_content = self.generate()
+        if not article_content:
+            return
+        cluster.content = migrate_content(cluster.content)
+        cluster.content['contents'].append(article_content)
 
 
 class EmbeddedContentGenerator(ContentGenerator):
@@ -108,15 +89,13 @@ class EmbeddedContentGenerator(ContentGenerator):
             logger.info('%r constructing embedded youtube content '
                         'from article', self.article)
             try:
-                return True, {'type': self.article.article_type.value,
-                              'player': 'youtube',
-                              'videoId': yt_match.group(5)}
+                return {'type': 'youtube', 'link': yt_match.group(5)}
             except IndexError:
                 pass
         else:
             logger.warning('embedded video not recognized %r',
                            self.article.link)
-        return True, {}
+        return {}
 
 
 class TruncatedContentGenerator(ContentGenerator):
@@ -124,18 +103,18 @@ class TruncatedContentGenerator(ContentGenerator):
     def generate(self):
         if self._page is None:
             self._get_goose()
-        success, content = False, {'type': 'fetched'}
+        content = {'type': 'fetched'}
         try:
             content['content'] = self._from_goose_to_html()
             content['link'] = self._page.final_url
-            success = True
         except Exception:
             logger.exception("Could not rebuild parsed content for %r",
                              self.article)
-        if success and self.article.comments:
+            return {}
+        if self.article.comments:
             content['comments'] = self.article.comments
         logger.debug('%r no special type found doing nothing', self.article)
-        return success, content
+        return content
 
 
 class RedditContentGenerator(TruncatedContentGenerator):
@@ -169,7 +148,7 @@ class RedditContentGenerator(TruncatedContentGenerator):
     def generate(self):
         if not self.is_pure_reddit_post:
             return super().generate()
-        return False, {}  # original reddit post, nothing to process
+        return {}  # original reddit post, nothing to process
 
 
 CONTENT_GENERATORS = {}
@@ -201,3 +180,15 @@ def get_content_generator(article):
         return TruncatedContentGenerator(article)
 
     return ContentGenerator(article)
+
+
+def migrate_content(content: dict):
+    content = content or {'v': 2, 'contents': []}
+    if content.get('v') == 2:
+        return content
+    if content['type'] in {'image', 'audio', 'video'}:
+        return {'v': 2, 'contents': []}
+    if content['type'] == 'embedded':  # migrating original embedded
+        return {'v': 2, 'contents': [{'type': content['player'],
+                                      'link': content['videoId']}]}
+    return {'v': 2, 'contents': [content]}

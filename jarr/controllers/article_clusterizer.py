@@ -29,6 +29,13 @@ class Clusterizer:
         self._config_cache = defaultdict(lambda: defaultdict(dict))
 
     def get_config(self, obj, attr):
+        """For an object among Category, Feed, Cluster and Article a given
+        attribute name, will determine config value.
+        The attribute will be tested on the given object, and if not either
+        True or False, the function will browse parent object to determine
+        config value.
+        In any case, computed value is cached in Clusterizer instance.
+        """
         def cache(val):
             self._config_cache[obj.__class__.__name__][attr][obj.id] = val
             return val
@@ -48,12 +55,17 @@ class Clusterizer:
         return cache(self.get_config(obj.user, attr))
 
     def add_to_corpus(self, article):
+        "Add a given article to the Clusterizer.corpus if article is eligible."
         if self.corpus is None:
             self.corpus = []
         if article.article_type not in NO_CLUSTER_TYPE:
             self.corpus.append(article)
 
     def get_neighbors(self, article):
+        """Yield every eligible article eligibe for clustering with a given
+        article from the Clusterizer.corpus. If the corpus isn't initialized
+        yet, it'll be pulled out of the database.
+        """
         if self.corpus is None:
             filters = {"__and__": [{'vector__ne': None}, {'vector__ne': ''}],
                        "article_type": None}
@@ -145,6 +157,7 @@ class Clusterizer:
     def enrich_cluster(self, cluster, article,
                        cluster_read=None, cluster_liked=False,
                        force_article_as_main=False):
+        "Will add given article to given cluster."
         article.cluster = cluster
         # handling read status
         if cluster.read is None:  # no read status, new cluster
@@ -170,15 +183,13 @@ class Clusterizer:
             cluster.main_link = article.link
             cluster.main_feed_title = article.feed.title
             cluster.main_article_id = article.id
-        if not cluster.content:
-            success, content = article.content_generator.generate()
-            if success:
-                cluster.content = content
+        article.content_generator.generate_and_merge(cluster)
         self.add_to_corpus(article)
         session.add(cluster)
         session.add(article)
         session.commit()
-        ARTICLE_CREATION.labels(read_reason=cluster.read_reason,
+        read_reason = cluster.read_reason.value if cluster.read_reason else ''
+        ARTICLE_CREATION.labels(read_reason=read_reason,
                                 read='read' if cluster.read else 'unread',
                                 cluster=article.cluster_reason.value).inc()
         return cluster

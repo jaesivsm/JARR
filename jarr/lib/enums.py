@@ -22,6 +22,7 @@ class FeedType(Enum):
 class ArticleType(Enum):
     image = 'image'
     video = 'video'
+    audio = 'audio'
     embedded = 'embedded'
 
 

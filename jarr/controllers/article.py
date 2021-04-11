@@ -59,7 +59,7 @@ class ArticleController(AbstractController):
                 value = article.content_generator.extracted_infos.get(key)
                 if value and getattr(article, key) != value:
                     setattr(article, key, value)
-                save = True
+                    save = True
         if save:
             session.add(article)
             session.commit()
@@ -76,8 +76,7 @@ class ArticleController(AbstractController):
         attrs['user_id'], attrs['category_id'] = feed.user_id, feed.category_id
         attrs['vector'] = to_vector(attrs)
         if not attrs.get('link_hash') and attrs.get('link'):
-            attrs['link_hash'] = digest(attrs['link'],
-                                        algo='sha1', out='bytes')
+            attrs['link_hash'] = digest(attrs['link'], alg='sha1', out='bytes')
         return super().create(**attrs)
 
     def update(self, filters, attrs, return_objs=False, commit=True):

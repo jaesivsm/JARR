@@ -110,8 +110,8 @@ class AbstractCrawler:
         for id_to_create in new_entries_ids:
             article_created = True
             builder = entries[tuple(sorted(id_to_create.items()))]
-            new_article = builder.enhance()
-            article = actrl.create(**new_article)
+            for new_article in builder.enhance():
+                article = actrl.create(**new_article)
             logger.info('%r: created %r', self.feed, article)
 
         if not article_created:
@@ -130,18 +130,16 @@ class AbstractCrawler:
     def is_cache_hit(self, response):
         if response.status_code == 304:
             self._metric_fetch('304', logging.DEBUG)
-            return True
-        if response.status_code == 226:
+        elif response.status_code == 226:
             self._metric_fetch('226')
-            return False
-        if response_etag_match(self.feed, response):
+        elif response_etag_match(self.feed, response):
             self._metric_fetch('manual-hash-match', logging.DEBUG)
-            return True
-        if response_calculated_etag_match(self.feed, response):
+        elif response_calculated_etag_match(self.feed, response):
             self._metric_fetch('home-made-hash-match', logging.DEBUG)
-            return True
-        self._metric_fetch('cache-miss')
-        return False
+        else:
+            self._metric_fetch('cache-miss')
+            return False
+        return True
 
     def crawl(self):
         logger.debug('%r: crawling resources', self.feed)

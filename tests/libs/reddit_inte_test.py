@@ -47,7 +47,7 @@ class RedditIntegrationTest(unittest.TestCase):
         gen = RedditContentGenerator(art)
         self.assertTrue(gen.is_pure_reddit_post)
         self.assertIsNone(gen.get_vector())
-        self.assertEqual((False, {}), gen.generate())
+        self.assertEqual({}, gen.generate())
 
         # reddit linking external
         art = Article(link='https://another.type/of/link', comments=link)

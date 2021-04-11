@@ -5,6 +5,7 @@ from werkzeug.exceptions import Forbidden, NotFound
 from jarr.api.common import parse_meaningful_params
 from jarr.controllers import ClusterController
 from jarr.lib.enums import ReadReason
+from jarr.lib.content_generator import migrate_content
 from jarr.metrics import READ
 
 cluster_ns = Namespace('cluster', description='Cluster related operations')
@@ -21,27 +22,25 @@ article_model = cluster_ns.model('Article', {
     'link': fields.String(),
     'feed_id': fields.Integer(),
     'title': fields.String(),
-    'content': fields.String(),
+    'content': fields.String(required=True, default=''),
     'comments': fields.String(),
+    'order_in_cluster': fields.Integer(default=0),
+    'article_type': fields.String(attribute='article_type.value'),
     'date': fields.DateTime()})
-content_model = cluster_ns.model('ComplexContent', {
+content_model = cluster_ns.model('ProcessedContent', {
     'type': fields.String(required=True),
-    'content': fields.String(),
-    'comments': fields.String(),
-    'link': fields.String(),
-    'tags': fields.List(fields.String),
-    'alt': fields.String(),
-    'src': fields.String(),
-    'player': fields.String(),
-    'videoId': fields.String()})
+    'link': fields.String(required=True),
+    'content': fields.String(skip_none=True),
+    'comments': fields.String(skip_none=True)})
 model = cluster_ns.model('Cluster', {
     'id': fields.Integer(),
     'read': fields.Boolean(),
     'liked': fields.Boolean(),
-    'content': fields.Nested(content_model, skip_none=True),
     'main_feed_title': fields.String(),
     'main_article_id': fields.Integer(),
-    'articles': fields.Nested(article_model, as_list=True),
+    'articles': fields.List(fields.Nested(article_model)),
+    'contents': fields.List(fields.Nested(content_model, skip_none=True),
+                            attribute=lambda c: c.content.get('contents')),
 })
 
 
@@ -63,6 +62,7 @@ class ClusterResource(Resource):
         if cluster.user_id != current_identity.id:
             raise Forbidden()
         code = 200
+        cluster.content = migrate_content(cluster.content)
         if not cluster.read:
             cluc.update({'id': cluster_id},
                         {'read': True,

@@ -34,6 +34,7 @@ class AbstractArticleBuilder:
         return {'feed_id': self.feed.id,
                 'category_id': self.feed.category_id,
                 'user_id': self.feed.user_id,
+                'order_in_cluster': 0,
                 'retrieved_date': utc_now()}
 
     @staticmethod
@@ -70,7 +71,7 @@ class AbstractArticleBuilder:
 
     @staticmethod
     def to_hash(link):
-        return digest(remove_utm_tags(link), algo='sha1', out='bytes')
+        return digest(remove_utm_tags(link), alg='sha1', out='bytes')
 
     def construct(self, entry):
         self.article = self.template_article()
@@ -113,6 +114,21 @@ class AbstractArticleBuilder:
         except Exception:
             logger.error("couldn't fetch %r", url)
 
+    @staticmethod
+    def _feed_content_type(content_type, article):
+        content_type = str(content_type or '')
+        if content_type.startswith('image/'):
+            article['article_type'] = ArticleType.image
+        elif content_type.startswith('video/'):
+            article['article_type'] = ArticleType.video
+        elif content_type.startswith('audio/'):
+            article['article_type'] = ArticleType.audio
+        elif is_embedded_link(article['link']):
+            article['article_type'] = ArticleType.embedded
+
+    def _all_articles(self):
+        yield self.article
+
     def enhance(self):
         if is_embedded_link(self.article['link']):
             self.article['article_type'] = ArticleType.embedded
@@ -121,10 +137,12 @@ class AbstractArticleBuilder:
                 self.article['link_hash'] = self.to_hash(video_id)
             except IndexError:
                 pass
-            return self.article
+            yield from self._all_articles()
+            return
         head = self._head(self.article['link'])
         if not head:
-            return self.article
+            yield from self._all_articles()
+            return
 
         if self.article['link'] != head.url:
             self.article['link'] = head.url  # fix link in case of redirect
@@ -134,15 +152,11 @@ class AbstractArticleBuilder:
                 clean_head = self._head(clean_link)
                 if clean_head:
                     self.article['link_hash'] = self.to_hash(clean_head.url)
-        content_type = str(head.headers.get('Content-Type')) or ''
-        if content_type.startswith('image/'):
-            self.article['article_type'] = ArticleType.image
-        elif content_type.startswith('video/'):
-            self.article['article_type'] = ArticleType.video
+        self._feed_content_type(head.headers.get('Content-Type'), self.article)
 
         if not self.article.get('lang') \
                 and head.headers.get('Content-Language'):
             # correcting lang from http headers
             lang = head.headers['Content-Language'].split(',')[0]
             self.article['lang'] = lang
-        return self.article
+        yield from self._all_articles()

@@ -55,8 +55,10 @@ class ConstructArticleTest(unittest.TestCase):
 
     def test_missing_title(self):
         self.head_patch.return_value = self.get_response('http:')
-        article = ClassicArticleBuilder(Feed(id=1, user_id=1),
-                                        self.entry).enhance()
+        articles = list(ClassicArticleBuilder(Feed(id=1, user_id=1),
+                                              self.entry).enhance())
+        self.assertEquals(1, len(articles))
+        article = articles[0]
         self.assertEqual('http://www.pariszigzag.fr/?p=56413',
                          article['entry_id'])
         self.assertEqual('http:' + self.response_url, article['link'])
@@ -70,7 +72,10 @@ class ConstructArticleTest(unittest.TestCase):
         entry = self.entry
         entry['link'] = entry['link'][5:]  # removing scheme, for testing
 
-        article = ClassicArticleBuilder(Feed(id=1, user_id=1), entry).enhance()
+        articles = list(ClassicArticleBuilder(Feed(id=1, user_id=1),
+                                              entry).enhance())
+        self.assertEquals(1, len(articles))
+        article = articles[0]
 
         self.assertEqual(4, self.head_patch.call_count)
         self.assertEqual(response.url, self.head_patch.call_args[0][0])
@@ -83,15 +88,21 @@ class ConstructArticleTest(unittest.TestCase):
     def test_image_content(self):
         entry, resp = self.entry2, self.response2
         resp.headers['content-type'] = 'image/png'
+        entry.pop('links')
         entry['link'] = resp.url = 'https://domain.tld/to-img.png'
         self.head_patch.return_value = resp
-        article = ClassicArticleBuilder(Feed(id=1, user_id=1), entry).enhance()
+        articles = list(ClassicArticleBuilder(Feed(id=1, user_id=1),
+                                              entry).enhance())
+        self.assertEquals(1, len(articles))
+        article = articles[0]
         self.assertEqual(ArticleType.image, article['article_type'])
 
     def test_embedded_content(self):
         self.head_patch.return_value = self.response2
-        article = ClassicArticleBuilder(Feed(id=1, user_id=1),
-                                        self.entry2).enhance()
+        articles = list(ClassicArticleBuilder(Feed(id=1, user_id=1),
+                                              self.entry2).enhance())
+        self.assertEquals(1, len(articles))
+        article = articles[0]
 
         self.assertEqual('yt:video:scbrjaqM3Oc', article['entry_id'])
         self.assertEqual("Ceci n'est pas Old Boy - Owlboy (suite) - "
@@ -99,3 +110,6 @@ class ConstructArticleTest(unittest.TestCase):
         self.assertEqual(1, article['user_id'])
         self.assertEqual(ArticleType.embedded, article['article_type'])
         self.assertEqual(1, article['feed_id'])
+
+    def test_enclosure_contents(self):
+        pass
