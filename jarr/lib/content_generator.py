@@ -183,12 +183,11 @@ def get_content_generator(article):
 
 
 def migrate_content(content: dict):
-    if not content:
-        return {}
+    content = content or {'v': 2, 'contents': []}
     if content.get('v') == 2:
         return content
     if content['type'] in {'image', 'audio', 'video'}:
-        return {}
+        return {'v': 2, 'contents': []}
     if content['type'] == 'embedded':  # migrating original embedded
         return {'v': 2, 'contents': [{'type': content['player'],
                                       'link': content['videoId']}]}
