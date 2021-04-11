@@ -73,7 +73,7 @@ function Articles({ articles, icons, contents }) {
     }
     if (typedArticles.length !== 0) {
       tabs.push(
-        <Tab key={`t-${index}`} value={index}
+        <Tab key={`ta-${type}`} value={index}
              icon={icon}
              className={classes.tabs} aria-controls={`a-${index}`}
         />

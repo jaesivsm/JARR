@@ -17,15 +17,15 @@ export function TypedContents({ type, articles, hidden }) {
     }
     processed.push(article.link);
     if (type === "image") {
-      body.push(<img key={`i-${article.link}`}
+      body.push(<img key={`i-${article.id}`}
                      src={article.link}
                      alt={article.title} title={article.title} />);
     } else if (type === "audio") {
-      body.push(<audio controls key={`v-${article.link}`}>
+      body.push(<audio controls key={`v-${article.id}`}>
                   <source src={article.link} />
                 </audio>);
     } else if (type === "video") {
-      body.push(<video controls key={`a-${article.link}`}>
+      body.push(<video controls key={`a-${article.id}`}>
                   <source src={article.link} />
                 </video>);
     }
@@ -43,6 +43,7 @@ export function TypedContents({ type, articles, hidden }) {
 TypedContents.propTypes = {
   type: PropTypes.string.isRequired,
   articles: PropTypes.arrayOf(PropTypes.shape({
+    id: PropTypes.number.isRequired,
     link: PropTypes.string.isRequired,
     "article_type": PropTypes.string.isRequired})),
   hidden: PropTypes.bool.isRequired,
