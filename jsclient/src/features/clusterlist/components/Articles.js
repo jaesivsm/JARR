@@ -4,7 +4,7 @@ import { connect } from "react-redux";
 
 import Tab from "@material-ui/core/Tab";
 import Tabs from "@material-ui/core/Tabs";
-import ImageIcon from "@material-ui/icons/MusicNote";
+import ImageIcon from "@material-ui/icons/Image";
 import AudioIcon from "@material-ui/icons/MusicNote";
 import VideoIcon from "@material-ui/icons/Movie";
 import YoutubeIcon from "@material-ui/icons/YouTube";
@@ -35,10 +35,11 @@ function Articles({ articles, icons, contents }) {
   let icon;
 
   // if no content, and no special type, returning simple article
-  if (articles.length === 1 && !(articles[0].article_type in articleTypes) && !contents) {
+  if (articles.length === 1
+      && !articleTypes.includes(articles[0].article_type) && !contents) {
     return <Article article={articles[0]} hidden={false} />;
   }
-  if (contents.length !== 0) {
+  if (!!contents && contents.length !== 0) {
     contents.forEach((content) => {
       if (content.type === "youtube") {
         icon = <YoutubeIcon />;
@@ -54,7 +55,8 @@ function Articles({ articles, icons, contents }) {
         />
       );
       pages.push(
-        <ProcessedContent content={content} hidden={index !== currentIndex} />
+        <ProcessedContent key={`pc-${index}`}
+                          content={content} hidden={index !== currentIndex} />
       );
       index += 1;
     });
@@ -76,9 +78,9 @@ function Articles({ articles, icons, contents }) {
         />
       );
       pages.push(
-        <TypedContents
-          type={type} articles={typedArticles}
-          hidden={index !== currentIndex}
+        <TypedContents key={`pc-${index}`}
+                       type={type} articles={typedArticles}
+                       hidden={index !== currentIndex}
         />
       );
       index += 1;
@@ -117,11 +119,6 @@ function Articles({ articles, icons, contents }) {
 }
 Articles.propTypes = {
   articles: PropTypes.array,
-  contents: PropTypes.arrayOf({
-    type: PropTypes.string.isRequired,
-    link: PropTypes.string.isRequired,
-    comments: PropTypes.string,
-    content: PropTypes.string
-  }),
+  contents: PropTypes.array
 };
 export default connect(mapStateToProps)(Articles);
