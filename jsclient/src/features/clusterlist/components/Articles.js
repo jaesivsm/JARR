@@ -26,7 +26,7 @@ function Articles({ articles, icons, contents }) {
 
   let tabs = [];
   let pages = [];
-  let count = 0;
+  let index = 0;
   let typedArticles;
 
   // if no content, and no special type, returning simple article
@@ -36,44 +36,62 @@ function Articles({ articles, icons, contents }) {
   if (contents.length !== 0) {
     contents.forEach((content) => {
       tabs.push(
-        <Tab key={`t-${count}`}
+        <Tab key={`t-${index}`}
           className={classes.tabs}
           icon={<img src={jarrIcon}
                      alt={proccessedContentTitle}
                      title={proccessedContentTitle} />}
-          label={proccessedContentTitle}
-          value={count} aria-controls={`a-${count}`}
+          value={index} aria-controls={`a-${index}`}
         />
       );
       pages.push(
           <ProcessedContent
             content={content}
-            hidden={count === currentIndex}
+            hidden={index === currentIndex}
           />
       );
-      count += 1;
+      index += 1;
     });
   }
   articleTypes.forEach((type) => {
     typedArticles = articles.filter((article) => article.article_type === type);
     if (typedArticles.length !== 0) {
       tabs.push(
-        <Tab key={`t-${count}`}
+        <Tab key={`t-${index}`}
           className={classes.tabs}
           icon={<img src={jarrIcon} alt={type} title={type} />}
-          label={type}
-          value={count} aria-controls={`a-${count}`}
+          value={index} aria-controls={`a-${index}`}
         />
       );
       pages.push(
         <TypedContents
           type={type} articles={typedArticles}
-          hidden={count === currentIndex}
+          hidden={index === currentIndex}
         />
       );
-      count += 1;
+      index += 1;
     }
   });
+  articles.forEach((article) => {
+    tabs.push(
+      <Tab key={`t-${index}`}
+        className={classes.tabs}
+        icon={<ClusterIcon iconUrl={icons[article["feed_id"]]} />}
+        value={index}
+        aria-controls={`a-${index}`}
+      />);
+    pages.push(
+      <Article
+        key={`a-${index}-${index !== currentIndex ? "h" : ""}`}
+        id={`a-${index}`}
+        article={article}
+        aria-labelledby={`t-${index}`}
+        index={index}
+        hidden={index !== currentIndex}
+      />
+    );
+    index += 1;
+  );
   return (
     <>
       <Tabs indicatorColor="primary" textColor="primary"
