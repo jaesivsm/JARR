@@ -24,21 +24,22 @@ article_model = cluster_ns.model('Article', {
     'title': fields.String(),
     'content': fields.String(),
     'comments': fields.String(),
-    'article_type': fields.String(skip_none=False),
+    'article_type': fields.String(attribute='article_type.value'),
     'date': fields.DateTime()})
-content_model = cluster_ns.model('ComplexContent', {
+content_model = cluster_ns.model('ProcessedContent', {
     'type': fields.String(required=True),
-    'content': fields.String(),
-    'comments': fields.String(),
-    'link': fields.String()})
+    'link': fields.String(required=True),
+    'content': fields.String(skip_none=True),
+    'comments': fields.String(skip_none=True)})
 model = cluster_ns.model('Cluster', {
     'id': fields.Integer(),
     'read': fields.Boolean(),
     'liked': fields.Boolean(),
-    'contents': fields.Nested(content_model, skip_none=True, as_list=True),
     'main_feed_title': fields.String(),
     'main_article_id': fields.Integer(),
     'articles': fields.Nested(article_model, as_list=True),
+    'contents': fields.Nested(content_model, as_list=True,
+                              attribute=lambda c: c.content.get('contents')),
 })
 
 
@@ -69,7 +70,6 @@ class ClusterResource(Resource):
             cluster.read = True
             cluster.read_reason = ReadReason.read
             code = 226
-        cluster.contents = cluster.content
         return cluster, code
 
     @staticmethod
