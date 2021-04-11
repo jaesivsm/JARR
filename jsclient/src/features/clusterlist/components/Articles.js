@@ -91,7 +91,7 @@ function Articles({ articles, icons, contents }) {
       />
     );
     index += 1;
-  );
+  });
   return (
     <>
       <Tabs indicatorColor="primary" textColor="primary"
