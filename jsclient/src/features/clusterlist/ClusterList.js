@@ -137,7 +137,7 @@ const ClusterList = ({ clusters, filters, loadedCluster,
       <Paper className={clsx(classes.contentPanel,
                              {[classes.contentPanelShifted]: isShifted,})}>
         <div className={classes.contentPanelInner}>
-          <Articles content={loadedCluster.content}
+          <Articles content={loadedCluster.contents}
                     articles={loadedCluster.articles} />
         </div>
       </Paper>

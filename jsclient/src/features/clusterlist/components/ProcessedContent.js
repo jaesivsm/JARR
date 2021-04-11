@@ -6,24 +6,10 @@ import Divider from "@material-ui/core/Divider";
 
 import makeStyles from "./style";
 
-function Content({ content, hidden }) {
+function ProcessedContent({ content, hidden }) {
   const classes = makeStyles();
   let head, comments, body;
-  if (content.type === "image") {
-    head = (
-      <p>
-        <span>Link</span>
-        <Link color="secondary" target="_blank" href={content.src}>
-          {content.src}
-        </Link>
-      </p>
-    );
-    body = (
-      <Typography hidden={!!hidden}>
-        <img src={content.src} alt={content.alt} title={content.alt} />
-      </Typography>
-    );
-  } else if (content.type === "fetched") {
+  if (content.type === "fetched") {
     if (content.comments) {
       comments = (
         <p>
@@ -49,14 +35,14 @@ function Content({ content, hidden }) {
         />
       </div>
     );
-  } else if (content.type === "embedded" && content.player === "youtube") {
+  } else if (content.type === "youtube") {
     body = (
       <div className={classes.videoContainer}>
         <iframe key="jarr-proccessed-content"
           title="JARR processed Player"
           id="ytplayer"
           type="text/html"
-          src={`https://www.youtube-nocookie.com/embed/${content.videoId}`}
+          src={`https://www.youtube-nocookie.com/embed/${content.link}`}
           frameBorder="0"
         />
       </div>
@@ -72,15 +58,14 @@ function Content({ content, hidden }) {
   );
 }
 
-Content.propTypes = {
+ProcessedContent.propTypes = {
   content: PropTypes.shape({
     type: PropTypes.string.isRequired,
-    alt: PropTypes.string,
-    src: PropTypes.string,
-    player: PropTypes.string,
-    videoId: PropTypes.string,
+    link: PropTypes.string.isRequired,
+    content: PropTypes.string,
+    comments: PropTypes.string
   }),
   hidden: PropTypes.bool.isRequired,
 };
 
-export default Content;
+export default ProcessedContent;
