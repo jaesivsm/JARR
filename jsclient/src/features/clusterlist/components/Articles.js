@@ -54,7 +54,7 @@ function Articles({ articles, icons, contents }) {
         />
       );
       pages.push(
-        <ProcessedContent content={content} hidden={index === currentIndex} />
+        <ProcessedContent content={content} hidden={index !== currentIndex} />
       );
       index += 1;
     });
@@ -78,7 +78,7 @@ function Articles({ articles, icons, contents }) {
       pages.push(
         <TypedContents
           type={type} articles={typedArticles}
-          hidden={index === currentIndex}
+          hidden={index !== currentIndex}
         />
       );
       index += 1;

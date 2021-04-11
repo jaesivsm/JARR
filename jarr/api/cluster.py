@@ -37,9 +37,9 @@ model = cluster_ns.model('Cluster', {
     'liked': fields.Boolean(),
     'main_feed_title': fields.String(),
     'main_article_id': fields.Integer(),
-    'articles': fields.Nested(article_model, as_list=True),
-    'contents': fields.Nested(content_model, as_list=True,
-                              attribute=lambda c: c.content.get('contents')),
+    'articles': fields.List(fields.Nested(article_model)),
+    'contents': fields.List(fields.Nested(content_model, skip_none=True),
+                            attribute=lambda c: c.content.get('contents')),
 })
 
 
