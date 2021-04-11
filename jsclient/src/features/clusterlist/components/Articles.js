@@ -7,7 +7,7 @@ import Tabs from "@material-ui/core/Tabs";
 import ImageIcon from "@material-ui/icons/MusicNote";
 import AudioIcon from "@material-ui/icons/MusicNote";
 import VideoIcon from "@material-ui/icons/Movie";
-import YoutubeIcon from "@material-ui/icons/Youtube";
+import YoutubeIcon from "@material-ui/icons/YouTube";
 
 import Article from "./Article";
 import {articleTypes, TypedContents} from "./TypedContents";
