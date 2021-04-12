@@ -27,41 +27,33 @@ const proccessedContentTitle = "proccessed content";
 function Articles({ articles, icons, contents }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const classes = makeStyles();
+  const allArticlesAreTyped = articles.reduce(
+      (art, allTyped) => (allTyped && articleTypes.includes(art["article_type"])), true);
+  // if no content, and no special type, returning simple article
+  if (articles.length === 1 && (!allArticlesAreTyped || !contents)) {
+    return <Article article={articles[0]} />;
+  }
 
   let tabs = [];
   let pages = [];
   let index = 0;
   let typedArticles;
   let icon;
-
-  // if no content, and no special type, returning simple article
-  if (articles.length === 1
-      && (!articleTypes.includes(articles[0].article_type) || !contents)) {
-    return <Article article={articles[0]} />;
+  const pushProcessedContent = (content) => {
+    if (content.type === "youtube") {
+      icon = <YoutubeIcon />;
+    } else {
+      icon = <img src={jarrIcon}
+                  alt={proccessedContentTitle}
+                  title={proccessedContentTitle} />;
+    }
+    tabs.push(<Tab key={`t-${index}`} value={index} icon={icon}
+                   className={classes.tabs} aria-controls={`a-${index}`} />);
+    pages.push(<ProcessedContent key={`pc-${index}`} content={content}
+                                 hidden={index !== currentIndex} />);
+    index += 1;
   }
-  if (!!contents && contents.length !== 0) {
-    contents.forEach((content) => {
-      if (content.type === "youtube") {
-        icon = <YoutubeIcon />;
-      } else {
-        icon = <img src={jarrIcon}
-                    alt={proccessedContentTitle}
-                    title={proccessedContentTitle} />;
-      }
-      tabs.push(
-        <Tab key={`t-${index}`} value={index}
-             icon={icon}
-             className={classes.tabs} aria-controls={`a-${index}`}
-        />
-      );
-      pages.push(
-        <ProcessedContent key={`pc-${index}`}
-                          content={content} hidden={index !== currentIndex} />
-      );
-      index += 1;
-    });
-  }
-  articleTypes.forEach((type) => {
+  const pushTypedArticles = (type) => {
     typedArticles = articles.filter((article) => article.article_type === type)
           .sort((a1, a2) => (a1.order_in_cluster - a2.order_in_cluster));
     if (type === "image") {
@@ -72,42 +64,43 @@ function Articles({ articles, icons, contents }) {
       icon = <VideoIcon />;
     }
     if (typedArticles.length !== 0) {
-      tabs.push(
-        <Tab key={`ta-${type}`} value={index}
-             icon={icon}
-             className={classes.tabs} aria-controls={`a-${index}`}
-        />
-      );
-      pages.push(
-        <TypedContents key={`pc-${index}`}
-                       type={type} articles={typedArticles}
-                       hidden={index !== currentIndex}
-        />
-      );
+      tabs.push(<Tab key={`ta-${type}`} value={index} icon={icon}
+                     className={classes.tabs} aria-controls={`a-${index}`} />);
+      pages.push(<TypedContents key={`pc-${index}`} type={type}
+                                articles={typedArticles}
+                                hidden={index !== currentIndex} />);
       index += 1;
     }
-  });
-  articles.forEach((article) => {
+  }
+  const pushClassicArticle = (article) => {
     tabs.push(
-      <Tab key={`t-${index}`}
-        className={classes.tabs}
-        icon={<ClusterIcon iconUrl={icons[article["feed_id"]]} />}
-        value={index}
-        aria-controls={`a-${index}`}
-      />);
+      <Tab key={`t-${article.id}`} className={classes.tabs}
+           icon={<ClusterIcon iconUrl={icons[article["feed_id"]]} />}
+           value={index} aria-controls={`a-${index}`} />);
     pages.push(
-      <Article
-        key={`a-${index}-${index !== currentIndex ? "h" : ""}`}
-        id={`a-${index}`}
-        article={article}
-        aria-labelledby={`t-${index}`}
-        index={index}
-        forceShowTitle={true}
-        hidden={index !== currentIndex}
-      />
-    );
+      <Article key={`a-${article.id}-${index !== currentIndex ? "h" : ""}`}
+               article={article} index={index} aria-labelledby={`t-${index}`}
+               forceShowTitle={true} hidden={index !== currentIndex} />);
     index += 1;
-  });
+  }
+
+  if (!!contents && contents.length !== 0) {
+    contents.forEach(pushProcessedContent);
+  }
+  // if all articles are typed, pushing typed content formatter first
+  if(allArticlesAreTyped) {
+    articleTypes.forEach(pushTypedArticles);
+    articles.forEach(pushClassicArticle);
+  } else {
+    // else pushing classic articles, then formatted typed, then typed
+    articles.filter(
+        (article) => (!articleTypes.includes(article["article_type"]))
+    ).forEach(pushClassicArticle);
+    articleTypes.forEach(pushTypedArticles);
+    articles.filter(
+        (article) => (articleTypes.includes(article["article_type"]))
+    ).forEach(pushClassicArticle);
+  }
   return (
     <>
       <Tabs indicatorColor="primary" textColor="primary"

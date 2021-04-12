@@ -31,7 +31,7 @@ export function TypedContents({ type, articles, hidden }) {
       if(article.title) {
         body.push(<Typography variant="h6">{article.title}</Typography>);
       }
-      body.push(<video controls key={`a-${article.id}`}>
+      body.push(<video controls loop key={`a-${article.id}`}>
                   <source src={article.link} />
                 </video>);
     }
