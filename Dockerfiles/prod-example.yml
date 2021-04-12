@@ -1,0 +1,60 @@
+version: '3'
+services:
+  jarr-server:
+    build:
+      context: ../.
+      dockerfile: ./Dockerfiles/server
+    ports:
+      - "127.0.0.1:8500:8000"
+    # You'll a folder with at least jarr.json, logging.ini and gunicorn.py
+    volumes:
+      - ../example_conf/:/etc/jarr:ro
+    depends_on:
+      - postgresql
+      - redis
+      - rabbitmq
+    networks:
+      jarr:
+  jarr-front:
+    build:
+      context: ../.
+      dockerfile: ./Dockerfiles/front
+    depends_on:
+      - jarr-server
+    networks:
+      - jarr
+  jarr-worker:
+    build:
+      context: ../.
+      dockerfile: ./Dockerfiles/server
+    # You'll a folder with at least jarr.json, logging.ini and gunicorn.py
+    volumes:
+      - ../example_conf/:/etc/jarr:ro
+    depends_on:
+      - postgresql
+      - redis
+      - rabbitmq
+    networks:
+      - jarr
+  rabbitmq:
+    image: rabbitmq
+    networks:
+      - jarr
+  redis:
+    image: redis
+    networks:
+      - jarr
+  postgresql:
+    image: postgres:11
+    networks:
+      - jarr
+    # remove that on real prod env and set proper db password
+    environment:
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_HOST_AUTH_METHOD=trust
+    # Directory in which your db will save its data, change it to some absolute path
+    # volumes:
+    #  - ../.jarr-data:/var/lib/postgresql/data
+
+networks:
+  jarr:
