@@ -105,6 +105,7 @@ function Articles({ articles, icons, contents }) {
   return (
     <>
       <Tabs indicatorColor="primary" textColor="primary"
+        variant="scrollable" scrollButtons="auto"
         value={currentIndex}
         onChange={(e, v) => setCurrentIndex(v)}>
         {tabs}
