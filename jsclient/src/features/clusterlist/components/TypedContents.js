@@ -8,37 +8,51 @@ export const articleTypes = ["image", "audio", "video"];
 
 export function TypedContents({ type, articles, hidden }) {
   const classes = makeStyles();
-  let body = [];
-  let processed = [];
   if (articles.length === 0) { return ; }
-  articles.forEach((article) => {
-    if(processed.includes(article.link)) {
-      return ;
-    }
-    processed.push(article.link);
-    if (type === "image") {
-      body.push(<img key={`i-${article.id}`}
-                     src={article.link}
-                     alt={article.title} title={article.title} />);
-    } else if (type === "audio") {
-      if(article.title) {
-        body.push(<Typography variant="h6">{article.title}</Typography>);
-      }
-      body.push(<audio controls key={`v-${article.id}`}>
-                  <source src={article.link} />
-                </audio>);
-    } else if (type === "video") {
-      if(article.title) {
-        body.push(<Typography variant="h6">{article.title}</Typography>);
-      }
-      body.push(<video controls loop key={`a-${article.id}`}>
-                  <source src={article.link} />
-                </video>);
-    }
-  });
-  return (<Typography hidden={!!hidden} className={classes.article}>
-            {body}
-          </Typography>);
+  let processedUrls = [];
+  return (
+    <div hidden={!!hidden} className={classes.article}>
+      {articles.filter(
+          (article) => {
+            if (processedUrls.includes(article.link)) {
+              return false;
+            }
+            processedUrls.push(article.link);
+            return true;
+          }).map((article) => {
+        let media;
+        if (type === "image") {
+          media = (<img key={`image-${article.id}`}
+                        src={article.link}
+                        alt={article.title} title={article.title} />);
+        } else if (type === "audio") {
+          media = (<audio controls key={`audio-${article.id}`}>
+                     <source src={article.link} />
+                   </audio>);
+          if(article.title) {
+            media = (<>
+                       <Typography variant="h6" key={`title-${article.id}`}>
+                          {article.title}
+                       </Typography>
+                       {media}
+                     </>);
+          }
+        } else if (type === "video") {
+          media = (<video controls loop key={`video-${article.id}`}>
+                     <source src={article.link} />
+                   </video>);
+          if(article.title) {
+            media = (<>
+                       <Typography variant="h6" key={`title-${article.id}`}>
+                          {article.title}
+                       </Typography>
+                       {media}
+                     </>);
+          }
+        }
+        return media;
+      })}
+    </div>);
 }
 
 TypedContents.propTypes = {

@@ -27,10 +27,11 @@ const proccessedContentTitle = "proccessed content";
 function Articles({ articles, icons, contents }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const classes = makeStyles();
+  const hasProcessedContent = !!contents && contents.length > 0;
   const allArticlesAreTyped = articles.reduce(
-      (art, allTyped) => (allTyped && articleTypes.includes(art["article_type"])), true);
+      (allTyped, art) => !!(allTyped && articleTypes.includes(art["article_type"])), true);
   // if no content, and no special type, returning simple article
-  if (articles.length === 1 && (!allArticlesAreTyped || !contents)) {
+  if (articles.length === 1 && !allArticlesAreTyped && !hasProcessedContent) {
     return <Article article={articles[0]} />;
   }
 
@@ -84,7 +85,7 @@ function Articles({ articles, icons, contents }) {
     index += 1;
   }
 
-  if (!!contents && contents.length !== 0) {
+  if (hasProcessedContent) {
     contents.forEach(pushProcessedContent);
   }
   // if all articles are typed, pushing typed content formatter first
