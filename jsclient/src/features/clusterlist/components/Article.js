@@ -18,6 +18,8 @@ function Article({ article, hidden }) {
   }
   return (
     <div hidden={hidden} className={classes.article}>
+      <Typography variant="h6">{article.title}</Typography>
+      <Divider />
       <p>
         <span>Link</span>
         <Link color="secondary" target="_blank"
@@ -39,6 +41,7 @@ function Article({ article, hidden }) {
 Article.propTypes = {
   article: PropTypes.shape({
     link: PropTypes.string.isRequired,
+    title: PropTypes.string.isRequired,
     content: PropTypes.string.isRequired,
     comments: PropTypes.string,
   }),

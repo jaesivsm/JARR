@@ -21,29 +21,31 @@ export function TypedContents({ type, articles, hidden }) {
                      src={article.link}
                      alt={article.title} title={article.title} />);
     } else if (type === "audio") {
+      if(article.title) {
+        body.push(<Typography variant="h6">{article.title}</Typography>);
+      }
       body.push(<audio controls key={`v-${article.id}`}>
                   <source src={article.link} />
                 </audio>);
     } else if (type === "video") {
+      if(article.title) {
+        body.push(<Typography variant="h6">{article.title}</Typography>);
+      }
       body.push(<video controls key={`a-${article.id}`}>
                   <source src={article.link} />
                 </video>);
     }
   });
-
-  return (
-    <div hidden={hidden} className={classes.article}>
-      <Typography hidden={!!hidden}>
-        {body}
-      </Typography>
-    </div>
-  );
+  return (<Typography hidden={!!hidden} className={classes.article}>
+            {body}
+          </Typography>);
 }
 
 TypedContents.propTypes = {
   type: PropTypes.string.isRequired,
   articles: PropTypes.arrayOf(PropTypes.shape({
     id: PropTypes.number.isRequired,
+    title: PropTypes.string,
     link: PropTypes.string.isRequired,
     "article_type": PropTypes.string.isRequired})),
   hidden: PropTypes.bool.isRequired,
