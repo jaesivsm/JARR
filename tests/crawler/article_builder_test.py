@@ -7,6 +7,7 @@ from mock import Mock
 
 class CrawlerMainTest(BaseJarrTest):
 
+    @property
     def entry_w_enclosure(self):
         with open('tests/fixtures/entry-with-enclosure.json') as fd:
             return json.load(fd)
