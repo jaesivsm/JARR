@@ -1,14 +1,26 @@
 import React from "react";
 import PropTypes from "prop-types";
+import useMediaQuery from "@material-ui/core/useMediaQuery";
+import { useTheme } from "@material-ui/core/styles";
 import Typography from "@material-ui/core/Typography";
 import Link from "@material-ui/core/Link";
 import Divider from "@material-ui/core/Divider";
 
 import makeStyles from "./style";
 
-function Article({ article, hidden }) {
+function Article({ article, forceShowTitle, hidden }) {
   const classes = makeStyles();
-  let comments;
+  const theme = useTheme();
+  const splitedMode = useMediaQuery(theme.breakpoints.up("md"));
+  let title, comments;
+  if(forceShowTitle || splitedMode) {
+      title = (
+        <>
+          <Typography variant="h6">{article.title}</Typography>
+          <Divider />
+        </>
+      );
+  };
   if (article.comments) {
     comments = (<p><span>Comments</span>
                   <Link color="secondary" target="_blank"
@@ -18,8 +30,7 @@ function Article({ article, hidden }) {
   }
   return (
     <div hidden={hidden} className={classes.article}>
-      <Typography variant="h6">{article.title}</Typography>
-      <Divider />
+      {title}
       <p>
         <span>Link</span>
         <Link color="secondary" target="_blank"
@@ -45,7 +56,12 @@ Article.propTypes = {
     content: PropTypes.string.isRequired,
     comments: PropTypes.string,
   }),
-  hidden: PropTypes.bool.isRequired,
+  hidden: PropTypes.bool,
+  forceShowTitle: PropTypes.bool,
+};
+Article.defaultProps = {
+  hidden: false,
+  forceShowTitle: false
 };
 
 export default Article;

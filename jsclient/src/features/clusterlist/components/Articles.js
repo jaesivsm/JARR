@@ -36,8 +36,8 @@ function Articles({ articles, icons, contents }) {
 
   // if no content, and no special type, returning simple article
   if (articles.length === 1
-      && !articleTypes.includes(articles[0].article_type) && !contents) {
-    return <Article article={articles[0]} hidden={false} />;
+      && (!articleTypes.includes(articles[0].article_type) || !contents)) {
+    return <Article article={articles[0]} />;
   }
   if (!!contents && contents.length !== 0) {
     contents.forEach((content) => {
@@ -102,6 +102,7 @@ function Articles({ articles, icons, contents }) {
         article={article}
         aria-labelledby={`t-${index}`}
         index={index}
+        forceShowTitle={true}
         hidden={index !== currentIndex}
       />
     );

@@ -11,6 +11,7 @@ export default makeStyles((theme: Theme) =>
         padding: "8px 0",
       },
       "& p": {
+        overflowX: "hidden",
         "& span": {
           paddingRight: 30,
           fontStyle: "bold",
