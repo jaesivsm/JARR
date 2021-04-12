@@ -19,7 +19,7 @@ class CrawlerMainTest(BaseJarrTest):
         self.assertEqual(2, raw_articles)
         self.assertEqual('audio', raw_articles[1]['article_type'].value)
         articles = []
-        for raw_article in raw_articles: builder.en
+        for raw_article in raw_articles:
             articles.append(
                 ArticleController(feed.user_id).create(**raw_article))
         ClusterController(feed.user_id).clusterize_pending_articles()
