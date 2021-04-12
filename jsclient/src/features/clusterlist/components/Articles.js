@@ -29,7 +29,7 @@ function Articles({ articles, icons, contents }) {
   const classes = makeStyles();
   const hasProcessedContent = !!contents && contents.length > 0;
   const allArticlesAreTyped = articles.reduce(
-      (allTyped, art) => !!(allTyped && articleTypes.includes(art["article_type"])), true);
+    (allTyped, art) => !!(allTyped && articleTypes.includes(art["article_type"])), true);
   // if no content, and no special type, returning simple article
   if (articles.length === 1 && !allArticlesAreTyped && !hasProcessedContent) {
     return <Article article={articles[0]} />;
