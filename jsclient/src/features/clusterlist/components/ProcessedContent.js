@@ -8,8 +8,12 @@ import makeStyles from "./style";
 
 function ProcessedContent({ content, hidden }) {
   const classes = makeStyles();
-  let head, comments, body;
+  let title, titleDivider, link, comments, linksDivider, body;
   if (content.type === "fetched") {
+    if (content.title) {
+      title = (<Typography variant="h6">{content.title}</Typography>);
+      titleDivider = <Divider />;
+    }
     if (content.comments) {
       comments = (
         <p>
@@ -20,7 +24,7 @@ function ProcessedContent({ content, hidden }) {
         </p>
       );
     }
-    head = (
+    link = (
       <p>
         <span>Link</span>
         <Link color="secondary" target="_blank" href={content.link}>
@@ -29,15 +33,13 @@ function ProcessedContent({ content, hidden }) {
       </p>
     );
     body = (
-      <div className={classes.articleInner}>
-        <Typography
-          dangerouslySetInnerHTML={{__html: content.content}}
-        />
-      </div>
+      <Typography className={classes.articleInner}
+          dangerouslySetInnerHTML={{__html: content.content}} />
     );
+    linksDivider = <Divider />;
   } else if (content.type === "youtube") {
     body = (
-      <div className={classes.videoContainer}>
+      <Typography className={classes.videoContainer}>
         <iframe key="jarr-proccessed-content"
           title="JARR processed Player"
           id="ytplayer"
@@ -45,14 +47,16 @@ function ProcessedContent({ content, hidden }) {
           src={`https://www.youtube-nocookie.com/embed/${content.link}`}
           frameBorder="0"
         />
-      </div>
+      </Typography>
     );
   }
   return (
     <div hidden={hidden} className={classes.article}>
-      {head}
+      {title}
+      {titleDivider}
+      {link}
       {comments}
-      <Divider />
+      {linksDivider}
       {body}
     </div>
   );

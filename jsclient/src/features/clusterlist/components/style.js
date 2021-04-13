@@ -7,19 +7,20 @@ export default makeStyles((theme: Theme) =>
       maxWidth: "100%",
     },
     article: {
-      overflowX: "hidden",
-      overflowWrap: "anywhere",
+      "& h6": {
+        padding: "8px 0",
+      },
       "& p": {
-        maxWidth: "100%",
-        width: "auto !important",
+        overflowX: "hidden",
         "& span": {
           paddingRight: 30,
           fontStyle: "bold",
         },
-      },
-      "& div": {
-        maxWidth: "100%",
-        width: "auto !important",
+        "& a": {
+          overflowX: "hidden",
+          whiteSpace: "nowrap",
+          maxWidth: "80%",
+        }
       },
       "& img": {
         maxWidth: "100%",
