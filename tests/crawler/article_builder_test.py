@@ -1,7 +1,7 @@
 import json
 
 from jarr.controllers import (ArticleController, ClusterController,
-                              FeedController)
+                              FeedController, UserController)
 from jarr.crawler.article_builders.classic import ClassicArticleBuilder
 from tests.base import BaseJarrTest
 
@@ -15,6 +15,8 @@ class CrawlerMainTest(BaseJarrTest):
 
     def test_articles_with_enclosure(self):
         feed = FeedController().read().first()
+        UserController().update({'id': feed.user_id},
+                                {'cluster_enabled': True})
         builder = ClassicArticleBuilder(feed, self.entry_w_enclosure)
         self.assertIsNone(builder.article.get('article_type'))
         raw_articles = list(builder.enhance())

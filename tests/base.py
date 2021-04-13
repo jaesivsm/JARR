@@ -38,11 +38,12 @@ class BaseJarrTest(TestCase):
                                article.cluster_reason))
 
     def assertInCluster(self, article, cluster, reason=ClusterReason.link):
-        self.assertEqual(article.cluster_id, cluster.id,
-                "article %d:%r:%r cluster %d is not %d(main %d:%r)" % (
-                    article.id, article.entry_id, article.link,
-                    article.cluster.id, cluster.id, cluster.main_article_id,
-                    cluster.main_link))
+        self.assertEqual(
+            article.cluster_id, cluster.id,
+            "article %d:%r:%r cluster %d is not %d(main %d:%r)" % (
+                article.id, article.entry_id, article.link,
+                article.cluster.id, cluster.id, cluster.main_article_id,
+                cluster.main_link))
         self.assertEqual(reason, article.cluster_reason)
 
     def _get_from_contr(self, obj_id, user_id=None):
@@ -69,16 +70,16 @@ class BaseJarrTest(TestCase):
         self.assertRaises(NotFound, self._get_from_contr, obj.id, user.id + 1)
         self.assertRaises(NotFound, self._contr_cls().delete, 99)
         self.assertRaises(NotFound, self._contr_cls(user.id).delete, 99)
-        self.assertEqual(obj.id,
-                self._contr_cls(user.id).delete(obj.id).id)
+        self.assertEqual(obj.id, self._contr_cls(user.id).delete(obj.id).id)
         self.assertRaises(NotFound, self._contr_cls(user.id).delete, obj.id)
 
     @staticmethod
     def _drop_all():
         try:
             session.expunge_all()
-            session.execute('DROP TABLE IF EXISTS %s CASCADE'
-                    % ', '.join([('"%s"' % table) if table == 'user' else table
+            session.execute(
+                'DROP TABLE IF EXISTS %s CASCADE'
+                % ', '.join([('"%s"' % table) if table == 'user' else table
                              for table in list(Base.metadata.tables)]))
             session.commit()
         except Exception:
@@ -111,8 +112,8 @@ class JarrFlaskCommon(BaseJarrTest):
 
     def assertStatusCode(self, status_code, response):
         self.assertEqual(status_code, response.status_code,
-                "got %d when expecting %d: %r" % (response.status_code,
-                    status_code, response.data))
+                         "got %d when expecting %d: %r" % (
+                             response.status_code, status_code, response.data))
 
     def get_token_for(self, user):
         auth_res = self.app.post('/auth', data=json.dumps(
