@@ -10,6 +10,7 @@ import urllib.parse
 from jarr.bootstrap import conf
 from jarr.controllers.article import to_vector
 from jarr.lib.enums import ArticleType, FeedType
+from jarr.lib.url_cleaners import remove_utm_tags
 
 logger = logging.getLogger(__name__)
 IMG_ALT_MAX_LENGTH = 100
@@ -111,7 +112,7 @@ class TruncatedContentGenerator(ContentGenerator):
         content = {'type': 'fetched'}
         try:
             content['content'] = self._from_goose_to_html()
-            content['link'] = self._page.final_url
+            content['link'] = remove_utm_tags(self._page.final_url)
             content['title'] = self._page.title
         except Exception:
             logger.exception("Could not rebuild parsed content for %r",
