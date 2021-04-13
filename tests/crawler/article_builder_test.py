@@ -1,8 +1,10 @@
-from tests.base import BaseJarrTest
-from jarr.crawler.article_builders.classic import ClassicArticleBuilder
 import json
-from jarr.controllers import FeedController, ArticleController
+
+from jarr.controllers import (ArticleController, ClusterController,
+                              FeedController)
+from jarr.crawler.article_builders.classic import ClassicArticleBuilder
 from mock import Mock
+from tests.base import BaseJarrTest
 
 
 class CrawlerMainTest(BaseJarrTest):
