@@ -30,6 +30,7 @@ article_model = cluster_ns.model('Article', {
 content_model = cluster_ns.model('ProcessedContent', {
     'type': fields.String(required=True),
     'link': fields.String(required=True),
+    'title': fields.String(skip_none=True),
     'content': fields.String(skip_none=True),
     'comments': fields.String(skip_none=True)})
 model = cluster_ns.model('Cluster', {

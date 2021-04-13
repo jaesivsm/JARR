@@ -107,6 +107,7 @@ class TruncatedContentGenerator(ContentGenerator):
         try:
             content['content'] = self._from_goose_to_html()
             content['link'] = self._page.final_url
+            content['title'] = self._page.title
         except Exception:
             logger.exception("Could not rebuild parsed content for %r",
                              self.article)
