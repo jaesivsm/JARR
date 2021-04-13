@@ -3,7 +3,6 @@ import json
 from jarr.controllers import (ArticleController, ClusterController,
                               FeedController)
 from jarr.crawler.article_builders.classic import ClassicArticleBuilder
-from mock import Mock
 from tests.base import BaseJarrTest
 
 
@@ -29,4 +28,3 @@ class CrawlerMainTest(BaseJarrTest):
         a1 = ArticleController().get(id=articles[0].id)
         a2 = ArticleController().get(id=articles[1].id)
         self.assertEqual(a1.cluster_id, a2.cluster_id)
-
