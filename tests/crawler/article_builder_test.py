@@ -17,7 +17,7 @@ class CrawlerMainTest(BaseJarrTest):
         builder = ClassicArticleBuilder(feed, self.entry_w_enclosure)
         self.assertIsNone(builder.article.get('article_type'))
         raw_articles = list(builder.enhance())
-        self.assertEqual(2, raw_articles)
+        self.assertEqual(2, len(raw_articles))
         self.assertEqual('audio', raw_articles[1]['article_type'].value)
         articles = []
         for raw_article in raw_articles:
