@@ -1,12 +1,10 @@
-import html
 import logging
 import re
+import urllib.parse
 from functools import lru_cache
 
 from goose3 import Goose
 from lxml import etree
-import urllib.parse
-
 from jarr.bootstrap import conf
 from jarr.controllers.article import to_vector
 from jarr.lib.enums import ArticleType, FeedType
@@ -73,9 +71,10 @@ class ContentGenerator:
     def generate_and_merge(self, cluster):
         cluster.content = migrate_content(cluster.content)
         # if there is already some fetched content
-        if isinstance(self, TruncatedContentGenerator) \
-                and any(cnt['type'] == 'fetched'
-                        for cnt in cluster.content['contents']):
+        already_fetched = any(
+            cnt.get('type') == 'fetched'
+            for cnt in cluster.content.get('contents') or [])
+        if isinstance(self, TruncatedContentGenerator) and already_fetched:
             return
         article_content = self.generate()
         if not article_content:
