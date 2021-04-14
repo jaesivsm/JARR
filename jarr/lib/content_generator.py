@@ -54,15 +54,14 @@ class ContentGenerator:
             return to_vector(self.extracted_infos, self._page)
 
     def _from_goose_to_html(self, encoding="utf8"):
-        result = ""
+        result = b""
         current_node = self._page.top_node
         while True:
-            result += etree.tostring(current_node,
-                                     encoding=encoding).decode(encoding)
+            result += etree.tostring(current_node, encoding=encoding)
             current_node = current_node.getnext()
             if current_node is None:
                 break
-        return result
+        return result.replace(b'\n', b' ').decode(encoding)
 
     @staticmethod
     def generate():
