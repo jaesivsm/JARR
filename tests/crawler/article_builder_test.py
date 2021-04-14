@@ -30,7 +30,10 @@ class CrawlerMainTest(BaseJarrTest):
         ClusterController(feed.user_id).clusterize_pending_articles()
         a1 = ArticleController().get(id=articles[0].id)
         a2 = ArticleController().get(id=articles[1].id)
+        cluster = ClusterController().get(id=a1.cluster_id)
         self.assertEqual(a1.cluster_id, a2.cluster_id)
+        self.assertEqual(2, cluster.content['v'])
+        self.assertEqual(0, len(cluster.content['contents']))
 
     @patch('jarr.lib.content_generator.TruncatedContentGenerator.generate')
     def test_articles_with_enclosure_and_fetched_content(self, truncated_cnt):
@@ -55,3 +58,7 @@ class CrawlerMainTest(BaseJarrTest):
         a1 = ArticleController().get(id=articles[0].id)
         a2 = ArticleController().get(id=articles[1].id)
         self.assertEqual(a1.cluster_id, a2.cluster_id)
+        cluster = ClusterController().get(id=a1.cluster_id)
+        self.assertEqual(2, cluster.content['v'])
+        self.assertEqual(1, len(cluster.content['contents']))
+        self.assertEqual('fetched', cluster.content['contents'][0]['type'])
