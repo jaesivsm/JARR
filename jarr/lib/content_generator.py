@@ -69,17 +69,17 @@ class ContentGenerator:
         return {}
 
     def generate_and_merge(self, cluster):
-        cluster.content = migrate_content(cluster.content)
+        content = migrate_content(cluster.content)
         # if there is already some fetched content
-        already_fetched = any(
-            cnt.get('type') == 'fetched'
-            for cnt in cluster.content.get('contents') or [])
+        already_fetched = any(cnt.get('type') == 'fetched'
+                              for cnt in content.get('contents') or [])
         if isinstance(self, TruncatedContentGenerator) and already_fetched:
-            return
+            return content
         article_content = self.generate()
         if not article_content:
-            return
-        cluster.content['contents'].append(article_content)
+            return content
+        content['contents'].append(article_content)
+        return content
 
 
 class EmbeddedContentGenerator(ContentGenerator):

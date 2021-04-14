@@ -183,7 +183,8 @@ class Clusterizer:
             cluster.main_link = article.link
             cluster.main_feed_title = article.feed.title
             cluster.main_article_id = article.id
-        article.content_generator.generate_and_merge(cluster)
+        cluster.content = article.content_generator.generate_and_merge(
+            cluster.content)
         self.add_to_corpus(article)
         session.add(cluster)
         session.add(article)
