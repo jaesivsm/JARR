@@ -68,8 +68,8 @@ class ContentGenerator:
     def generate():
         return {}
 
-    def generate_and_merge(self, cluster):
-        content = migrate_content(cluster.content)
+    def generate_and_merge(self, content):
+        content = migrate_content(content)
         # if there is already some fetched content
         already_fetched = any(cnt.get('type') == 'fetched'
                               for cnt in content.get('contents') or [])
@@ -93,8 +93,8 @@ class MediaContentGenerator(ContentGenerator):
         return {}
 
     @staticmethod
-    def generate_and_merge(cluster):
-        return cluster.content
+    def generate_and_merge(content):
+        return content
 
 
 class ImageContentGenerator(ContentGenerator):
