@@ -15,6 +15,9 @@ class CrawlerMainTest(BaseJarrTest):
             return json.load(fd)
 
     def test_articles_with_enclosure(self):
+        for article in ArticleController().read(cluster_id=None):
+            ArticleController().delete(article.id)
+        self.assertEqual(0, ArticleController().read().count())
         feed = FeedController().read().first()
         UserController().update({'id': feed.user_id},
                                 {'cluster_enabled': True})
@@ -35,16 +38,27 @@ class CrawlerMainTest(BaseJarrTest):
         self.assertEqual(2, cluster.content['v'])
         self.assertEqual(0, len(cluster.content['contents']))
 
+    @patch('jarr.lib.content_generator.TruncatedContentGenerator.get_vector')
     @patch('jarr.lib.content_generator.TruncatedContentGenerator.generate')
-    def test_articles_with_enclosure_and_fetched_content(self, truncated_cnt):
+    def test_articles_with_enclosure_and_fetched_content(self, truncated_cnt,
+                                                         get_vector):
+        get_vector.return_value = None
         truncated_cnt.return_value = {'type': 'fetched',
                                       'title': 'holy grail',
                                       'content': 'blue, no read, aaah',
                                       'link': 'https://monthy.python/brian'}
+        for ctrl in ArticleController, ClusterController:
+            for obj in ctrl().read():
+                ctrl().delete(obj.id)
         feed = FeedController().read().first()
-        FeedController().update({'id': feed.id}, {'truncated_content': True})
+        FeedController().update({'id': feed.id},
+                                {'truncated_content': True,
+                                 'cluster_enabled': True})
         UserController().update({'id': feed.user_id},
                                 {'cluster_enabled': True})
+        self.assertEqual(0, ArticleController().read().count())
+        self.assertEqual(0, ClusterController().read().count())
+
         builder = ClassicArticleBuilder(feed, self.entry_w_enclosure)
         self.assertIsNone(builder.article.get('article_type'))
         raw_articles = list(builder.enhance())
