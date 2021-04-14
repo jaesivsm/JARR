@@ -97,15 +97,15 @@ class MediaContentGenerator(ContentGenerator):
         return content
 
 
-class ImageContentGenerator(ContentGenerator):
+class ImageContentGenerator(MediaContentGenerator):
     article_type = ArticleType.image
 
 
-class AudioContentGenerator(ContentGenerator):
+class AudioContentGenerator(MediaContentGenerator):
     article_type = ArticleType.audio
 
 
-class VideoContentGenerator(ContentGenerator):
+class VideoContentGenerator(MediaContentGenerator):
     article_type = ArticleType.video
 
 
