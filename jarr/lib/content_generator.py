@@ -1,12 +1,10 @@
-import html
 import logging
 import re
+import urllib.parse
 from functools import lru_cache
 
 from goose3 import Goose
 from lxml import etree
-import urllib.parse
-
 from jarr.bootstrap import conf
 from jarr.controllers.article import to_vector
 from jarr.lib.enums import ArticleType, FeedType
@@ -70,23 +68,52 @@ class ContentGenerator:
     def generate():
         return {}
 
-    def generate_and_merge(self, cluster):
-        cluster.content = migrate_content(cluster.content)
+    def generate_and_merge(self, content):
+        content = migrate_content(content)
         # if there is already some fetched content
-        if isinstance(self, TruncatedContentGenerator) \
-                and any(cnt['type'] == 'fetched'
-                        for cnt in cluster.content['contents']):
-            return
+        already_fetched = any(cnt.get('type') == 'fetched'
+                              for cnt in content.get('contents') or [])
+        if isinstance(self, TruncatedContentGenerator) and already_fetched:
+            return content
         article_content = self.generate()
         if not article_content:
-            return
-        cluster.content['contents'].append(article_content)
+            return content
+        content['contents'].append(article_content)
+        return content
+
+
+class MediaContentGenerator(ContentGenerator):
+
+    @staticmethod
+    def get_vector():
+        return None
+
+    @staticmethod
+    def generate():
+        return {}
+
+    @staticmethod
+    def generate_and_merge(content):
+        return content
+
+
+class ImageContentGenerator(MediaContentGenerator):
+    article_type = ArticleType.image
+
+
+class AudioContentGenerator(MediaContentGenerator):
+    article_type = ArticleType.audio
+
+
+class VideoContentGenerator(MediaContentGenerator):
+    article_type = ArticleType.video
 
 
 class EmbeddedContentGenerator(ContentGenerator):
     article_type = ArticleType.embedded
 
-    def get_vector(self):
+    @staticmethod
+    def get_vector():
         return None
 
     def generate(self):
