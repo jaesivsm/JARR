@@ -82,10 +82,38 @@ class ContentGenerator:
         return content
 
 
+class MediaContentGenerator(ContentGenerator):
+
+    @staticmethod
+    def get_vector():
+        return None
+
+    @staticmethod
+    def generate():
+        return {}
+
+    @staticmethod
+    def generate_and_merge(cluster):
+        return cluster.content
+
+
+class ImageContentGenerator(ContentGenerator):
+    article_type = ArticleType.image
+
+
+class AudioContentGenerator(ContentGenerator):
+    article_type = ArticleType.audio
+
+
+class VideoContentGenerator(ContentGenerator):
+    article_type = ArticleType.video
+
+
 class EmbeddedContentGenerator(ContentGenerator):
     article_type = ArticleType.embedded
 
-    def get_vector(self):
+    @staticmethod
+    def get_vector():
         return None
 
     def generate(self):
