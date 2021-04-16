@@ -4,12 +4,12 @@ import urllib.parse
 from functools import lru_cache
 
 from goose3 import Goose
+from lxml import etree
 from jarr.bootstrap import conf
 from jarr.controllers.article import to_vector
 from jarr.lib.enums import ArticleType, FeedType
 from jarr.lib.url_cleaners import remove_utm_tags
 from jarr.lib.utils import clean_lang
-from lxml import etree
 
 logger = logging.getLogger(__name__)
 IMG_ALT_MAX_LENGTH = 100
