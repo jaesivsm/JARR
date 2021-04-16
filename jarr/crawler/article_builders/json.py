@@ -43,17 +43,8 @@ class JsonArticleBuilder(AbstractArticleBuilder):
                 return entry[content_key]
         return ''
 
-    @staticmethod
-    def extract_lang(entry):
-        lang = None
-        if entry.get('content', []):
-            lang = (entry['content'][0] or {}).get('language')
-        if not lang:
-            for sub_key in 'title_detail', 'summary_detail':
-                lang = entry.get(sub_key, {}).get('language')
-                if lang:
-                    break
-        return lang
+    def extract_lang(self, entry):
+        return entry.get('language') or self._top_level.get('language')
 
     @staticmethod
     def extract_comments(entry):

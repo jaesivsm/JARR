@@ -35,6 +35,6 @@ class KoreusIntegrationTest(unittest.TestCase):
     def test_entry_parsing(self):
         feed = Feed(link='https://feeds.feedburner.com/Koreus-articles')
         entry = {'summary_detail': {'value': CONTENT}, 'link': self.comments}
-        builder = KoreusArticleBuilder(feed, entry)
+        builder = KoreusArticleBuilder(feed, entry, {})
         self.assertEqual(builder.article['link'], self.link)
         self.assertEqual(builder.article['comments'], self.comments)
