@@ -8,9 +8,9 @@ class ConstructFeedFromTest(unittest.TestCase):
 
     @property
     def jdh_feed(self):
-        return {'icon_url': 'https://www.journalduhacker.net/'
-                    'assets/jdh-ico-311c23d65a3a9928889718838e2626c0665d83712d'
-                    '488713c9a6c2ba2c676c0e.ico',
+        return {'icon_url': 'https://www.journalduhacker.net/assets/jdh-ico-31'
+                            '1c23d65a3a9928889718838e2626c0665d83712d488713c9a'
+                            '6c2ba2c676c0e.ico',
                 'link': 'https://www.journalduhacker.net/rss',
                 'links': ['https://www.journalduhacker.net/rss',
                           'https://www.journalduhacker.net/comments.rss'],

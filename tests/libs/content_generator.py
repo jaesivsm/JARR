@@ -64,8 +64,8 @@ class ContentGeneratorTest(JarrFlaskCommon):
 
     @patch('jarr.lib.content_generator.Goose')
     @patch('jarr.lib.content_generator.ContentGenerator._from_goose_to_html')
-    def test_article_truncated_enhancement(self,
-            from_goose=None, goose=None,
+    def test_article_truncated_enhancement(
+            self, from_goose=None, goose=None,
             cg=content_generator.TruncatedContentGenerator):
         from_goose.return_value = 'my collated content'
         patched_goose = Mock(opengraph={'locale': 'en'},
