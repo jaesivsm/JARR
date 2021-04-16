@@ -60,24 +60,29 @@ class FeedBuilderController:
             if page and page.url:
                 yield page.url
 
+    @property
+    def _is_json_feed(self):
+        return ('application/feed+json' in self.feed_response_content_type
+                or 'application/json' in self.feed_response_content_type)
+
     def is_parsed_feed(self):
         if not self.feed_response and not self.parsed_feed:
             return False
         if not self.parsed_feed:
-            if 'application/json' in self.feed_response_content_type:
+            if self._is_json_feed:
                 self.parsed_feed = self.feed_response.json()
                 if len(REQUIRED_JSON_FEED.intersection(self.parsed_feed)) != 2:
                     return False
             elif any(mimetype in self.feed_response_content_type
-                   for mimetype in FEED_MIMETYPES):
+                     for mimetype in FEED_MIMETYPES):
                 self.parsed_feed = fp_parse(self.feed_response.content)
             else:
                 return False
         if not isinstance(self.parsed_feed, (FeedParserDict, dict)):
             return False
         return self.parsed_feed.get('entries') \
-                or self.parsed_feed.get('items') \
-                or not self.parsed_feed.get('bozo')
+            or self.parsed_feed.get('items') \
+            or not self.parsed_feed.get('bozo')
 
     def construct_from_xml_feed_content(self):
         if not self.is_parsed_feed():
@@ -115,8 +120,8 @@ class FeedBuilderController:
         result = {'feed_type': FeedType.json,
                   'site_link': self.parsed_feed.get('home_page_url'),
                   'link': self.feed_response.url,
-                  'icon_url': self.parsed_feed.get('favicon')
-                              or self.parsed_feed.get('icon'),
+                  'icon_url': (self.parsed_feed.get('favicon')
+                               or self.parsed_feed.get('icon')),
                   'description': self.parsed_feed.get('description'),
                   'title': self.parsed_feed.get('title')}
         try:
@@ -127,7 +132,7 @@ class FeedBuilderController:
         return {key: value for key, value in result.items() if value}
 
     def construct_from_feed_content(self):
-        if 'application/json' in self.feed_response_content_type:
+        if self._is_json_feed:
             return self.construct_from_json_feed_content()
         return self.construct_from_xml_feed_content()
 
