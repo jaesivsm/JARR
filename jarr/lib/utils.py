@@ -19,10 +19,12 @@ def utc_now():
 
 
 def clean_lang(lang: str):
-    if LANG_FORMAT.match(lang or ''):
+    if not lang or not isinstance(lang, str):
+        return
+    if LANG_FORMAT.match(lang):
         return lang
-    if not CORRECTABLE_LANG_FORMAT.match(lang or ''):
-        return None
+    if not CORRECTABLE_LANG_FORMAT.match(lang):
+        return
     proper_lang = lang[0:2].lower()
     if len(lang) >= 5:
         proper_lang = "%s_%s" % (proper_lang, lang[3:5].upper())
