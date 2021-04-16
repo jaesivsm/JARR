@@ -39,7 +39,7 @@ class HTMLParsingTest(unittest.TestCase):
                          list(extract_feed_links(self.article))[0])
 
         yt_feed_link = 'http://www.youtube.com/oembed?url=https%3A%2F%2F'\
-                       'www.youtube.com%2Fwatch%3Fv%3DscbrjaqM3Oc&format=xml'
+                       'www.youtube.com%2Fwatch%3Fv%3DscbrjaqM3Oc&format=json'
         self.assertEqual(yt_feed_link,
                          list(extract_feed_links(self.article2))[0])
 
