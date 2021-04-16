@@ -4,11 +4,12 @@ import urllib.parse
 from functools import lru_cache
 
 from goose3 import Goose
-from lxml import etree
 from jarr.bootstrap import conf
 from jarr.controllers.article import to_vector
 from jarr.lib.enums import ArticleType, FeedType
 from jarr.lib.url_cleaners import remove_utm_tags
+from jarr.lib.utils import clean_lang
+from lxml import etree
 
 logger = logging.getLogger(__name__)
 IMG_ALT_MAX_LENGTH = 100
@@ -40,7 +41,7 @@ class ContentGenerator:
         if not self._page:
             return False
         lang = self._page.opengraph.get('locale') or self._page.meta_lang
-        self.extracted_infos['lang'] = lang
+        self.extracted_infos['lang'] = clean_lang(lang)
         self.extracted_infos['link'] = self._page.final_url
         keywords = set(self._page.meta_keywords.split(', '))
         self.extracted_infos['tags'] = set(self._page.tags).union(keywords)
