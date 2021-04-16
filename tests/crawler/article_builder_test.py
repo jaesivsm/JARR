@@ -26,7 +26,7 @@ class CrawlerMainTest(BaseJarrTest):
         feed = FeedController().read().first()
         UserController().update({'id': feed.user_id},
                                 {'cluster_enabled': True})
-        builder = ClassicArticleBuilder(feed, self.entry_w_enclosure)
+        builder = ClassicArticleBuilder(feed, self.entry_w_enclosure, {})
         self.assertIsNone(builder.article.get('article_type'))
         raw_articles = list(builder.enhance())
         self.assertEqual(2, len(raw_articles))
@@ -60,7 +60,7 @@ class CrawlerMainTest(BaseJarrTest):
         UserController().update({'id': feed.user_id},
                                 {'cluster_enabled': True})
 
-        builder = ClassicArticleBuilder(feed, self.entry_w_enclosure)
+        builder = ClassicArticleBuilder(feed, self.entry_w_enclosure, {})
         self.assertIsNone(builder.article.get('article_type'))
         raw_articles = list(builder.enhance())
         self.assertEqual(2, len(raw_articles))
