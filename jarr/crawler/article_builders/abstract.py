@@ -4,21 +4,22 @@ import requests
 from requests.exceptions import MissingSchema
 
 from jarr.bootstrap import conf
-from jarr.lib.content_generator import is_embedded_link, YOUTUBE_RE
+from jarr.lib.content_generator import YOUTUBE_RE, is_embedded_link
 from jarr.lib.enums import ArticleType
 from jarr.lib.filter import FiltersAction, process_filters
 from jarr.lib.url_cleaners import clean_urls, remove_utm_tags
-from jarr.lib.utils import digest, utc_now
+from jarr.lib.utils import clean_lang, digest, utc_now
 
 logger = logging.getLogger(__name__)
 
 
 class AbstractArticleBuilder:
 
-    def __init__(self, feed, entry):
+    def __init__(self, feed, entry, top_level):
         self.feed = feed
         self.entry = entry
         self.article = {}
+        self._top_level = top_level
         self.construct(self.entry)
 
     @property
@@ -86,7 +87,7 @@ class AbstractArticleBuilder:
         self.article['tags'] = self.extract_tags(entry)
         self.article['link'] = self.extract_link(entry)
         self.article['content'] = self.extract_content(entry)
-        self.article['lang'] = self.extract_lang(entry)
+        self.article['lang'] = clean_lang(self.extract_lang(entry))
         self.article['comments'] = self.extract_comments(entry)
         if self.article.get('link'):
             self.article['link_hash'] = self.to_hash(self.article['link'])

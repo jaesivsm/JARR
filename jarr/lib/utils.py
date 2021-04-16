@@ -18,11 +18,13 @@ def utc_now():
     return datetime.utcnow().replace(tzinfo=timezone.utc)
 
 
-def clean_lang(lang):
-    if LANG_FORMAT.match(lang or ''):
+def clean_lang(lang: str):
+    if not lang or not isinstance(lang, str):
+        return
+    if LANG_FORMAT.match(lang):
         return lang
-    if not CORRECTABLE_LANG_FORMAT.match(lang or ''):
-        return None
+    if not CORRECTABLE_LANG_FORMAT.match(lang):
+        return
     proper_lang = lang[0:2].lower()
     if len(lang) >= 5:
         proper_lang = "%s_%s" % (proper_lang, lang[3:5].upper())

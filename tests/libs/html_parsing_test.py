@@ -16,7 +16,7 @@ class HTMLParsingTest(unittest.TestCase):
                    'les-plus-belles-boulangeries-de-paris'
         resp.encoding = 'utf8'
         with open('tests/fixtures/article.html', 'rb') as fd:
-            resp._content = fd.read()
+            setattr(resp, '_content', fd.read())
         return resp
 
     @property
@@ -25,14 +25,14 @@ class HTMLParsingTest(unittest.TestCase):
         resp.url = 'https://www.youtube.com/watch?v=scbrjaqM3Oc'
         resp.encoding = 'utf8'
         with open('tests/fixtures/article-2.html', 'rb') as fd:
-            resp._content = fd.read()
+            setattr(resp, '_content', fd.read())
         return resp
 
     def test_extract_title(self):
         self.assertEqual('Les plus belles boulangeries de Paris',
-                          extract_title(self.article))
+                         extract_title(self.article))
         self.assertEqual("Ceci n'est pas Old Boy - Owlboy (suite) "
-                          "- Benzaie Live", extract_title(self.article2))
+                         "- Benzaie Live", extract_title(self.article2))
 
     def test_extract_feed_links(self):
         self.assertEqual(self.article.url + '/feed',
@@ -49,7 +49,7 @@ class HTMLParsingTest(unittest.TestCase):
             return a[0]
         get_icon_patch.side_effect = return_first_val
         self.assertEqual('http://www.pariszigzag.fr/wp-content/themes'
-                          '/paris_zigzag_2016/favicon.ico',
-                          extract_icon_url(self.article))
+                         '/paris_zigzag_2016/favicon.ico',
+                         extract_icon_url(self.article))
         self.assertEqual('https://s.ytimg.com/yts/img/favicon-vflz7uhzw.ico',
-                          extract_icon_url(self.article2))
+                         extract_icon_url(self.article2))

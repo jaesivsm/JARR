@@ -30,7 +30,7 @@ class RedditIntegrationTest(unittest.TestCase):
                 {'scheme': None, 'term': 'be', 'label': ''},
                 {'scheme': None, 'term': 'removed', 'label': ''}]
         entry = {'content': [{'value': CONTENT}], 'tags': tags}
-        builder = RedditArticleBuilder(feed, entry)
+        builder = RedditArticleBuilder(feed, entry, {})
         self.assertEqual(builder.article['link'],
                          'https://supload.com/rJY-37gLe')
         self.assertEqual(builder.article['comments'],

@@ -22,15 +22,16 @@ class RSSBridgeIntegrationTest(unittest.TestCase):
 
     def test_skip_entry(self):
         entry = {'title': 'Bridge returned error for unknown reason'}
-        builder = RSSBridgeArticleBuilder(self.feed, entry)
+        builder = RSSBridgeArticleBuilder(self.feed, entry, {})
         self.assertTrue(builder.do_skip_creation)
-        builder = RSSBridgeArticleBuilder(self.feed, {'title': 'Any other'})
+        builder = RSSBridgeArticleBuilder(
+            self.feed, {'title': 'Any other'}, {})
         self.assertFalse(builder.do_skip_creation)
 
     def test_rss_twitter_bridge_link_handling(self):
         with open('tests/fixtures/link_tweet.json') as fd:
             entry = json.load(fd)
-        builder = RSSBridgeTwitterArticleBuilder(self.feed, entry)
+        builder = RSSBridgeTwitterArticleBuilder(self.feed, entry, {})
         self.assertEqual(entry['link'], builder.article['link'])
         articles = list(builder.enhance())
         self.assertEqual(1, len(articles))
@@ -43,7 +44,7 @@ class RSSBridgeIntegrationTest(unittest.TestCase):
     def test_rss_twitter_bridge_img_handling(self):
         with open('tests/fixtures/img_tweet.json') as fd:
             entry = json.load(fd)
-        builder = RSSBridgeTwitterArticleBuilder(self.feed, entry)
+        builder = RSSBridgeTwitterArticleBuilder(self.feed, entry, {})
         self.assertEqual(entry['link'], builder.article['link'])
         articles = list(builder.enhance())
         self.assertEqual(2, len(articles))

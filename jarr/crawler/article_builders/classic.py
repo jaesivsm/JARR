@@ -55,8 +55,7 @@ class ClassicArticleBuilder(AbstractArticleBuilder):
             return entry['summary']
         return ''
 
-    @staticmethod
-    def extract_lang(entry):
+    def extract_lang(self, entry):
         lang = None
         if entry.get('content', []):
             lang = (entry['content'][0] or {}).get('language')
@@ -65,6 +64,8 @@ class ClassicArticleBuilder(AbstractArticleBuilder):
                 lang = entry.get(sub_key, {}).get('language')
                 if lang:
                     break
+        if not lang:
+            return self._top_level.get('language')
         return lang
 
     @staticmethod
