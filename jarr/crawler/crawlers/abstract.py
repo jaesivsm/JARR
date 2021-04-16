@@ -88,7 +88,7 @@ class AbstractCrawler:
         for entry in parsed['entries']:
             if not entry:
                 continue
-            builder = self.article_builder(self.feed, entry)
+            builder = self.article_builder(self.feed, entry, parsed)
             if builder.do_skip_creation:
                 skipped_list.append(builder.entry_ids)
                 logger.debug('%r: skipping article', self.feed)

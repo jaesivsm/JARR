@@ -18,7 +18,7 @@ def utc_now():
     return datetime.utcnow().replace(tzinfo=timezone.utc)
 
 
-def clean_lang(lang):
+def clean_lang(lang: str):
     if LANG_FORMAT.match(lang or ''):
         return lang
     if not CORRECTABLE_LANG_FORMAT.match(lang or ''):
