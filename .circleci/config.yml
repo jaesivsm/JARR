@@ -185,11 +185,11 @@ jobs:
 workflows:
   jarr-testing:
     jobs:
-      - backend-build
+      - backend-build:
           filters:
             tags:
               only: /.*/
-      - front-build
+      - front-build:
           filters:
             tags:
               only: /.*/
