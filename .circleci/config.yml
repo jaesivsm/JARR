@@ -170,7 +170,7 @@ jobs:
           name: Pushing tested images to registry
           command: |
             echo "$DOCKER_PASS" | docker login --username $DOCKER_USER --password-stdin
-            if [ "$GIT_TAG" != "" ]; then
+            if [ "$GIT_TAG" != "<nil>" ]; then
               export DOCKER_TAG=$GIT_TAG
             else
               export DOCKER_TAG=latest
