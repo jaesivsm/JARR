@@ -145,6 +145,8 @@ jobs:
   push-docker-images:
     machine:
       image: ubuntu-1604:201903-01
+    environment:
+      GIT_TAG: << pipeline.git.tag >>
     steps:
       - restore_cache:
           keys:
@@ -168,10 +170,10 @@ jobs:
           name: Pushing tested images to registry
           command: |
             echo "$DOCKER_PASS" | docker login --username $DOCKER_USER --password-stdin
-            if [ "$CIRCLE_BRANCH" = "master" ]; then
-              export DOCKER_TAG=latest
+            if [ "$GIT_TAG" != "" ]; then
+              export DOCKER_TAG=$GIT_TAG
             else
-              export DOCKER_TAG=$CIRCLE_BRANCH
+              export DOCKER_TAG=latest
             fi
             docker image tag jarr-server $DOCKER_USER/jarr-server:$DOCKER_TAG
             docker image tag jarr-worker $DOCKER_USER/jarr-worker:$DOCKER_TAG
@@ -184,10 +186,19 @@ workflows:
   jarr-testing:
     jobs:
       - backend-build
+          filters:
+            tags:
+              only: /.*/
       - front-build
+          filters:
+            tags:
+              only: /.*/
       - backend-test:
           requires:
             - backend-build
+          filters:
+            tags:
+              only: /.*/
       - push-docker-images:
           requires:
             - backend-test
@@ -196,4 +207,5 @@ workflows:
             branches:
               only:
                 - master
-                - develop  # TODO: remove when merging to master
+            tags:
+              only: /.*/
