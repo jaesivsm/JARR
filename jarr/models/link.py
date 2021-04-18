@@ -20,9 +20,9 @@ class LinkByArticleId(Base):
     user = relationship('User', back_populates='link_by_article_ids',
                         foreign_keys=[user_id])
     article = relationship('Article', back_populates='link_by_article_ids',
-                           foreign_keys=[article_id, user_id])
+                           foreign_keys=[user_id, article_id])
     link = relationship('Link', back_populates='link_by_article_id',
-                        foreign_keys=[link_hash, user_id])
+                        foreign_keys=[user_id, link_hash])
 
     __table_args__ = (
         ForeignKeyConstraint([link_hash], ['link.link_hash'],
