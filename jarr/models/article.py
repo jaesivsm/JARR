@@ -54,6 +54,10 @@ class Article(Base):
                             foreign_keys=[category_id])
     feed = relationship('Feed', back_populates='articles',
                         foreign_keys=[feed_id])
+    links = relationship('Link', back_populates='articles',
+                         secondary='link_by_article_id',
+                         foreign_keys=[LinkByArticleId.article_id,
+                                       LinkByArticleId.link_hash])
 
     __table_args__ = (
             ForeignKeyConstraint([user_id], ['user.id'], ondelete='CASCADE'),
