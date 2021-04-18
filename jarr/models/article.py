@@ -7,6 +7,7 @@ from functools import cached_property
 from jarr.bootstrap import Base
 from jarr.lib.enums import ArticleType, ClusterReason
 from jarr.lib.utils import utc_now
+from jarr.models.link import LinkByArticleId
 from jarr.models.utc_datetime_type import UTCDateTime
 from jarr.lib.clustering_af.vector import TFIDFVector, get_simple_vector
 

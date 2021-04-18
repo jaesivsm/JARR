@@ -54,6 +54,13 @@ class User(Base):
     clusters = relationship('Cluster', back_populates='user',
                             cascade='all, delete-orphan',
                             foreign_keys='[Cluster.user_id]')
+    link_by_article_ids = relationship('LinkByArticleId',
+                                       back_populates='user',
+                                       cascade='all, delete-orphan',
+                                       foreign_keys='[LinkByArticleId.user_id]')
+    links = relationship('Link', back_populates='user',
+                         cascade='all, delete-orphan',
+                         foreign_keys='[Link.user_id]')
 
     @property
     def effectivly_active(self):
