@@ -1,9 +1,9 @@
 from enum import Enum as PythonEnum
-from sqlalchemy import (Binary, Column, Enum, ForeignKeyConstraint,
-                        Index, Integer, PickleType, String)
-from sqlalchemy.orm import relationship
 
 from jarr.bootstrap import Base
+from sqlalchemy import (Binary, Column, Enum, ForeignKeyConstraint, Index,
+                        Integer, PickleType, String)
+from sqlalchemy.orm import relationship
 
 
 class LinkType(PythonEnum):
@@ -57,6 +57,7 @@ class Link(Base):
         ForeignKeyConstraint([user_id], ['user.id'], ondelete='CASCADE'),
         ForeignKeyConstraint([link_hash], [LinkByArticleId.link_hash],
                              ondelete='CASCADE'),
+        Index('ix_link_uid_lhash', user_id, link_hash),
     )
 
 
