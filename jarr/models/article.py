@@ -56,7 +56,8 @@ class Article(Base):
                         foreign_keys=[feed_id])
     links = relationship('Link', back_populates='articles',
                          secondary='link_by_article_id',
-                         foreign_keys=[LinkByArticleId.article_id,
+                         foreign_keys=[LinkByArticleId.user_id,
+                                       LinkByArticleId.article_id,
                                        LinkByArticleId.link_hash])
 
     __table_args__ = (

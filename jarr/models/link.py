@@ -19,9 +19,9 @@ class LinkByArticleId(Base):
 
     user = relationship('User', back_populates='link_by_article_ids',
                         foreign_keys=[user_id])
-    article = relationship('Article', back_populates='link_by_article_ids',
+    article = relationship('Article',
                            foreign_keys=[user_id, article_id])
-    link = relationship('Link', back_populates='link_by_article_id',
+    link = relationship('Link',
                         foreign_keys=[user_id, link_hash])
 
     __table_args__ = (
@@ -48,10 +48,6 @@ class Link(Base):
         'Article', back_populates='links', secondary='link_by_article_id',
         foreign_keys=[LinkByArticleId.article_id, LinkByArticleId.user_id,
                       LinkByArticleId.link_hash])
-    link_by_article_id = relationship(
-        LinkByArticleId, back_populates='link',
-        foreign_keys=[LinkByArticleId.link_hash, LinkByArticleId.user_id])
-
 
     __table_args__ = (
         ForeignKeyConstraint([user_id], ['user.id'], ondelete='CASCADE'),
