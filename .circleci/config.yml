@@ -13,8 +13,8 @@ jobs:
       - run:
           name: Upgrading docker
           command: |
-            apt update
-            apt upgrade --yes --no-install-recommends docker-ce
+            sudo apt update
+            sudo apt upgrade --yes --no-install-recommends docker-ce
       - restore_cache:
           keys:
             - jarrback-{{ .Environment.CACHE_VERSION }}.{{ .Branch }}
