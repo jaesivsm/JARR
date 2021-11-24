@@ -1,4 +1,4 @@
-from sqlalchemy import (Binary, Column, Enum, ForeignKeyConstraint,
+from sqlalchemy import (BINARY, Column, Enum, ForeignKeyConstraint,
                         Index, Integer, PickleType, String)
 from sqlalchemy.dialects.postgresql import TSVECTOR
 from sqlalchemy.orm import relationship
@@ -18,7 +18,7 @@ class Article(Base):
     id = Column(Integer, primary_key=True)
     entry_id = Column(String)
     link = Column(String)
-    link_hash = Column(Binary)
+    link_hash = Column(BINARY)
     title = Column(String)
     content = Column(String)
     comments = Column(String)
