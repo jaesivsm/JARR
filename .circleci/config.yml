@@ -6,15 +6,10 @@ orbs:
 jobs:
   backend-build:
     machine:
-      image: ubuntu-1604:201903-01
+      image: ubuntu-2004:202111-01
     steps:
       - checkout
       # restore cache and docker layer cache
-      - run:
-          name: Upgrading docker
-          command: |
-            sudo apt update
-            sudo apt upgrade --yes --no-install-recommends docker-ce
       - restore_cache:
           keys:
             - jarrback-{{ .Environment.CACHE_VERSION }}.{{ .Branch }}
