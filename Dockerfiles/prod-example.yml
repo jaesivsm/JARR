@@ -45,7 +45,7 @@ services:
     networks:
       - jarr
   postgresql:
-    image: postgres:11
+    image: postgres:13
     networks:
       - jarr
     # remove that on real prod env and set proper db password
