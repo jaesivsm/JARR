@@ -1,6 +1,6 @@
 FROM python:3.9-slim
 
-RUN mkdir -p /usr/lib/postgresql/ && apt-get update \
+RUN apt-get update \
     && apt-get install --yes --no-install-recommends \
         gcc \
         python3-dev \
