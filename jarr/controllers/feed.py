@@ -139,9 +139,9 @@ class FeedController(AbstractController):
                             Article.id == Cluster.main_article_id]
             if self.user_id:
                 where_clause.extend([Cluster.user_id == self.user_id])
-            stmt = update(Cluster, whereclause=and_(*where_clause),
-                          values={Cluster.main_feed_title: attrs['title']})
-            session.execute(stmt)
+            session.query(Cluster).filter(*where_clause).update(
+                {Cluster.main_feed_title: attrs['title']},
+                synchronize_session=False)
 
     def __update_default_expires(self, feed, attrs):
         now = utc_now()
