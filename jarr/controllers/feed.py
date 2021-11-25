@@ -135,15 +135,12 @@ class FeedController(AbstractController):
 
     def __denorm_title_on_clusters(self, feed, attrs):
         if 'title' in attrs:
+            where_clause = [Article.feed_id == feed.id,
+                            Article.id == Cluster.main_article_id]
             if self.user_id:
-                where_clause = and_(Article.user_id == self.user_id,
-                                    Article.feed_id == feed.id)
-            else:
-                where_clause = Article.feed_id == feed.id
-            stmt = update(Cluster)\
-                .where(and_(Article.id == Cluster.main_article_id,
-                            where_clause))\
-                .values(dict(main_feed_title=attrs['title']))
+                where_clause.extend([Cluster.user_id == self.user_id])
+            stmt = update(Cluster, whereclause=and_(*where_clause),
+                          values={Cluster.main_feed_title: attrs['title']})
             session.execute(stmt)
 
     def __update_default_expires(self, feed, attrs):
@@ -226,29 +223,28 @@ class FeedController(AbstractController):
                         {'main_article_id': None})
 
         def select_art(col):
-            return select([col]).where(and_(Cluster.id == Article.cluster_id,
-                                            Article.user_id == feed.user_id))\
+            return select([col]).where(Cluster.id == Article.cluster_id,
+                                       Article.user_id == feed.user_id)\
                                 .order_by(Article.date.asc()).limit(1)
 
         logger.info('DELETE %r - removing articles', feed)
         session.execute(delete(Article).where(
-                and_(Article.feed_id == feed.id,
-                     Article.user_id == feed.user_id)))
+            Article.feed_id == feed.id,
+            Article.user_id == feed.user_id))
 
         logger.info('DELETE %r - fixing cluster without main article', feed)
         clu_ctrl.update({'user_id': feed.user_id, 'main_article_id': None},
                 {'main_title': select_art(Article.title),
                  'main_article_id': select_art(Article.id),
                  'main_feed_title': select([Feed.title])
-                                    .where(and_(
-                                           Cluster.id == Article.cluster_id,
+                                    .where(Cluster.id == Article.cluster_id,
                                            Article.user_id == feed.user_id,
                                            Feed.id == Article.feed_id,
-                                           Feed.user_id == feed.user_id))
+                                           Feed.user_id == feed.user_id)
                                     .order_by(Article.date.asc()).limit(1)})
 
         logger.info('DELETE %r - removing clusters without main article', feed)
         session.execute(delete(Cluster).where(
-                and_(Cluster.user_id == feed.user_id,
-                     Cluster.main_article_id.__eq__(None))))
+            Cluster.user_id == feed.user_id,
+            Cluster.main_article_id.__eq__(None)))
         return super().delete(obj_id)
