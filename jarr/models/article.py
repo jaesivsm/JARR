@@ -1,14 +1,15 @@
 from functools import cached_property
 
+from sqlalchemy import (Column, Enum, ForeignKeyConstraint, Index, Integer,
+                        LargeBinary, PickleType, String)
+from sqlalchemy.dialects.postgresql import TSVECTOR
+from sqlalchemy.orm import relationship
+
 from jarr.bootstrap import Base
 from jarr.lib.clustering_af.vector import TFIDFVector, get_simple_vector
 from jarr.lib.enums import ArticleType, ClusterReason
 from jarr.lib.utils import utc_now
 from jarr.models.utc_datetime_type import UTCDateTime
-from sqlalchemy import (Column, Enum, ForeignKeyConstraint, Index, Integer,
-                        LargeBinary, PickleType, String)
-from sqlalchemy.dialects.postgresql import TSVECTOR
-from sqlalchemy.orm import relationship
 
 
 class Article(Base):

@@ -10,9 +10,9 @@ from werkzeug.exceptions import Forbidden
 from jarr.bootstrap import conf, session
 from jarr.controllers.abstract import AbstractController
 from jarr.controllers.icon import IconController
+from jarr.lib.const import UNIX_START
 from jarr.lib.enums import FeedStatus
 from jarr.lib.utils import utc_now
-from jarr.lib.const import UNIX_START
 from jarr.metrics import FEED_EXPIRES, FEED_LATENESS
 from jarr.models import Article, Category, Cluster, Feed, User
 
