@@ -219,9 +219,10 @@ class FeedController(AbstractController):
 
         logger.info('DELETE %r - removing back ref from cluster to article',
                     feed)
+        art_ids = self.__actrl.read(feed_id=obj_id
+            ).with_entities(self.__actrl._db_cls.id)
         clu_ctrl.update({'user_id': feed.user_id,
-                         'main_article_id__in': self.__actrl.read(
-                                feed_id=obj_id).with_entities('id')},
+                         'main_article_id__in': art_ids},
                         {'main_article_id': None})
 
         def select_art(col):
