@@ -38,7 +38,7 @@ python-dateutil = ">=2.6.1,<3"
 rauth = "==0.7.3"
 redis = "==2.*"
 requests = ">=2.21.0,<3"
-SQLAlchemy = "==1.*"
+SQLAlchemy = "==1.3.*"
 the-conf = "==0.*"
 flask-cors = "==3.*"
 
