@@ -25,7 +25,7 @@ def upgrade():
                     existing_type=sa.INTEGER(), nullable=False)
     logger.info('adding link_hash column')
     op.add_column('article', sa.Column('link_hash',
-                                       sa.Binary(), nullable=True))
+                                       sa.LargeBinary(), nullable=True))
     logger.info('updating link_hash values')
     op.get_bind().execute("""UPDATE article
                              SET link_hash = digest(link, 'SHA1');""")

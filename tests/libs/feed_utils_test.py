@@ -99,7 +99,7 @@ class ConstructFeedFromTest(unittest.TestCase):
             'icon_url': 'https://a-v2.sndcdn.com/assets/'
             'images/sc-icons/favicon-2cadd14bdb.ico',
             'link': 'popotes-podcast',
-            'site_link': 'https://soundcloud.com/popotes-podcast/',
+            'site_link': 'https://soundcloud.com/popotes-podcast',
             'title': 'SoundCloud'}, soundcloud)
 
     def test_youtube(self):

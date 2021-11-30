@@ -10,9 +10,9 @@ from werkzeug.exceptions import Forbidden
 from jarr.bootstrap import conf, session
 from jarr.controllers.abstract import AbstractController
 from jarr.controllers.icon import IconController
+from jarr.lib.const import UNIX_START
 from jarr.lib.enums import FeedStatus
 from jarr.lib.utils import utc_now
-from jarr.lib.const import UNIX_START
 from jarr.metrics import FEED_EXPIRES, FEED_LATENESS
 from jarr.models import Article, Category, Cluster, Feed, User
 
@@ -135,16 +135,13 @@ class FeedController(AbstractController):
 
     def __denorm_title_on_clusters(self, feed, attrs):
         if 'title' in attrs:
+            where_clause = [Article.feed_id == feed.id,
+                            Article.id == Cluster.main_article_id]
             if self.user_id:
-                where_clause = and_(Article.user_id == self.user_id,
-                                    Article.feed_id == feed.id)
-            else:
-                where_clause = Article.feed_id == feed.id
-            stmt = update(Cluster)\
-                .where(and_(Article.id == Cluster.main_article_id,
-                            where_clause))\
-                .values(dict(main_feed_title=attrs['title']))
-            session.execute(stmt)
+                where_clause.extend([Cluster.user_id == self.user_id])
+            session.query(Cluster).filter(*where_clause).update(
+                {Cluster.main_feed_title: attrs['title']},
+                synchronize_session=False)
 
     def __update_default_expires(self, feed, attrs):
         now = utc_now()
@@ -219,35 +216,35 @@ class FeedController(AbstractController):
 
         logger.info('DELETE %r - removing back ref from cluster to article',
                     feed)
+        art_ids = self.__actrl.read(feed_id=obj_id
+                                    ).with_entities(self.__actrl._db_cls.id)
         clu_ctrl.update({'user_id': feed.user_id,
-                         'main_article_id__in': self.__actrl.read(
-                                feed_id=obj_id).with_entities('id')},
+                         'main_article_id__in': art_ids},
                         {'main_article_id': None})
 
         def select_art(col):
-            return select([col]).where(and_(Cluster.id == Article.cluster_id,
-                                            Article.user_id == feed.user_id))\
+            return select([col]).where(Cluster.id == Article.cluster_id,
+                                       Article.user_id == feed.user_id)\
                                 .order_by(Article.date.asc()).limit(1)
 
         logger.info('DELETE %r - removing articles', feed)
         session.execute(delete(Article).where(
-                and_(Article.feed_id == feed.id,
-                     Article.user_id == feed.user_id)))
+            Article.feed_id == feed.id,
+            Article.user_id == feed.user_id))
 
         logger.info('DELETE %r - fixing cluster without main article', feed)
         clu_ctrl.update({'user_id': feed.user_id, 'main_article_id': None},
                 {'main_title': select_art(Article.title),
                  'main_article_id': select_art(Article.id),
                  'main_feed_title': select([Feed.title])
-                                    .where(and_(
-                                           Cluster.id == Article.cluster_id,
+                                    .where(Cluster.id == Article.cluster_id,
                                            Article.user_id == feed.user_id,
                                            Feed.id == Article.feed_id,
-                                           Feed.user_id == feed.user_id))
+                                           Feed.user_id == feed.user_id)
                                     .order_by(Article.date.asc()).limit(1)})
 
         logger.info('DELETE %r - removing clusters without main article', feed)
         session.execute(delete(Cluster).where(
-                and_(Cluster.user_id == feed.user_id,
-                     Cluster.main_article_id.__eq__(None))))
+            Cluster.user_id == feed.user_id,
+            Cluster.main_article_id.__eq__(None)))
         return super().delete(obj_id)

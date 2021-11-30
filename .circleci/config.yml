@@ -6,7 +6,7 @@ orbs:
 jobs:
   backend-build:
     machine:
-      image: ubuntu-1604:201903-01
+      image: ubuntu-2004:202111-01
     steps:
       - checkout
       # restore cache and docker layer cache
@@ -41,7 +41,7 @@ jobs:
 
   front-build:
     machine:
-      image: ubuntu-1604:201903-01
+      image: ubuntu-2004:202111-01
     steps:
       - checkout
       # restore cache and docker layer cache
@@ -71,7 +71,7 @@ jobs:
 
   backend-test:
     machine:
-      image: ubuntu-1604:201903-01
+      image: ubuntu-2004:202111-01
     steps:
       - checkout
       # restore cache and docker layer cache
@@ -140,7 +140,7 @@ jobs:
           command: >-
             docker-compose --file Dockerfiles/circleci-env.yml
             exec server bash -c
-            "pipenv run mypy jarr --ignore-missing-imports --exclude=jarr/crawler/lib/__init__.py"
+            "pip install types-redis types-requests types-python-dateutil; pipenv run mypy jarr --ignore-missing-imports --exclude=jarr/crawler/lib/__init__.py"
 
   push-docker-images:
     machine:

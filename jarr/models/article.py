@@ -1,14 +1,15 @@
-from sqlalchemy import (Binary, Column, Enum, ForeignKeyConstraint,
-                        Index, Integer, PickleType, String)
-from sqlalchemy.dialects.postgresql import TSVECTOR
-from sqlalchemy.orm import relationship
 from functools import cached_property
 
+from sqlalchemy import (Column, Enum, ForeignKeyConstraint, Index, Integer,
+                        LargeBinary, PickleType, String)
+from sqlalchemy.dialects.postgresql import TSVECTOR
+from sqlalchemy.orm import relationship
+
 from jarr.bootstrap import Base
+from jarr.lib.clustering_af.vector import TFIDFVector, get_simple_vector
 from jarr.lib.enums import ArticleType, ClusterReason
 from jarr.lib.utils import utc_now
 from jarr.models.utc_datetime_type import UTCDateTime
-from jarr.lib.clustering_af.vector import TFIDFVector, get_simple_vector
 
 
 class Article(Base):
@@ -18,7 +19,7 @@ class Article(Base):
     id = Column(Integer, primary_key=True)
     entry_id = Column(String)
     link = Column(String)
-    link_hash = Column(Binary)
+    link_hash = Column(LargeBinary)
     title = Column(String)
     content = Column(String)
     comments = Column(String)
