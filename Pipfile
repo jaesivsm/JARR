@@ -5,6 +5,8 @@ name = "pypi"
 
 [dev-packages]
 pycodestyle = "*"
+pylint = "*"
+flake8 = "*"
 nose = "*"
 mock = "*"
 coverage = "*"
@@ -18,6 +20,8 @@ types-redis = "*"
 types-requests = "*"
 types-python-dateutil = "*"
 types-mock = "*"
+sqlalchemy-stubs = "*"
+SQLAlchemy = {extras = ["mypy"]}
 
 [packages]
 alembic = "==1.*"
@@ -40,7 +44,7 @@ prometheus-distributed-client = "==1.2.1"
 python-dateutil = "*"
 rauth = "==0.7.3"
 redis = "==2.*"
-requests = ">=2.21.0,<3"
+requests = "==2.*"
 SQLAlchemy = "==1.4.*"
 the-conf = "==0.*"
 flask-cors = "==3.*"

@@ -73,7 +73,7 @@ class Article(Base):
 
     def __repr__(self):
         """Represents and article."""
-        return "<Article(feed_id=%s, id=%s)>" % (self.feed_id, self.id)
+        return f"<Article(feed_id={self.feed_id}, id={self.id})>"
 
     # TFIDF vectors
     @property
