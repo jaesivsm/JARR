@@ -50,7 +50,7 @@ class Article(Base):
     # relationships
     user = relationship('User', back_populates='articles')
     cluster = relationship('Cluster', back_populates='articles',
-                           foreign_keys=[cluster_id], overlaps="clusters")
+                           foreign_keys=[cluster_id])
     category = relationship('Category', back_populates='articles',
                             foreign_keys=[category_id])
     feed = relationship('Feed', back_populates='articles',

@@ -58,7 +58,7 @@ class Feed(Base):
                             cascade='all,delete-orphan')
     clusters = relationship('Cluster', back_populates='feeds',
             foreign_keys='[Article.feed_id, Article.cluster_id]',
-            secondary='article', overlaps="articles")
+            secondary='article')
 
     __table_args__ = (
             ForeignKeyConstraint([user_id], ['user.id'], ondelete='CASCADE'),
