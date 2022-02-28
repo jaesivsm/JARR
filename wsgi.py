@@ -10,16 +10,17 @@ from flask_migrate import Migrate, MigrateCommand
 
 _app = create_app()
 application = ProxyFix(_app, x_for=1, x_proto=1, x_host=1, x_port=1)
-migrate = Migrate(application, Base)
+migrate = Migrate(db=Base)
+migrate.init_app(_app)
 
 
 @_app.cli.command("bootstrap-database")
-@click.option("--login", default="admin")
-@click.option("--password", default="admin")
-def bootstrap_database(login, password):
+@click.option("--admin_login", default="admin")
+@click.option("--admin_password", default="admin")
+def bootstrap_database(admin_login, admin_password):
     """Will create the database from conf parameters."""
     from jarr.controllers.user import UserController
     admin = {'is_admin': True, 'is_api': True,
-             'login': login, 'password': password}
+             'login': admin_login, 'password': admin_password}
     Base.metadata.create_all()
     UserController().create(**admin)
