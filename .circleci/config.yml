@@ -107,7 +107,7 @@ jobs:
           name: Populating database with tables
           command: >-
             docker-compose --file Dockerfiles/circleci-env.yml
-            exec server bash -c "pipenv run ./manager.py db_create"
+            exec server bash -c "pipenv run flask bootstrap-database"
       - run:
           name: Installing testing dependencies
           command: >-

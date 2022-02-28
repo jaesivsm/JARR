@@ -66,5 +66,5 @@ scheduler.apply_async()
 ### Executing Schema and Data migration
 
 ```
-docker-compose --file Dockerfiles/prod-example.yml exec jarr-worker ./manager.py db upgrade
+docker-compose --file Dockerfiles/prod-example.yml exec jarr-worker flask db upgrade
 ```

@@ -10,7 +10,7 @@ from flask_migrate import Migrate, MigrateCommand
 
 _app = create_app()
 application = ProxyFix(_app, x_for=1, x_proto=1, x_host=1, x_port=1)
-Migrate(application, Base)
+migrate = Migrate(application, Base)
 
 
 @_app.cli.command("bootstrap-database")
