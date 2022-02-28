@@ -3,9 +3,9 @@ LOG_CONFIG = example_conf/logging.ini
 CONF_FILE ?= example_conf/jarr.json
 SERVER_PORT = 8000
 SERVER_ADDR = 0.0.0.0
-DB_VER = $(shell pipenv run ./manager.py db heads | sed -e 's/ .*//g')
+DB_VER = $(shell pipenv run flask db heads | sed -e 's/ .*//g')
 COMPOSE_FILE ?= Dockerfiles/dev-env.yml
-RUN = PIPENV_IGNORE_VIRTUALENVS=1 pipenv run
+RUN = FLASK_APP=wsgi PIPENV_IGNORE_VIRTUALENVS=1 pipenv run
 COMPOSE = $(RUN) docker-compose --project-name jarr --file $(COMPOSE_FILE)
 TEST = tests/
 DB_NAME ?= jarr
@@ -62,15 +62,17 @@ run-worker:
 run-front:
 	cd jsclient/; yarn start
 
-create-db:
+db-bootstrap-user:
 	$(COMPOSE) exec postgresql su postgres -c \
 		"createuser $(DB_NAME) --no-superuser --createdb --no-createrole"
+
+db-bootstrap-db:
 	$(COMPOSE) exec postgresql su postgres -c "createdb $(DB_NAME) --no-password"
 
 init-env: export JARR_CONFIG = $(CONF_FILE)
 init-env:
-	$(RUN) ./manager.py db_create
-	$(RUN) ./manager.py db stamp $(DB_VER)
+	$(RUN) flask bootstrap-database
+	$(RUN) flask db stamp $(DB_VER)
 
 stop-env:
 	$(COMPOSE) down --remove-orphans
@@ -87,5 +89,6 @@ setup-testing: export CONF_FILE=example_conf/jarr.test.json
 setup-testing:
 	make start-env
 	sleep 2
-	make create-db
+	make db-bootstrap-user
+	make db-bootstrap-db
 	make init-env
