@@ -32,7 +32,7 @@ class Category(Base):  # type: ignore
     clusters: RelationshipProperty = relationship(
         'Cluster', back_populates='categories',
         foreign_keys='[Article.category_id, Article.cluster_id]',
-        secondary='article')
+        secondary='article', overlaps="articles,category,cluster,clusters")
 
     __table_args__ = (
             ForeignKeyConstraint([user_id], ['user.id'],

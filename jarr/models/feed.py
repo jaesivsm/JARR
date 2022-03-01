@@ -59,7 +59,7 @@ class Feed(Base):  # type: ignore
     clusters: RelationshipProperty = relationship(
         'Cluster', back_populates='feeds',
         foreign_keys='[Article.feed_id, Article.cluster_id]',
-        secondary='article')
+        secondary='article', overlaps="articles")
 
     __table_args__ = (
             ForeignKeyConstraint([user_id], ['user.id'], ondelete='CASCADE'),

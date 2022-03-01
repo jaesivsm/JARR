@@ -45,10 +45,12 @@ class Cluster(Base):  # type: ignore
         order_by=Article.date.asc())
     feeds: RelationshipProperty = relationship(
         'Feed', back_populates='clusters', secondary='article',
-        foreign_keys=[Article.feed_id, Article.cluster_id])
+        foreign_keys=[Article.feed_id, Article.cluster_id],
+        overlaps="articles,clusters,cluster,feed")
     categories: RelationshipProperty = relationship(
         'Category', back_populates='clusters', secondary='article',
-        foreign_keys=[Article.cluster_id, Article.category_id])
+        foreign_keys=[Article.cluster_id, Article.category_id],
+        overlaps="articles,category,cluster,clusters,feeds")
 
     __table_args__ = (
             ForeignKeyConstraint([user_id], ['user.id'], ondelete='CASCADE'),

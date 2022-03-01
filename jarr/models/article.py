@@ -50,11 +50,13 @@ class Article(Base):  # type: ignore
     user: RelationshipProperty = relationship(
         "User", back_populates='articles')
     cluster: RelationshipProperty = relationship(
-        "Cluster", back_populates="articles", foreign_keys=[cluster_id])
+        "Cluster", back_populates="articles", foreign_keys=[cluster_id],
+        overlaps="clusters")
     category: RelationshipProperty = relationship(
         "Category", back_populates="articles", foreign_keys=[category_id])
     feed: RelationshipProperty = relationship(
-        "Feed", back_populates="articles", foreign_keys=[feed_id])
+        "Feed", back_populates="articles", foreign_keys=[feed_id],
+        overlaps="clusters")
 
     __table_args__ = (
             ForeignKeyConstraint([user_id], ['user.id'], ondelete='CASCADE'),

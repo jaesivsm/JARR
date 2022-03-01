@@ -42,18 +42,18 @@ class User(Base):  # type: ignore
     linuxfr_identity = Column(String)
 
     # relationships
-    categories = relationship('Category', back_populates='user',
-                              cascade='all, delete-orphan',
-                              foreign_keys='[Category.user_id]')
-    feeds = relationship('Feed', back_populates='user',
-                         cascade='all, delete-orphan',
-                         foreign_keys='[Feed.user_id]')
-    articles = relationship('Article', back_populates='user',
-                            cascade='all, delete-orphan',
-                            foreign_keys='[Article.user_id]')
-    clusters = relationship('Cluster', back_populates='user',
-                            cascade='all, delete-orphan',
-                            foreign_keys='[Cluster.user_id]')
+    categories: RelationshipProperty = relationship(
+        'Category', back_populates='user', cascade='all, delete-orphan',
+        foreign_keys='[Category.user_id]')
+    feeds: RelationshipProperty = relationship(
+        'Feed', back_populates='user', cascade='all, delete-orphan',
+        foreign_keys='[Feed.user_id]')
+    articles: RelationshipProperty = relationship(
+        'Article', back_populates='user', cascade='all, delete-orphan',
+        foreign_keys='[Article.user_id]')
+    clusters: RelationshipProperty = relationship(
+        'Cluster', back_populates='user', cascade='all, delete-orphan',
+        foreign_keys='[Cluster.user_id]')
 
     @property
     def effectivly_active(self):
@@ -69,4 +69,4 @@ class User(Base):  # type: ignore
 
     def __repr__(self):
         """Represents a user with its id."""
-        return "<User %s(%s)>" % (self.login, self.id)
+        return f"<User {self.login}({self.id})>"
