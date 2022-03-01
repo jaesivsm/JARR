@@ -2,14 +2,14 @@ import re
 from datetime import timedelta
 
 from sqlalchemy import Boolean, Column, Integer, String, PickleType
-from sqlalchemy.orm import relationship, validates
+from sqlalchemy.orm import relationship, validates, RelationshipProperty
 
 from jarr.lib.utils import utc_now
 from jarr.bootstrap import Base, conf
 from jarr.models.utc_datetime_type import UTCDateTime
 
 
-class User(Base):
+class User(Base):  # type: ignore
     __tablename__ = 'user'
 
     id = Column(Integer, primary_key=True)

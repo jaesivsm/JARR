@@ -40,12 +40,10 @@ def init_logging(log_path=None, log_level=logging.INFO, modules=(),
         logger.setLevel(log_level)
 
 
-def init_db(echo=False) -> Tuple[Any, Any, DeclarativeMeta]:
-    kwargs = {'echo': echo}
-    new_engine = create_engine(conf.db.pg_uri, **kwargs)
-    NewBase: DeclarativeMeta = declarative_base(new_engine)
-    SessionMaker = sessionmaker(bind=new_engine)
-    new_session = scoped_session(SessionMaker)
+def init_db(echo=False):
+    new_engine = create_engine(conf.db.pg_uri, echo=echo)
+    NewBase = declarative_base(new_engine)
+    new_session = scoped_session(sessionmaker(bind=new_engine))
     return new_engine, new_session, NewBase
 
 
@@ -62,9 +60,7 @@ def rollback_pending_sql(*args, **kwargs):
     session.rollback()
 
 
-dbs = init_db()
-engine, session = dbs[:2]
-Base: DeclarativeMeta = dbs[2]
+engine, session, Base = init_db()
 init_models()
 set_redis_conn(host=conf.db.metrics.host,
                db=conf.db.metrics.db,
