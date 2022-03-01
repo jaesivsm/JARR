@@ -5,6 +5,7 @@ from datetime import datetime, timezone
 class UTCDateTime(types.TypeDecorator):
     impl = types.DateTime
     python_type = datetime
+    cache_ok = True
 
     @staticmethod
     def process_bind_param(value, dialect):
