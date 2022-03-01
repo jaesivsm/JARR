@@ -3,6 +3,7 @@ import re
 import urllib.parse
 from functools import lru_cache
 
+from typing import Optional
 from goose3 import Goose
 from lxml import etree
 from jarr.bootstrap import conf
@@ -23,8 +24,8 @@ def is_embedded_link(link):
 
 
 class ContentGenerator:
-    article_type: ArticleType = None
-    feed_type: FeedType = None
+    article_type: Optional[ArticleType] = None
+    feed_type: Optional[FeedType] = None
 
     def __init__(self, article):
         self.article = article
