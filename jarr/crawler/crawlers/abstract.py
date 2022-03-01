@@ -1,4 +1,5 @@
 import logging
+from typing import Optional
 
 from jarr.bootstrap import conf
 from jarr.controllers import ArticleController, FeedController
@@ -15,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 
 class AbstractCrawler:
-    feed_type = None  # type: FeedType
+    feed_type: Optional[FeedType] = None
     article_builder = ClassicArticleBuilder
 
     @classmethod

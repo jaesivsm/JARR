@@ -1,3 +1,4 @@
+from typing import Optional
 from urllib.parse import SplitResult, urlencode, urlsplit, urlunsplit
 
 from jarr.bootstrap import conf
@@ -8,10 +9,10 @@ from jarr.lib.enums import FeedType
 
 
 class RssBridgeAbstractCrawler(ClassicCrawler):
-    bridge = None  # type: str
+    bridge: str
     bridge_format = 'AtomFormat'
     article_builder = RSSBridgeArticleBuilder
-    feed_type = None  # forcing this crawler to be ignored
+    feed_type: Optional[FeedType] = None  # forcing this crawler to be ignored
 
     def get_url(self):
         split = urlsplit(conf.plugins.rss_bridge) \

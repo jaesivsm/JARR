@@ -31,7 +31,7 @@ class AbstractController:
         allowing for a kind of "super user" mode.
         """
         if self._db_cls is None:
-            raise NotImplementedError("%r _db_cls isn't overridden" % self)
+            raise NotImplementedError(f"{self!r} _db_cls isn't overridden")
         try:
             self.user_id = int(user_id)
         except TypeError:
@@ -48,7 +48,7 @@ class AbstractController:
         if ope == 'in':
             return getattr(model, attr).in_
         if ope not in {'like', 'ilike'}:
-            ope = '__%s__' % ope
+            ope = f"__{ope}__"
         return getattr(getattr(model, attr), ope)
 
     @classmethod
@@ -92,11 +92,10 @@ class AbstractController:
         obj = self._get(**filters).first()
 
         if obj and not self._has_right_on(obj):
-            raise Forbidden('No authorized to access %r (%r)' % (
-                                self._db_cls.__class__.__name__, filters))
+            raise Forbidden("No authorized to access "
+                            f"{self._db_cls.__class__.__name__} {filters!r}")
         if not obj:
-            raise NotFound('No %r (%r)' % (self._db_cls.__class__.__name__,
-                                           filters))
+            raise NotFound(f"No {self._db_cls.__class__.__name__} w {filters}")
         return obj
 
     def create(self, **attrs):
@@ -144,11 +143,11 @@ class AbstractController:
         if self._user_id_key is None:
             return True
         return self.user_id is None \
-                or getattr(obj, self._user_id_key, None) == self.user_id
+            or getattr(obj, self._user_id_key, None) == self.user_id
 
     def assert_right_ok(self, obj_id):
         if not self.user_id:
-            raise ValueError("%r user_id can't be None" % self)
+            raise ValueError(f"{self!r} user_id can't be None")
         rows = self.__class__().read(id=obj_id).with_entities(
                 getattr(self._db_cls, self._user_id_key)).first()
         if not rows:

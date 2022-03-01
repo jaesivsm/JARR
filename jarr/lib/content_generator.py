@@ -23,8 +23,8 @@ def is_embedded_link(link):
 
 
 class ContentGenerator:
-    article_type = None
-    feed_type = None
+    article_type: ArticleType
+    feed_type: FeedType
 
     def __init__(self, article):
         self.article = article
