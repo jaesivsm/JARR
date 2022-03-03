@@ -51,6 +51,12 @@ parameters:
         help_txt: >-
           Minimum vector size to be allowed in a TF-IDF corpus.
 - crawler:
+  - use_queues:
+      default: false
+      type: bool
+      help_txt: >-
+        If true, the scheduler will dispatch tasks in several queues allowing
+        for a more precise control of the backend charge repartition
   - idle_delay:
       default: 120
       help_txt: >-

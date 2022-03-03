@@ -5,7 +5,7 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 
 from jarr.api import create_app
 from jarr.bootstrap import Base
-from flask_migrate import Migrate, MigrateCommand
+from flask_migrate import Migrate
 
 
 _app = create_app()
