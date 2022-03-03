@@ -107,7 +107,6 @@ def scheduler():
         for feed in feeds_to_delete:
             logger.debug("%r: scheduling to be delete", feed)
             feed_cleaner.apply_async(args=[feed.id])
-            break  # only one at a time
     # applying clusterizer
     queue = Queues.DEFAULT if conf.crawler.use_queues else Queues.CLUSTERING
     for user_id in ArticleController.get_user_id_with_pending_articles():
