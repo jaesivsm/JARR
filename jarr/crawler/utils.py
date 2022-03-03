@@ -17,9 +17,9 @@ def observe_worker_result_since(start, method, result):
 
 
 class Queues(Enum):
-    DEFAULT = 'celery'
-    CRAWLING = 'crawling'
-    CLUSTERING = 'clustering'
+    DEFAULT = 'jarr'
+    CRAWLING = 'jarr-crawling'
+    CLUSTERING = 'jarr-clustering'
 
 
 def lock(prefix, expire=LOCK_EXPIRE):

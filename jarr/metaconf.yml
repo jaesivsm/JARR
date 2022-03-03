@@ -53,6 +53,7 @@ parameters:
 - crawler:
   - use_queues:
       default: false
+      type: bool
       help_txt: >-
         If true, the scheduler will dispatch tasks in several queues allowing
         for a more precise control of the backend charge repartition

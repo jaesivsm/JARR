@@ -59,11 +59,13 @@ def feed_cleaner(feed_id):
 
 @celery_app.task(name='metrics.users.any')
 def metrics_users_any():
+    logger.debug('Counting users')
     USER.labels(status='any').set(UserController().read().count())
 
 
 @celery_app.task(name='metrics.users.active')
 def metrics_users_active():
+    logger.debug('Counting active users')
     threshold_connection = utc_now() - timedelta(days=conf.feed.stop_fetch)
     active = UserController().read(is_active=True,
                                    last_connection__ge=threshold_connection)
@@ -72,6 +74,8 @@ def metrics_users_active():
 
 @celery_app.task(name='metrics.users.long_term')
 def metrics_users_long_term():
+    logger.debug('Counting long term users')
+    threshold_connection = utc_now() - timedelta(days=conf.feed.stop_fetch)
     threshold_connection = utc_now() - timedelta(days=conf.feed.stop_fetch)
     threshold_created = utc_now() - timedelta(days=conf.feed.stop_fetch + 1)
     long_term = UserController().read(is_active=True,
@@ -82,6 +86,7 @@ def metrics_users_long_term():
 
 @celery_app.task(name='metrics.articles.unclustered')
 def metrics_articles_unclustered():
+    logger.debug('Counting unclustered articles')
     unclustered = ArticleController().read(cluster_id=None).count()
     ARTICLES.labels(status='unclustered').set(unclustered)
 
