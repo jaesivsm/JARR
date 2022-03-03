@@ -57,7 +57,7 @@ run-server:
 
 run-worker: export JARR_CONFIG = $(CONF_FILE)
 run-worker:
-	$(RUN) celery worker --app ep_celery.celery_app
+	$(RUN) celery --app ep_celery.celery_app worker
 
 run-front:
 	cd jsclient/; yarn start
