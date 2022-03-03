@@ -21,7 +21,6 @@ RUN mkdir /tmp/pipenv \
         PIPENV_HIDE_EMOJIS=true \
         PIPENV_CACHE_DIR=/tmp/pipenv pipenv sync \
     && rm -rf /tmp/pipenv
-COPY ./manager.py /jarr/manager.py
 COPY ./migrations/ /jarr/migrations
 COPY ./*.py /jarr/
 COPY ./jarr/ /jarr/jarr

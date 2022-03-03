@@ -63,7 +63,7 @@ class ConstructFeedFromTest(unittest.TestCase):
     def test_reddit_from_site(self):
         reddit = FBC('https://www.reddit.com/r/france/').construct()
         self.assertEqual({
-            'description': 'La France et les Français.',
+            'description': 'Tout sur la France et les Français',
             'feed_type': FeedType.reddit,
             'icon_url': 'https://www.redditstatic.com/desktop2x/'
                         'img/favicon/android-icon-192x192.png',
@@ -74,7 +74,7 @@ class ConstructFeedFromTest(unittest.TestCase):
     def test_reddit_from_feed(self):
         reddit = FBC('https://www.reddit.com/r/france/.rss').construct()
         self.assertEqual(
-            {'description': 'La France et les Français.',
+            {'description': 'Tout sur la France et les Français',
              'feed_type': FeedType.reddit,
              'icon_url': 'https://www.redditstatic.com/desktop2x/'
                          'img/favicon/android-icon-192x192.png',

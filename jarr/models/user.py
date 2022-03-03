@@ -2,14 +2,14 @@ import re
 from datetime import timedelta
 
 from sqlalchemy import Boolean, Column, Integer, String, PickleType
-from sqlalchemy.orm import relationship, validates
+from sqlalchemy.orm import relationship, validates, RelationshipProperty
 
 from jarr.lib.utils import utc_now
 from jarr.bootstrap import Base, conf
 from jarr.models.utc_datetime_type import UTCDateTime
 
 
-class User(Base):
+class User(Base):  # type: ignore
     __tablename__ = 'user'
 
     id = Column(Integer, primary_key=True)
@@ -42,18 +42,18 @@ class User(Base):
     linuxfr_identity = Column(String)
 
     # relationships
-    categories = relationship('Category', back_populates='user',
-                              cascade='all, delete-orphan',
-                              foreign_keys='[Category.user_id]')
-    feeds = relationship('Feed', back_populates='user',
-                         cascade='all, delete-orphan',
-                         foreign_keys='[Feed.user_id]')
-    articles = relationship('Article', back_populates='user',
-                            cascade='all, delete-orphan',
-                            foreign_keys='[Article.user_id]')
-    clusters = relationship('Cluster', back_populates='user',
-                            cascade='all, delete-orphan',
-                            foreign_keys='[Cluster.user_id]')
+    categories: RelationshipProperty = relationship(
+        'Category', back_populates='user', cascade='all, delete-orphan',
+        foreign_keys='[Category.user_id]')
+    feeds: RelationshipProperty = relationship(
+        'Feed', back_populates='user', cascade='all, delete-orphan',
+        foreign_keys='[Feed.user_id]')
+    articles: RelationshipProperty = relationship(
+        'Article', back_populates='user', cascade='all, delete-orphan',
+        foreign_keys='[Article.user_id]')
+    clusters: RelationshipProperty = relationship(
+        'Cluster', back_populates='user', cascade='all, delete-orphan',
+        foreign_keys='[Cluster.user_id]')
 
     @property
     def effectivly_active(self):
@@ -69,4 +69,4 @@ class User(Base):
 
     def __repr__(self):
         """Represents a user with its id."""
-        return "<User %s(%s)>" % (self.login, self.id)
+        return f"<User {self.login}({self.id})>"

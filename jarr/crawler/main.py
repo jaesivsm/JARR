@@ -4,7 +4,6 @@ from functools import wraps
 from hashlib import sha256
 
 import urllib3
-
 from ep_celery import celery_app
 from jarr.bootstrap import REDIS_CONN, conf
 from jarr.controllers import (ArticleController, ClusterController,
@@ -26,7 +25,7 @@ def lock(prefix, expire=LOCK_EXPIRE):
         def wrapper(args):
             start = datetime.now()
             key = str(args).encode('utf8')
-            key = 'lock-%s-%s' % (prefix, sha256(key).hexdigest())
+            key = f"lock-{prefix}-{sha256(key).hexdigest()}"
             if REDIS_CONN.setnx(key, 'locked'):
                 REDIS_CONN.expire(key, expire)
                 try:

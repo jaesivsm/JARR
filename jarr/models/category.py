@@ -1,11 +1,10 @@
-from sqlalchemy import (Column, Integer, String, Boolean, PickleType,
-                        Index, ForeignKeyConstraint)
-from sqlalchemy.orm import relationship
-
 from jarr.bootstrap import Base
+from sqlalchemy import (Boolean, Column, ForeignKeyConstraint, Index, Integer,
+                        PickleType, String)
+from sqlalchemy.orm import RelationshipProperty, relationship
 
 
-class Category(Base):
+class Category(Base):  # type: ignore
     __tablename__ = 'category'
 
     id = Column(Integer, primary_key=True)
@@ -23,14 +22,17 @@ class Category(Base):
     user_id = Column(Integer, nullable=False)
 
     # relationships
-    user = relationship('User', back_populates='categories')
-    feeds = relationship('Feed', back_populates='category',
-                         cascade='all,delete-orphan')
-    articles = relationship('Article', back_populates='category',
-                            cascade='all,delete-orphan')
-    clusters = relationship('Cluster', back_populates='categories',
-            foreign_keys='[Article.category_id, Article.cluster_id]',
-            secondary='article')
+    user: RelationshipProperty = relationship(
+        'User', back_populates='categories', uselist=False)
+    feeds: RelationshipProperty = relationship(
+        'Feed', back_populates='category',
+        cascade='all,delete-orphan', uselist=False)
+    articles: RelationshipProperty = relationship(
+        'Article', back_populates='category', cascade='all,delete-orphan')
+    clusters: RelationshipProperty = relationship(
+        'Cluster', back_populates='categories',
+        foreign_keys='[Article.category_id, Article.cluster_id]',
+        secondary='article', overlaps="articles,category,cluster,clusters")
 
     __table_args__ = (
             ForeignKeyConstraint([user_id], ['user.id'],
@@ -39,4 +41,4 @@ class Category(Base):
     )
 
     def __repr__(self):
-        return "<Category(%s)>" % self.id
+        return f"<Category({self.id})>"

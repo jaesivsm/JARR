@@ -1,18 +1,17 @@
 from functools import cached_property
 
-from sqlalchemy import (Column, Enum, ForeignKeyConstraint, Index, Integer,
-                        LargeBinary, PickleType, String)
-from sqlalchemy.dialects.postgresql import TSVECTOR
-from sqlalchemy.orm import relationship
-
 from jarr.bootstrap import Base
 from jarr.lib.clustering_af.vector import TFIDFVector, get_simple_vector
 from jarr.lib.enums import ArticleType, ClusterReason
 from jarr.lib.utils import utc_now
 from jarr.models.utc_datetime_type import UTCDateTime
+from sqlalchemy import (Column, Enum, ForeignKeyConstraint, Index, Integer,
+                        LargeBinary, PickleType, String)
+from sqlalchemy.dialects.postgresql import TSVECTOR
+from sqlalchemy.orm import RelationshipProperty, relationship
 
 
-class Article(Base):
+class Article(Base):  # type: ignore
     "Represent an article from a feed."
     __tablename__ = 'article'
 
@@ -48,13 +47,16 @@ class Article(Base):
     cluster_id = Column(Integer)
 
     # relationships
-    user = relationship('User', back_populates='articles')
-    cluster = relationship('Cluster', back_populates='articles',
-                           foreign_keys=[cluster_id])
-    category = relationship('Category', back_populates='articles',
-                            foreign_keys=[category_id])
-    feed = relationship('Feed', back_populates='articles',
-                        foreign_keys=[feed_id])
+    user: RelationshipProperty = relationship(
+        "User", back_populates='articles')
+    cluster: RelationshipProperty = relationship(
+        "Cluster", back_populates="articles", foreign_keys=[cluster_id],
+        overlaps="clusters")
+    category: RelationshipProperty = relationship(
+        "Category", back_populates="articles", foreign_keys=[category_id])
+    feed: RelationshipProperty = relationship(
+        "Feed", back_populates="articles", foreign_keys=[feed_id],
+        overlaps="clusters")
 
     __table_args__ = (
             ForeignKeyConstraint([user_id], ['user.id'], ondelete='CASCADE'),
@@ -73,7 +75,7 @@ class Article(Base):
 
     def __repr__(self):
         """Represents and article."""
-        return "<Article(feed_id=%s, id=%s)>" % (self.feed_id, self.id)
+        return f"<Article(feed_id={self.feed_id}, id={self.id})>"
 
     # TFIDF vectors
     @property

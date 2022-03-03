@@ -4,14 +4,13 @@
 # required imports and code exection for basic functionning
 
 import logging
-from redis import Redis
 
+from prometheus_distributed_client import set_redis_conn
+from redis import Redis
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import scoped_session, sessionmaker
 from the_conf import TheConf
-
-from prometheus_distributed_client import set_redis_conn
 
 conf = TheConf('jarr/metaconf.yml')
 
@@ -40,11 +39,9 @@ def init_logging(log_path=None, log_level=logging.INFO, modules=(),
 
 
 def init_db(echo=False):
-    kwargs = {'echo': echo}
-    new_engine = create_engine(conf.db.pg_uri, **kwargs)
+    new_engine = create_engine(conf.db.pg_uri, echo=echo)
     NewBase = declarative_base(new_engine)
-    SessionMaker = sessionmaker(bind=new_engine)
-    new_session = scoped_session(SessionMaker)
+    new_session = scoped_session(sessionmaker(bind=new_engine))
     return new_engine, new_session, NewBase
 
 
