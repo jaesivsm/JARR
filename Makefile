@@ -65,7 +65,7 @@ run-front:
 	cd jsclient/; yarn start
 
 db-bootstrap-user:
-	$(COMPOSE) exec postgresql su postgres -c \
+	$(COMPOSE) exec $(DB_CONTAINER_NAME) su postgres -c \
 		"createuser $(DB_NAME) --no-superuser --createdb --no-createrole"
 
 db-bootstrap-tables:
@@ -98,11 +98,7 @@ setup-testing:
 	@echo "### waiting for database to be available"
 	sleep 2
 	make db-bootstrap-user
-<<<<<<< HEAD
-	make db-bootstrap-db
-=======
 	make db-bootstrap-tables
->>>>>>> origin/master
 	make init-env
 
 init-rabbitmq:
