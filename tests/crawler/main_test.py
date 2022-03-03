@@ -16,19 +16,25 @@ class CrawlerMainTest(BaseJarrTest):
         self._sched_async = patch('jarr.crawler.main.scheduler.apply_async')
         self._process_feed_patch = patch('jarr.crawler.main.process_feed')
         self._feed_cleaner_patch = patch('jarr.crawler.main.feed_cleaner')
-        self._metrics = patch('jarr.crawler.main.update_slow_metrics')
+        self._metrics = [patch(f"jarr.crawler.main.{path}")
+                         for path in ['metrics_users_any',
+                                      'metrics_users_active',
+                                      'metrics_users_long_term',
+                                      'metrics_articles_unclustered']]
         self.clusteriser_patch = self._clusteriser_patch.start()
         self.process_feed_patch = self._process_feed_patch.start()
         self.feed_cleaner_patch = self._feed_cleaner_patch.start()
         self.scheduler_patch = self._sched_async.start()
-        self.metrics_patch = self._metrics.start()
+        for metrics_patch in self._metrics:
+            metrics_patch.start()
 
     def tearDown(self):
         self._clusteriser_patch.stop()
         self._process_feed_patch.stop()
         self._feed_cleaner_patch.stop()
         self._sched_async.stop()
-        self._metrics.stop()
+        for metrics_patch in self._metrics:
+            metrics_patch.stop()
 
     def test_scheduler(self):
         scheduler()
@@ -50,4 +56,4 @@ class CrawlerMainTest(BaseJarrTest):
         self.assertEqual(fctrl.read().count(),
                          self.process_feed_patch.apply_async.call_count)
         self.assertEqual(0, self.clusteriser_patch.apply_async.call_count)
-        self.assertEqual(1, self.feed_cleaner_patch.apply_async.call_count)
+        self.assertEqual(2, self.feed_cleaner_patch.apply_async.call_count)

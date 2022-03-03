@@ -194,7 +194,7 @@ class FeedApiTest(JarrFlaskCommon):
         self.assertEqual({
             'description': 'Koreus',
             'feed_type': FeedType.koreus.value,
-            'icon_url': 'https://koreus.cdn.li/static/images/favicon.png',
+            'icon_url': 'https://www.koreus.com/favicon.ico',
             'link': 'http://feeds.feedburner.com/Koreus-articles',
             'links': ['http://feeds.feedburner.com/Koreus-articles',
                       'http://feeds.feedburner.com/Koreus-media',
