@@ -87,7 +87,7 @@ def metrics_users_long_term():
 @celery_app.task(name='metrics.articles.unclustered')
 def metrics_articles_unclustered():
     logger.debug('Counting unclustered articles')
-    unclustered = ArticleController().read(cluster_id=None).count()
+    unclustered = ArticleController().count_unclustered()
     ARTICLES.labels(status='unclustered').set(unclustered)
 
 
@@ -116,8 +116,6 @@ def scheduler():
     # applying clusterizer
     queue = Queues.CLUSTERING if conf.crawler.use_queues else Queues.DEFAULT
     for user_id in ArticleController.get_user_id_with_pending_articles():
-        if not UserController().get(id=user_id).effectivly_active:
-            continue
         if REDIS_CONN.setnx(JARR_CLUSTERIZER_KEY % user_id, 'true'):
             REDIS_CONN.expire(JARR_CLUSTERIZER_KEY % user_id,
                               conf.crawler.clusterizer_delay)
