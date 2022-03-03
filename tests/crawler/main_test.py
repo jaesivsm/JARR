@@ -56,4 +56,4 @@ class CrawlerMainTest(BaseJarrTest):
         self.assertEqual(fctrl.read().count(),
                          self.process_feed_patch.apply_async.call_count)
         self.assertEqual(0, self.clusteriser_patch.apply_async.call_count)
-        self.assertEqual(1, self.feed_cleaner_patch.apply_async.call_count)
+        self.assertEqual(2, self.feed_cleaner_patch.apply_async.call_count)
