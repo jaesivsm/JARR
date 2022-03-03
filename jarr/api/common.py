@@ -35,9 +35,9 @@ def set_clustering_options(level, model, parser, nullable=True):
         suffix = " (article's feed and user clustering settings allows it)"
     elif level == "feed":
         suffix = " (article's category and user clustering settings allows it)"
-    for option in clustering_options:
+    for option, value in clustering_options.items():
         set_model_n_parser(model, parser, option, bool, nullable=nullable,
-                           description=clustering_options[option] + suffix)
+                           description=value + suffix)
 
 
 class EnumField(fields.String):

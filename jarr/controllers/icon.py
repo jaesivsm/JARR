@@ -19,9 +19,10 @@ class IconController(AbstractController):
                                 user_agent=conf.crawler.user_agent)
             except Exception:
                 return attrs
-            attrs.update({'url': resp.url,
-                    'mimetype': resp.headers.get('content-type', None),
-                    'content': base64.b64encode(resp.content).decode('utf8')})
+            attrs.update(
+                {'url': resp.url,
+                 'mimetype': resp.headers.get('content-type', None),
+                 'content': base64.b64encode(resp.content).decode('utf8')})
         return attrs
 
     def create(self, **attrs):

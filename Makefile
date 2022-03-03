@@ -17,13 +17,19 @@ QU_CONTAINER_NAME = rabbitmq
 install:
 	pipenv sync --dev
 
+flake8:
+	$(RUN) flake8 jarr
+
+pylint:
+	$(RUN) pylint -d I0011,R0901,R0902,R0801,C0111,C0103,C0411,C0415,C0330,R0903,R0913,R0914,R0915,R1710,W0613,W0703 jarr
+
 pep8:
 	$(RUN) pycodestyle --ignore=E126,E127,E128,W503 jarr/ --exclude=jarr/migrations
 
 mypy:
 	$(RUN) mypy jarr --ignore-missing-imports --exclude=jarr/crawler/lib/__init__.py
 
-lint: pep8 mypy
+lint: flake8 pylint pep8 mypy
 
 test: export JARR_CONFIG = example_conf/jarr.test.json
 test:

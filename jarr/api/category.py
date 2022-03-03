@@ -56,8 +56,8 @@ class CategoryResource(Resource):
     @jwt_required()
     def get(category_id):
         """Read an existing category."""
-        return CategoryController(current_identity.id).get(id=category_id), \
-                200
+        return CategoryController(current_identity.id).get(id=category_id
+                                                           ), 200
 
     @staticmethod
     @category_ns.expect(parser_edit, validate=True)
@@ -89,9 +89,9 @@ class CategoryResource(Resource):
         """Delete an existing category."""
         try:
             CategoryController(current_identity.id).delete(category_id)
-        except NotFound:
+        except NotFound as notfound:
             user_id = CategoryController().get(id=category_id).user_id
             if user_id != current_identity.id:
-                raise Forbidden()
+                raise Forbidden() from notfound
             raise
         return None, 204

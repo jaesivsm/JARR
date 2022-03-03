@@ -80,8 +80,8 @@ class Clusterizer:
                 yield candidate
 
     def _get_cluster_by_link(self, article):
-        for candidate in self._get_query_for_clustering(article,
-                {'link_hash': article.link_hash}):
+        for candidate in self._get_query_for_clustering(
+                article, {'link_hash': article.link_hash}):
             article.cluster_reason = ClusterReason.link
             cluster_event(context='link', result='match', level=logging.INFO)
             return candidate.cluster
@@ -135,7 +135,7 @@ class Clusterizer:
                                  Feed.cluster_tfidf_enabled.__eq__(None)))
 
         query = ArticleController(article.user_id).read(**filters)\
-                .join(Feed, and_(*feed_join))
+            .join(Feed, and_(*feed_join))
 
         # operations involving categories are complicated, handling in software
         for candidate in query:

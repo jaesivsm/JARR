@@ -48,8 +48,8 @@ def _is_filter_matching(filter_, article):
         match = pattern in tags
     elif filter_type is FiltersType.TAG_CONTAINS:
         match = any(pattern in tag for tag in tags)
-    return match and filter_trigger is FiltersTrigger.MATCH \
-            or not match and filter_trigger is FiltersTrigger.NO_MATCH
+    return (match and filter_trigger is FiltersTrigger.MATCH
+            or not match and filter_trigger is FiltersTrigger.NO_MATCH)
 
 
 def _alter_result(filter_action, filter_result):
@@ -85,7 +85,7 @@ def process_filters(filters, article, only_actions=None):
 
     if any(filter_result[key] != defaults[i] for i, key in enumerate(keys)):
         logger.info('processing filters resulted on %s for Art(f=%s, eid=%r)',
-                    ', '.join(['%s=%s' % (key, value)
+                    ', '.join([f"{key}={value}"
                                for key, value in filter_result.items()]),
                     article.get('feed_id'), article.get('entry_id'))
 

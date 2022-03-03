@@ -84,8 +84,8 @@ class TFIDFVector(SparseVector):
                                                       document_size,
                                                       term_frequencies[term],
                                                       corpus_size))
-                               for term in term_frequencies),
-                              will_be_left_member)
+                              for term in term_frequencies),
+                             will_be_left_member)
         else:
             super().__init__((0 for term in term_frequencies),
                              will_be_left_member)

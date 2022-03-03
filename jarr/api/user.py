@@ -52,7 +52,7 @@ class UserResource(Resource):
         if not attrs:
             raise BadRequest()
         return UserController(user_id).update({"id": user_id}, attrs,
-                return_objs=True).first(), 200
+                                              return_objs=True).first(), 200
 
     @staticmethod
     @user_ns.response(204, "Deleted")

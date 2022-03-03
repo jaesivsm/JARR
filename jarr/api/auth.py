@@ -53,8 +53,8 @@ class LoginResource(Resource):
                                        {"last_connection": utc_now(),
                                         "renew_password_token": ""})
         SERVER.labels(method="post", uri="/auth", result='2XX').inc()
-        return {"access_token": "%s %s" % (conf.auth.jwt_header_prefix,
-                                           access_token)}, 200
+        return {"access_token": f"{conf.auth.jwt_header_prefix} {access_token}"
+                }, 200
 
 
 @auth_ns.route("/refresh")
@@ -73,8 +73,8 @@ class Refresh(Resource):
                                        {"last_connection": utc_now(),
                                         "renew_password_token": ""})
         SERVER.labels(method="get", uri="/auth/refresh", result='2XX').inc()
-        return {"access_token": "%s %s" % (conf.auth.jwt_header_prefix,
-                                           access_token)}, 200
+        return {"access_token": f"{conf.auth.jwt_header_prefix} {access_token}"
+                }, 200
 
 
 @auth_ns.route("/recovery")
@@ -97,10 +97,9 @@ class InitPasswordRecovery(Resource):
         if not changed:
             SERVER.labels(method="post", uri="/auth/recovery",
                           result='4XX').inc()
-            raise BadRequest("No user with %r was found" % attrs)
-        BASE_PATH = 'auth/recovery/%s/%s/%s'
-        landing_url = get_ui_url(BASE_PATH % (attrs["login"],
-                                              attrs["email"], token))
+            raise BadRequest(f"No user with {attrs!r} was found")
+        landing_url = get_ui_url(
+            f"auth/recovery/{attrs['login']}/{attrs['email']}/{token}")
 
         plaintext = render_template("mail_password_recovery.txt",
                                     plateform=conf.app.url,

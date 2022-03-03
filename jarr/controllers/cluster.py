@@ -46,34 +46,37 @@ class ClusterController(AbstractController):
         return results
 
     # UI methods
+    ARTICLE_FILTERS = {'__or__', 'title__ilike', 'content__ilike'}\
+
 
     def _preprocess_per_article_filters(self, filters):
         """Removing filters aimed at articles and transform them into filters
         for clusters"""
         art_filters = {}
-        for key in {'__or__', 'title__ilike', 'content__ilike'}\
-                   .intersection(filters):
+        for key in self.ARTICLE_FILTERS.intersection(filters):
             art_filters[key] = filters.pop(key)
 
         if art_filters:
             art_contr = ArticleController(self.user_id)
-            filters['id__in'] = {line[0] for line in art_contr
-                    .read(**art_filters).with_entities(Article.cluster_id)}
+            query = art_contr.read(**art_filters
+                                   ).with_entities(Article.cluster_id)
+            filters['id__in'] = {line[0] for line in query}
 
     @staticmethod
     def _get_selected(fields, art_f_alias, art_c_alias):
         """Return selected fields"""
         selected_fields = list(fields.values())
         selected_fields.append(func.array_agg(art_f_alias.feed_id,
-                type_=ARRAY(Integer)).label('feeds_id'))
+                                              type_=ARRAY(Integer)
+                                              ).label('feeds_id'))
         return selected_fields
 
     def _join_on_exist(self, query, alias, attr, value, filters):
         val_col = getattr(alias, attr)
         exist_query = exists(select([val_col])
-                .where(and_(alias.cluster_id == Cluster.id,
-                            alias.user_id == self.user_id, val_col == value))
-                .correlate(Cluster).limit(1))
+            .where(and_(alias.cluster_id == Cluster.id,
+                        alias.user_id == self.user_id, val_col == value))
+            .correlate(Cluster).limit(1))
         return query.join(alias, and_(alias.user_id == self.user_id,
                                       alias.cluster_id == Cluster.id,
                                       *filters))\
@@ -111,8 +114,8 @@ class ClusterController(AbstractController):
         art_feed_alias, art_cat_alias = aliased(Article), aliased(Article)
         # DESC of what's going on below :
         # base query with the above fields and the aggregations
-        query = session.query(*self._get_selected(JR_FIELDS,
-                art_feed_alias, art_cat_alias))
+        query = session.query(*self._get_selected(JR_FIELDS, art_feed_alias,
+                                                  art_cat_alias))
 
         # adding parent filter, but we can't just filter on one id, because
         # we'll miss all the other parent of the cluster
@@ -168,10 +171,10 @@ class ClusterController(AbstractController):
         if self.user_id:
             filters['user_id'] = self.user_id
         return dict(session.query(group_on, func.count(Article.cluster_id))
-                              .outerjoin(Cluster,
-                                         Article.cluster_id == Cluster.id)
-                              .filter(*self._to_filters(**filters))
-                              .group_by(group_on).all())
+                           .outerjoin(Cluster,
+                                      Article.cluster_id == Cluster.id)
+                           .filter(*self._to_filters(**filters))
+                           .group_by(group_on).all())
 
     def get_unreads(self):
         counters = defaultdict(int)
@@ -184,6 +187,6 @@ class ClusterController(AbstractController):
                              Cluster.read.__eq__(False)))\
                 .group_by(Article.category_id, Article.feed_id):
             if cid:
-                counters["categ-%d" % cid] += unread
-            counters["feed-%d" % fid] = unread
+                counters[f"categ-{cid}"] += unread
+            counters[f"feed-{fid}"] = unread
         return counters

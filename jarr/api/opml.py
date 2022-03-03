@@ -9,7 +9,7 @@ from jarr.controllers import CategoryController, FeedController, UserController
 from jarr.lib.utils import utc_now
 
 opml_ns = Namespace('opml',
-        description="Allows to export and import OPML files")
+                    description="Allows to export and import OPML files")
 model = opml_ns.model('OPML result', {
         'created': fields.Integer(),
         'failed': fields.Integer(),
@@ -33,9 +33,10 @@ class OPMLResource(Resource):
         user = UserController(user_id).get(id=user_id)
         categories = {cat.id: cat
                       for cat in CategoryController(user_id).read()}
-        response = make_response(render_template('opml.xml', user=user,
-                categories=categories, feeds=FeedController(user_id).read(),
-                now=utc_now()))
+        response = make_response(
+            render_template('opml.xml', user=user, categories=categories,
+                            feeds=FeedController(user_id).read(),
+                            now=utc_now()))
         for key, value in OK_GET_HEADERS.items():
             response.headers[key] = value
         return response
@@ -53,7 +54,8 @@ class OPMLResource(Resource):
         try:
             subscriptions = opml.from_string(opml_file.read())
         except Exception as error:
-            raise UnprocessableEntity("Couldn't parse OPML file (%r)" % error)
+            raise UnprocessableEntity(f"Couldn't parse OPML file ({error!r})"
+                                      ) from error
 
         ccontr = CategoryController(current_identity.id)
         fcontr = FeedController(current_identity.id)

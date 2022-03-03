@@ -3,8 +3,7 @@ from collections import OrderedDict, defaultdict
 from datetime import datetime, timedelta, timezone
 
 import dateutil.parser
-from sqlalchemy import and_
-from sqlalchemy.sql import delete, select, update
+from sqlalchemy.sql import delete, select
 from werkzeug.exceptions import Forbidden
 
 from jarr.bootstrap import conf, session
@@ -98,7 +97,7 @@ class FeedController(AbstractController):
                 if feed.last_retrieved == UNIX_START:
                     continue
                 FEED_LATENESS.labels(feed_type=feed.feed_type.value)\
-                        .observe((now - feed.last_retrieved).total_seconds())
+                    .observe((now - feed.last_retrieved).total_seconds())
             self.update({'id__in': [feed.id for feed in feeds]},
                         {'last_retrieved': now})
         return feeds
@@ -175,8 +174,9 @@ class FeedController(AbstractController):
             attrs['expires'] = max_expires
             method = 'defaulted to max'
 
-        art_count = self.__actrl.read(feed_id=feed.id,
-            retrieved_date__gt=now - max_delta * SPAN_FACTOR).count()
+        art_count = self.__actrl.read(
+            feed_id=feed.id, retrieved_date__gt=now - max_delta * SPAN_FACTOR
+            ).count()
         if not art_count and method == 'from header min limited':
             attrs['expires'] = now + 2 * min_delta
             method = 'no article, twice min time'
@@ -233,15 +233,16 @@ class FeedController(AbstractController):
             Article.user_id == feed.user_id))
 
         logger.info('DELETE %r - fixing cluster without main article', feed)
-        clu_ctrl.update({'user_id': feed.user_id, 'main_article_id': None},
+        clu_ctrl.update(
+                {'user_id': feed.user_id, 'main_article_id': None},
                 {'main_title': select_art(Article.title),
                  'main_article_id': select_art(Article.id),
                  'main_feed_title': select([Feed.title])
-                                    .where(Cluster.id == Article.cluster_id,
-                                           Article.user_id == feed.user_id,
-                                           Feed.id == Article.feed_id,
-                                           Feed.user_id == feed.user_id)
-                                    .order_by(Article.date.asc()).limit(1)})
+                    .where(Cluster.id == Article.cluster_id,
+                           Article.user_id == feed.user_id,
+                           Feed.id == Article.feed_id,
+                           Feed.user_id == feed.user_id)
+                    .order_by(Article.date.asc()).limit(1)})
 
         logger.info('DELETE %r - removing clusters without main article', feed)
         session.execute(delete(Cluster).where(
