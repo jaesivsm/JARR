@@ -29,7 +29,7 @@ pep8:
 mypy:
 	$(RUN) mypy jarr --ignore-missing-imports --exclude=jarr/crawler/lib/__init__.py
 
-lint: flake8 pylint pep8 mypy
+lint: flake8 pep8 mypy
 
 test: export JARR_CONFIG = example_conf/jarr.test.json
 test:

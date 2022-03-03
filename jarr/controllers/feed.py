@@ -174,9 +174,9 @@ class FeedController(AbstractController):
             attrs['expires'] = max_expires
             method = 'defaulted to max'
 
-        art_count = self.__actrl.read(
-            feed_id=feed.id, retrieved_date__gt=now - max_delta * SPAN_FACTOR
-            ).count()
+        date_limit = now - max_delta * SPAN_FACTOR
+        art_count = self.__actrl.read(feed_id=feed.id,
+                                      retrieved_date__gt=date_limit).count()
         if not art_count and method == 'from header min limited':
             attrs['expires'] = now + 2 * min_delta
             method = 'no article, twice min time'

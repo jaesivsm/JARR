@@ -72,7 +72,7 @@ class ArticleController(AbstractController):
                 attrs.get('user_id', self.user_id)).get(id=attrs['feed_id'])
         if 'user_id' in attrs and not (
                 feed.user_id == attrs['user_id'] or self.user_id is None):
-            raise Forbidden("no right on feed %r" % feed.id)
+            raise Forbidden(f"no right on feed {feed.id}")
         attrs['user_id'], attrs['category_id'] = feed.user_id, feed.category_id
         attrs['vector'] = to_vector(attrs)
         if not attrs.get('link_hash') and attrs.get('link'):
@@ -84,12 +84,12 @@ class ArticleController(AbstractController):
         if 'feed_id' in attrs:
             feed = FeedController().get(id=attrs['feed_id'])
             if not (self.user_id is None or feed.user_id == user_id):
-                raise Forbidden("no right on feed %r" % feed.id)
+                raise Forbidden(f"no right on feed {feed.id}")
             attrs['category_id'] = feed.category_id
         if attrs.get('category_id'):
             cat = CategoryController().get(id=attrs['category_id'])
             if not (self.user_id is None or cat.user_id == user_id):
-                raise Forbidden("no right on cat %r" % cat.id)
+                raise Forbidden(f"no right on category {cat.id}")
         return super().update(filters, attrs, return_objs, commit)
 
     def remove_from_cluster(self, article):

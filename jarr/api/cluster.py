@@ -106,9 +106,9 @@ class ClusterResource(Resource):
     def delete(cluster_id):
         try:
             ClusterController(current_identity.id).delete(cluster_id)
-        except NotFound:
+        except NotFound as notfound:
             user_id = ClusterController().get(id=cluster_id).user_id
             if user_id != current_identity.id:
-                raise Forbidden()
+                raise Forbidden() from notfound
             raise
         return None, 204

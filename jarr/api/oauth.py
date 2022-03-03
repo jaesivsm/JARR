@@ -42,7 +42,7 @@ class OAuthSignInMixin(Resource):  # pragma: no cover
 
     @classmethod
     def get_callback_url(cls):
-        return get_ui_url("/oauth/%s" % cls.provider)
+        return get_ui_url(f"/oauth/{cls.provider}")
 
     @classmethod
     def process_ids(cls, social_id, username, email):  # pragma: no cover
@@ -53,7 +53,7 @@ class OAuthSignInMixin(Resource):  # pragma: no cover
             raise UnprocessableEntity('No social id, authentication failed')
         ucontr = UserController()
         try:
-            user = ucontr.get(**{'%s_identity' % cls.provider: social_id})
+            user = ucontr.get(**{f"{cls.provider}_identity": social_id})
         except NotFound:
             user = None
         if not user and not conf.oauth.allow_signup:
@@ -63,16 +63,16 @@ class OAuthSignInMixin(Resource):  # pragma: no cover
             if username and not ucontr.read(login=username).count():
                 login = username
             else:
-                login = '%s_%s' % (cls.provider, username or social_id)
-            user = ucontr.create(**{'%s_identity' % cls.provider: social_id,
+                login = f"{cls.provider}_{username or social_id}"
+            user = ucontr.create(**{f"{cls.provider}_identity": social_id,
                                     'login': login, 'email': email})
         ucontr.update({"id": user.id}, {"last_connection": utc_now(),
                                         "renew_password_token": ""})
         jwt_ext = current_app.extensions['jwt']
         access_token = jwt_ext.jwt_encode_callback(user).decode('utf8')
         SERVER.labels(result="2XX", **labels).inc()
-        return {"access_token": "%s %s" % (conf.auth.jwt_header_prefix,
-                                           access_token)}, 200
+        return {"access_token": f"{conf.auth.jwt_header_prefix} {access_token}"
+                }, 200
 
 
 class GoogleSignInMixin(OAuthSignInMixin):
