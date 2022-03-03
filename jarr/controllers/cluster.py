@@ -74,9 +74,10 @@ class ClusterController(AbstractController):
     def _join_on_exist(self, query, alias, attr, value, filters):
         val_col = getattr(alias, attr)
         exist_query = exists(select([val_col])
-            .where(and_(alias.cluster_id == Cluster.id,
-                        alias.user_id == self.user_id, val_col == value))
-            .correlate(Cluster).limit(1))
+                             .where(and_(alias.cluster_id == Cluster.id,
+                                         alias.user_id == self.user_id,
+                                         val_col == value))
+                             .correlate(Cluster).limit(1))
         return query.join(alias, and_(alias.user_id == self.user_id,
                                       alias.cluster_id == Cluster.id,
                                       *filters))\
