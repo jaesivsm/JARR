@@ -4,14 +4,12 @@
 # required imports and code exection for basic functionning
 
 import logging
-from typing import Any, Tuple
 
 from prometheus_distributed_client import set_redis_conn
 from redis import Redis
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import scoped_session, sessionmaker
-from sqlalchemy.orm.decl_api import DeclarativeMeta
 from the_conf import TheConf
 
 conf = TheConf('jarr/metaconf.yml')
