@@ -4,7 +4,7 @@ from enum import Enum
 from functools import wraps
 from hashlib import sha256
 
-from jarr.bootstrap import REDIS_CONN
+from jarr.bootstrap import conf, REDIS_CONN
 from jarr.metrics import WORKER
 
 logger = logging.getLogger(__name__)
@@ -17,7 +17,7 @@ def observe_worker_result_since(start, method, result):
 
 
 class Queues(Enum):
-    DEFAULT = 'jarr'
+    DEFAULT = conf.celery.task_default_queue
     CRAWLING = 'jarr-crawling'
     CLUSTERING = 'jarr-clustering'
 

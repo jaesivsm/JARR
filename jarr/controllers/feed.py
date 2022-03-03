@@ -3,8 +3,7 @@ from collections import OrderedDict, defaultdict
 from datetime import datetime, timedelta, timezone
 
 import dateutil.parser
-from sqlalchemy import and_
-from sqlalchemy.sql import delete, select, update
+from sqlalchemy.sql import delete, select
 from werkzeug.exceptions import Forbidden
 
 from jarr.bootstrap import conf, session

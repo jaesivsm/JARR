@@ -11,6 +11,7 @@ TEST = tests/
 DB_NAME ?= jarr
 PUBLIC_URL ?=
 REACT_APP_API_URL ?=
+QUEUE ?= jarr,jarr-crawling,jarr-clustering
 DB_CONTAINER_NAME = postgresql
 QU_CONTAINER_NAME = rabbitmq
 
@@ -59,7 +60,7 @@ run-server:
 
 run-worker: export JARR_CONFIG = $(CONF_FILE)
 run-worker:
-	$(RUN) celery --app ep_celery.celery_app worker
+	$(RUN) celery --app ep_celery.celery_app worker -Q $(QUEUE) --hostname "$(QUEUE)@%h"
 
 run-front:
 	cd jsclient/; yarn start
@@ -109,4 +110,3 @@ init-rabbitmq:
 
 init-worker:
 	$(RUN) python -c "from jarr.crawler.main import scheduler;scheduler()"
-

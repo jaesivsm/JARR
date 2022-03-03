@@ -97,12 +97,13 @@ def scheduler():
     start = datetime.now()
     fctrl = FeedController()
     # browsing feeds to fetch
-    queue = Queues.DEFAULT if conf.crawler.use_queues else Queues.CRAWLING
+    queue = Queues.CRAWLING if conf.crawler.use_queues else Queues.DEFAULT
     feeds = list(fctrl.list_fetchable(conf.crawler.batch_size))
     WORKER_BATCH.labels(worker_type='fetch-feed').observe(len(feeds))
     logger.info('%d to enqueue', len(feeds))
     for feed in feeds:
-        logger.debug("%r: scheduling to be fetched", feed)
+        logger.debug("%r: scheduling to be fetched on queue:%r",
+                     feed, queue.value)
         process_feed.apply_async(args=[feed.id], queue=queue.value)
     # browsing feeds to delete
     feeds_to_delete = list(fctrl.read(status=FeedStatus.to_delete))
@@ -113,13 +114,15 @@ def scheduler():
             logger.debug("%r: scheduling to be delete", feed)
             feed_cleaner.apply_async(args=[feed.id])
     # applying clusterizer
-    queue = Queues.DEFAULT if conf.crawler.use_queues else Queues.CLUSTERING
+    queue = Queues.CLUSTERING if conf.crawler.use_queues else Queues.DEFAULT
     for user_id in ArticleController.get_user_id_with_pending_articles():
         if not UserController().get(id=user_id).effectivly_active:
             continue
         if REDIS_CONN.setnx(JARR_CLUSTERIZER_KEY % user_id, 'true'):
             REDIS_CONN.expire(JARR_CLUSTERIZER_KEY % user_id,
                               conf.crawler.clusterizer_delay)
+            logger.debug('Scheduling clusterizer for User(%d) on queue:%r',
+                         user_id, queue.value)
             clusterizer.apply_async(args=[user_id], queue=queue.value)
     scheduler.apply_async(countdown=conf.crawler.idle_delay)
     metrics_users_any.apply_async()
