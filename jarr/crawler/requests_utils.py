@@ -17,7 +17,7 @@ def response_etag_match(feed, resp):
 
 
 def response_calculated_etag_match(feed, resp):
-    if ('jarr/"%s"' % digest(resp.text)) == feed.etag:
+    if f'jarr/"{digest(resp.text)}"' == feed.etag:
         logger.info("%r: calculated hash matches (%d)",
                     feed, resp.status_code)
         return True

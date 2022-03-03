@@ -12,6 +12,7 @@ DB_NAME ?= jarr
 PUBLIC_URL ?=
 REACT_APP_API_URL ?=
 DB_CONTAINER_NAME = postgresql
+QU_CONTAINER_NAME = rabbitmq
 
 install:
 	pipenv sync --dev
@@ -99,4 +100,13 @@ setup-testing:
 	make db-bootstrap-user
 	make db-bootstrap-tables
 	make init-env
+
+init-rabbitmq:
+	$(COMPOSE) exec $(QU_CONTAINER_NAME) rabbitmqctl add_user jarr jarr
+	$(COMPOSE) exec $(QU_CONTAINER_NAME) rabbitmqctl add_vhost jarr
+	$(COMPOSE) exec $(QU_CONTAINER_NAME) rabbitmqctl set_user_tags jarr
+	$(COMPOSE) exec $(QU_CONTAINER_NAME) rabbitmqctl set_permissions -p jarr jarr ".*" ".*" ".*"
+
+init-worker:
+	$(RUN) python -c "from jarr.crawler.main import scheduler;scheduler()"
 
