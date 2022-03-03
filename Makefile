@@ -11,6 +11,7 @@ TEST = tests/
 DB_NAME ?= jarr
 PUBLIC_URL ?=
 REACT_APP_API_URL ?=
+DB_CONTAINER_NAME = postgresql
 
 install:
 	pipenv sync --dev
@@ -63,11 +64,16 @@ run-front:
 	cd jsclient/; yarn start
 
 db-bootstrap-user:
-	$(COMPOSE) exec postgresql su postgres -c \
+	$(COMPOSE) exec $(DB_CONTAINER_NAME) su postgres -c \
 		"createuser $(DB_NAME) --no-superuser --createdb --no-createrole"
 
-db-bootstrap-db:
-	$(COMPOSE) exec postgresql su postgres -c "createdb $(DB_NAME) --no-password"
+db-bootstrap-tables:
+	$(COMPOSE) exec $(DB_CONTAINER_NAME) su postgres -c "createdb $(DB_NAME) --no-password"
+
+db-import-dump:
+	docker cp $(DUMP) jarr_$(DB_CONTAINER_NAME)_1:/tmp/dump.pgsql
+	$(COMPOSE) exec $(DB_CONTAINER_NAME) su postgres -c "pg_restore -d $(DB_NAME) /tmp/dump.pgsql"
+	$(COMPOSE) exec $(DB_CONTAINER_NAME) rm /tmp/dump.pgsql
 
 init-env: export JARR_CONFIG = $(CONF_FILE)
 init-env:
@@ -88,7 +94,9 @@ setup-testing: export JARR_CONFIG=example_conf/jarr.test.json
 setup-testing: export CONF_FILE=example_conf/jarr.test.json
 setup-testing:
 	make start-env
+	@echo "### waiting for database to be available"
 	sleep 2
 	make db-bootstrap-user
-	make db-bootstrap-db
+	make db-bootstrap-tables
 	make init-env
+
