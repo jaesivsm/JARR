@@ -27,17 +27,17 @@ class FeedApiTest(JarrFlaskCommon):
         cats = self.jarr_client('get', 'categories', user='user1').json
         other_cats = self.jarr_client('get', 'categories', user='user2').json
 
-        resp = self.jarr_client('post', 'feed',
-                data={'title': 'my new feed'})
+        resp = self.jarr_client('post', 'feed', data={'title': 'my new feed'})
         self.assertStatusCode(401, resp)
 
         resp = self.jarr_client('post', 'feed',
-                data={'title': 'my new feed'}, user='user1')
+                                data={'title': 'my new feed'}, user='user1')
         self.assertStatusCode(400, resp)
 
         resp = self.jarr_client('post', 'feed',
-                data={'title': 'my new feed', 'filters': self.valid_filters,
-                      'link': 'my link'}, user='user1')
+                                data={'title': 'my new feed',
+                                      'filters': self.valid_filters,
+                                      'link': 'my link'}, user='user1')
         self.assertStatusCode(201, resp)
         feed = self._get(resp.json['id'], 'user1')
         self.assertEqual(self.valid_filters, feed['filters'])
@@ -45,24 +45,26 @@ class FeedApiTest(JarrFlaskCommon):
         self.assertEqual('my link', feed['link'])
 
         resp = self.jarr_client('post', 'feed',
-                data={'title': 'my new feed',
-                      'link': 'my link', 'category_id': cats[0]['id']},
-                user='user1')
+                                data={'title': 'my new feed',
+                                      'link': 'my link',
+                                      'category_id': cats[0]['id']},
+                                user='user1')
         self.assertStatusCode(201, resp)
 
         resp = self.jarr_client('post', 'feed',
-                data={'title': 'my new feed',
-                      'link': 'my link', 'category_id': other_cats[0]['id']},
-                user='user1')
+                                data={'title': 'my new feed',
+                                      'link': 'my link',
+                                      'category_id': other_cats[0]['id']},
+                                user='user1')
         self.assertStatusCode(403, resp)
 
         feeds = self.jarr_client('get', 'feeds', user='user1').json
         self.assertEqual(1, len([feed for feed in feeds
                                  if feed['title'] == 'my new feed'
-                                     and feed['category_id'] is None]))
+                                 and feed['category_id'] is None]))
         self.assertEqual(1, len([feed for feed in feeds
                                  if feed['title'] == 'my new feed'
-                                    and feed['category_id'] == cats[0]['id']]))
+                                 and feed['category_id'] == cats[0]['id']]))
 
     def test_ListFeedResource_get(self):
         resp = self.jarr_client('get', 'feeds')
@@ -82,13 +84,12 @@ class FeedApiTest(JarrFlaskCommon):
         self.assertEqual(json['last_retrieved'], now.isoformat())
 
         FeedController().update({'id': feed['id']},
-                {'last_retrieved': now.replace(tzinfo=None)})
+                                {'last_retrieved': now.replace(tzinfo=None)})
         json = self._get(feed['id'], 'user1')
         self.assertEqual(json['last_retrieved'], now.isoformat())
 
-        FeedController().update({'id': feed['id']},
-                {'last_retrieved':
-                    now.astimezone(timezone(timedelta(hours=12)))})
+        ago12 = now.astimezone(timezone(timedelta(hours=12)))
+        FeedController().update({'id': feed['id']}, {'last_retrieved': ago12})
         json = self._get(feed['id'], 'user1')
         self.assertEqual(json['last_retrieved'], now.isoformat())
 
@@ -191,10 +192,9 @@ class FeedApiTest(JarrFlaskCommon):
         resp = self.jarr_client('get', 'feed', 'build', user='user1',
                                 data={'url': "koreus.com"})
         self.assertStatusCode(200, resp)
-        self.assertEqual({
+        expected_feed = {
             'description': 'Koreus',
             'feed_type': FeedType.koreus.value,
-            'icon_url': 'https://www.koreus.com/favicon.ico',
             'link': 'http://feeds.feedburner.com/Koreus-articles',
             'links': ['http://feeds.feedburner.com/Koreus-articles',
                       'http://feeds.feedburner.com/Koreus-media',
@@ -208,7 +208,9 @@ class FeedApiTest(JarrFlaskCommon):
                       'http://feeds.feedburner.com/Koreus-forums'],
             'same_link_count': 0,
             'site_link': 'https://www.koreus.com/',
-            'title': 'Koreus.com - Articles'}, resp.json)
+            'title': 'Koreus.com - Articles'}
+        for key, value in expected_feed.items():
+            self.assertEqual(value, resp.json[key])
 
     def test_IconResource_get(self):
         resp = self.jarr_client('post', 'feed', user='user1', data=FEED)
