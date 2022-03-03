@@ -6,7 +6,7 @@ orbs:
 jobs:
   backend-build:
     machine:
-      image: ubuntu-2004:202111-01
+      image: ubuntu-2004:202201-02
     steps:
       - checkout
       # restore cache and docker layer cache
@@ -41,7 +41,7 @@ jobs:
 
   front-build:
     machine:
-      image: ubuntu-2004:202111-01
+      image: ubuntu-2004:202201-02
     steps:
       - checkout
       # restore cache and docker layer cache
@@ -71,7 +71,7 @@ jobs:
 
   backend-test:
     machine:
-      image: ubuntu-2004:202111-01
+      image: ubuntu-2004:202201-02
     steps:
       - checkout
       # restore cache and docker layer cache
