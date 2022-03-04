@@ -186,9 +186,9 @@ class Clusterizer:
         cluster.content = article.content_generator.generate_and_merge(
             cluster.content)
         self.add_to_corpus(article)
-        session.add(cluster)
-        session.add(article)
-        session.commit()
+        session.add(cluster)  # pylint: disable=no-member
+        session.add(article)  # pylint: disable=no-member
+        session.commit()  # pylint: disable=no-member
         read_reason = cluster.read_reason.value if cluster.read_reason else ''
         ARTICLE_CREATION.labels(read_reason=read_reason,
                                 read='read' if cluster.read else 'unread',

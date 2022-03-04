@@ -51,11 +51,11 @@ def init_models():
 
 
 def commit_pending_sql(*args, **kwargs):
-    session.commit()
+    session.commit()  # pylint: disable=no-member
 
 
 def rollback_pending_sql(*args, **kwargs):
-    session.rollback()
+    session.rollback()  # pylint: disable=no-member
 
 
 engine, session, Base = init_db()

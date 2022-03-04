@@ -1,17 +1,16 @@
 import logging
 from collections import defaultdict
 
-from sqlalchemy import Integer, and_, func
-from sqlalchemy.dialects.postgresql import ARRAY
-from sqlalchemy.orm import aliased
-from sqlalchemy.sql import exists, select
-
 from jarr.bootstrap import session
 from jarr.controllers.article import ArticleController
 from jarr.controllers.article_clusterizer import Clusterizer
 from jarr.lib.filter import process_filters
 from jarr.metrics import WORKER_BATCH
 from jarr.models import Article, Cluster
+from sqlalchemy import Integer, and_, func
+from sqlalchemy.dialects.postgresql import ARRAY
+from sqlalchemy.orm import aliased
+from sqlalchemy.sql import exists, select
 
 from .abstract import AbstractController
 
@@ -46,14 +45,13 @@ class ClusterController(AbstractController):
         return results
 
     # UI methods
-    ARTICLE_FILTERS = {'__or__', 'title__ilike', 'content__ilike'}\
-
+    _ARTICLE_FILTER_KEYS = {'__or__', 'title__ilike', 'content__ilike'}
 
     def _preprocess_per_article_filters(self, filters):
         """Removing filters aimed at articles and transform them into filters
         for clusters"""
         art_filters = {}
-        for key in self.ARTICLE_FILTERS.intersection(filters):
+        for key in self._ARTICLE_FILTER_KEYS.intersection(filters):
             art_filters[key] = filters.pop(key)
 
         if art_filters:
@@ -66,9 +64,9 @@ class ClusterController(AbstractController):
     def _get_selected(fields, art_f_alias, art_c_alias):
         """Return selected fields"""
         selected_fields = list(fields.values())
-        selected_fields.append(func.array_agg(art_f_alias.feed_id,
-                                              type_=ARRAY(Integer)
-                                              ).label('feeds_id'))
+        selected_fields.append(
+            func.array_agg(art_f_alias.feed_id, type_=ARRAY(Integer)
+                           ).label('feeds_id'))
         return selected_fields
 
     def _join_on_exist(self, query, alias, attr, value, filters):
@@ -115,8 +113,8 @@ class ClusterController(AbstractController):
         art_feed_alias, art_cat_alias = aliased(Article), aliased(Article)
         # DESC of what's going on below :
         # base query with the above fields and the aggregations
-        query = session.query(*self._get_selected(JR_FIELDS, art_feed_alias,
-                                                  art_cat_alias))
+        query = session.query(
+            *self._get_selected(JR_FIELDS, art_feed_alias, art_cat_alias))
 
         # adding parent filter, but we can't just filter on one id, because
         # we'll miss all the other parent of the cluster
