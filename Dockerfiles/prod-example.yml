@@ -10,7 +10,7 @@ services:
     volumes:
       - ../example_conf/:/etc/jarr:ro
     depends_on:
-      - postgresql
+      - postgres
       - redis
       - rabbitmq
     networks:
@@ -31,7 +31,7 @@ services:
     volumes:
       - ../example_conf/:/etc/jarr:ro
     depends_on:
-      - postgresql
+      - postgres
       - redis
       - rabbitmq
     networks:
@@ -44,7 +44,7 @@ services:
     image: redis
     networks:
       - jarr
-  postgresql:
+  postgres:
     image: postgres:13
     networks:
       - jarr

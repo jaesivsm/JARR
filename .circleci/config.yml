@@ -93,32 +93,21 @@ jobs:
             rm example_conf/jarr.test.json example_conf/jarr.json
             mv example_conf/jarr.circleci.json example_conf/jarr.json
       - run:
-          name: Starting test env (postgres)
-          command: |
-            docker-compose --file Dockerfiles/circleci-env.yml up -d
-            sleep 10s
-      - run:
-          name: Creating postgres database
+          name: Starting test environment
           command: >-
-            docker-compose --file Dockerfiles/circleci-env.yml
-            exec postgresql su postgres -c
-            "createdb jarr --no-password"
-      - run:
-          name: Populating database with tables
-          command: >-
-            docker-compose --file Dockerfiles/circleci-env.yml
-            exec server bash -c "pipenv run flask bootstrap-database"
+            make setup-testing DB_NAME=jarr
+            JARR_CONFIG=example_conf/jarr.json
+            CONF_FILE=example_conf/jarr.json
       - run:
           name: Installing testing dependencies
           command: >-
             docker-compose --file Dockerfiles/circleci-env.yml
-            exec server bash -c "pipenv sync --dev --bare"
+            exec server bash -c "make install"
       - run:
           name: Running tests
           command: >-
             docker-compose --file Dockerfiles/circleci-env.yml
-            exec server bash -c
-            "pipenv run nosetests tests/ -vv --with-coverage --cover-package=jarr"
+            exec server bash -c "make test JARR_CONFIG=example_conf"
       - run:
           name: Uplaoding coverage to codacy
           command: >-
@@ -133,14 +122,7 @@ jobs:
           name: Running PEP8 linter
           command: >-
             docker-compose --file Dockerfiles/circleci-env.yml
-            exec server bash -c
-            "pipenv run pycodestyle --ignore=E126,E127,E128,W503 jarr/ --exclude=jarr/migrations"
-      - run:
-          name: Running MyPy linter
-          command: >-
-            docker-compose --file Dockerfiles/circleci-env.yml
-            exec server bash -c
-            "pip install types-redis types-requests types-python-dateutil; pipenv run mypy jarr --ignore-missing-imports --exclude=jarr/crawler/lib/__init__.py"
+            exec server bash -c "make lint"
 
   push-docker-images:
     machine:

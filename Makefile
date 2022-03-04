@@ -12,7 +12,7 @@ DB_NAME ?= jarr
 PUBLIC_URL ?=
 REACT_APP_API_URL ?=
 QUEUE ?= jarr,jarr-crawling,jarr-clustering
-DB_CONTAINER_NAME = postgresql
+DB_CONTAINER_NAME = postgres
 QU_CONTAINER_NAME = rabbitmq
 
 install:
