@@ -54,13 +54,6 @@ class User(Base):  # type: ignore
         'Cluster', back_populates='user', cascade='all, delete-orphan',
         foreign_keys='[Cluster.user_id]')
 
-    @property
-    def effectivly_active(self):
-        if not self.is_active:
-            return False
-        activity_bound = utc_now() - timedelta(days=conf.feed.stop_fetch)
-        return self.last_connection > activity_bound
-
     @validates('login')
     @staticmethod
     def validates_login(key, value):

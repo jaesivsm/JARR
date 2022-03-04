@@ -4,7 +4,7 @@ from datetime import timedelta
 from sqlalchemy import func
 from werkzeug.exceptions import Forbidden, Unauthorized
 
-from jarr.bootstrap import session
+from jarr.bootstrap import session, conf
 from jarr.controllers import CategoryController, FeedController
 from jarr.lib.clustering_af.postgres_casting import to_vector
 from jarr.lib.utils import digest, utc_now
@@ -25,26 +25,23 @@ class ArticleController(AbstractController):
                 continue
             yield id_
 
-    def count_by_feed(self, **filters):
-        if self.user_id:
-            filters['user_id'] = self.user_id
-        return dict(session.query(Article.feed_id, func.count('id'))
-                           .filter(*self._to_filters(**filters))
-                           .group_by(Article.feed_id).all())
-
-    def count_by_user_id(self, **filters):
-        conn_max = utc_now() - timedelta(days=30)
-        return dict(session.query(Article.user_id, func.count(Article.id))
-                           .filter(*self._to_filters(**filters))
-                           .join(User).filter(User.is_active.__eq__(True),
-                                              User.last_connection >= conn_max)
-                           .group_by(Article.user_id).all())
-
     @staticmethod
-    def get_user_id_with_pending_articles():
-        for row in (session.query(Article.user_id)
-                           .filter(Article.cluster_id.__eq__(None))
-                           .group_by(Article.user_id)):
+    def _filter_unclustered(*fields):
+        conn_max = utc_now() - timedelta(days=conf.feed.stop_fetch)
+        return (session.query(*fields)
+                .filter(Article.cluster_id.__eq__(None))
+                .join(User).filter(User.id == Article.user_id,
+                                   User.is_active.__eq__(True),
+                                   User.last_connection >= conn_max))
+
+    @classmethod
+    def count_unclustered(cls):
+        return cls._filter_unclustered(func.count(Article.id)).all()[0][0]
+
+    @classmethod
+    def get_user_id_with_pending_articles(cls):
+        for row in (cls._filter_unclustered(Article.user_id)
+                    .group_by(Article.user_id)):
             yield row[0]
 
     @staticmethod
