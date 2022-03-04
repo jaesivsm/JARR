@@ -20,6 +20,7 @@ jobs:
           name: Loading docker image layer caches
           command: |
             set +o pipefail
+            docker load -i ~/caches/jarr-base.tar | true
             docker load -i ~/caches/jarr-server.tar | true
             docker load -i ~/caches/jarr-worker.tar | true
       - run:
@@ -31,11 +32,13 @@ jobs:
       - run:
           name: Saving docker image layer caches
           command: |
+            docker save -o ~/caches/jarr-base.tar jarr-server
             docker save -o ~/caches/jarr-server.tar jarr-server
             docker save -o ~/caches/jarr-worker.tar jarr-worker
       - save_cache:
           key: jarrback-{{ .Environment.CACHE_VERSION }}.{{ .Branch }}-{{ epoch }}
           paths:
+            - ~/caches/jarr-base.tar
             - ~/caches/jarr-server.tar
             - ~/caches/jarr-worker.tar
 
@@ -79,11 +82,13 @@ jobs:
           keys:
             - jarrback-{{ .Environment.CACHE_VERSION }}.{{ .Branch }}
           paths:
+            - ~/caches/jarr-base.tar
             - ~/caches/jarr-server.tar
             - ~/caches/jarr-worker.tar
       - run:
           name: Loading docker image layer caches
           command: |
+            docker load -i ~/caches/jarr-base.tar
             docker load -i ~/caches/jarr-server.tar
             docker load -i ~/caches/jarr-worker.tar
       - run:
@@ -134,6 +139,7 @@ jobs:
           keys:
             - jarrback-{{ .Environment.CACHE_VERSION }}.{{ .Branch }}
           paths:
+            - ~/caches/jarr-base.tar
             - ~/caches/jarr-server.tar
             - ~/caches/jarr-worker.tar
       - restore_cache:
@@ -145,6 +151,7 @@ jobs:
           name: Loading ALL docker image layer caches
           command: |
             set +o pipefail
+            docker load -i ~/caches/jarr-base.tar
             docker load -i ~/caches/jarr-server.tar
             docker load -i ~/caches/jarr-worker.tar
             docker load -i ~/caches/jarr-front.tar
