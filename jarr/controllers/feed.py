@@ -228,7 +228,7 @@ class FeedController(AbstractController):
                                 .order_by(Article.date.asc()).limit(1)
 
         logger.info('DELETE %r - removing articles', feed)
-        session.execute(delete(Article).where(
+        session.execute(delete(Article).where(  # pylint: disable=no-member
             Article.feed_id == feed.id,
             Article.user_id == feed.user_id))
 

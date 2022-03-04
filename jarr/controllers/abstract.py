@@ -85,7 +85,8 @@ class AbstractController:
         if self._user_id_key is not None and self.user_id \
                 and filters.get(self._user_id_key) != self.user_id:
             filters[self._user_id_key] = self.user_id
-        return session.query(self._db_cls).filter(*self._to_filters(**filters))
+        return session.query(  # pylint: disable=no-member
+                             self._db_cls).filter(*self._to_filters(**filters))
 
     def get(self, **filters):
         """Will return one single objects corresponding to filters"""
@@ -108,9 +109,9 @@ class AbstractController:
             raise Unauthorized("You must provide user_id one way or another")
 
         obj = self._db_cls(**attrs)
-        session.add(obj)
-        session.flush()
-        session.commit()
+        session.add(obj)  # pylint: disable=no-member
+        session.flush()  # pylint: disable=no-member
+        session.commit()  # pylint: disable=no-member
         return obj
 
     def read(self, **filters):
@@ -124,18 +125,18 @@ class AbstractController:
             result = self._get(**filters).update(attrs,
                                                  synchronize_session=False)
         if commit:
-            session.flush()
-            session.commit()
+            session.flush()  # pylint: disable=no-member
+            session.commit()  # pylint: disable=no-member
         if return_objs:
             return self._get(**filters)
         return result
 
     def delete(self, obj_id, commit=True):
         obj = self.get(id=obj_id)
-        session.delete(obj)
+        session.delete(obj)  # pylint: disable=no-member
         if commit:
-            session.flush()
-            session.commit()
+            session.flush()  # pylint: disable=no-member
+            session.commit()  # pylint: disable=no-member
         return obj
 
     def _has_right_on(self, obj):

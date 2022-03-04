@@ -28,7 +28,7 @@ class ArticleController(AbstractController):
     @staticmethod
     def _filter_unclustered(*fields):
         conn_max = utc_now() - timedelta(days=conf.feed.stop_fetch)
-        return (session.query(*fields)
+        return (session.query(*fields)  # pylint: disable=no-member
                 .filter(Article.cluster_id.__eq__(None))
                 .join(User).filter(User.id == Article.user_id,
                                    User.is_active.__eq__(True),
@@ -124,14 +124,14 @@ class ArticleController(AbstractController):
 
     @staticmethod
     def delete_only_article(article, commit):
-        session.delete(article)
+        session.delete(article)  # pylint: disable=no-member
         if commit:
-            session.flush()
-            session.commit()
+            session.flush()  # pylint: disable=no-member
+            session.commit()  # pylint: disable=no-member
         return article
 
     def delete(self, obj_id, commit=True):
         article = self.get(id=obj_id)
         self.remove_from_cluster(article)
-        session.delete(article)
+        session.delete(article)  # pylint: disable=no-member
         return self.delete_only_article(article, commit=commit)

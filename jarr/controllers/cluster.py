@@ -113,7 +113,7 @@ class ClusterController(AbstractController):
         art_feed_alias, art_cat_alias = aliased(Article), aliased(Article)
         # DESC of what's going on below :
         # base query with the above fields and the aggregations
-        query = session.query(
+        query = session.query(   # pylint: disable=no-member
             *self._get_selected(JR_FIELDS, art_feed_alias, art_cat_alias))
 
         # adding parent filter, but we can't just filter on one id, because
@@ -169,7 +169,8 @@ class ClusterController(AbstractController):
     def _count_by(self, group_on, **filters):
         if self.user_id:
             filters['user_id'] = self.user_id
-        return dict(session.query(group_on, func.count(Article.cluster_id))
+        return dict(session.query(  # pylint: disable=no-member
+                                  group_on, func.count(Article.cluster_id))
                            .outerjoin(Cluster,
                                       Article.cluster_id == Cluster.id)
                            .filter(*self._to_filters(**filters))
@@ -177,7 +178,8 @@ class ClusterController(AbstractController):
 
     def get_unreads(self):
         counters = defaultdict(int)
-        for cid, fid, unread in session.query(Article.category_id,
+        for cid, fid, unread in session.query(  # pylint: disable=no-member
+                                              Article.category_id,
                                               Article.feed_id,
                                               func.count(Cluster.id))\
                 .join(Article, and_(Article.cluster_id == Cluster.id,

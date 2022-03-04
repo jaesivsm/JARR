@@ -34,8 +34,8 @@ class IconController(AbstractController):
 
     def delete(self, obj_id, commit=True):
         obj = self.get(url=obj_id)
-        session.delete(obj)
+        session.delete(obj)  # pylint: disable=no-member
         if commit:
-            session.flush()
-            session.commit()
+            session.flush()  # pylint: disable=no-member
+            session.commit()  # pylint: disable=no-member
         return obj
