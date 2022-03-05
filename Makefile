@@ -35,12 +35,12 @@ build-base:
 		--file Dockerfiles/pythonbase \
 		-t jarr-base
 
-build-server: build-base
+build-server:
 	docker build --cache-from=jarr . \
 		--file Dockerfiles/server \
 		-t jarr-server
 
-build-worker: build-base
+build-worker:
 	docker build --cache-from=jarr . \
 		--file Dockerfiles/worker \
 		-t jarr-worker

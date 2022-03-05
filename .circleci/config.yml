@@ -27,6 +27,7 @@ jobs:
           name: Building images for server and worker
           command: |
             mkdir -p ~/caches
+            make build-base
             make build-server
             make build-worker
       - run:
