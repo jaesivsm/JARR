@@ -12,7 +12,7 @@ DB_NAME ?= jarr
 PUBLIC_URL ?=
 REACT_APP_API_URL ?=
 QUEUE ?= jarr,jarr-crawling,jarr-clustering
-DB_CONTAINER_NAME = postgresql
+DB_CONTAINER_NAME = postgres
 QU_CONTAINER_NAME = rabbitmq
 
 install:
@@ -35,12 +35,12 @@ build-base:
 		--file Dockerfiles/pythonbase \
 		-t jarr-base
 
-build-server: build-base
+build-server:
 	docker build --cache-from=jarr . \
 		--file Dockerfiles/server \
 		-t jarr-server
 
-build-worker: build-base
+build-worker:
 	docker build --cache-from=jarr . \
 		--file Dockerfiles/worker \
 		-t jarr-worker

@@ -6,7 +6,7 @@ orbs:
 jobs:
   backend-build:
     machine:
-      image: ubuntu-2004:202111-01
+      image: ubuntu-2004:202201-02
     steps:
       - checkout
       # restore cache and docker layer cache
@@ -22,10 +22,11 @@ jobs:
             set +o pipefail
             docker load -i ~/caches/jarr-server.tar | true
             docker load -i ~/caches/jarr-worker.tar | true
-      - run:
-          name: Building images for server and worker
-          command: |
             mkdir -p ~/caches
+      - run:
+          name: Building docker backend images
+          command: |
+            make build-base
             make build-server
             make build-worker
       - run:
@@ -41,7 +42,7 @@ jobs:
 
   front-build:
     machine:
-      image: ubuntu-2004:202111-01
+      image: ubuntu-2004:202201-02
     steps:
       - checkout
       # restore cache and docker layer cache
@@ -71,7 +72,7 @@ jobs:
 
   backend-test:
     machine:
-      image: ubuntu-2004:202111-01
+      image: ubuntu-2004:202201-02
     steps:
       - checkout
       # restore cache and docker layer cache
@@ -93,38 +94,33 @@ jobs:
             rm example_conf/jarr.test.json example_conf/jarr.json
             mv example_conf/jarr.circleci.json example_conf/jarr.json
       - run:
-          name: Starting test env (postgres)
+          name: Starting test environment
           command: |
-            docker-compose --file Dockerfiles/circleci-env.yml up -d
-            sleep 10s
+            make start-env RUN= COMPOSE_FILE=Dockerfiles/circleci-env.yml
+            sleep 2
+            make db-bootstrap-user RUN= COMPOSE_FILE=Dockerfiles/circleci-env.yml
+            make db-bootstrap-tables RUN= COMPOSE_FILE=Dockerfiles/circleci-env.yml
       - run:
-          name: Creating postgres database
+          name: Bootstraping database
           command: >-
-            docker-compose --file Dockerfiles/circleci-env.yml
-            exec postgresql su postgres -c
-            "createdb jarr --no-password"
-      - run:
-          name: Populating database with tables
-          command: >-
-            docker-compose --file Dockerfiles/circleci-env.yml
-            exec server bash -c "pipenv run flask bootstrap-database"
+            docker-compose --file Dockerfiles/circleci-env.yml --project-name=jarr
+            exec server bash -c "make init-env"
       - run:
           name: Installing testing dependencies
           command: >-
-            docker-compose --file Dockerfiles/circleci-env.yml
-            exec server bash -c "pipenv sync --dev --bare"
+            docker-compose --file Dockerfiles/circleci-env.yml --project-name=jarr
+            exec server bash -c "make install"
       - run:
           name: Running tests
           command: >-
-            docker-compose --file Dockerfiles/circleci-env.yml
-            exec server bash -c
-            "pipenv run nosetests tests/ -vv --with-coverage --cover-package=jarr"
+            docker-compose --file Dockerfiles/circleci-env.yml --project-name=jarr
+            exec server bash -c "make test JARR_CONFIG=example_conf/jarr.json"
       - run:
           name: Uplaoding coverage to codacy
           command: >-
-            docker-compose --file Dockerfiles/circleci-env.yml
+            docker-compose --file Dockerfiles/circleci-env.yml --project-name=jarr
             exec -u root server bash -c "chown -R jarr:jarr /jarr/coverage_results";
-            docker-compose --file Dockerfiles/circleci-env.yml
+            docker-compose --file Dockerfiles/circleci-env.yml --project-name=jarr
             exec server bash -c
             "pipenv run coverage xml -o coverage_results/coverage.xml";
             pip install --upgrade codacy-coverage;
@@ -133,18 +129,12 @@ jobs:
           name: Running PEP8 linter
           command: >-
             docker-compose --file Dockerfiles/circleci-env.yml
-            exec server bash -c
-            "pipenv run pycodestyle --ignore=E126,E127,E128,W503 jarr/ --exclude=jarr/migrations"
-      - run:
-          name: Running MyPy linter
-          command: >-
-            docker-compose --file Dockerfiles/circleci-env.yml
-            exec server bash -c
-            "pip install types-redis types-requests types-python-dateutil; pipenv run mypy jarr --ignore-missing-imports --exclude=jarr/crawler/lib/__init__.py"
+            --project-name=jarr
+            exec server bash -c "make lint"
 
   push-docker-images:
     machine:
-      image: ubuntu-1604:201903-01
+      image: ubuntu-2004:202201-02
     environment:
       GIT_TAG: << pipeline.git.tag >>
     steps:
