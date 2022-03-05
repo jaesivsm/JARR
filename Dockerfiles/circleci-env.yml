@@ -11,6 +11,8 @@ services:
     ports:
       - 0.0.0.0:6379:6379
   server:
+    hotname: server
+    container_name: server
     image: jarr-server:latest
     volumes:
       - "/home/circleci/project/Makefile:/jarr/Makefile"
