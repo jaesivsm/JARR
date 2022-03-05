@@ -103,22 +103,26 @@ jobs:
             mv example_conf/jarr.circleci.json example_conf/jarr.json
       - run:
           name: Starting test environment
+          command: |
+            make start-env RUN= COMPOSE_FILE=Dockerfiles/circleci-env.yml
+            sleep 2
+            make db-bootstrap-user RUN= COMPOSE_FILE=Dockerfiles/circleci-env.yml
+            make db-bootstrap-tables RUN= COMPOSE_FILE=Dockerfiles/circleci-env.yml
+      - run:
+          name: Bootstraping database
           command: >-
-            make setup-testing DB_NAME=jarr
-            RUN=
-            COMPOSE_FILE=Dockerfiles/circleci-env.yml
-            JARR_CONFIG=example_conf/jarr.json
-            CONF_FILE=example_conf/jarr.json
+            docker-compose --file Dockerfiles/circleci-env.yml
+            exec server bash -c "make init-env"
       - run:
           name: Installing testing dependencies
           command: >-
             docker-compose --file Dockerfiles/circleci-env.yml
-            exec server bash -c "make install"
+            exec server bash -c "make install-dev"
       - run:
           name: Running tests
           command: >-
             docker-compose --file Dockerfiles/circleci-env.yml
-            exec server bash -c "make test JARR_CONFIG=example_conf"
+            exec server bash -c "make test JARR_CONFIG=example_conf/jarr.json"
       - run:
           name: Uplaoding coverage to codacy
           command: >-
