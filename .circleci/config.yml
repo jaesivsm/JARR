@@ -36,7 +36,7 @@ jobs:
       - run:
           name: Saving docker image layer caches
           command: |
-            docker save -o ~/caches/jarr-base.tar jarr-server
+            docker save -o ~/caches/jarr-base.tar jarr-base
             docker save -o ~/caches/jarr-server.tar jarr-server
             docker save -o ~/caches/jarr-worker.tar jarr-worker
       - save_cache:
