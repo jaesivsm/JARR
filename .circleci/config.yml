@@ -25,14 +25,11 @@ jobs:
             docker load -i ~/caches/jarr-worker.tar | true
             mkdir -p ~/caches
       - run:
-          name: Building base backend image
-          command: make build-base
-      - run:
-          name: Building server image
-          command: make build-server
-      - run:
-          name: Building worker image
-          command: make build-worker
+          name: Building docker backend images
+          command: |
+            make build-base
+            make build-server
+            make build-worker
       - run:
           name: Saving docker image layer caches
           command: |
