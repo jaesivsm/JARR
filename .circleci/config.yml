@@ -102,6 +102,8 @@ jobs:
           name: Starting test environment
           command: >-
             make setup-testing DB_NAME=jarr
+            RUN=
+            COMPOSE_FILE=Dockerfiles/circleci-env.yml
             JARR_CONFIG=example_conf/jarr.json
             CONF_FILE=example_conf/jarr.json
       - run:
