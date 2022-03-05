@@ -11,7 +11,7 @@ services:
     ports:
       - 0.0.0.0:6379:6379
   server:
-    hotname: server
+    hostname: server
     container_name: server
     image: jarr-server:latest
     volumes:
