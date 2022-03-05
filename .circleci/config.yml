@@ -103,29 +103,24 @@ jobs:
       - run:
           name: Bootstraping database
           command: >-
-            docker-compose --file Dockerfiles/circleci-env.yml
-            --project-name=jarr
+            docker-compose --file Dockerfiles/circleci-env.yml --project-name=jarr
             exec server bash -c "make init-env"
       - run:
           name: Installing testing dependencies
           command: >-
-            docker-compose --file Dockerfiles/circleci-env.yml
-            --project-name=jarr
-            exec server bash -c "make install-dev"
+            docker-compose --file Dockerfiles/circleci-env.yml --project-name=jarr
+            exec server bash -c "make install"
       - run:
           name: Running tests
           command: >-
-            docker-compose --file Dockerfiles/circleci-env.yml
-            --project-name=jarr
+            docker-compose --file Dockerfiles/circleci-env.yml --project-name=jarr
             exec server bash -c "make test JARR_CONFIG=example_conf/jarr.json"
       - run:
           name: Uplaoding coverage to codacy
           command: >-
-            docker-compose --file Dockerfiles/circleci-env.yml
-            --project-name=jarr
+            docker-compose --file Dockerfiles/circleci-env.yml --project-name=jarr
             exec -u root server bash -c "chown -R jarr:jarr /jarr/coverage_results";
-            docker-compose --file Dockerfiles/circleci-env.yml
-            --project-name=jarr
+            docker-compose --file Dockerfiles/circleci-env.yml --project-name=jarr
             exec server bash -c
             "pipenv run coverage xml -o coverage_results/coverage.xml";
             pip install --upgrade codacy-coverage;
