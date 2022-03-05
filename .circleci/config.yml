@@ -23,13 +23,16 @@ jobs:
             docker load -i ~/caches/jarr-base.tar | true
             docker load -i ~/caches/jarr-server.tar | true
             docker load -i ~/caches/jarr-worker.tar | true
-      - run:
-          name: Building images for server and worker
-          command: |
             mkdir -p ~/caches
-            make build-base
-            make build-server
-            make build-worker
+      - run:
+          name: Building base backend image
+          command: make build-base
+      - run:
+          name: Building server image
+          command: make make build-server
+      - run:
+          name: Building worker image
+          command: make build-worker
       - run:
           name: Saving docker image layer caches
           command: |
