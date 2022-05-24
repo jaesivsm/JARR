@@ -34,11 +34,27 @@ class ClusterControllerTest(BaseJarrTest):
                       date=article.date + timedelta(1),
                       retrieved_date=article.retrieved_date + timedelta(1))
 
-    def test_article_get_unread(self):
-        self.assertEqual({1: 3, 2: 3, 3: 3, 7: 3, 8: 3, 9: 3},
+    def test_article_counts(self):
+        self.assertEqual(
+                {1: 3, 2: 3, 3: 3, 7: 3, 8: 3, 9: 3},
                 ClusterController(2).count_by_feed(read=False))
-        self.assertEqual({4: 3, 5: 3, 6: 3, 10: 3, 11: 3, 12: 3},
+        self.assertEqual(
+                {4: 3, 5: 3, 6: 3, 10: 3, 11: 3, 12: 3},
                 ClusterController(3).count_by_feed(read=False))
+
+    def test_get_unreads(self):
+        cctrl = ClusterController(3)
+        expected = {'categ-3': 3, 'feed-5': 3, 'categ-4': 3, 'feed-6': 3,
+                    'categ-7': 3, 'feed-11': 3, 'categ-8': 3,
+                    'feed-12': 3, 'feed-4': 3, 'feed-10': 3}
+        self.assertEqual(expected, cctrl.get_unreads())
+        clu = cctrl.get()
+        cctrl.update({'id': clu.id}, {'read': True})
+        for category in clu.categories:
+            expected[f"categ-{category.id}"] -= 1
+        for feed in clu.feeds:
+            expected[f"feed-{feed.id}"] -= 1
+        self.assertEqual(expected, cctrl.get_unreads())
 
     def _test_unread_on_cluster(self, read_reason):
         ccontr = ClusterController()

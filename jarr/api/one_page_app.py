@@ -92,9 +92,9 @@ def _get_filters(in_dict):
         search_content = in_dict.get("search_content")
         filters = []
         if search_title or not filters:
-            filters.append({"title__ilike": "%%%s%%" % search_str})
+            filters.append({"title__ilike": f"%{search_str}%"})
         if search_content:
-            filters.append({"content__ilike": "%%%s%%" % search_str})
+            filters.append({"content__ilike": f"%{search_str}%"})
         if len(filters) == 1:
             filters = filters[0]
         else:
@@ -146,10 +146,10 @@ class MarkClustersAsRead(Resource):
         clu_ctrl = ClusterController(current_identity.id)
         clusters = [clu for clu in clu_ctrl.join_read(limit=None, **filters)
                     if not attrs.get("only_singles")
-                        or len(clu["feeds_id"]) == 1]
+                    or len(clu["feeds_id"]) == 1]
         if clusters:
             clu_ctrl.update({'id__in': [clu['id'] for clu in clusters]},
                             {'read': True,
                              'read_reason': ReadReason.mass_marked})
         READ.labels(ReadReason.mass_marked.value).inc(len(clusters))
-        return ClusterController(current_identity.id).get_unreads(), 200
+        return clu_ctrl.get_unreads(), 200

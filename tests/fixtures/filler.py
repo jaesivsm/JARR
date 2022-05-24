@@ -8,13 +8,13 @@ from jarr.controllers import (ArticleController, CategoryController,
 
 
 def to_name(user, iter_, cat=None, feed=None, art=None, arg=''):
-    string = "i%d %s" % (iter_, user.login)
+    string = f"i{iter_} {user.login}"
     if cat:
-        string += " cat%s" % cat
+        string += f" cat{cat}"
     if feed is not None:
-        string += " feed%s" % feed
+        string += f" feed{feed}"
     if art is not None:
-        string += " art%s" % art
+        string += f" art{art}"
     return string + arg
 
 
@@ -25,8 +25,9 @@ def populate_db():
     uctrl.create(is_admin=True, is_api=True, cluster_enabled=False,
                  login='admin', password='admin')
     user1, user2 = [uctrl.create(login=name, cluster_enabled=False,
-                                 email="%s@test.te" % name, password=name)
+                                 email=f"{name}@test.te", password=name)
                     for name in ["user1", "user2"]]
+    feed_ids = set()
 
     for iteration in range(2):
         article_total = 0
@@ -39,9 +40,10 @@ def populate_db():
                         user_id=user.id,
                         name=to_name(user, iteration, iter_cat)).id
                 feed_id = fcontr.create(
-                    link="feed%d%d" % (iteration, iter_cat),
+                    link=f"feed{iteration}{iter_cat}",
                     user_id=user.id, category_id=cat_id,
                     title=to_name(user, iteration, iter_cat, iter_cat)).id
+                feed_ids.add(feed_id)
                 for iter_art in range(3):
                     entry = to_name(user, iteration,
                                     iter_cat, iter_cat, iter_art)
@@ -52,9 +54,9 @@ def populate_db():
                     ArticleController().create(
                         entry_id=entry, feed_id=feed_id, user_id=user.id,
                         tags=tags, category_id=cat_id, title=entry,
-                        link='http://test.te/%d' % article_total,
+                        link=f"http://test.te/{article_total}",
                         date=utc_now() + timedelta(seconds=iteration),
-                        content="content %d" % article_total)
+                        content=f"content {article_total}")
 
     session.commit()
     session.flush()

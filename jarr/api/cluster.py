@@ -4,8 +4,8 @@ from werkzeug.exceptions import Forbidden, NotFound
 
 from jarr.api.common import parse_meaningful_params
 from jarr.controllers import ClusterController
-from jarr.lib.enums import ReadReason
 from jarr.lib.content_generator import migrate_content
+from jarr.lib.enums import ReadReason
 from jarr.metrics import READ
 
 cluster_ns = Namespace('cluster', description='Cluster related operations')
@@ -58,16 +58,16 @@ class ClusterResource(Resource):
     @cluster_ns.response(404, 'Not found')
     @jwt_required()
     def get(cluster_id):
-        cluc = ClusterController()
-        cluster = cluc.get(id=cluster_id)
+        cctrl = ClusterController()
+        cluster = cctrl.get(id=cluster_id)
         if cluster.user_id != current_identity.id:
             raise Forbidden()
+        cctrl.user_id = current_identity.id
         code = 200
         cluster.content = migrate_content(cluster.content)
         if not cluster.read:
-            cluc.update({'id': cluster_id},
-                        {'read': True,
-                         'read_reason': ReadReason.read})
+            cctrl.update({'id': cluster_id},
+                         {'read': True, 'read_reason': ReadReason.read})
             READ.labels(reason=ReadReason.read.value).inc()
             cluster.read = True
             cluster.read_reason = ReadReason.read
@@ -106,9 +106,9 @@ class ClusterResource(Resource):
     def delete(cluster_id):
         try:
             ClusterController(current_identity.id).delete(cluster_id)
-        except NotFound:
+        except NotFound as not_found:
             user_id = ClusterController().get(id=cluster_id).user_id
             if user_id != current_identity.id:
-                raise Forbidden()
+                raise Forbidden() from not_found
             raise
         return None, 204

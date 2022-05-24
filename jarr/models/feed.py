@@ -21,6 +21,7 @@ class Feed(Base):  # type: ignore
                     nullable=False)
     created_date = Column(UTCDateTime, default=utc_now)
     filters = Column(PickleType, default=[])
+    unread_count = Column(Integer, default=0)
 
     # integration control
     feed_type = Column(Enum(FeedType),

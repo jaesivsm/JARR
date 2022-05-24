@@ -14,7 +14,7 @@ class OnePageAppTest(JarrFlaskCommon):
     def assertClusterCount(self, count, filters=None, expected_payload=None):
         filters = filters or {}
         resp = self.jarr_client('get', 'clusters',
-                data=filters, user=self.user.login)
+                                data=filters, user=self.user.login)
         self.assertStatusCode(200, resp)
         clusters = resp.json
         self.assertEqual(count, len(clusters))
@@ -23,8 +23,7 @@ class OnePageAppTest(JarrFlaskCommon):
                 differing_keys = [key for key in expected_payload
                                   if expected_payload[key] != cluster[key]]
                 err_msg = "got differing values for:" + ','.join(
-                        ["%s (%r!=%r)" % (key, expected_payload[key],
-                                          cluster[key])
+                        [f"{key} ({expected_payload[key]!r}!={cluster[key]!r})"
                          for key in differing_keys])
                 self.assertEqual([], differing_keys, err_msg)
         return clusters
@@ -43,18 +42,17 @@ class OnePageAppTest(JarrFlaskCommon):
         resp = self.jarr_client('get', 'unreads', user=self.user.login)
         self.assertStatusCode(200, resp)
         result = resp.json
-        self.assertEqual(10, len(result))
+        self.assertEqual(30, sum(result.values()))
         self.assertEqual(12, sum([value for key, value in result.items()
                                   if "categ" in key]))
         self.assertEqual(18, sum([value for key, value in result.items()
                                   if "feed" in key]))
-
         self._mark_as_read(0, {'filter': 'unread'})
 
         resp = self.jarr_client('get', 'unreads', user=self.user.login)
         self.assertStatusCode(200, resp)
         result = resp.json
-        self.assertEqual(0, len(result))
+        self.assertEqual(0, sum(result.values()))
 
     def test_cluster_listing(self):
         clusters = self.assertClusterCount(18)
@@ -69,18 +67,17 @@ class OnePageAppTest(JarrFlaskCommon):
     def test_search(self):
         self.assertClusterCount(0, {'search_str': 'test'})
         self.assertClusterCount(18, {'search_str': 'user1'})
-        self.assertClusterCount(6,
-                {'search_str': 'feed1', 'search_title': True})
-        self.assertClusterCount(6,
-                {'search_str': 'user1 feed0', 'search_content': True})
-        self.assertClusterCount(2,
-                {'search_str': 'content 3', 'search_title': True,
-                 'search_content': True})
+        self.assertClusterCount(
+            6, {'search_str': 'feed1', 'search_title': True})
+        self.assertClusterCount(
+            6, {'search_str': 'user1 feed0', 'search_content': True})
+        self.assertClusterCount(
+            2, {'search_str': 'content 3', 'search_title': True,
+                'search_content': True})
 
     def test_middle_panel_filtered_on_category(self):
         cat_id = self.user.categories[0].id
-        clusters = self.assertClusterCount(3,
-                {'category_id': cat_id})
+        self.assertClusterCount(3, {'category_id': cat_id})
 
     def test_middle_panel_filtered_on_feed(self):
         feed_id = self.user.feeds[0].id
@@ -95,8 +92,8 @@ class OnePageAppTest(JarrFlaskCommon):
         self.assertStatusCode(200, resp)
         unread_count = sum(v for k, v in resp.json.items() if 'feed' in k)
         self.assertEqual(expected_unread_count, unread_count,
-                         "expected %d unread clusters, got %d"
-                         % (expected_unread_count, unread_count))
+                         f"expected {expected_unread_count} unread clusters, "
+                         f"got {unread_count}")
 
     def test_MarkClustersAsRead_put(self):
         self.assertClusterCount(18, {'filter': 'unread'})
@@ -109,11 +106,17 @@ class OnePageAppTest(JarrFlaskCommon):
         feed = FeedController(self.user.id).read()[0]
         update_on_all_objs(feeds=[feed],
                            cluster_same_feed=True, cluster_enabled=True)
+        clu_ctrl = ClusterController(self.user.id)
+        all_unread_count = sum(v for k, v in clu_ctrl.get_unreads().items()
+                               if k.startswith('feed-'))
         # creating a new article that will cluster
-        ArticleController(self.user.id).create(entry_id='new entry_id',
-                title='new title', content='new content',
-                feed_id=feed.id, link=feed.articles[0].link)
-        ClusterController(self.user.id).clusterize_pending_articles()
+        ArticleController(self.user.id).create(
+            entry_id='new entry_id', title='new title', content='new content',
+            feed_id=feed.id, link=feed.articles[0].link)
+        clu_ctrl.clusterize_pending_articles()
+        self.assertEqual(all_unread_count + 1,
+                         sum(v for k, v in clu_ctrl.get_unreads().items()
+                             if k.startswith('feed-')))
         self.assertClusterCount(18, {'filter': 'unread'})
         # one per feed
         self._mark_as_read(2, {'only_singles': True, 'filter': 'unread'})

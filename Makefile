@@ -82,6 +82,10 @@ init-env:
 	$(RUN) flask bootstrap-database
 	$(RUN) flask db stamp $(DB_VER)
 
+db: export JARR_CONFIG = $(CONF_FILE)
+db:
+	$(RUN) flask db $(COMMAND)
+
 stop-env:
 	$(COMPOSE) down --remove-orphans
 

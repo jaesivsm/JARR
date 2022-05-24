@@ -21,9 +21,10 @@ JARR_CLUSTERIZER_KEY = 'jarr.clusterizer.%d'
 @celery_app.task(name='crawler')
 @lock('process-feed')
 def process_feed(feed_id):
-    crawler = FeedController().get(id=feed_id).crawler
-    logger.warning("%r is gonna crawl", crawler)
-    crawler.crawl()
+    feed = FeedController().get(id=feed_id)
+    logger.warning("%r is gonna crawl", feed.crawler)
+    feed.crawler.crawl()
+    FeedController(feed.user_id).update_unread_count(feed.id)
 
 
 @celery_app.task(name='clusterizer')

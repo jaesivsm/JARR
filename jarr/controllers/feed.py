@@ -3,6 +3,7 @@ from collections import OrderedDict, defaultdict
 from datetime import datetime, timedelta, timezone
 
 import dateutil.parser
+from sqlalchemy import and_, func
 from sqlalchemy.sql import delete, select
 from werkzeug.exceptions import Forbidden
 
@@ -34,6 +35,25 @@ class FeedController(AbstractController):
     def __actrl(self):
         from .article import ArticleController
         return ArticleController(self.user_id)
+
+    def _set_unread_count(self, filters: set, fctr: int):
+        q = session.query(Article.feed_id, func.count(Article.id))\
+            .join(Cluster, and_(Cluster.user_id == self.user_id,
+                                Cluster.id == Article.cluster_id,
+                                Article.user_id == self.user_id, *filters))\
+            .group_by(Article.feed_id)
+        counts = defaultdict(list)
+        for fid, cnt in q:
+            counts[cnt].append(fid)
+        for cnt, fids in counts.items():
+            self.update({'id__in': fids},
+                        {Feed.unread_count: Feed.unread_count + (cnt * fctr)})
+
+    def decrease_unread_count(self, filters: set):
+        self._set_unread_count(filters, -1)
+
+    def increase_unread_count(self, filters: set):
+        self._set_unread_count(filters, 1)
 
     def list_w_categ(self):
         feeds = defaultdict(list)
@@ -247,3 +267,19 @@ class FeedController(AbstractController):
             Cluster.user_id == feed.user_id,
             Cluster.main_article_id.__eq__(None)))
         return super().delete(obj_id)
+
+    def update_unread_count(self, feed_id, return_count=False):
+        where = tuple()
+        if self.user_id:
+            where = (Cluster.user_id == self.user_id,
+                     Article.user_id == self.user_id)
+        unread = session.query(func.count(Article.id))\
+            .join(Cluster, and_(Article.cluster_id == Cluster.id,
+                                Cluster.user_id == Article.user_id,
+                                Cluster.read.__eq__(False), *where)
+                  ).filter(Article.feed_id == feed_id)
+        if return_count:
+            unread = unread.first()[0]
+        self.update({'id': feed_id}, {'unread_count': unread})
+        if return_count:
+            return unread
