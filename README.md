@@ -21,6 +21,10 @@ You can use the instance of JARR run by the maintainer on [app.jarr.info](https:
 
 To use and host your own instance of JARR please see [installation instruction](https://github.com/jaesivsm/JARR/blob/master/INSTALL.md)
 
+## Security
+
+Please refer to the [security instruction](https://github.com/jaesivsm/JARR/blob/master/SECURITY.md).
+
 ## License
 
 JARR is under the [GNU Affero General Public License version 3](https://www.gnu.org/licenses/agpl-3.0.html).
