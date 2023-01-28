@@ -102,8 +102,16 @@ class ConstructFeedFromTest(unittest.TestCase):
             'site_link': 'https://soundcloud.com/popotes-podcast',
             'title': 'SoundCloud'}, soundcloud)
 
-    def test_youtube(self):
+    def test_youtube_channel(self):
         yt_channel = 'www.youtube.com/channel/UCOWsWZTiXkbvQvtWO9RA0gA'
+        feed = FBC(yt_channel).construct()
+        self.assertEqual(FeedType.classic, feed['feed_type'])
+        self.assertEqual('https://www.youtube.com/feeds/videos.xml'
+                         '?channel_id=UCOWsWZTiXkbvQvtWO9RA0gA', feed['link'])
+        self.assertEqual('BenzaieLive', feed['title'])
+
+    def test_new_youtube_channel(self):
+        yt_channel = 'www.youtube.com/@BenzaieLive2'
         feed = FBC(yt_channel).construct()
         self.assertEqual(FeedType.classic, feed['feed_type'])
         self.assertEqual('https://www.youtube.com/feeds/videos.xml'
