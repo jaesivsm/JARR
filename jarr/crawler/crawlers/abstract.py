@@ -1,9 +1,10 @@
 import logging
-from typing import Optional
+from typing import Optional, Type
 
 from jarr.bootstrap import conf
 from jarr.controllers import ArticleController, FeedController
 from jarr.crawler.article_builders.classic import ClassicArticleBuilder
+from jarr.crawler.article_builders.abstract import AbstractArticleBuilder
 from jarr.crawler.lib.headers_handling import (extract_feed_info,
                                                prepare_headers)
 from jarr.crawler.requests_utils import (response_calculated_etag_match,
@@ -17,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 class AbstractCrawler:
     feed_type: Optional[FeedType] = None
-    article_builder = ClassicArticleBuilder
+    article_builder: Type[AbstractArticleBuilder] = ClassicArticleBuilder
 
     @classmethod
     def browse_subcls(cls, to_browse=None):
