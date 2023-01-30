@@ -170,10 +170,6 @@ class FeedBuilderController:
             feed['link'] = REDDIT_FEED_PATTERN % reddit_match.group(2)
             feed['feed_type'] = FeedType.reddit
             return feed
-        youtube_match = YOUTUBE_CHANNEL_RE.match(feed['link'])
-        if youtube_match:
-            feed['site_link'] = feed['link']
-            feed['link'] = YOUTUBE_FEED_PATTERN % youtube_match.group(4)
         return feed
 
     @staticmethod
