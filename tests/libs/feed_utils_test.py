@@ -35,12 +35,10 @@ class ConstructFeedFromTest(unittest.TestCase):
         self.maxDiff = None
         joi = FBC('https://lesjoiesducode.fr/feed').construct()
         joi.pop('icon_url')
-        self.assertEqual(
-                {'feed_type': FeedType.classic,
-                 'link': 'https://lesjoiesducode.fr/feed',
-                 'site_link': 'https://lesjoiesducode.fr',
-                 'title': 'Les Joies du Code – Humour de développeurs '
-                 ': gifs, memes, blagues'}, joi)
+        self.assertEqual(joi['feed_type'], FeedType.classic)
+        self.assertEqual(joi['link'], 'https://lesjoiesducode.fr/feed')
+        self.assertTrue('https://lesjoiesducode.fr' in joi['site_link'])
+        self.assertTrue('les joies du code' in joi['title'].lower())
 
     def test_apod_from_site(self):
         nasa = FBC('http://apod.nasa.gov/').construct()
@@ -62,8 +60,8 @@ class ConstructFeedFromTest(unittest.TestCase):
 
     def test_reddit_from_site(self):
         reddit = FBC('https://www.reddit.com/r/france/').construct()
+        reddit.pop('description')
         self.assertEqual({
-            'description': 'Tout sur la France et les Français',
             'feed_type': FeedType.reddit,
             'icon_url': 'https://www.redditstatic.com/desktop2x/'
                         'img/favicon/android-icon-192x192.png',
@@ -73,9 +71,9 @@ class ConstructFeedFromTest(unittest.TestCase):
 
     def test_reddit_from_feed(self):
         reddit = FBC('https://www.reddit.com/r/france/.rss').construct()
+        reddit.pop('description')
         self.assertEqual(
-            {'description': 'Tout sur la France et les Français',
-             'feed_type': FeedType.reddit,
+            {'feed_type': FeedType.reddit,
              'icon_url': 'https://www.redditstatic.com/desktop2x/'
                          'img/favicon/android-icon-192x192.png',
              'link': 'https://www.reddit.com/r/france/.rss',

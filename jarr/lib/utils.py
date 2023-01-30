@@ -27,7 +27,7 @@ def clean_lang(lang: str):
         return
     proper_lang = lang[0:2].lower()
     if len(lang) >= 5:
-        proper_lang = "%s_%s" % (proper_lang, lang[3:5].upper())
+        proper_lang = f"{proper_lang}_{lang[3:5].upper()}"
     return proper_lang
 
 
@@ -46,8 +46,8 @@ def default_handler(obj):
         return list(obj)
     if isinstance(obj, Enum):
         return obj.value
-    raise TypeError("Object of type %s with value of %r "
-                    "is not JSON serializable" % (type(obj), obj))
+    raise TypeError(f"Object of type {type(obj)} with value of {obj!r} "
+                    "is not JSON serializable")
 
 
 def rebuild_url(url, base_split):

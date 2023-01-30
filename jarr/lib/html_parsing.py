@@ -133,7 +133,8 @@ def extract_icon_url(response):
 def extract_feed_links(response):
     split = urllib.parse.urlsplit(response.url)
     soup = get_soup(response.content, response.encoding)
-    for tpe in FEED_MIMETYPES:
-        for alternate in soup.find_all(
-                _check_keys(rel=['alternate'], type=[tpe])):
-            yield rebuild_url(alternate.attrs['href'], split)
+    if soup is not None:
+        for tpe in FEED_MIMETYPES:
+            for alternate in soup.find_all(
+                    _check_keys(rel=['alternate'], type=[tpe])):
+                yield rebuild_url(alternate.attrs['href'], split)

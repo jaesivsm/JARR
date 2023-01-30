@@ -26,16 +26,15 @@ class BaseJarrTest(TestCase):
         return self._application
 
     def assertIn(self, elem, txt):
-        self.assertTrue(elem in txt, "%s not in %s" % (elem, txt))
+        self.assertTrue(elem in txt, f"{elem} not in {txt}")
 
     def assertNotIn(self, elem, txt):
-        self.assertFalse(elem in txt, "%s in %s" % (elem, txt))
+        self.assertFalse(elem in txt, f"{elem} in {txt}")
 
     def assertNotInCluster(self, article, cluster):
         self.assertNotEqual(article.cluster_id, cluster.id,
-                            "article %r cluster %r (because %r)"
-                            % (article, article.cluster,
-                               article.cluster_reason))
+                            f"article {article!r} cluster {article.cluster!r}"
+                            f" (because {article.cluster_reason!r})")
 
     def assertInCluster(self, article, cluster, reason=ClusterReason.link):
         self.assertEqual(
@@ -88,8 +87,6 @@ class BaseJarrTest(TestCase):
     def setUp(self):
         self.assertTrue(conf.jarr_testing, "configuration not set on testing")
         REDIS_CONN.flushdb()
-        from jarr.api import get_cached_user
-        get_cached_user.cache_clear()
         init_db()
         self._drop_all()
         Base.metadata.create_all()
@@ -97,10 +94,15 @@ class BaseJarrTest(TestCase):
 
     def tearDown(self):
         REDIS_CONN.flushdb()
-        from jarr.api import get_cached_user
-        get_cached_user.cache_clear()
         self._drop_all()
         session.close()
+        from jarr.api import get_cached_user
+        from jarr.lib.html_parsing import get_soup
+        from jarr.lib.clustering_af.vector import get_simple_vector
+        from jarr.lib.content_generator import get_content_generator
+        for func in (get_cached_user, get_soup, get_simple_vector,
+                     get_content_generator):
+            func.cache_clear()
 
 
 class JarrFlaskCommon(BaseJarrTest):
@@ -112,13 +114,12 @@ class JarrFlaskCommon(BaseJarrTest):
 
     def assertStatusCode(self, status_code, response):
         self.assertEqual(status_code, response.status_code,
-                         "got %d when expecting %d: %r" % (
-                             response.status_code, status_code, response.data))
+                         f"got {response.status_code} when expecting "
+                         f"{status_code}: {response.data!r}")
 
     def get_token_for(self, user):
         auth_res = self.app.post('/auth', data=json.dumps(
-                {'login': user, 'password': user}),
-                headers=DEFAULT_HEADERS)
+            {'login': user, 'password': user}), headers=DEFAULT_HEADERS)
         return auth_res.json['access_token']
 
     def jarr_client(self, method_name, *urn_parts, **kwargs):

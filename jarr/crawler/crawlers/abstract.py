@@ -1,9 +1,10 @@
 import logging
-from typing import Optional
+from typing import Optional, Type
 
 from jarr.bootstrap import conf
 from jarr.controllers import ArticleController, FeedController
 from jarr.crawler.article_builders.classic import ClassicArticleBuilder
+from jarr.crawler.article_builders.abstract import AbstractArticleBuilder
 from jarr.crawler.lib.headers_handling import (extract_feed_info,
                                                prepare_headers)
 from jarr.crawler.requests_utils import (response_calculated_etag_match,
@@ -17,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 class AbstractCrawler:
     feed_type: Optional[FeedType] = None
-    article_builder = ClassicArticleBuilder
+    article_builder: Type[AbstractArticleBuilder] = ClassicArticleBuilder
 
     @classmethod
     def browse_subcls(cls, to_browse=None):
@@ -46,7 +47,7 @@ class AbstractCrawler:
         else:
             level = logging.DEBUG
         logger.log(level, "%r: fetching feed error'd; error count -> %r",
-                        self.feed, error_count)
+                   self.feed, error_count)
         logger.debug("%r: last error details %r", self.feed, last_error)
         now = utc_now()
         info = {'error_count': error_count, 'last_error': last_error,
@@ -65,8 +66,8 @@ class AbstractCrawler:
         info.update(extract_feed_info(response.headers, response.text))
 
         feed_permanently_redirected = response.history \
-                and self.feed.link != response.url \
-                and any(r.status_code in {301, 308} for r in response.history)
+            and self.feed.link != response.url \
+            and any(r.status_code in {301, 308} for r in response.history)
         if feed_permanently_redirected:
             logger.warning('%r: feed moved from %r to %r', self.feed,
                            self.feed.link, response.url)
@@ -160,4 +161,4 @@ class AbstractCrawler:
         self.clean_feed(response)
 
     def __repr__(self):
-        return "<%s(%r)>" % (self.__class__.__name__, self.feed.title)
+        return f"<{self.__class__.__name__}({self.feed.title})>"
