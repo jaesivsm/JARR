@@ -80,9 +80,9 @@ class FeedBuilderController:
                 return False
         if not isinstance(self.parsed_feed, (FeedParserDict, dict)):
             return False
-        return self.parsed_feed.get('entries') \
-            or self.parsed_feed.get('items') \
-            or not self.parsed_feed.get('bozo')
+        return (self.parsed_feed.get('entries')
+                or self.parsed_feed.get('items')
+                or not self.parsed_feed.get('bozo'))
 
     def construct_from_xml_feed_content(self):
         if not self.is_parsed_feed():
