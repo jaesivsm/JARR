@@ -47,6 +47,7 @@ requests = "==2.*"
 SQLAlchemy = "==1.4.*"
 the-conf = "==0.*"
 flask-cors = "==3.*"
+werkzeug = "==2.1.2"
 
 [requires]
 python_version = "3.9"
