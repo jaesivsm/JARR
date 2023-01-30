@@ -88,8 +88,6 @@ class BaseJarrTest(TestCase):
     def setUp(self):
         self.assertTrue(conf.jarr_testing, "configuration not set on testing")
         REDIS_CONN.flushdb()
-        from jarr.api import get_cached_user
-        get_cached_user.cache_clear()
         init_db()
         self._drop_all()
         Base.metadata.create_all()
@@ -97,8 +95,6 @@ class BaseJarrTest(TestCase):
 
     def tearDown(self):
         REDIS_CONN.flushdb()
-        from jarr.api import get_cached_user
-        get_cached_user.cache_clear()
         self._drop_all()
         session.close()
         from jarr.api import get_cached_user
