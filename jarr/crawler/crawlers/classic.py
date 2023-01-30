@@ -1,4 +1,5 @@
 import logging
+from typing import Optional
 
 import feedparser
 
@@ -10,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 
 class ClassicCrawler(AbstractCrawler):
-    feed_type = FeedType.classic
+    feed_type: Optional[FeedType] = FeedType.classic
 
     def parse_feed_response(self, response):
         parsed = feedparser.parse(response.content.strip())
