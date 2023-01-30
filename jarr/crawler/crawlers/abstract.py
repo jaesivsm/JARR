@@ -47,7 +47,7 @@ class AbstractCrawler:
         else:
             level = logging.DEBUG
         logger.log(level, "%r: fetching feed error'd; error count -> %r",
-                        self.feed, error_count)
+                   self.feed, error_count)
         logger.debug("%r: last error details %r", self.feed, last_error)
         now = utc_now()
         info = {'error_count': error_count, 'last_error': last_error,
@@ -66,8 +66,8 @@ class AbstractCrawler:
         info.update(extract_feed_info(response.headers, response.text))
 
         feed_permanently_redirected = response.history \
-                and self.feed.link != response.url \
-                and any(r.status_code in {301, 308} for r in response.history)
+            and self.feed.link != response.url \
+            and any(r.status_code in {301, 308} for r in response.history)
         if feed_permanently_redirected:
             logger.warning('%r: feed moved from %r to %r', self.feed,
                            self.feed.link, response.url)
@@ -161,4 +161,4 @@ class AbstractCrawler:
         self.clean_feed(response)
 
     def __repr__(self):
-        return "<%s(%r)>" % (self.__class__.__name__, self.feed.title)
+        return f"<{self.__class__.__name__}({self.feed.title})>"
