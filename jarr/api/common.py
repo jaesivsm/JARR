@@ -55,6 +55,7 @@ def set_model_n_parser(model, parser, name, type_, **kwargs):
         kwargs['choices'] = list(type_)
     else:
         model[name] = MODEL_PARSER_MAPPING[type_](**kwargs)
+    kwargs['location'] = kwargs.get('location') or ['args', 'json']
     desc = kwargs.pop('description', None)
     parser.add_argument(name, type=type_, store_missing=False,
                         help=desc, **kwargs)

@@ -13,7 +13,7 @@ model = category_ns.model("Category", {'id': fields.Integer(readOnly=True)})
 set_clustering_options("category", model, parser)
 parser_edit = parser.copy()
 parser.add_argument('name', type=str, required=True, nullable=False,
-                    store_missing=False)
+                    store_missing=False, location=['args', 'json'])
 set_model_n_parser(model, parser_edit, 'name', str, nullable=False)
 
 
@@ -57,7 +57,7 @@ class CategoryResource(Resource):
     def get(category_id):
         """Read an existing category."""
         return CategoryController(current_identity.id).get(id=category_id), \
-                200
+            200
 
     @staticmethod
     @category_ns.expect(parser_edit, validate=True)

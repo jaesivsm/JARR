@@ -8,8 +8,8 @@ import opml
 from jarr.controllers import CategoryController, FeedController, UserController
 from jarr.lib.utils import utc_now
 
-opml_ns = Namespace('opml',
-        description="Allows to export and import OPML files")
+opml_ns = Namespace(
+        'opml', description="Allows to export and import OPML files")
 model = opml_ns.model('OPML result', {
         'created': fields.Integer(),
         'failed': fields.Integer(),

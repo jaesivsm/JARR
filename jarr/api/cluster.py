@@ -11,12 +11,15 @@ from jarr.metrics import READ
 cluster_ns = Namespace('cluster', description='Cluster related operations')
 cluster_parser = cluster_ns.parser()
 cluster_parser.add_argument('liked', type=inputs.boolean,
-                            nullable=False, store_missing=False)
+                            nullable=False, store_missing=False,
+                            location=['args', 'json'])
 cluster_parser.add_argument('read', type=inputs.boolean,
-                            nullable=False, store_missing=False)
+                            nullable=False, store_missing=False,
+                            location=['args', 'json'])
 cluster_parser.add_argument('read_reason', type=str, required=False,
                             choices=[rr.value for rr in ReadReason],
-                            nullable=False, store_missing=False)
+                            nullable=False, store_missing=False,
+                            location=['args', 'json'])
 article_model = cluster_ns.model('Article', {
     'id': fields.Integer(),
     'link': fields.String(),
