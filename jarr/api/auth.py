@@ -19,19 +19,19 @@ model = auth_ns.model("Login", {
 })
 login_parser = auth_ns.parser()
 login_parser.add_argument(
-    "login", type=str, store_missing=False, location="args")
+    "login", type=str, store_missing=False, location=['args', 'json'])
 login_parser.add_argument(
-    "password", type=str, store_missing=False, location="args")
+    "password", type=str, store_missing=False, location=['args', 'json'])
 login_init_recovery_parser = auth_ns.parser()
 login_init_recovery_parser.add_argument(
-    "login", type=str, required=True, store_missing=False, location="args")
+    "login", type=str, required=True, store_missing=False, location=['args', 'json'])
 login_init_recovery_parser.add_argument(
-    "email", type=str, required=True, store_missing=False, location="args")
+    "email", type=str, required=True, store_missing=False, location=['args', 'json'])
 login_recovery_parser = login_init_recovery_parser.copy()
 login_recovery_parser.add_argument(
-    "token", type=str, required=True, store_missing=False, location="args")
+    "token", type=str, required=True, store_missing=False, location=['args', 'json'])
 login_recovery_parser.add_argument(
-    "password", type=str, required=True, store_missing=False, location="args")
+    "password", type=str, required=True, store_missing=False, location=['args', 'json'])
 
 
 @auth_ns.route("")
