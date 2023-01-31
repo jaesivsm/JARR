@@ -51,8 +51,8 @@ model = feed_ns.model('Feed', {
             description='Date of the last time this feed was fetched'),
         'filters': fields.Nested(filter_model, as_list=True),
 })
-parser.add_argument('filters', type=list, location='json', nullable=False,
-                    store_missing=False)
+parser.add_argument('filters', type=list, location=['args', 'json'],
+                    nullable=False, store_missing=False)
 # clustering options
 set_clustering_options("feed", model, parser)
 set_model_n_parser(model, parser, 'truncated_content', bool, nullable=False)
