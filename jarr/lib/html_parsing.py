@@ -75,13 +75,15 @@ def get_soup(content, header_encoding='utf8', head_only=True):
                 logger.warning('something went wrong when parsing: %r', error)
 
 
-def extract_opg_prop(response, og_prop):
+def extract_opg_prop(response, og_prop, all_body=False):
     "From a requests.Response objects will extract an opengraph attribute"
-    soup = get_soup(response.content, response.encoding)
+    soup = get_soup(response.content, response.encoding, not all_body)
     try:
         return soup.find('meta', {'property': og_prop}).attrs['content']
     except Exception:
         pass
+    if not all_body:
+        return extract_opg_prop(response, og_prop, all_body=True)
 
 
 def extract_title(response):
@@ -136,8 +138,7 @@ def extract_feed_links(response, all_body=False):
     soup = get_soup(response.content, response.encoding, not all_body)
     if soup is not None:
         for tpe in FEED_MIMETYPES:
-            for alternate in soup.find_all('link',
-                                           rel=['alternate'], type=[tpe]):
+            for alternate in soup.find_all('link', rel='alternate', type=tpe):
                 yield rebuild_url(alternate.attrs['href'], split)
                 yielded = True
     if not yielded and not all_body:

@@ -110,6 +110,3 @@ class ConstructArticleTest(unittest.TestCase):
         self.assertEqual(1, article['user_id'])
         self.assertEqual(ArticleType.embedded, article['article_type'])
         self.assertEqual(1, article['feed_id'])
-
-    def test_enclosure_contents(self):
-        pass
