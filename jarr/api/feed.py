@@ -66,12 +66,12 @@ parser_edit = parser.copy()
 set_model_n_parser(model, parser_edit, 'title', str, nullable=False)
 set_model_n_parser(model, parser_edit, 'status', FeedStatus,
                    nullable=False)
-parser.add_argument('title', type=str, required=True, nullable=False,
-                    location=['args', 'json'], store_missing=False)
-parser.add_argument('link', type=str, required=True, nullable=False,
-                    location=['args', 'json'], store_missing=False)
-parser.add_argument('icon_url', type=str, required=False, nullable=False,
-                    location=['args', 'json'], store_missing=False)
+parser.add_argument('title', type=str, required=True,
+                    nullable=False, store_missing=False)
+parser.add_argument('link', type=str, required=True,
+                    nullable=False, store_missing=False)
+parser.add_argument('icon_url', type=str, required=False,
+                    nullable=True, store_missing=False)
 set_model_n_parser(model, parser_edit, "error_count", int, nullable=False,
                    description="The number of consecutive error encountered "
                                "while fetching this feed")

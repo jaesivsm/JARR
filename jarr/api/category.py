@@ -13,7 +13,7 @@ model = category_ns.model("Category", {'id': fields.Integer(readOnly=True)})
 set_clustering_options("category", model, parser)
 parser_edit = parser.copy()
 parser.add_argument('name', type=str, required=True, nullable=False,
-                    store_missing=False, location=['args', 'json'])
+                    store_missing=False)
 set_model_n_parser(model, parser_edit, 'name', str, nullable=False)
 
 
@@ -92,6 +92,6 @@ class CategoryResource(Resource):
         except NotFound:
             user_id = CategoryController().get(id=category_id).user_id
             if user_id != current_identity.id:
-                raise Forbidden()
+                raise Forbidden() from NotFound
             raise
         return None, 204

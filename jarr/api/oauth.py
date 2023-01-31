@@ -14,12 +14,11 @@ from jarr.metrics import SERVER
 
 oauth_ns = Namespace('oauth', description="OAuth related operations")
 oauth_callback_parser = oauth_ns.parser()
-oauth_callback_parser.add_argument('code', type=str, location=['args', 'json'],
+oauth_callback_parser.add_argument('code', type=str,
                                    required=True, store_missing=False)
 oauth1_callback_parser = oauth_ns.parser()
-oauth1_callback_parser.add_argument('oauth_verifier', type=str, required=True,
-                                    location=['args', 'json'],
-                                    store_missing=False)
+oauth1_callback_parser.add_argument('oauth_verifier', type=str,
+                                    required=True, store_missing=False)
 
 
 # FROM http://blog.miguelgrinberg.com/post/oauth-authentication-with-flask
@@ -43,7 +42,7 @@ class OAuthSignInMixin(Resource):  # pragma: no cover
 
     @classmethod
     def get_callback_url(cls):
-        return get_ui_url("/oauth/%s" % cls.provider)
+        return get_ui_url(f"/oauth/{cls.provider}")
 
     @classmethod
     def process_ids(cls, social_id, username, email):  # pragma: no cover
