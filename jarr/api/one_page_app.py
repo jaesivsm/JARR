@@ -125,7 +125,10 @@ class Clusters(Resource):
     @jwt_required()
     def get():
         """Will list all cluster extract for the middle pannel."""
-        attrs = filter_parser.parse_args()
+        try:
+            attrs = filter_parser.parse_args()
+        except:
+            attrs = {}
         clu_ctrl = ClusterController(current_identity.id)
         return list(clu_ctrl.join_read(**_get_filters(attrs)))
 
