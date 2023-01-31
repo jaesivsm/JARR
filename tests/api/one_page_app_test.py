@@ -87,8 +87,9 @@ class OnePageAppTest(JarrFlaskCommon):
             self.assertIn(feed_id, cluster['feeds_id'])
 
     def _mark_as_read(self, expected_unread_count, filters=None):
-        filters = filters or {}
-        resp = self.jarr_client('put', 'mark-all-as-read', data=filters,
+        filters = '&'.join([f"{key}={val}"
+                            for key, val in (filters or {}).items()])
+        resp = self.jarr_client('put', f"mark-all-as-read?{filters}",
                                 user=self.user.login)
         self.assertStatusCode(200, resp)
         unread_count = sum(v for k, v in resp.json.items() if 'feed' in k)
