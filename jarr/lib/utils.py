@@ -7,6 +7,7 @@ from enum import Enum
 from hashlib import md5, sha1
 
 import requests
+from requests.exceptions import SSLError
 
 logger = logging.getLogger(__name__)
 RFC_1123_FORMAT = '%a, %d %b %Y %X %Z'
@@ -74,7 +75,11 @@ def jarr_get(url, timeout=None, user_agent=None, headers=None, **kwargs):
     def_headers = {'User-Agent': user_agent}
     if headers is not None:
         def_headers.update(headers)
-    request_kwargs = {'verify': False, 'allow_redirects': True,
+    request_kwargs = {'allow_redirects': True,
                       'timeout': timeout, 'headers': def_headers}
     request_kwargs.update(kwargs)
-    return requests.get(url, **request_kwargs)
+    try:
+        return requests.get(url, **request_kwargs)
+    except SSLError:
+        request_kwargs['verify'] = False
+        return requests.get(url, **request_kwargs)
