@@ -52,7 +52,7 @@ def _try_encodings(content, *encodings):
 
 
 @lru_cache(maxsize=None)
-def get_soup(content, header_encoding='utf8'):
+def get_soup(content, header_encoding='utf8', head_only=True):
     """Try parsing html content and caching parsed result.
 
     For a content and an encoding will return a bs4 object which will be
@@ -61,7 +61,7 @@ def get_soup(content, header_encoding='utf8'):
     As the encoding written in the HTML is more reliable, ```get_soup``` will
     try this one before parsing with the one in args.
     """
-    strainer = SoupStrainer('head')
+    strainer = SoupStrainer('head') if head_only else None
     decoded_content = None
     if not isinstance(content, str):
         encodings = [_extract_charset(content, strainer), header_encoding] \
@@ -130,11 +130,15 @@ def extract_icon_url(response):
         return icon_url
 
 
-def extract_feed_links(response):
+def extract_feed_links(response, all_body=False):
+    yielded = False
     split = urllib.parse.urlsplit(response.url)
-    soup = get_soup(response.content, response.encoding)
+    soup = get_soup(response.content, response.encoding, not all_body)
     if soup is not None:
         for tpe in FEED_MIMETYPES:
-            for alternate in soup.find_all(
-                    _check_keys(rel=['alternate'], type=[tpe])):
+            for alternate in soup.find_all('link',
+                                           rel=['alternate'], type=[tpe]):
                 yield rebuild_url(alternate.attrs['href'], split)
+                yielded = True
+    if not yielded and not all_body:
+        yield from extract_feed_links(response, all_body=True)

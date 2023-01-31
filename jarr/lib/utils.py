@@ -78,6 +78,8 @@ def jarr_get(url, timeout=None, user_agent=None, headers=None, **kwargs):
     request_kwargs = {'allow_redirects': True,
                       'timeout': timeout, 'headers': def_headers}
     request_kwargs.update(kwargs)
+    if 'youtube.com' in url:
+        request_kwargs['cookies'] = {'CONSENT': 'YES+1'}
     try:
         return requests.get(url, **request_kwargs)
     except SSLError:

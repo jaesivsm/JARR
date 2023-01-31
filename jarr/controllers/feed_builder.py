@@ -21,12 +21,16 @@ TWITTER_RE = re.compile(SCHEME + r'(www.)?twitter.com/([^ \t\n\r\f\v/]+)')
 TUMBLR_RE = re.compile(SCHEME + r'([^ \t\n\r\f\v/]+).tumblr.com/.*$')
 YOUTUBE_CHANNEL_RE = re.compile(r'((http|https):\/\/)?(www\.)?youtube\.com\/'
                                 r'channel\/([a-zA-Z0-9\-]+)')
+YOUTUBE_PLAYLIST_RE = re.compile(
+        r'((http|https):\/\/)?(www\.)?youtube\.com\/playlist')
+YOUTUBE_VIDEO_RE = re.compile(
+        r'((http|https):\/\/)?(www\.)?youtube\.com\/watch')
 
 SOUNDCLOUD_RE = re.compile(
         r'^https?://(www.)?soundcloud.com/([^ \t\n\r\f\v/]+)')
 KOREUS_RE = re.compile(r'^https?://feeds.feedburner.com/Koreus.*$')
 REDDIT_FEED_PATTERN = "https://www.reddit.com/r/%s/.rss"
-YOUTUBE_FEED_PATTERN = 'https://www.youtube.com/feeds/videos.xml?channel_id=%s'
+YOUTUBE_PATTERN = 'https://www.youtube.com/feeds/videos.xml?%s_id=%s'
 
 
 class FeedBuilderController:
@@ -90,7 +94,7 @@ class FeedBuilderController:
         fp_feed = self.parsed_feed.get('feed') or {}
 
         result = {'link': self.feed_response.url,
-                  'site_link': fp_feed.get('link'),
+                  'site_link': fp_feed.get('href') or fp_feed.get('link'),
                   'title': fp_feed.get('title')}
         if self.parsed_feed.get('href'):
             result['link'] = self.parsed_feed.get('href')
@@ -170,6 +174,20 @@ class FeedBuilderController:
             feed['link'] = REDDIT_FEED_PATTERN % reddit_match.group(2)
             feed['feed_type'] = FeedType.reddit
             return feed
+        youtube_match = YOUTUBE_CHANNEL_RE.match(feed['link'])
+        if youtube_match:
+            feed['site_link'] = feed['link']
+            feed['link'] = YOUTUBE_PATTERN % (
+                'channel', youtube_match.group(4))
+        if YOUTUBE_VIDEO_RE.match(feed['link']) \
+                or YOUTUBE_PLAYLIST_RE.match(feed['link']):
+            split = urllib.parse.urlsplit(feed['link'])
+            if split.query:
+                query = urllib.parse.parse_qs(split.query)
+                if query.get('list'):
+                    list_id = query['list'][0]
+                    feed['site_link'] = feed['link']
+                    feed['link'] = YOUTUBE_PATTERN % ('playlist', list_id)
         return feed
 
     @staticmethod

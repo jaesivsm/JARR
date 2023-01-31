@@ -96,6 +96,22 @@ class ConstructFeedFromTest(unittest.TestCase):
             'site_link': 'https://soundcloud.com/popotes-podcast',
             'title': 'SoundCloud'}, soundcloud)
 
+    def test_youtube_channel_feed(self):
+        url = ('https://www.youtube.com/feeds/videos.xml'
+               '?channel_id=UCOWsWZTiXkbvQvtWO9RA0gA')
+        feed = FBC(url).construct()
+        self.assertEqual(FeedType.classic, feed['feed_type'])
+        self.assertEqual(url, feed['link'])
+        self.assertEqual('BenzaieLive', feed['title'])
+
+    def test_youtube_playlist_feed(self):
+        url = ("http://www.youtube.com/feeds/videos.xml"
+               "?playlist_id=PLB049A6ACE1D68F6C")
+        feed = FBC(url).construct()
+        self.assertEqual(FeedType.classic, feed['feed_type'])
+        self.assertEqual(url, feed['link'])
+        self.assertEqual('Thomas VDB', feed['title'])
+
     def test_youtube_channel(self):
         yt_channel = 'www.youtube.com/channel/UCOWsWZTiXkbvQvtWO9RA0gA'
         feed = FBC(yt_channel).construct()
@@ -111,6 +127,22 @@ class ConstructFeedFromTest(unittest.TestCase):
         self.assertEqual('https://www.youtube.com/feeds/videos.xml'
                          '?channel_id=UCOWsWZTiXkbvQvtWO9RA0gA', feed['link'])
         self.assertEqual('BenzaieLive', feed['title'])
+
+    def test_youtube_playlist(self):
+        yt_plist = 'www.youtube.com/playlist?list=PLB049A6ACE1D68F6C'
+        feed = FBC(yt_plist).construct()
+        self.assertEqual(FeedType.classic, feed['feed_type'])
+        self.assertEqual('https://www.youtube.com/feeds/videos.xml'
+                         '?playlist_id=PLB049A6ACE1D68F6C', feed['link'])
+        self.assertEqual('Thomas VDB', feed['title'])
+
+    def test_youtube_playlist_from_video(self):
+        ytplist = 'www.youtube.com/watch?v=uG2ReGlRV58&list=PLB049A6ACE1D68F6C'
+        feed = FBC(ytplist).construct()
+        self.assertEqual(FeedType.classic, feed['feed_type'])
+        self.assertEqual('https://www.youtube.com/feeds/videos.xml'
+                         '?playlist_id=PLB049A6ACE1D68F6C', feed['link'])
+        self.assertEqual('Thomas VDB', feed['title'])
 
     def test_json(self):
         feed = FBC('https://daringfireball.net/feeds/json').construct()
