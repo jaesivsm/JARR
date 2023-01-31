@@ -1,5 +1,4 @@
 from flask_jwt import current_identity, jwt_required
-import logging
 from flask_restx import Namespace, Resource, fields, inputs
 
 from jarr.controllers import FeedController
@@ -7,7 +6,6 @@ from jarr.controllers.cluster import ClusterController
 from jarr.lib.enums import ReadReason
 from jarr.metrics import READ
 
-logger = logging.getLogger(__name__)
 
 default_ns = Namespace("default", path="/")
 list_feeds_model = default_ns.model("ListFeeds", {
@@ -136,11 +134,7 @@ class Clusters(Resource):
     @jwt_required()
     def get():
         """Will list all cluster extract for the middle pannel."""
-        try:
-            attrs = filter_parser.parse_args()
-        except Exception:
-            logger.exception('erf')
-            attrs = {}
+        attrs = filter_parser.parse_args()
         clu_ctrl = ClusterController(current_identity.id)
         return list(clu_ctrl.join_read(**_get_filters(attrs)))
 
