@@ -15,11 +15,11 @@ set_model_n_parser(model, parser, "timezone", str, nullable=False)
 set_clustering_options("user", model, parser, nullable=False)
 parser_edit = parser.copy()
 parser_edit.add_argument("password", type=str, nullable=False,
-                         location=['json', 'args'], store_missing=False)
+                         location=['args', 'json'], store_missing=False)
 parser.add_argument("password", type=str, nullable=False, required=True,
-                    location=['json', 'args'])
+                    location=['args', 'json'])
 parser.add_argument("login", type=str, nullable=False, required=True,
-                    location=['json', 'args'])
+                    location=['args', 'json'])
 
 
 @user_ns.route("")
