@@ -65,7 +65,7 @@ def _set():
 filter_parser, mark_as_read_parser = list(_set())
 mark_as_read_parser.add_argument(
     "only_singles", type=bool, default=False,
-    store_missing=False, location='json',
+    store_missing=False, location='args',
     help="set to true to mark as read only cluster with one article")
 
 
