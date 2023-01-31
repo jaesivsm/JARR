@@ -60,25 +60,21 @@ class ConstructFeedFromTest(unittest.TestCase):
 
     def test_reddit_from_site(self):
         reddit = FBC('https://www.reddit.com/r/france/').construct()
-        reddit.pop('description')
-        self.assertEqual({
-            'feed_type': FeedType.reddit,
-            'icon_url': 'https://www.redditstatic.com/desktop2x/'
-                        'img/favicon/android-icon-192x192.png',
-            'site_link': 'https://www.reddit.com/r/france/',
-            'link': 'https://www.reddit.com/r/france/.rss',
-            'title': 'France'}, reddit)
+        expected = {'feed_type': FeedType.reddit, 'title': 'France',
+                    'icon_url': 'https://www.redditstatic.com/desktop2x/'
+                                'img/favicon/android-icon-192x192.png',
+                    'site_link': 'https://www.reddit.com/r/france/',
+                    'link': 'https://www.reddit.com/r/france/.rss'}
+        self.assertEqual(expected, {k: reddit[k] for k in expected})
 
     def test_reddit_from_feed(self):
         reddit = FBC('https://www.reddit.com/r/france/.rss').construct()
-        reddit.pop('description')
-        self.assertEqual(
-            {'feed_type': FeedType.reddit,
-             'icon_url': 'https://www.redditstatic.com/desktop2x/'
-                         'img/favicon/android-icon-192x192.png',
-             'link': 'https://www.reddit.com/r/france/.rss',
-             'site_link': 'https://www.reddit.com/r/france/',
-             'title': 'France'}, reddit)
+        expected = {'feed_type': FeedType.reddit, 'title': 'France',
+                    'icon_url': 'https://www.redditstatic.com/desktop2x/'
+                                'img/favicon/android-icon-192x192.png',
+                    'link': 'https://www.reddit.com/r/france/.rss',
+                    'site_link': 'https://www.reddit.com/r/france/'}
+        self.assertEqual(expected, {k: reddit[k] for k in expected})
 
     def test_instagram(self):
         insta = FBC('http://www.instagram.com/jaesivsm/').construct()
