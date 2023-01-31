@@ -57,7 +57,7 @@ class CategoryResource(Resource):
     def get(category_id):
         """Read an existing category."""
         return CategoryController(current_identity.id).get(id=category_id), \
-                200
+            200
 
     @staticmethod
     @category_ns.expect(parser_edit, validate=True)
@@ -92,6 +92,6 @@ class CategoryResource(Resource):
         except NotFound:
             user_id = CategoryController().get(id=category_id).user_id
             if user_id != current_identity.id:
-                raise Forbidden()
+                raise Forbidden() from NotFound
             raise
         return None, 204

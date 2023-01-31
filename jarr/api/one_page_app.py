@@ -6,6 +6,7 @@ from jarr.controllers.cluster import ClusterController
 from jarr.lib.enums import ReadReason
 from jarr.metrics import READ
 
+
 default_ns = Namespace("default", path="/")
 list_feeds_model = default_ns.model("ListFeeds", {
         "id": fields.Integer(),
@@ -29,27 +30,35 @@ midle_panel_model = default_ns.model("MiddlePanel", {
         "read": fields.Boolean(default=False),
 })
 filter_parser = default_ns.parser()
-filter_parser.add_argument("search_str", type=str, store_missing=False,
-        help="if specify will filter list with the specified string")
-filter_parser.add_argument("search_title",
-        store_missing=False, type=inputs.boolean, default=True,
-        help="if True, the search_str will be looked for in title")
-filter_parser.add_argument("search_content",
-        type=inputs.boolean, default=False, store_missing=False,
-        help="if True, the search_str will be looked for in content")
-filter_parser.add_argument("filter", type=str,
-        choices=["all", "unread", "liked"], default="unread",
-        help="the boolean (all, unread or liked) filter to apply to clusters")
-filter_parser.add_argument("feed_id", type=int, store_missing=False,
-        help="the parent feed id to filter with")
-filter_parser.add_argument("category_id", type=int, store_missing=False,
-        help="the parent category id to filter with")
-filter_parser.add_argument("from_date", type=inputs.datetime_from_iso8601,
-                           store_missing=False, help="for pagination")
+filter_parser.add_argument(
+    "search_str", type=str, store_missing=False, location='args',
+    help="if specify will filter list with the specified string")
+filter_parser.add_argument(
+    "search_title", store_missing=False, type=inputs.boolean,
+    default=True, location='args',
+    help="if True, the search_str will be looked for in title")
+filter_parser.add_argument(
+    "search_content", type=inputs.boolean, default=False,
+    store_missing=False, location='args',
+    help="if True, the search_str will be looked for in content")
+filter_parser.add_argument(
+    "filter", type=str, choices=["all", "unread", "liked"],
+    default="unread", location='args',
+    help="the boolean (all, unread or liked) filter to apply to clusters")
+filter_parser.add_argument(
+    "feed_id", type=int, store_missing=False, location='args',
+    help="the parent feed id to filter with")
+filter_parser.add_argument(
+    "category_id", type=int, store_missing=False, location='args',
+    help="the parent category id to filter with")
+filter_parser.add_argument(
+    "from_date", type=inputs.datetime_from_iso8601, location='args',
+    store_missing=False, help="for pagination")
 mark_as_read_parser = filter_parser.copy()
-mark_as_read_parser.add_argument("only_singles", type=bool, default=False,
-        store_missing=False,
-        help="set to true to mark as read only cluster with one article")
+mark_as_read_parser.add_argument(
+    "only_singles", type=bool, default=False,
+    store_missing=False, location='args',
+    help="set to true to mark as read only cluster with one article")
 
 
 @default_ns.route("/list-feeds")

@@ -14,6 +14,7 @@ from jarr.lib.filter import FiltersAction, FiltersTrigger, FiltersType
 feed_ns = Namespace('feed', description='Feed related operations')
 url_parser = feed_ns.parser()
 url_parser.add_argument('url', type=str, required=True,
+                        location='args',
                         nullable=False, store_missing=False)
 filter_model = feed_ns.model('Filter', {
         'action': EnumField(FiltersAction),
@@ -35,15 +36,18 @@ feed_build_model = feed_ns.model('FeedBuilder', {
         'cluster_same_category': fields.Boolean(default=True, required=True),
         'cluster_same_feed': fields.Boolean(default=True, required=True),
         'cluster_wake_up': fields.Boolean(default=True, required=True),
-        'same_link_count': fields.Integer(default=0, required=True,
+        'same_link_count': fields.Integer(
+            default=0, required=True,
             help='number of feed with same link existing for that user'),
 })
 # read only fields (and filters which are handled in a peculiar way)
 model = feed_ns.model('Feed', {
         'id': fields.Integer(readOnly=True),
-        'icon_url': fields.String(readOnly=True,
+        'icon_url': fields.String(
+            readOnly=True,
             description='The complete url to the icon image file'),
-        'last_retrieved': fields.DateTime(readOnly=True,
+        'last_retrieved': fields.DateTime(
+            readOnly=True,
             description='Date of the last time this feed was fetched'),
         'filters': fields.Nested(filter_model, as_list=True),
 })

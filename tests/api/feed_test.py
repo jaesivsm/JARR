@@ -189,8 +189,8 @@ class FeedApiTest(JarrFlaskCommon):
         resp = self.jarr_client('get', 'feed', 'build', user='user1')
         self.assertStatusCode(400, resp)
 
-        resp = self.jarr_client('get', 'feed', 'build', user='user1',
-                                data={'url': "koreus.com"})
+        resp = self.jarr_client('get', 'feed', 'build?url=koreus.com',
+                                user='user1')
         self.assertStatusCode(200, resp)
         expected_feed = {
             'description': 'Koreus',
@@ -216,7 +216,7 @@ class FeedApiTest(JarrFlaskCommon):
         resp = self.jarr_client('post', 'feed', user='user1', data=FEED)
         self.assertStatusCode(201, resp)
         feed = resp.json
-        resp = self.jarr_client('get', 'feed', 'icon',
-                                data={'url': feed['icon_url']})
+
+        resp = self.jarr_client('get', f"feed/icon?url={feed['icon_url']}")
         self.assertStatusCode(200, resp)
         self.assertTrue(resp.headers['Content-Type'].startswith('image/'))
