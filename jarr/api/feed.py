@@ -13,7 +13,8 @@ from jarr.lib.filter import FiltersAction, FiltersTrigger, FiltersType
 
 feed_ns = Namespace('feed', description='Feed related operations')
 url_parser = feed_ns.parser()
-url_parser.add_argument('url', type=str, required=True, location='args',
+url_parser.add_argument('url', type=str, required=True,
+                        location=['json', 'args'],
                         nullable=False, store_missing=False)
 filter_model = feed_ns.model('Filter', {
         'action': EnumField(FiltersAction),
