@@ -53,8 +53,9 @@ class UserResource(Resource):
         attrs = parse_meaningful_params(parser_edit)
         if not attrs:
             raise BadRequest()
-        return UserController(user_id).update({"id": user_id}, attrs,
-                return_objs=True).first(), 200
+        query = UserController(user_id).update(
+            {"id": user_id}, attrs, return_objs=True)
+        return query.first(), 200
 
     @staticmethod
     @user_ns.response(204, "Deleted")
