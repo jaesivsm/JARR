@@ -60,7 +60,7 @@ class ConstructFeedFromTest(unittest.TestCase):
 
     def test_reddit_from_site(self):
         reddit = FBC('https://www.reddit.com/r/france/').construct()
-        reddit.pop('description')
+        reddit.pop('description', None)
         self.assertEqual({
             'feed_type': FeedType.reddit,
             'icon_url': 'https://www.redditstatic.com/desktop2x/'
@@ -71,7 +71,7 @@ class ConstructFeedFromTest(unittest.TestCase):
 
     def test_reddit_from_feed(self):
         reddit = FBC('https://www.reddit.com/r/france/.rss').construct()
-        reddit.pop('description')
+        reddit.pop('description', None)
         self.assertEqual(
             {'feed_type': FeedType.reddit,
              'icon_url': 'https://www.redditstatic.com/desktop2x/'
