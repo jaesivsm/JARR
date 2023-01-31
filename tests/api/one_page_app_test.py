@@ -13,8 +13,9 @@ class OnePageAppTest(JarrFlaskCommon):
 
     def assertClusterCount(self, count, filters=None, expected_payload=None):
         filters = filters or {}
-        resp = self.jarr_client('get', 'clusters',
-                                data=filters, user=self.user.login)
+        url = 'clusters?' + '&'.join([f"{key}={val}"
+                                      for key, val in filters.items()])
+        resp = self.jarr_client('get', url, user=self.user.login)
         self.assertStatusCode(200, resp)
         clusters = resp.json
         self.assertEqual(count, len(clusters))
@@ -43,10 +44,10 @@ class OnePageAppTest(JarrFlaskCommon):
         self.assertStatusCode(200, resp)
         result = resp.json
         self.assertEqual(30, sum(result.values()))
-        self.assertEqual(12, sum([value for key, value in result.items()
-                                  if "categ" in key]))
-        self.assertEqual(18, sum([value for key, value in result.items()
-                                  if "feed" in key]))
+        self.assertEqual(12, sum(value for key, value in result.items()
+                                 if "categ" in key))
+        self.assertEqual(18, sum(value for key, value in result.items()
+                                 if "feed" in key))
         self._mark_as_read(0, {'filter': 'unread'})
 
         resp = self.jarr_client('get', 'unreads', user=self.user.login)

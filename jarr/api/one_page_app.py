@@ -29,35 +29,43 @@ midle_panel_model = default_ns.model("MiddlePanel", {
         "liked": fields.Boolean(default=False),
         "read": fields.Boolean(default=False),
 })
-filter_parser = default_ns.parser()
-filter_parser.add_argument(
-    "search_str", type=str, store_missing=False, location=['args', 'json'],
-    help="if specify will filter list with the specified string")
-filter_parser.add_argument(
-    "search_title", store_missing=False, type=inputs.boolean,
-    default=True, location=['args', 'json'],
-    help="if True, the search_str will be looked for in title")
-filter_parser.add_argument(
-    "search_content", type=inputs.boolean, default=False,
-    store_missing=False, location=['args', 'json'],
-    help="if True, the search_str will be looked for in content")
-filter_parser.add_argument(
-    "filter", type=str, choices=["all", "unread", "liked"],
-    default="unread", location=['args', 'json'],
-    help="the boolean (all, unread or liked) filter to apply to clusters")
-filter_parser.add_argument(
-    "feed_id", type=int, store_missing=False, location=['args', 'json'],
-    help="the parent feed id to filter with")
-filter_parser.add_argument(
-    "category_id", type=int, store_missing=False, location=['args', 'json'],
-    help="the parent category id to filter with")
-filter_parser.add_argument(
-    "from_date", type=inputs.datetime_from_iso8601, location=['args', 'json'],
-    store_missing=False, help="for pagination")
-mark_as_read_parser = filter_parser.copy()
+
+
+def _set():
+    for location in 'args', 'json':
+        parser = default_ns.parser()
+        parser.add_argument(
+            "search_str", type=str, store_missing=False, location=location,
+            help="if specify will filter list with the specified string")
+        parser.add_argument(
+            "search_title", store_missing=False, type=inputs.boolean,
+            default=True, location=location,
+            help="if True, the search_str will be looked for in title")
+        parser.add_argument(
+            "search_content", type=inputs.boolean, default=False,
+            store_missing=False, location=location,
+            help="if True, the search_str will be looked for in content")
+        parser.add_argument(
+            "filter", type=str, choices=["all", "unread", "liked"],
+            default="unread", location=location,
+            help="the boolean (all, unread or liked) filter "
+                 "to apply to clusters")
+        parser.add_argument(
+            "feed_id", type=int, store_missing=False, location=location,
+            help="the parent feed id to filter with")
+        parser.add_argument(
+            "category_id", type=int, store_missing=False, location=location,
+            help="the parent category id to filter with")
+        parser.add_argument(
+            "from_date", type=inputs.datetime_from_iso8601, location=location,
+            store_missing=False, help="for pagination")
+        yield parser
+
+
+filter_parser, mark_as_read_parser = list(_set())
 mark_as_read_parser.add_argument(
     "only_singles", type=bool, default=False,
-    store_missing=False, location=['args', 'json'],
+    store_missing=False, location='json',
     help="set to true to mark as read only cluster with one article")
 
 
