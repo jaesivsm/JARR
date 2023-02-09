@@ -82,6 +82,11 @@ init-env:
 	$(RUN) flask bootstrap-database
 	$(RUN) flask db stamp $(DB_VER)
 
+init-env-docker: export JARR_CONFIG = $(CONF_FILE)
+init-env-docker:
+	$(COMPOSE) exec jarr-server pipenv run flask bootstrap-database
+	$(COMPOSE) exec jarr-server pipenv run flask db stamp $(DB_VER)
+
 db: export JARR_CONFIG = $(CONF_FILE)
 db:
 	$(RUN) flask db $(COMMAND)

@@ -37,18 +37,22 @@ make start-env COMPOSE_FILE=Dockerfiles/prod-example.yml
 # create database inside the running postgres
 # /!\ this command is for test purpose and create db and user without password
 # you'll want to change that in production
-make create-db COMPOSE_FILE=Dockerfiles/prod-example.yml
+make db-bootstrap-user COMPOSE_FILE=Dockerfiles/prod-example.yml
+make db-bootstrap-tables COMPOSE_FILE=Dockerfiles/prod-example.yml
 
 # create JARR tables
 # /!\ this step will fail if you leave the default value for Database address,
 # you'll want to replace it with "postgresql" in the jarr.json configuration file
-make init-env COMPOSE_FILE=Dockerfiles/prod-example.yml
+make init-env-docker COMPOSE_FILE=Dockerfiles/prod-example.yml
 ```
+
+Once finished, you may access jarr on `http://localhost:8501/` and login with `admin:admin`.
+
 ## Maintenance
 
 Some tasks will require you to run commands on either the server or the worker :
 
-### Starting the scheduler
+#### Starting the scheduler
 
 To start the scheduler that'll run all background processing, run :
 
@@ -63,7 +67,7 @@ from jarr.crawler.main import scheduler
 scheduler.apply_async()
 ```
 
-### Executing Schema and Data migration
+#### Executing Schema and Data migration
 
 ```
 docker-compose --file Dockerfiles/prod-example.yml exec jarr-worker flask db upgrade

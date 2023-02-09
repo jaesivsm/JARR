@@ -8,12 +8,12 @@
         "level": 10
     },
     "db": {
-        "pg_uri": "postgresql://jarr@0.0.0.0:5432/jarr",
-        "redis": {"host": "0.0.0.0"},
-        "metrics": {"host": "0.0.0.0"}
+        "pg_uri": "postgresql://jarr@postgres:5432/jarr",
+        "redis": {"host": "redis"},
+        "metrics": {"host": "redis"}
     },
-    "celery": {"broker": "amqp://0.0.0.0//",
-               "backend": "redis://0.0.0.0:6379/0",
-               "broker_url": "amqp://0.0.0.0//"},
+    "celery": {"broker": "amqp://rabbitmq//",
+               "backend": "redis://redis:6379/0",
+               "broker_url": "amqp://rabbitmq//"},
     "auth": {"secret_key": "my not so secret key"}
 }

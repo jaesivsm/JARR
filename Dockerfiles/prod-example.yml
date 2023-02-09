@@ -19,6 +19,11 @@ services:
     build:
       context: ../.
       dockerfile: ./Dockerfiles/front
+      args:
+        PUBLIC_URL: http://localhost:8501/
+        REACT_APP_API_URL: http://localhost:8500/
+    ports:
+      - "127.0.0.1:8501:80"
     depends_on:
       - jarr-server
     networks:
@@ -37,15 +42,23 @@ services:
     networks:
       - jarr
   rabbitmq:
+    container_name: rabbitmq
+    hostname: rabbitmq
     image: rabbitmq
     networks:
       - jarr
   redis:
+    container_name: redis
+    hostname: redis
     image: redis
     networks:
       - jarr
   postgres:
+    container_name: postgres
+    hostname: postgres
     image: postgres:13
+    ports:
+      - 127.0.0.1:5432:5432
     networks:
       - jarr
     # remove that on real prod env and set proper db password
