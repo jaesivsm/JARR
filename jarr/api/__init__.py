@@ -22,7 +22,6 @@ def setup_jwt(application, api):
     application.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(
         seconds=conf.auth.expiration_sec
     )
-    application.config["JWT_AUTH_HEADER_PREFIX"] = conf.auth.jwt_header_prefix
     application.config["JWT_SECRET_KEY"] = conf.auth.secret_key
     jwt = JWTManager(application)
 

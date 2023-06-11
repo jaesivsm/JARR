@@ -17,7 +17,7 @@ class Feed(Base):  # type: ignore
     description = Column(String, default="")
     link = Column(String)
     site_link = Column(String, default="")
-    status = Column(
+    status: FeedStatus = Column(
         Enum(FeedStatus), default=FeedStatus.active, nullable=False
     )
     created_date = Column(UTCDateTime, default=utc_now)
@@ -25,7 +25,7 @@ class Feed(Base):  # type: ignore
     unread_count = Column(Integer, default=0)
 
     # integration control
-    feed_type = Column(
+    feed_type: FeedType = Column(
         Enum(FeedType), default=FeedType.classic, nullable=False
     )
     truncated_content = Column(Boolean, default=False, nullable=False)

@@ -20,7 +20,6 @@ types-redis = "*"
 types-requests = "*"
 types-python-dateutil = "*"
 types-mock = "*"
-sqlalchemy-stubs = "*"
 SQLAlchemy = {extras = ["mypy"]}
 black = "*"
 
