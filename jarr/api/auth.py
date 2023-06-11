@@ -1,6 +1,6 @@
 import random
 
-from flask import current_app, render_template
+from flask import render_template
 from flask_jwt_extended import current_user, jwt_required, create_access_token
 from flask_restx import Namespace, Resource, fields
 from werkzeug.exceptions import BadRequest, Forbidden
