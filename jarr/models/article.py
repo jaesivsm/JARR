@@ -8,7 +8,7 @@ from jarr.models.utc_datetime_type import UTCDateTime
 from sqlalchemy import (Column, Enum, ForeignKeyConstraint, Index, Integer,
                         LargeBinary, PickleType, String)
 from sqlalchemy.dialects.postgresql import TSVECTOR
-from sqlalchemy.orm import RelationshipProperty, relationship
+from sqlalchemy.orm import relationship
 
 
 class Article(Base):  # type: ignore
@@ -47,14 +47,14 @@ class Article(Base):  # type: ignore
     cluster_id = Column(Integer)
 
     # relationships
-    user: RelationshipProperty = relationship(
+    user = relationship(
         "User", back_populates='articles')
-    cluster: RelationshipProperty = relationship(
+    cluster = relationship(
         "Cluster", back_populates="articles", foreign_keys=[cluster_id],
         overlaps="clusters")
-    category: RelationshipProperty = relationship(
+    category = relationship(
         "Category", back_populates="articles", foreign_keys=[category_id])
-    feed: RelationshipProperty = relationship(
+    feed = relationship(
         "Feed", back_populates="articles", foreign_keys=[feed_id],
         overlaps="clusters")
 

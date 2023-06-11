@@ -1,6 +1,6 @@
 from jarr.bootstrap import Base
 from sqlalchemy import Column, String
-from sqlalchemy.orm import RelationshipProperty, relationship
+from sqlalchemy.orm import relationship
 
 
 class Icon(Base):  # type: ignore
@@ -11,4 +11,4 @@ class Icon(Base):  # type: ignore
     mimetype = Column(String, default="application/image")
 
     # relationships
-    feeds: RelationshipProperty = relationship('Feed', backref='icon')
+    feeds = relationship('Feed', backref='icon')

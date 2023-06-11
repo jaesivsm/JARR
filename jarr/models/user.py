@@ -1,11 +1,9 @@
 import re
-from datetime import timedelta
+from sqlalchemy import Boolean, Column, Integer, PickleType, String
+from sqlalchemy.orm import relationship, validates
 
-from sqlalchemy import Boolean, Column, Integer, String, PickleType
-from sqlalchemy.orm import relationship, validates, RelationshipProperty
-
-from jarr.lib.utils import utc_now
 from jarr.bootstrap import Base, conf
+from jarr.lib.utils import utc_now
 from jarr.models.utc_datetime_type import UTCDateTime
 
 
@@ -42,22 +40,21 @@ class User(Base):  # type: ignore
     linuxfr_identity = Column(String)
 
     # relationships
-    categories: RelationshipProperty = relationship(
+    categories = relationship(
         'Category', back_populates='user', cascade='all, delete-orphan',
         foreign_keys='[Category.user_id]')
-    feeds: RelationshipProperty = relationship(
+    feeds = relationship(
         'Feed', back_populates='user', cascade='all, delete-orphan',
         foreign_keys='[Feed.user_id]')
-    articles: RelationshipProperty = relationship(
+    articles = relationship(
         'Article', back_populates='user', cascade='all, delete-orphan',
         foreign_keys='[Article.user_id]')
-    clusters: RelationshipProperty = relationship(
+    clusters = relationship(
         'Cluster', back_populates='user', cascade='all, delete-orphan',
         foreign_keys='[Cluster.user_id]')
 
     @validates('login')
-    @staticmethod
-    def validates_login(key, value):
+    def validates_login(self, key, value):
         return re.sub(r'[^a-zA-Z0-9_\.]', '', value.strip())
 
     def __repr__(self):

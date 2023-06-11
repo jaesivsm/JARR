@@ -1,4 +1,4 @@
-from flask_jwt import current_identity, jwt_required
+from flask_jwt_extended import current_user, jwt_required
 from flask_restx import Namespace, Resource, fields, inputs
 from werkzeug.exceptions import Forbidden, NotFound
 
@@ -60,9 +60,9 @@ class ClusterResource(Resource):
     def get(cluster_id):
         cctrl = ClusterController()
         cluster = cctrl.get(id=cluster_id)
-        if cluster.user_id != current_identity.id:
+        if cluster.user_id != current_user.id:
             raise Forbidden()
-        cctrl.user_id = current_identity.id
+        cctrl.user_id = current_user.id
         code = 200
         cluster.content = migrate_content(cluster.content)
         if not cluster.read:
@@ -82,7 +82,7 @@ class ClusterResource(Resource):
     @cluster_ns.response(404, 'Not found')
     @jwt_required()
     def put(cluster_id):
-        cctrl = ClusterController(current_identity.id)
+        cctrl = ClusterController(current_user.id)
         attrs = parse_meaningful_params(cluster_parser)
         if 'read_reason' in attrs:
             pass  # not overriding given read reason
@@ -105,10 +105,10 @@ class ClusterResource(Resource):
     @jwt_required()
     def delete(cluster_id):
         try:
-            ClusterController(current_identity.id).delete(cluster_id)
+            ClusterController(current_user.id).delete(cluster_id)
         except NotFound as not_found:
             user_id = ClusterController().get(id=cluster_id).user_id
-            if user_id != current_identity.id:
+            if user_id != current_user.id:
                 raise Forbidden() from not_found
             raise
         return None, 204

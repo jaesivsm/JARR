@@ -1,4 +1,4 @@
-from flask_jwt import current_identity, jwt_required
+from flask_jwt_extended import current_user, jwt_required
 from flask_restx import Namespace, Resource, fields
 from werkzeug.exceptions import BadRequest
 
@@ -29,7 +29,7 @@ class UserResource(Resource):
     @user_ns.marshal_with(model)
     @jwt_required()
     def get():
-        user = UserController(current_identity.id).get(id=current_identity.id)
+        user = UserController(current_user.id).get(id=current_user.id)
         return user, 200
 
     @staticmethod
@@ -47,7 +47,7 @@ class UserResource(Resource):
     @user_ns.marshal_with(model)
     @jwt_required()
     def put():
-        user_id = current_identity.id
+        user_id = current_user.id
         attrs = parse_meaningful_params(parser_edit)
         if not attrs:
             raise BadRequest()
@@ -60,5 +60,5 @@ class UserResource(Resource):
     @user_ns.response(401, "Unauthorized")
     @jwt_required()
     def delete():
-        UserController(current_identity.id).delete(current_identity.id)
+        UserController(current_user.id).delete(current_user.id)
         return None, 204

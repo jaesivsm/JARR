@@ -6,7 +6,7 @@ from jarr.models.utc_datetime_type import UTCDateTime
 from sqlalchemy import (Boolean, Column, Enum, ForeignKey,
                         ForeignKeyConstraint, Index, Integer, PickleType,
                         String)
-from sqlalchemy.orm import RelationshipProperty, relationship
+from sqlalchemy.orm import relationship
 
 
 class Cluster(Base):  # type: ignore
@@ -36,18 +36,18 @@ class Cluster(Base):  # type: ignore
         ForeignKey('article.id', name='fk_article_id', use_alter=True))
 
     # relationships
-    user: RelationshipProperty = relationship(
+    user = relationship(
         'User', back_populates='clusters')
-    main_article: RelationshipProperty = relationship(
+    main_article = relationship(
         Article, uselist=False, foreign_keys=main_article_id)
-    articles: RelationshipProperty = relationship(
+    articles = relationship(
         Article, back_populates='cluster', foreign_keys=[Article.cluster_id],
         order_by=Article.date.asc())
-    feeds: RelationshipProperty = relationship(
+    feeds = relationship(
         'Feed', back_populates='clusters', secondary='article',
         foreign_keys=[Article.feed_id, Article.cluster_id],
         overlaps="articles,clusters,cluster,feed")
-    categories: RelationshipProperty = relationship(
+    categories = relationship(
         'Category', back_populates='clusters', secondary='article',
         foreign_keys=[Article.cluster_id, Article.category_id],
         overlaps="articles,category,cluster,clusters,feeds")

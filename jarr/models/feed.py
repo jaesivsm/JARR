@@ -6,26 +6,28 @@ from jarr.lib.utils import utc_now
 from jarr.models.utc_datetime_type import UTCDateTime
 from sqlalchemy import (Boolean, Column, Enum, ForeignKeyConstraint, Index,
                         Integer, PickleType, String)
-from sqlalchemy.orm import RelationshipProperty, relationship, validates
+from sqlalchemy.orm import relationship, validates
 
 
 class Feed(Base):  # type: ignore
-    __tablename__ = 'feed'
+    __tablename__ = "feed"
 
     id = Column(Integer, primary_key=True)
     title = Column(String, default="")
     description = Column(String, default="")
     link = Column(String)
     site_link = Column(String, default="")
-    status = Column(Enum(FeedStatus), default=FeedStatus.active,
-                    nullable=False)
+    status = Column(
+        Enum(FeedStatus), default=FeedStatus.active, nullable=False
+    )
     created_date = Column(UTCDateTime, default=utc_now)
     filters = Column(PickleType, default=[])
     unread_count = Column(Integer, default=0)
 
     # integration control
-    feed_type = Column(Enum(FeedType),
-                       default=FeedType.classic, nullable=False)
+    feed_type = Column(
+        Enum(FeedType), default=FeedType.classic, nullable=False
+    )
     truncated_content = Column(Boolean, default=False, nullable=False)
 
     # clustering control
@@ -52,23 +54,27 @@ class Feed(Base):  # type: ignore
     category_id = Column(Integer)
 
     # relationships
-    user: RelationshipProperty = relationship('User', back_populates='feeds')
-    category: RelationshipProperty = relationship(
-        'Category', back_populates='feeds')
-    articles: RelationshipProperty = relationship(
-        'Article', back_populates='feed', cascade='all,delete-orphan')
-    clusters: RelationshipProperty = relationship(
-        'Cluster', back_populates='feeds',
-        foreign_keys='[Article.feed_id, Article.cluster_id]',
-        secondary='article', overlaps="articles")
+    user = relationship("User", back_populates="feeds")
+    category = relationship("Category", back_populates="feeds")
+    articles = relationship(
+        "Article", back_populates="feed", cascade="all,delete-orphan"
+    )
+    clusters = relationship(
+        "Cluster",
+        back_populates="feeds",
+        foreign_keys="[Article.feed_id, Article.cluster_id]",
+        secondary="article",
+        overlaps="articles",
+    )
 
     __table_args__ = (
-            ForeignKeyConstraint([user_id], ['user.id'], ondelete='CASCADE'),
-            ForeignKeyConstraint([category_id], ['category.id'],
-                                 ondelete='CASCADE'),
-            ForeignKeyConstraint([icon_url], ['icon.url']),
-            Index('ix_feed_uid', user_id),
-            Index('ix_feed_uid_cid', user_id, category_id),
+        ForeignKeyConstraint([user_id], ["user.id"], ondelete="CASCADE"),
+        ForeignKeyConstraint(
+            [category_id], ["category.id"], ondelete="CASCADE"
+        ),
+        ForeignKeyConstraint([icon_url], ["icon.url"]),
+        Index("ix_feed_uid", user_id),
+        Index("ix_feed_uid_cid", user_id, category_id),
     )
 
     def __repr__(self):
@@ -77,14 +83,14 @@ class Feed(Base):  # type: ignore
 
     @property
     def abs_icon_url(self):
-        return url_for('feed_icon', url=self.icon_url, _external=True)
+        return url_for("feed_icon", url=self.icon_url, _external=True)
 
-    @validates('title')
+    @validates("title")
     @staticmethod
     def validates_title(key, value):
         return str(value).strip()
 
-    @validates('description')
+    @validates("description")
     @staticmethod
     def validates_description(key, value):
         return str(value).strip()
@@ -92,6 +98,7 @@ class Feed(Base):  # type: ignore
     @property
     def crawler(self):
         from jarr.crawler.crawlers import AbstractCrawler
+
         for crawler_cls in AbstractCrawler.browse_subcls():
             if self.feed_type is crawler_cls.feed_type:
                 return crawler_cls(self)

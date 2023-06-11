@@ -148,7 +148,7 @@ parameters:
       help_txt: Salt for cryptografic purpose.
       required: true
   - jwt_header_prefix:
-      default: JWT
+      default: Bearer
   - expiration_sec:
       default: 86400
       help_txt: Expiration delay in second of the JWT token.

@@ -1,4 +1,4 @@
-from flask_jwt import current_identity, jwt_required
+from flask_jwt_extended import current_user, jwt_required
 from flask_restx import Namespace, Resource, fields
 from werkzeug.exceptions import Forbidden, NotFound
 
@@ -30,7 +30,7 @@ class NewCategoryResource(Resource):
     def post():
         """Create a new category."""
         attrs = parse_meaningful_params(parser)
-        return CategoryController(current_identity.id).create(**attrs), 201
+        return CategoryController(current_user.id).create(**attrs), 201
 
 
 @category_ns.route('ies')
@@ -43,7 +43,7 @@ class ListCategoryResource(Resource):
     @jwt_required()
     def get():
         """List all categories with their unread counts."""
-        return list(CategoryController(current_identity.id).read()), 200
+        return list(CategoryController(current_user.id).read()), 200
 
 
 @category_ns.route('y/<int:category_id>')
@@ -56,7 +56,7 @@ class CategoryResource(Resource):
     @jwt_required()
     def get(category_id):
         """Read an existing category."""
-        return CategoryController(current_identity.id).get(id=category_id), \
+        return CategoryController(current_user.id).get(id=category_id), \
             200
 
     @staticmethod
@@ -69,7 +69,7 @@ class CategoryResource(Resource):
     @jwt_required()
     def put(category_id):
         """Update an existing category."""
-        cctrl = CategoryController(current_identity.id)
+        cctrl = CategoryController(current_user.id)
         attrs = parse_meaningful_params(parser_edit)
         if attrs:
             changed = cctrl.update({'id': category_id}, attrs)
@@ -88,10 +88,10 @@ class CategoryResource(Resource):
     def delete(category_id):
         """Delete an existing category."""
         try:
-            CategoryController(current_identity.id).delete(category_id)
+            CategoryController(current_user.id).delete(category_id)
         except NotFound:
             user_id = CategoryController().get(id=category_id).user_id
-            if user_id != current_identity.id:
+            if user_id != current_user.id:
                 raise Forbidden() from NotFound
             raise
         return None, 204
