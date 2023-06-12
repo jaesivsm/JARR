@@ -17,17 +17,17 @@ class Feed(Base):  # type: ignore
     description = Column(String, default="")
     link = Column(String)
     site_link = Column(String, default="")
-    status: FeedStatus = Column(
+    status = Column(
         Enum(FeedStatus), default=FeedStatus.active, nullable=False
-    )
+    )  # type: ignore
     created_date = Column(UTCDateTime, default=utc_now)
     filters = Column(PickleType, default=[])
     unread_count = Column(Integer, default=0)
 
     # integration control
-    feed_type: FeedType = Column(
+    feed_type = Column(
         Enum(FeedType), default=FeedType.classic, nullable=False
-    )
+    )  # type: ignore
     truncated_content = Column(Boolean, default=False, nullable=False)
 
     # clustering control

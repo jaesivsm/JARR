@@ -13,7 +13,7 @@ from sqlalchemy.orm import relationship
 
 class Article(Base):  # type: ignore
     "Represent an article from a feed."
-    __tablename__ = 'article'
+    __tablename__ = "article"
 
     id = Column(Integer, primary_key=True)
     entry_id = Column(String)
@@ -28,14 +28,15 @@ class Article(Base):  # type: ignore
     order_in_cluster = Column(Integer)
 
     # integration control
-    article_type = Column(Enum(ArticleType),
-                          default=None, nullable=True)
+    article_type = Column(
+        Enum(ArticleType), default=None, nullable=True
+    )  # type: ignore
 
     # parsing
     tags = Column(PickleType, default=[])
     vector = Column(TSVECTOR)
     # reasons
-    cluster_reason = Column(Enum(ClusterReason), default=None)
+    cluster_reason = Column(Enum(ClusterReason), default=None)  # type: ignore
     cluster_score = Column(Integer, default=None)
     cluster_tfidf_neighbor_size = Column(Integer, default=None)
     cluster_tfidf_with = Column(Integer, default=None)
@@ -47,30 +48,36 @@ class Article(Base):  # type: ignore
     cluster_id = Column(Integer)
 
     # relationships
-    user = relationship(
-        "User", back_populates='articles')
+    user = relationship("User", back_populates="articles")
     cluster = relationship(
-        "Cluster", back_populates="articles", foreign_keys=[cluster_id],
-        overlaps="clusters")
+        "Cluster",
+        back_populates="articles",
+        foreign_keys=[cluster_id],
+        overlaps="clusters",
+    )
     category = relationship(
-        "Category", back_populates="articles", foreign_keys=[category_id])
+        "Category", back_populates="articles", foreign_keys=[category_id]
+    )
     feed = relationship(
-        "Feed", back_populates="articles", foreign_keys=[feed_id],
-        overlaps="clusters")
+        "Feed",
+        back_populates="articles",
+        foreign_keys=[feed_id],
+        overlaps="clusters",
+    )
 
     __table_args__ = (
-            ForeignKeyConstraint([user_id], ['user.id'], ondelete='CASCADE'),
-            ForeignKeyConstraint([feed_id], ['feed.id'], ondelete='CASCADE'),
-            ForeignKeyConstraint([category_id], ['category.id'],
-                                 ondelete='CASCADE'),
-            ForeignKeyConstraint([cluster_id], ['cluster.id']),
-            Index('ix_article_uid_cluid', user_id, cluster_id),
-            Index('ix_article_uid_fid_cluid', user_id, feed_id, cluster_id),
-            Index('ix_article_uid_cid_cluid',
-                  user_id, category_id, cluster_id),
-            Index('ix_article_uid_fid_eid', user_id, feed_id, entry_id),
-            Index('ix_article_uid_cid_linkh', user_id, category_id, link_hash),
-            Index('ix_article_retrdate', retrieved_date),
+        ForeignKeyConstraint([user_id], ["user.id"], ondelete="CASCADE"),
+        ForeignKeyConstraint([feed_id], ["feed.id"], ondelete="CASCADE"),
+        ForeignKeyConstraint(
+            [category_id], ["category.id"], ondelete="CASCADE"
+        ),
+        ForeignKeyConstraint([cluster_id], ["cluster.id"]),
+        Index("ix_article_uid_cluid", user_id, cluster_id),
+        Index("ix_article_uid_fid_cluid", user_id, feed_id, cluster_id),
+        Index("ix_article_uid_cid_cluid", user_id, category_id, cluster_id),
+        Index("ix_article_uid_fid_eid", user_id, feed_id, entry_id),
+        Index("ix_article_uid_cid_linkh", user_id, category_id, link_hash),
+        Index("ix_article_retrdate", retrieved_date),
     )
 
     def __repr__(self):
@@ -86,13 +93,20 @@ class Article(Base):  # type: ignore
     def simple_vector_magnitude(self):
         return get_simple_vector(self.vector)[1]
 
-    def get_tfidf_vector(self, frequencies, corpus_size,
-                         will_be_left_member=False):
+    def get_tfidf_vector(
+        self, frequencies, corpus_size, will_be_left_member=False
+    ):
         vector, size = get_simple_vector(self.vector)
-        return TFIDFVector(vector, size, frequencies, corpus_size,
-                           will_be_left_member=will_be_left_member)
+        return TFIDFVector(
+            vector,
+            size,
+            frequencies,
+            corpus_size,
+            will_be_left_member=will_be_left_member,
+        )
 
     @cached_property
     def content_generator(self):
         from jarr.lib.content_generator import get_content_generator
+
         return get_content_generator(self)
