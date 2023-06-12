@@ -28,7 +28,7 @@ lint: pep8 mypy
 
 test: export JARR_CONFIG = example_conf/jarr.test.json
 test:
-	$(RUN) nosetests $(TEST) -vv --with-coverage --cover-package=jarr
+	$(RUN) pytest $(TEST) -vv
 
 build-base:
 	docker build --cache-from=jarr . \

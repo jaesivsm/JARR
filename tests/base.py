@@ -5,9 +5,10 @@ from os import path
 from typing import Type
 
 from flask_testing import TestCase
-from jarr.bootstrap import REDIS_CONN, Base, conf, init_db, session
+from jarr.bootstrap import REDIS_CONN, Base, conf, engine, init_db, session
 from jarr.controllers.abstract import AbstractController
 from jarr.lib.enums import ClusterReason
+from sqlalchemy import text
 from werkzeug.exceptions import NotFound
 
 from tests.fixtures.filler import populate_db
@@ -86,11 +87,11 @@ class BaseJarrTest(TestCase):
             session.expunge_all()
             tables = ", ".join(
                 [
-                    (f'"{table}"' % table) if table == "user" else table
+                    f'"{table}"' if table == "user" else table
                     for table in list(Base.metadata.tables)
                 ]
             )
-            session.execute(f"DROP TABLE IF EXISTS {tables} CASCADE")
+            session.execute(text(f"DROP TABLE IF EXISTS {tables} CASCADE"))
             session.commit()
         except Exception:
             logger.exception("Dropping db failed")
@@ -100,7 +101,7 @@ class BaseJarrTest(TestCase):
         REDIS_CONN.flushdb()
         init_db()
         self._drop_all()
-        Base.metadata.create_all()
+        Base.metadata.create_all(engine)
         populate_db()
 
     def tearDown(self):
