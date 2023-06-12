@@ -54,7 +54,7 @@ class User(Base):  # type: ignore
         foreign_keys='[Cluster.user_id]')
 
     @validates('login')
-    def validates_login(self, key, value):
+    def string_cleaning(self, key, value):
         return re.sub(r'[^a-zA-Z0-9_\.]', '', value.strip())
 
     def __repr__(self):

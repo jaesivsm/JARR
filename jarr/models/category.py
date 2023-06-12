@@ -1,7 +1,7 @@
 from jarr.bootstrap import Base
 from sqlalchemy import (Boolean, Column, ForeignKeyConstraint, Index, Integer,
                         PickleType, String)
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, validates
 
 
 class Category(Base):  # type: ignore
@@ -39,6 +39,10 @@ class Category(Base):  # type: ignore
                                  ondelete='CASCADE'),
             Index('ix_category_uid', user_id),
     )
+
+    @validates("name")
+    def string_cleaning(self, key, value):
+        return str(value if value is not None else '').strip()
 
     def __repr__(self):
         return f"<Category({self.id})>"

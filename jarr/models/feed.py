@@ -86,12 +86,9 @@ class Feed(Base):  # type: ignore
         return url_for("feed_icon", url=self.icon_url, _external=True)
 
     @validates("title")
-    def validates_title(self, key, value):
-        return str(value).strip()
-
     @validates("description")
-    def validates_description(self, key, value):
-        return str(value).strip()
+    def string_cleaning(self, key, value):
+        return str(value if value is not None else '').strip()
 
     @property
     def crawler(self):
