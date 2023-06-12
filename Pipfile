@@ -22,6 +22,7 @@ types-mock = "*"
 SQLAlchemy = {extras = ["mypy"]}
 black = "*"
 pytest = "*"
+pytest-cov = "*"
 
 [packages]
 alembic = "==1.*"
@@ -30,7 +31,7 @@ blinker = "==1.4.*"
 celery = "==5.*"
 feedparser = "==6.*"
 json-logging-py = "==0.*"
-Flask = "==2.0.*"
+Flask = "==2.*"
 Flask-Migrate = "==2.*"
 flask-restx = "==0.5.*"
 flask-jwt-extended = "==4.*"
@@ -41,13 +42,14 @@ opml = "==0.*"
 prometheus-distributed-client = "==1.*"
 python-dateutil = "*"
 rauth = "==0.7.3"
-redis = "==2.*"
+redis = "==4.*"
 requests = "==2.*"
 SQLAlchemy = "==2.*"
 the-conf = "==0.*"
 flask-cors = "==3.*"
-psycopg2-binary = "*"
+psycopg2-binary = "==2.*"
 werkzeug = "==2.1.2"  # fixing for bug with last flask version
+
 
 [requires]
 python_version = "3.10"
