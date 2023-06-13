@@ -98,11 +98,11 @@ class AbstractArticleBuilder:
     @classmethod
     def _head(cls, url, reraise=False):
         try:
-            validate_url(url)
             headers = {'User-Agent': conf.crawler.user_agent}
             head = requests.head(url, headers=headers, allow_redirects=True,
                                  timeout=conf.crawler.timeout)
             head.raise_for_status()
+            validate_url(url)
             return head
         except MissingSchema:
             if reraise:
