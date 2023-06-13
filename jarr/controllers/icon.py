@@ -18,13 +18,9 @@ class IconController(AbstractController):
                 resp = jarr_get(attrs["url"])
             except Exception:
                 return attrs
-            attrs.update(
-                {
-                    "url": resp.url,
-                    "mimetype": resp.headers.get("content-type", None),
-                    "content": base64.b64encode(resp.content).decode("utf8"),
-                }
-            )
+            attrs["url"] = resp.url
+            attrs["mimetype"] = resp.headers.get("content-type", None)
+            attrs["content"] = base64.b64encode(resp.content).decode("utf8")
         return attrs
 
     def create(self, **attrs):
