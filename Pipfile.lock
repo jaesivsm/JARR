@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "d74f2fc8991e277feaed33842ec48c92df6c4f0a76c3af6b96dde93adb48e219"
+            "sha256": "9990ad56b8140421abe99f2be3b315b9952f785bba324169a474b3c154740204"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -74,10 +74,11 @@
         },
         "blinker": {
             "hashes": [
-                "sha256:471aee25f3992bd325afa3772f1063dbdbbca947a041b8b89466dc00d606f8b6"
+                "sha256:4afd3de66ef3a9f8067559fb7a1cbe555c17dcbe15971b05d1b625c3e7abe213",
+                "sha256:c3d739772abb7bc2860abf5f2ec284223d9ad5c76da018234f6f50d6f31ab1f0"
             ],
             "index": "pypi",
-            "version": "==1.4"
+            "version": "==1.6.2"
         },
         "celery": {
             "hashes": [
@@ -375,13 +376,6 @@
             ],
             "markers": "python_version >= '3.7'",
             "version": "==3.1.2"
-        },
-        "json-logging-py": {
-            "hashes": [
-                "sha256:118b1fe1f4eacaea6370e5b9710d0f6d0c0a4599aef9d5b9875a6a579974fc9a"
-            ],
-            "index": "pypi",
-            "version": "==0.2"
         },
         "jsonschema": {
             "hashes": [
