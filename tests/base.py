@@ -85,13 +85,12 @@ class BaseJarrTest(TestCase):
     def _drop_all():
         try:
             session.expunge_all()
-            tables = ", ".join(
-                [
-                    f'"{table}"' if table == "user" else table
-                    for table in list(Base.metadata.tables)
-                ]
-            )
-            session.execute(text(f"DROP TABLE IF EXISTS {tables} CASCADE"))
+            tables = [
+                f'"{table}"' if table == "user" else table
+                for table in list(Base.metadata.tables)
+            ]
+            stmt = text(f"DROP TABLE IF EXISTS {','.join(tables)} CASCADE")
+            session.execute(stmt)
             session.commit()
         except Exception:
             logger.exception("Dropping db failed")
@@ -112,12 +111,14 @@ class BaseJarrTest(TestCase):
         from jarr.lib.clustering_af.vector import get_simple_vector
         from jarr.lib.content_generator import get_content_generator
         from jarr.lib.html_parsing import get_soup
+        from jarr.lib.utils import validate_url
 
         for func in (
             get_cached_user,
             get_soup,
             get_simple_vector,
             get_content_generator,
+            validate_url,
         ):
             func.cache_clear()
 
