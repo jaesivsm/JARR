@@ -85,7 +85,8 @@ class ConstructArticleTest(unittest.TestCase):
         self.assertEqual(1, article['user_id'])
         self.assertEqual(1, article['feed_id'])
 
-    def test_image_content(self):
+    @patch('jarr.crawler.article_builders.abstract.validate_url')
+    def test_image_content(self, p):
         entry, resp = self.entry2, self.response2
         resp.headers['content-type'] = 'image/png'
         entry.pop('links')

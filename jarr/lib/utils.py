@@ -97,10 +97,18 @@ def validate_url(url):
         raise excep
 
 
-def jarr_get(url, timeout=None, user_agent=None, headers=None, **kwargs):
+def jarr_get(
+    url,
+    timeout=None,
+    user_agent=None,
+    headers=None,
+    ssrf_protect=True,
+    **kwargs,
+):
     from jarr.bootstrap import conf  # prevent circular import
 
-    validate_url(url)
+    if ssrf_protect:
+        validate_url(url)
 
     timeout = timeout or conf.crawler.timeout
     user_agent = user_agent or conf.crawler.user_agent
