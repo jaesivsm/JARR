@@ -147,11 +147,11 @@ parameters:
   - secret_key:
       help_txt: Salt for cryptografic purpose.
       required: true
-  - jwt_header_prefix:
-      default: JWT
   - expiration_sec:
-      default: 86400
+      default: 1200
       help_txt: Expiration delay in second of the JWT token.
+  - refresh_token_expiration_days:
+      default: 30
   - allow_signup:
       default: true
       help_txt: Allow or not people to create account of your instance of JARR.

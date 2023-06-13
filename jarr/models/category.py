@@ -1,7 +1,7 @@
 from jarr.bootstrap import Base
 from sqlalchemy import (Boolean, Column, ForeignKeyConstraint, Index, Integer,
                         PickleType, String)
-from sqlalchemy.orm import RelationshipProperty, relationship
+from sqlalchemy.orm import relationship, validates
 
 
 class Category(Base):  # type: ignore
@@ -22,14 +22,14 @@ class Category(Base):  # type: ignore
     user_id = Column(Integer, nullable=False)
 
     # relationships
-    user: RelationshipProperty = relationship(
+    user = relationship(
         'User', back_populates='categories', uselist=False)
-    feeds: RelationshipProperty = relationship(
+    feeds = relationship(
         'Feed', back_populates='category',
         cascade='all,delete-orphan', uselist=False)
-    articles: RelationshipProperty = relationship(
+    articles = relationship(
         'Article', back_populates='category', cascade='all,delete-orphan')
-    clusters: RelationshipProperty = relationship(
+    clusters = relationship(
         'Cluster', back_populates='categories',
         foreign_keys='[Article.category_id, Article.cluster_id]',
         secondary='article', overlaps="articles,category,cluster,clusters")
@@ -39,6 +39,10 @@ class Category(Base):  # type: ignore
                                  ondelete='CASCADE'),
             Index('ix_category_uid', user_id),
     )
+
+    @validates("name")
+    def string_cleaning(self, key, value):
+        return str(value if value is not None else '').strip()
 
     def __repr__(self):
         return f"<Category({self.id})>"

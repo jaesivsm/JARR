@@ -1,7 +1,7 @@
 import base64
 
 from flask import Response
-from flask_jwt import current_identity, jwt_required
+from flask_jwt_extended import current_user, jwt_required
 from flask_restx import Namespace, Resource, fields
 
 from jarr.api.common import (EnumField, parse_meaningful_params,
@@ -93,7 +93,7 @@ class NewFeedResource(Resource):
     def post():
         """Create an new feed."""
         attrs = parse_meaningful_params(parser)
-        return FeedController(current_identity.id).create(**attrs), 201
+        return FeedController(current_user.id).create(**attrs), 201
 
 
 @feed_ns.route('s')
@@ -106,7 +106,7 @@ class ListFeedResource(Resource):
     @jwt_required()
     def get():
         """List all available feeds with a relative URL to their icons."""
-        return list(FeedController(current_identity.id).read())
+        return list(FeedController(current_user.id).read())
 
 
 @feed_ns.route('/<int:feed_id>')
@@ -120,7 +120,7 @@ class FeedResource(Resource):
     @jwt_required()
     def get(feed_id):
         """Read an existing feed."""
-        return FeedController(current_identity.id).get(id=feed_id), 200
+        return FeedController(current_user.id).get(id=feed_id), 200
 
     @staticmethod
     @feed_ns.expect(parser_edit)
@@ -132,7 +132,7 @@ class FeedResource(Resource):
     @jwt_required()
     def put(feed_id):
         """Update an existing feed."""
-        fctrl = FeedController(current_identity.id)
+        fctrl = FeedController(current_user.id)
         attrs = parse_meaningful_params(parser_edit)
         changed = fctrl.update({'id': feed_id}, attrs)
         if not changed:
@@ -148,7 +148,7 @@ class FeedResource(Resource):
     @jwt_required()
     def delete(feed_id):
         """Delete an existing feed."""
-        fctrl = FeedController(current_identity.id)
+        fctrl = FeedController(current_user.id)
         if not fctrl.update({'id': feed_id}, {'status': FeedStatus.to_delete}):
             fctrl.assert_right_ok(feed_id)
         return None, 204
@@ -178,7 +178,7 @@ class FeedBuilder(Resource):
         feed = FeedBuilderController(url).construct()
         if feed.get('link'):
             code = 200
-            fctrl = FeedController(current_identity.id)
+            fctrl = FeedController(current_user.id)
             feed['same_link_count'] = fctrl.read(link=feed.get('link')).count()
         return feed, code
 

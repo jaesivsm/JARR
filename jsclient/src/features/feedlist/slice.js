@@ -37,8 +37,8 @@ const feedSlice = createSlice({
                   unreadToFetch: true,
                   feedListRows: [],
                   unreads: {},
-                  isParentFolded: storageGet("left-menu-folded") === "true",
-                  isOpen: triboolMapping[storageGet("left-menu-open")],
+                  isParentFolded: storageGet("left-menu-folded", "session") === "true",
+                  isOpen: triboolMapping[storageGet("left-menu-open", "session")],
                   feedListFilter: defaultFilter,
                   icons: {},
                   categoryAsFeed: {},
@@ -60,7 +60,7 @@ const feedSlice = createSlice({
     },
     toggleAllFolding: (state, action) => {
       const newFolding = !state.isParentFolded;
-      storageSet("left-menu-folded", newFolding);
+      storageSet("left-menu-folded", newFolding, "session");
       return { ...state,
                feedListRows: state.feedListRows.map((row) => {
                  return { ...row, folded: newFolding, };
@@ -107,7 +107,7 @@ const feedSlice = createSlice({
                                                state.isParentFolded),
     }),
     toggleMenu: (state, action) => {
-      storageSet("left-menu-open", action.payload);
+      storageSet("left-menu-open", action.payload, "session");
       return { ...state, isOpen: action.payload };
     },
     changeReadCount: (state, action) => {

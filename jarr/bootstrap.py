@@ -8,8 +8,7 @@ import logging
 from prometheus_distributed_client import set_redis_conn
 from redis import Redis
 from sqlalchemy import create_engine
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import scoped_session, sessionmaker
+from sqlalchemy.orm import registry, scoped_session, sessionmaker
 from the_conf import TheConf
 
 conf = TheConf('jarr/metaconf.yml')
@@ -39,10 +38,11 @@ def init_logging(log_path=None, log_level=logging.INFO, modules=(),
 
 
 def init_db(echo=False):
+    mapper_registry = registry()
     new_engine = create_engine(conf.db.pg_uri, echo=echo)
-    NewBase = declarative_base(new_engine)
+    NewBase = mapper_registry.generate_base()
     new_session = scoped_session(sessionmaker(bind=new_engine))
-    return new_engine, new_session, NewBase
+    return mapper_registry, new_engine, new_session, NewBase
 
 
 def init_models():
@@ -58,7 +58,7 @@ def rollback_pending_sql(*args, **kwargs):
     session.rollback()
 
 
-engine, session, Base = init_db()
+sqlalchemy_registry, engine, session, Base = init_db()
 init_models()
 set_redis_conn(host=conf.db.metrics.host,
                db=conf.db.metrics.db,

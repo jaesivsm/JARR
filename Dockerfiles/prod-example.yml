@@ -56,7 +56,7 @@ services:
   postgres:
     container_name: postgres
     hostname: postgres
-    image: postgres:13
+    image: postgres:15
     ports:
       - 127.0.0.1:5432:5432
     networks:

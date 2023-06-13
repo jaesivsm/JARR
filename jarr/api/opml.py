@@ -1,5 +1,5 @@
 from flask import make_response, render_template, request
-from flask_jwt import current_identity, jwt_required
+from flask_jwt_extended import current_user, jwt_required
 from flask_restx import Namespace, Resource, fields
 from werkzeug.datastructures import FileStorage
 from werkzeug.exceptions import UnprocessableEntity
@@ -29,7 +29,7 @@ class OPMLResource(Resource):
     @opml_ns.response(200, 'OK', headers=OK_GET_HEADERS)
     @jwt_required()
     def get():
-        user_id = current_identity.id
+        user_id = current_user.id
         user = UserController(user_id).get(id=user_id)
         categories = {cat.id: cat
                       for cat in CategoryController(user_id).read()}
@@ -57,8 +57,8 @@ class OPMLResource(Resource):
             raise UnprocessableEntity(f"Couldn't parse OPML file ({error!r})"
                                       ) from error
 
-        ccontr = CategoryController(current_identity.id)
-        fcontr = FeedController(current_identity.id)
+        ccontr = CategoryController(current_user.id)
+        fcontr = FeedController(current_user.id)
         counts = {'created': 0, 'existing': 0, 'failed': 0, 'exceptions': []}
         categories = {cat.name: cat.id for cat in ccontr.read()}
         for line in subscriptions:

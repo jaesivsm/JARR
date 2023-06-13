@@ -1,4 +1,4 @@
-from flask_jwt import current_identity, jwt_required
+from flask_jwt_extended import current_user, jwt_required
 from flask_restx import Namespace, Resource, fields, inputs
 
 from jarr.controllers import FeedController
@@ -71,7 +71,7 @@ class ListFeeds(Resource):
     @jwt_required()
     def get():
         """Will list feeds with their category and respective id."""
-        return list(FeedController(current_identity.id).list_w_categ()), 200
+        return list(FeedController(current_user.id).list_w_categ()), 200
 
 
 @default_ns.route("/unreads")
@@ -83,7 +83,7 @@ class Unreads(Resource):
     @jwt_required()
     def get():
         """Return feeds with count of unread clusters."""
-        return ClusterController(current_identity.id).get_unreads(), 200
+        return ClusterController(current_user.id).get_unreads(), 200
 
 
 def _get_filters(in_dict):
@@ -135,7 +135,7 @@ class Clusters(Resource):
     def get():
         """Will list all cluster extract for the middle pannel."""
         attrs = filter_parser.parse_args()
-        clu_ctrl = ClusterController(current_identity.id)
+        clu_ctrl = ClusterController(current_user.id)
         return list(clu_ctrl.join_read(**_get_filters(attrs)))
 
 
@@ -152,7 +152,7 @@ class MarkClustersAsRead(Resource):
         """Will mark all clusters selected by the filter as read."""
         attrs = mark_as_read_parser.parse_args()
         filters = _get_filters(attrs)
-        clu_ctrl = ClusterController(current_identity.id)
+        clu_ctrl = ClusterController(current_user.id)
         clusters = [clu for clu in clu_ctrl.join_read(limit=None, **filters)
                     if not attrs.get("only_singles")
                     or len(clu["feeds_id"]) == 1]

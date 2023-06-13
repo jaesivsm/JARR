@@ -28,7 +28,7 @@ lint: pep8 mypy
 
 test: export JARR_CONFIG = example_conf/jarr.test.json
 test:
-	$(RUN) nosetests $(TEST) -vv --with-coverage --cover-package=jarr
+	$(RUN) pytest --cov=jarr $(TEST) -vv
 
 build-base:
 	docker build --cache-from=jarr . \
@@ -67,7 +67,7 @@ run-front:
 
 db-bootstrap-user:
 	$(COMPOSE) exec $(DB_CONTAINER_NAME) su postgres -c \
-		"createuser $(DB_NAME) --no-superuser --createdb --no-createrole"
+		"createuser $(DB_NAME) --no-superuser --createdb --superuser"
 
 db-bootstrap-tables:
 	$(COMPOSE) exec $(DB_CONTAINER_NAME) su postgres -c "createdb $(DB_NAME) --no-password"

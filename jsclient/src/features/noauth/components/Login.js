@@ -20,7 +20,7 @@ const mapDispatchToProps = (dispatch) => ({
     e.preventDefault();
     const login = e.target.querySelector("input#jarr-login").value;
     const password = e.target.querySelector("input#jarr-password").value;
-    dispatch(doLogin(login, password));
+    dispatch(doLogin(null, login, password));
   },
 });
 

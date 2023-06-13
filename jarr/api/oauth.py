@@ -71,8 +71,7 @@ class OAuthSignInMixin(Resource):  # pragma: no cover
         jwt_ext = current_app.extensions['jwt']
         access_token = jwt_ext.jwt_encode_callback(user).decode('utf8')
         SERVER.labels(result="2XX", **labels).inc()
-        return {"access_token": f"{conf.auth.jwt_header_prefix} {access_token}"
-                }, 200
+        return {"access_token": f"Bearer {access_token}"}, 200
 
 
 class GoogleSignInMixin(OAuthSignInMixin):

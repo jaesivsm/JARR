@@ -1,7 +1,7 @@
 import axios from "axios";
 import { createSlice } from "@reduxjs/toolkit";
 import { apiUrl } from "../../const";
-import { attemptLogin, tokenAcquired, loginFailed } from "../../authSlice";
+import { tokenAcquired, loginFailed } from "../../authSlice";
 
 const INITIAL_STATE = { loading: false,
                         loginError: null,
@@ -43,17 +43,26 @@ export const { requestSent, responseRecieved,
 export default noAuthSlice.reducer;
 
 export const doLogin = (
+  token: string,
   login: string,
   password: string
 ): AppThunk => async (dispatch) => {
   dispatch(requestSent());
-  dispatch(attemptLogin({ login, password }));
   try {
-    const result = await axios.post(
+    var result;
+    if (!!token) {
+      result = await axios({
+        method: "post",
+        url: `${apiUrl}/auth/refresh`,
+        headers: { "Authorization": token }
+      });
+    } else {
+      result = await axios.post(
         `${apiUrl}/auth`,
         { login, password },
         { responseType: "json" },
-    );
+      );
+    }
     dispatch(responseRecieved());
     dispatch(tokenAcquired(result));
   } catch (err) {
@@ -75,7 +84,6 @@ export const doSignUp = (
       data: { login, password, email },
     });
     dispatch(responseRecieved());
-    dispatch(attemptLogin({ login, password }));
   } catch (err) {
     dispatch(authError(err.response));
   }
@@ -112,7 +120,6 @@ export const doRecovery = (
       data: { login, email, token, password },
     });
     dispatch(responseRecieved());
-    dispatch(attemptLogin({ login, password }));
   } catch (err) {
     dispatch(responseRecieved({ recovery: err.response }));
   }
