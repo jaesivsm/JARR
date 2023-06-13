@@ -18,7 +18,7 @@ const authSlice = createSlice({
     tokenAcquired: (state, action) => {
       const accessToken = action.payload.data["access_token"];
       const refreshToken = action.payload.data["refresh_token"];
-      if (!!refreshToken) {
+      if (refreshToken) {
         storageSet("refreshToken", refreshToken, "local");
         return { ...state, accessToken, refreshedAt: new Date().getTime() };
       } else {
