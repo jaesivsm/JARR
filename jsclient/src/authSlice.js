@@ -30,7 +30,7 @@ const authSlice = createSlice({
       return { ...state, accessToken: null, refreshToken: null};
     },
     doLogout: () => {
-      storageRemove("left-menu-open", "local");
+      storageRemove("left-menu-open", "session");
       storageRemove("refreshToken", "local");
       return { accessToken: null, refreshToken: null };
     },
