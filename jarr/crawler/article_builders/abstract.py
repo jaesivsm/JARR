@@ -8,7 +8,7 @@ from jarr.lib.content_generator import YOUTUBE_RE, is_embedded_link
 from jarr.lib.enums import ArticleType
 from jarr.lib.filter import FiltersAction, process_filters
 from jarr.lib.url_cleaners import clean_urls, remove_utm_tags
-from jarr.lib.utils import clean_lang, digest, utc_now
+from jarr.lib.utils import clean_lang, digest, utc_now, validate_url
 
 logger = logging.getLogger(__name__)
 
@@ -24,7 +24,7 @@ class AbstractArticleBuilder:
 
     @property
     def entry_ids(self):
-        return {k: self.article[k] for k in {'entry_id', 'feed_id', 'user_id'}}
+        return {k: self.article[k] for k in ('entry_id', 'feed_id', 'user_id')}
 
     @property
     def do_skip_creation(self):
@@ -98,6 +98,7 @@ class AbstractArticleBuilder:
     @classmethod
     def _head(cls, url, reraise=False):
         try:
+            validate_url(url)
             headers = {'User-Agent': conf.crawler.user_agent}
             head = requests.head(url, headers=headers, allow_redirects=True,
                                  timeout=conf.crawler.timeout)
