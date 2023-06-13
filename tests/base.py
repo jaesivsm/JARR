@@ -85,13 +85,12 @@ class BaseJarrTest(TestCase):
     def _drop_all():
         try:
             session.expunge_all()
-            tables = ", ".join(
-                [
-                    f'"{table}"' if table == "user" else table
-                    for table in list(Base.metadata.tables)
-                ]
-            )
-            session.execute(text(f"DROP TABLE IF EXISTS {tables} CASCADE"))
+            tables = [
+                f'"{table}"' if table == "user" else table
+                for table in list(Base.metadata.tables)
+            ]
+            stmt = text(f"DROP TABLE IF EXISTS {','.join(tables)} CASCADE")
+            session.execute(stmt)
             session.commit()
         except Exception:
             logger.exception("Dropping db failed")
