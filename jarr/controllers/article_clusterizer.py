@@ -163,14 +163,10 @@ class Clusterizer:
             "retrieved_date__lt": article.retrieved_date + time_delta,
             "retrieved_date__gt": article.retrieved_date - time_delta,
         }
-        filters.update(
-            {
-                "cluster_id__ne": None,
-                "user_id": article.user_id,
-                "id__ne": article.id,
-                "__or__": [date_cond, retr_cond],
-            }
-        )
+        filters["cluster_id__ne"] = None
+        filters["user_id"] = article.user_id
+        filters["id__ne"] = article.id
+        filters["__or__"] = [date_cond, retr_cond]
         if article.category_id and not self.get_config(
             article, "cluster_same_category"
         ):
