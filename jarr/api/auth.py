@@ -1,16 +1,16 @@
 import random
 
 from flask import render_template
-from flask_jwt_extended import current_user, jwt_required, create_access_token
+from flask_jwt_extended import (create_access_token, create_refresh_token,
+                                current_user, jwt_required)
 from flask_restx import Namespace, Resource, fields
-from werkzeug.exceptions import BadRequest, Forbidden
-
 from jarr.api.common import get_ui_url
 from jarr.bootstrap import conf
 from jarr.controllers import UserController
 from jarr.lib import emails
 from jarr.lib.utils import utc_now
 from jarr.metrics import SERVER
+from werkzeug.exceptions import BadRequest, Forbidden
 
 auth_ns = Namespace("auth", description="Auth related operations")
 model = auth_ns.model(
@@ -20,6 +20,7 @@ model = auth_ns.model(
             description="The token that must be place "
             "in the Authorization header"
         ),
+        "refresh_token": fields.String(),
     },
 )
 login_parser = auth_ns.parser()
@@ -58,12 +59,16 @@ class LoginResource(Resource):
             SERVER.labels(method="post", uri="auth", result="4XX").inc()
             raise Forbidden()
         access_token = create_access_token(identity=user)
+        refresh_token = create_refresh_token(identity=user)
         UserController(user.id).update(
             {"id": user.id},
             {"last_connection": utc_now(), "renew_password_token": ""},
         )
         SERVER.labels(method="post", uri="/auth", result="2XX").inc()
-        return {"access_token": f"Bearer {access_token}"}, 200
+        return {
+            "access_token": f"Bearer {access_token}",
+            "refresh_token": f"Bearer {refresh_token}",
+        }, 200
 
 
 @auth_ns.route("/refresh")
@@ -71,8 +76,8 @@ class Refresh(Resource):
     @staticmethod
     @auth_ns.response(200, "OK", model=model)
     @auth_ns.response(403, "Forbidden")
-    @jwt_required()
-    def get():
+    @jwt_required(refresh=True)
+    def post():
         """Given valid credentials, will provide a token to request the API."""
         user = UserController(current_user.id).get(id=current_user.id)
         access_token = create_access_token(identity=user)

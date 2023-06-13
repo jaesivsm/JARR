@@ -21,10 +21,8 @@ import jarrIcon from "../../components/JarrIcon.gif";
 
 function mapStateToProps(state) {
   return { isLoading: state.noauth.loading,
-           noToken: (!state.noauth.loading
-                     && !!state.auth.login
-                     && !!state.auth.password
-                     && !state.auth.token),
+           noAccessToken: (!state.noauth.loading && !state.auth.accessToken),
+           refreshToken: state.auth.refreshToken,
            savedLogin: state.auth.login,
            savedPassword: state.auth.password,
            recovery: (state.noauth.recovery ? state.noauth.recovery.statusText : ""),
@@ -32,18 +30,18 @@ function mapStateToProps(state) {
 }
 
 const mapDispatchToProps = (dispatch) => ({
-  hiddenLogin (login, password) {
-    dispatch(doLogin(login, password));
+  hiddenLogin(refreshToken, login, password) {
+    dispatch(doLogin(refreshToken, login, password));
   },
   clearStore() {
     dispatch(responseRecieved());
   },
 });
 
-function NoAuth({ isLoading, noToken, savedLogin, savedPassword, recovery, hiddenLogin, clearStore }) {
+function NoAuth({ isLoading, noAccessToken, savedLogin, savedPassword, refreshToken, recovery, hiddenLogin, clearStore }) {
   useEffect(() => {
-    if (savedLogin && savedPassword && noToken) {
-        hiddenLogin(savedLogin, savedPassword);
+    if ((refreshToken || (savedLogin && savedPassword)) && noAccessToken) {
+      hiddenLogin(refreshToken, savedLogin, savedPassword);
     }
   });
   const classes = makeStyles();
@@ -144,9 +142,10 @@ function NoAuth({ isLoading, noToken, savedLogin, savedPassword, recovery, hidde
 
 NoAuth.propTypes = {
   isLoading: PropTypes.bool.isRequired,
-  noToken: PropTypes.bool.isRequired,
+  noAccessToken: PropTypes.bool.isRequired,
   savedLogin: PropTypes.string,
   savedPassword: PropTypes.string,
+  refreshToken: PropTypes.string,
   recovery: PropTypes.string.isRequired,
   hiddenLogin: PropTypes.func.isRequired,
 };

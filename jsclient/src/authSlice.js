@@ -9,35 +9,35 @@ const refreshDelay = 10 * 60 * 1000;  // 10 mn in miliseconds
 
 const authSlice = createSlice({
   name: "auth",
-  initialState: { login: null,
-                  password: null,
-                  token: storageGet("token", "session"),
+  initialState: { accessToken: null,
+                  refreshToken: storageGet("refreshToken", "local"),
                   refreshedAt: null,
   },
   reducers: {
-    attemptLogin: (state, action) => {
-      const { login, password } = action.payload;
-      return { ...state, login, password };
-    },
-    loginFailed: (state, action) => ({ token: null, login: null, password: null }),
+    loginFailed: (state, action) => ({ accessToken: null, refreshToken: null }),
     tokenAcquired: (state, action) => {
-      const token = action.payload.data["access_token"];
-      storageSet("token", token, "session");
-      return { ...state, token, refreshedAt: new Date().getTime() };
+      const accessToken = action.payload.data["access_token"];
+      const refreshToken = action.payload.data["refresh_token"];
+      if (!!refreshToken) {
+        storageSet("refreshToken", refreshToken, "local");
+        return { ...state, accessToken, refreshedAt: new Date().getTime() };
+      } else {
+        return { ...state, accessToken, refreshToken, refreshedAt: new Date().getTime() };
+      }
     },
     tokenExpire: (state, action) => {
-      storageRemove("token", "session");
-      return { ...state, token: null};
+      storageRemove("refreshToken", "local");
+      return { ...state, accessToken: null, refreshToken: null};
     },
     doLogout: () => {
-      storageRemove("left-menu-open");
-      storageRemove("token", "session");
-      return { login: null, password: null, token: null };
+      storageRemove("left-menu-open", "local");
+      storageRemove("refreshToken", "local");
+      return { accessToken: null, refreshToken: null };
     },
   },
 });
 
-export const { attemptLogin, loginFailed, tokenAcquired, tokenExpire, doLogout } = authSlice.actions;
+export const { loginFailed, tokenAcquired, tokenExpire, doLogout } = authSlice.actions;
 
 export default authSlice.reducer;
 
@@ -49,9 +49,9 @@ export const doRetryOnTokenExpiration = async (payload, dispatch, getState) => {
     // token has expired, trying to refresh it
     try {
       const result = await axios({
-        method: "get",
+        method: "post",
         url: `${apiUrl}/auth/refresh`,
-        headers: { "Authorization": state.auth.token }
+        headers: { "Authorization": state.auth.refreshToken }
       });
       dispatch(tokenAcquired(result));
       payload.headers = { "Authorization": result.data["access_token"] };
@@ -61,7 +61,7 @@ export const doRetryOnTokenExpiration = async (payload, dispatch, getState) => {
       throw err;
     }
   } else {
-    payload.headers = { "Authorization": state.auth.token };
+    payload.headers = { "Authorization": state.auth.accessToken };
   }
   try {
     return await axios(payload);

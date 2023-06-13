@@ -19,6 +19,9 @@ def get_cached_user(user_id):
 
 
 def setup_jwt(application, api):
+    application.config["JWT_REFRESH_TOKEN_EXPIRES"] = timedelta(
+        days=conf.auth.refresh_token_expiration_days
+    )
     application.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(
         seconds=conf.auth.expiration_sec
     )
