@@ -1,14 +1,13 @@
 import logging
 
 import requests
-from requests.exceptions import MissingSchema
-
 from jarr.bootstrap import conf
 from jarr.lib.content_generator import YOUTUBE_RE, is_embedded_link
 from jarr.lib.enums import ArticleType
 from jarr.lib.filter import FiltersAction, process_filters
 from jarr.lib.url_cleaners import clean_urls, remove_utm_tags
-from jarr.lib.utils import clean_lang, digest, utc_now, validate_url
+from jarr.lib.utils import clean_lang, digest, utc_now
+from requests.exceptions import MissingSchema
 
 logger = logging.getLogger(__name__)
 
@@ -102,7 +101,6 @@ class AbstractArticleBuilder:
             head = requests.head(url, headers=headers, allow_redirects=True,
                                  timeout=conf.crawler.timeout)
             head.raise_for_status()
-            validate_url(url)
             return head
         except MissingSchema:
             if reraise:

@@ -9,6 +9,7 @@ from functools import lru_cache
 from hashlib import md5, sha1
 
 import requests
+import advocate
 from requests.exceptions import SSLError
 from werkzeug.exceptions import Forbidden
 
@@ -80,23 +81,6 @@ def digest(text, alg="md5", out="str", encoding="utf8"):
     return getattr(method(text), "hexdigest" if out == "str" else "digest")()
 
 
-@lru_cache(maxsize=None)
-def validate_url(url):
-    """Protecting against SSRF"""
-
-    split = urllib.parse.urlsplit(url)
-    if not split.scheme:
-        split = urllib.parse.urlsplit(f"http://{url}")
-    domain = split.netloc.split(":")[0]
-    excep = Forbidden(f"Domain {domain} isn't allowed")
-    if domain == "localhost":
-        raise excep
-    if PRIVATE_IP.match(domain):
-        raise excep
-    if PRIVATE_IP.match(socket.gethostbyname(domain)):
-        raise excep
-
-
 def jarr_get(
     url,
     timeout=None,
@@ -108,7 +92,9 @@ def jarr_get(
     from jarr.bootstrap import conf  # prevent circular import
 
     if ssrf_protect:
-        validate_url(url)
+        http_get = advocate.get
+    else:
+        http_get = requests.get
 
     timeout = timeout or conf.crawler.timeout
     user_agent = user_agent or conf.crawler.user_agent
@@ -124,7 +110,7 @@ def jarr_get(
     if "youtube.com" in url:
         request_kwargs["cookies"] = {"CONSENT": "YES+1"}
     try:
-        return requests.get(url, **request_kwargs)
+        return http_get(url, **request_kwargs)
     except SSLError:
         request_kwargs["verify"] = False
-        return requests.get(url, **request_kwargs)
+        return http_get(url, **request_kwargs)
