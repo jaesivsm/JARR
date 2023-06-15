@@ -1,4 +1,5 @@
 import random
+from datetime import datetime, timedelta, timezone
 
 from flask import render_template
 from flask_jwt_extended import (create_access_token, create_refresh_token,
@@ -18,8 +19,10 @@ model = auth_ns.model(
     {
         "access_token": fields.String(
             description="The token that must be place "
-            "in the Authorization header"
+            "in the Authorization header",
+            required=True,
         ),
+        "access_token_expires_at": fields.String(required=True),
         "refresh_token": fields.String(),
     },
 )
@@ -40,6 +43,12 @@ login_recovery_parser.add_argument(
 login_recovery_parser.add_argument(
     "password", type=str, required=True, store_missing=False
 )
+
+
+def _get_declared_expiration_delay(factor=3 / 4) -> str:
+    declared_delay_sec = conf.auth.expiration_sec * factor
+    declared_delay = datetime.utcnow() + timedelta(seconds=declared_delay_sec)
+    return declared_delay.replace(tzinfo=timezone.utc).isoformat()
 
 
 @auth_ns.route("")
@@ -68,6 +77,7 @@ class LoginResource(Resource):
         return {
             "access_token": f"Bearer {access_token}",
             "refresh_token": f"Bearer {refresh_token}",
+            "access_token_expires_at": _get_declared_expiration_delay(),
         }, 200
 
 
@@ -86,7 +96,10 @@ class Refresh(Resource):
             {"last_connection": utc_now(), "renew_password_token": ""},
         )
         SERVER.labels(method="get", uri="/auth/refresh", result="2XX").inc()
-        return {"access_token": f"Bearer {access_token}"}, 200
+        return {
+            "access_token": f"Bearer {access_token}",
+            "access_token_expires_at": _get_declared_expiration_delay(),
+        }, 200
 
 
 @auth_ns.route("/recovery")

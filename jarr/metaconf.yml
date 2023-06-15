@@ -148,7 +148,7 @@ parameters:
       help_txt: Salt for cryptografic purpose.
       required: true
   - expiration_sec:
-      default: 1200
+      default: 3600
       help_txt: Expiration delay in second of the JWT token.
   - refresh_token_expiration_days:
       default: 30
