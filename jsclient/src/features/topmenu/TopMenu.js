@@ -27,7 +27,7 @@ import SettingsIcon from "@material-ui/icons/Settings";
 import ExitToAppIcon from "@material-ui/icons/ExitToApp";
 // jarr
 import topMenuStyle from "./topMenuStyle";
-import { doLogout } from "../../authSlice";
+import { purgeCredentials } from "../../authSlice";
 import { toggleMenu } from "../feedlist/slice";
 import { markedAllAsRead } from "../clusterlist/slice";
 import doListClusters from "../../hooks/doListClusters";
@@ -59,7 +59,7 @@ const mapDispatchToProps = (dispatch) => ({
     dispatch(doFetchObjForEdit("user"));
   },
   logout() {
-    dispatch(doLogout());
+    dispatch(purgeCredentials());
   },
 });
 

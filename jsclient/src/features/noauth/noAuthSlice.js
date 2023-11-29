@@ -1,7 +1,7 @@
 import axios from "axios";
 import { createSlice } from "@reduxjs/toolkit";
 import { apiUrl } from "../../const";
-import { tokenAcquired, loginFailed } from "../../authSlice";
+import { tokenAcquired, purgeCredentials } from "../../authSlice";
 
 const INITIAL_STATE = { loading: false,
                         loginError: null,
@@ -66,7 +66,7 @@ export const doLogin = (
     dispatch(responseRecieved());
     dispatch(tokenAcquired(result));
   } catch (err) {
-    dispatch(loginFailed());
+    dispatch(purgeCredentials());
     dispatch(authError(err.response));
   }
 };
@@ -136,6 +136,7 @@ export const doValidOAuth = (code): AppThunk => async (dispatch) => {
     dispatch(responseRecieved());
     dispatch(tokenAcquired(result));
   } catch (err) {
+    dispatch(purgeCredentials());
     dispatch(authError(err.response));
   }
 };
