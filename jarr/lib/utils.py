@@ -1,20 +1,20 @@
 import logging
 import re
-import socket
 import types
 import urllib
 from datetime import datetime, timezone
 from enum import Enum
-from functools import lru_cache
 from hashlib import md5, sha1
 
-import requests
 import advocate
+import requests
+from jarr.lib.const import GOOGLE_BOT_UA
 from requests.exceptions import SSLError
-from werkzeug.exceptions import Forbidden
 
 logger = logging.getLogger(__name__)
 RFC_1123_FORMAT = "%a, %d %b %Y %X %Z"
+LANG_FORMAT = re.compile("^[a-z]{2}(_[A-Z]{2})?$")
+CORRECTABLE_LANG_FORMAT = re.compile("^[A-z]{2}(.[A-z]{2})?.*$")
 LANG_FORMAT = re.compile(r"^[a-z]{2}(_[A-Z]{2})?$")
 CORRECTABLE_LANG_FORMAT = re.compile(r"^[A-z]{2}(.[A-z]{2})?.*$")
 PRIVATE_IP = re.compile(
@@ -108,7 +108,10 @@ def jarr_get(
     }
     request_kwargs.update(kwargs)
     if "youtube.com" in url:
-        request_kwargs["cookies"] = {"CONSENT": "YES+1"}
+        cookies = request_kwargs.get("cookies") or {}
+        cookies["CONSENT"] = "YES+1"
+        request_kwargs["cookies"] = cookies
+        constructed_headers["User-Agent"] = GOOGLE_BOT_UA
     try:
         return http_get(url, **request_kwargs)
     except SSLError:
