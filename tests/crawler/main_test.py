@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 
-from mock import patch
+from unittest.mock import patch
 
 from jarr.controllers import FeedController, UserController
 from jarr.crawler.main import scheduler
