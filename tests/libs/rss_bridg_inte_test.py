@@ -5,7 +5,7 @@ from jarr.crawler.article_builders.rss_bridge import (
     RSSBridgeArticleBuilder, RSSBridgeTwitterArticleBuilder)
 from jarr.lib.enums import ArticleType
 from jarr.models.feed import Feed
-from mock import patch
+from unittest.mock import patch
 
 
 class RSSBridgeIntegrationTest(unittest.TestCase):

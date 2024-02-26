@@ -1,6 +1,6 @@
 import unittest
 
-from mock import patch
+from unittest.mock import patch
 
 from jarr.lib.url_cleaners import clean_urls
 
