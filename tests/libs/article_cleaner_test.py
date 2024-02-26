@@ -1,7 +1,7 @@
 import json
 import unittest
 
-from mock import patch
+from unittest.mock import patch
 from requests import Response
 from requests.exceptions import MissingSchema
 
