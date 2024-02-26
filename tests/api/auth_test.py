@@ -1,4 +1,4 @@
-from mock import patch
+from unittest.mock import patch
 
 from tests.base import JarrFlaskCommon
 from jarr.controllers import UserController

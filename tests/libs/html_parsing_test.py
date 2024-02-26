@@ -1,6 +1,6 @@
 import unittest
 
-from mock import patch
+from unittest.mock import patch
 from requests import Response
 
 from jarr.lib.html_parsing import (extract_feed_links, extract_icon_url,

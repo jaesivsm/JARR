@@ -2,7 +2,7 @@ import json
 import logging
 import unittest
 
-from mock import Mock, patch
+from unittest.mock import Mock, patch
 
 from jarr.bootstrap import conf
 from jarr.controllers import ArticleController, FeedController
