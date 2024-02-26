@@ -3,7 +3,7 @@ import json
 from jarr.controllers import (ArticleController, ClusterController,
                               FeedController, UserController)
 from jarr.crawler.article_builders.classic import ClassicArticleBuilder
-from mock import patch
+from unittest.mock import patch
 from tests.base import BaseJarrTest
 
 
