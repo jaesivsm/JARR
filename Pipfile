@@ -35,7 +35,7 @@ flask-jwt-extended = "==4.*"
 flask-migrate = "==4.*"
 flask-restx = "==1.*"
 goose3 = "==3.*"
-gunicorn = "==21.*"
+gunicorn = "==22.*"
 json-logging-py = "*"  # needed by gunicorn config
 lxml = "==5.*"
 opml = "==0.*"
