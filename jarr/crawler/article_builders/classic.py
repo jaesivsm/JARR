@@ -39,9 +39,9 @@ class ClassicArticleBuilder(AbstractArticleBuilder):
 
     @staticmethod
     def extract_tags(entry):
-        return {tag.get('term', '').lower().strip()
-                for tag in entry.get('tags', [])
-                if tag.get('term', '').strip()}
+        return {tag["term"].lower().strip()
+                for tag in entry.get("tags", [])
+                if (tag.get("term") or '').strip()}
 
     @staticmethod
     def extract_link(entry):
