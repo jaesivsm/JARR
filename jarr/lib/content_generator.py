@@ -38,11 +38,8 @@ class ContentGenerator:
         try:
             self._page = goose.extract(self.article.link)
         except Exception as error:
-            logger.error(
-                "something wrong happened while trying to fetch " "%r: %r",
-                self.article.link,
-                error,
-            )
+            msg = "something wrong happened while trying to fetch %r: %r"
+            logger.error(msg, self.article.link, error)
         if not self._page:
             return False
         lang = self._page.opengraph.get("locale") or self._page.meta_lang
@@ -126,18 +123,15 @@ class EmbeddedContentGenerator(ContentGenerator):
     def generate(self):
         yt_match = YOUTUBE_RE.match(self.article.link)
         if yt_match:
-            logger.info(
-                "%r constructing embedded youtube content from article",
-                self.article,
-            )
+            msg = "%r constructing embedded youtube content from article"
+            logger.info(msg, self.article)
             try:
                 return {"type": "youtube", "link": yt_match.group(5)}
             except IndexError:
                 pass
         else:
-            logger.warning(
-                "embedded video not recognized %r", self.article.link
-            )
+            msg = "embedded media not recognized %r"
+            logger.warning(msg, self.article.link)
         return {}
 
 
@@ -152,9 +146,8 @@ class TruncatedContentGenerator(ContentGenerator):
             content["link"] = remove_utm_tags(self._page.final_url)
             content["title"] = self._page.title
         except Exception:
-            logger.exception(
-                "Could not rebuild parsed content for %r", self.article
-            )
+            msg = "Could not rebuild parsed content for %r"
+            logger.exception(msg, self.article)
             return {}
         if self.article.comments:
             content["comments"] = self.article.comments
