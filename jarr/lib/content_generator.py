@@ -57,7 +57,7 @@ class ContentGenerator:
 
     def _from_goose_to_html(self, encoding="utf8"):
         result = b""
-        current_node = self._page.top_node
+        current_node = self._page.top_node_raw_html
         while True:
             result += etree.tostring(current_node, encoding=encoding)
             current_node = current_node.getnext()
