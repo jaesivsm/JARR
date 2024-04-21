@@ -15,8 +15,9 @@ from jarr.lib.utils import clean_lang
 logger = logging.getLogger(__name__)
 IMG_ALT_MAX_LENGTH = 100
 YOUTUBE_RE = re.compile(
-        r'^((?:https?:)?\/\/)?((?:www|m)\.)?((?:youtube\.com|youtu.be))'
-        r'(\/(?:[\w\-]+\?v=|embed\/|v\/)?)([\w\-]+)(\S+)?$')
+    r"^((?:https?:)?\/\/)?((?:www|m)\.)?((?:youtube\.com|youtu.be))"
+    r"(\/(?:[\w\-]+\?v=|embed\/|v\/)?)([\w\-]+)(\S+)?$"
+)
 
 
 def is_embedded_link(link):
@@ -37,16 +38,19 @@ class ContentGenerator:
         try:
             self._page = goose.extract(self.article.link)
         except Exception as error:
-            logger.error("something wrong happened while trying to fetch "
-                         "%r: %r", self.article.link, error)
+            logger.error(
+                "something wrong happened while trying to fetch " "%r: %r",
+                self.article.link,
+                error,
+            )
         if not self._page:
             return False
-        lang = self._page.opengraph.get('locale') or self._page.meta_lang
-        self.extracted_infos['lang'] = clean_lang(lang)
-        self.extracted_infos['link'] = self._page.final_url
-        keywords = set(self._page.meta_keywords.split(', '))
-        self.extracted_infos['tags'] = set(self._page.tags).union(keywords)
-        self.extracted_infos['title'] = self._page.title
+        lang = self._page.opengraph.get("locale") or self._page.meta_lang
+        self.extracted_infos["lang"] = clean_lang(lang)
+        self.extracted_infos["link"] = self._page.final_url
+        keywords = set(self._page.meta_keywords.split(", "))
+        self.extracted_infos["tags"] = set(self._page.tags).union(keywords)
+        self.extracted_infos["title"] = self._page.title
         return True
 
     def get_vector(self):
@@ -63,7 +67,7 @@ class ContentGenerator:
             current_node = current_node.getnext()
             if current_node is None:
                 break
-        return result.replace(b'\n', b' ').decode(encoding)
+        return result.replace(b"\n", b" ").decode(encoding)
 
     @staticmethod
     def generate():
@@ -72,14 +76,16 @@ class ContentGenerator:
     def generate_and_merge(self, content):
         content = migrate_content(content)
         # if there is already some fetched content
-        already_fetched = any(cnt.get('type') == 'fetched'
-                              for cnt in content.get('contents') or [])
+        already_fetched = any(
+            cnt.get("type") == "fetched"
+            for cnt in content.get("contents") or []
+        )
         if isinstance(self, TruncatedContentGenerator) and already_fetched:
             return content
         article_content = self.generate()
         if not article_content:
             return content
-        content['contents'].append(article_content)
+        content["contents"].append(article_content)
         return content
 
 
@@ -120,15 +126,18 @@ class EmbeddedContentGenerator(ContentGenerator):
     def generate(self):
         yt_match = YOUTUBE_RE.match(self.article.link)
         if yt_match:
-            logger.info('%r constructing embedded youtube content '
-                        'from article', self.article)
+            logger.info(
+                "%r constructing embedded youtube content from article",
+                self.article,
+            )
             try:
-                return {'type': 'youtube', 'link': yt_match.group(5)}
+                return {"type": "youtube", "link": yt_match.group(5)}
             except IndexError:
                 pass
         else:
-            logger.warning('embedded video not recognized %r',
-                           self.article.link)
+            logger.warning(
+                "embedded video not recognized %r", self.article.link
+            )
         return {}
 
 
@@ -137,18 +146,19 @@ class TruncatedContentGenerator(ContentGenerator):
     def generate(self):
         if self._page is None:
             self._get_goose()
-        content = {'type': 'fetched'}
+        content = {"type": "fetched"}
         try:
-            content['content'] = self._from_goose_to_html()
-            content['link'] = remove_utm_tags(self._page.final_url)
-            content['title'] = self._page.title
+            content["content"] = self._from_goose_to_html()
+            content["link"] = remove_utm_tags(self._page.final_url)
+            content["title"] = self._page.title
         except Exception:
-            logger.exception("Could not rebuild parsed content for %r",
-                             self.article)
+            logger.exception(
+                "Could not rebuild parsed content for %r", self.article
+            )
             return {}
         if self.article.comments:
-            content['comments'] = self.article.comments
-        logger.debug('%r no special type found doing nothing', self.article)
+            content["comments"] = self.article.comments
+        logger.debug("%r no special type found doing nothing", self.article)
         return content
 
 
@@ -168,9 +178,12 @@ class RedditContentGenerator(TruncatedContentGenerator):
             return self._is_pure_reddit_post
         try:
             split = urllib.parse.urlsplit(self.article.link)
-            paths = split.path.strip('/').split('/')
-            if ('reddit.com' in split.netloc
-                    and paths[0] == 'r' and paths[2] == 'comments'):
+            paths = split.path.strip("/").split("/")
+            if (
+                "reddit.com" in split.netloc
+                and paths[0] == "r"
+                and paths[2] == "comments"
+            ):
                 self._is_pure_reddit_post = True
         except (AttributeError, IndexError):
             pass
@@ -207,8 +220,7 @@ def get_content_generator(article):
     if article.article_type and article.article_type in CONTENT_GENERATORS:
         return CONTENT_GENERATORS[article.article_type](article)
 
-    if article.feed.feed_type \
-            and article.feed.feed_type in CONTENT_GENERATORS:
+    if article.feed.feed_type and article.feed.feed_type in CONTENT_GENERATORS:
         return CONTENT_GENERATORS[article.feed.feed_type](article)
 
     if article.feed.truncated_content:
@@ -218,12 +230,11 @@ def get_content_generator(article):
 
 
 def migrate_content(content: dict):
-    content = content or {'v': 2, 'contents': []}
-    if content.get('v') == 2:
+    content = content or {"v": 2, "contents": []}
+    if content.get("v") == 2:
         return content
-    if content['type'] in {'image', 'audio', 'video'}:
-        return {'v': 2, 'contents': []}
-    if content['type'] == 'embedded':  # migrating original embedded
-        return {'v': 2, 'contents': [{'type': content['player'],
-                                      'link': content['videoId']}]}
-    return {'v': 2, 'contents': [content]}
+    if content["type"] in {"image", "audio", "video"}:
+        return {"v": 2, "contents": []}
+    if content["type"] == "embedded":  # migrating original embedded
+        content = {"type": content["player"], "link": content["videoId"]}
+    return {"v": 2, "contents": [content]}
