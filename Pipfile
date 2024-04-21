@@ -37,7 +37,6 @@ flask-restx = "==1.*"
 goose3 = "==3.*"
 gunicorn = "==22.*"
 json-logging-py = "*"  # needed by gunicorn config
-lxml = "==5.*"
 opml = "==0.*"
 prometheus-distributed-client = "==1.*"
 psycopg2-binary = "==2.*"
