@@ -120,8 +120,8 @@ parameters:
     - pool_size: {'default': 10}
     - max_overflow: {'default': 2}
     - pool_recycle: {'default': 300}
-    - pool_pre_ping: {'default': True}
-    - pool_use_lifo: {'default': True}
+    - pool_pre_ping: {'default': true}
+    - pool_use_lifo: {'default': true}
   - redis:
     - host: {'default': 'redis'}
     - db: {'default': 1}
