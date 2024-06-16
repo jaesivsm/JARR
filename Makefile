@@ -67,7 +67,7 @@ run-front:
 
 db-bootstrap-user:
 	$(COMPOSE) exec $(DB_CONTAINER_NAME) su postgres -c \
-		"createuser $(DB_NAME) --no-superuser --createdb --superuser"
+		"createuser $(DB_NAME) --no-superuser --createdb"
 
 db-bootstrap-tables:
 	$(COMPOSE) exec $(DB_CONTAINER_NAME) su postgres -c "createdb $(DB_NAME) --no-password"

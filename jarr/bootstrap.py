@@ -39,7 +39,15 @@ def init_logging(log_path=None, log_level=logging.INFO, modules=(),
 
 def init_db(echo=False):
     mapper_registry = registry()
-    new_engine = create_engine(conf.db.pg_uri, echo=echo)
+    new_engine = create_engine(
+        conf.db.pg_uri,
+        echo=echo,
+        pool_size=conf.db.postgres.pool_size,
+        max_overflow=conf.db.postgres.max_overflow,
+        pool_recycle=conf.db.postgres.pool_recycle,
+        pool_pre_ping=conf.db.postgres.pool_pre_ping,
+        pool_use_lifo=conf.db.postgres.pool_use_lifo,
+    )
     NewBase = mapper_registry.generate_base()
     new_session = scoped_session(sessionmaker(bind=new_engine))
     return mapper_registry, new_engine, new_session, NewBase
