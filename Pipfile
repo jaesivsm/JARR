@@ -48,4 +48,4 @@ SQLAlchemy = "==2.*"
 the-conf = "==0.*"
 
 [requires]
-python_version = "3.11"
+python_version = "3.12"
