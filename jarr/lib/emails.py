@@ -15,7 +15,7 @@ def send(to="", bcc="", subject="", plaintext=""):
     # Create message container - the correct MIME type is multipart/alternative
     msg = MIMEMultipart('alternative')
     msg['Subject'] = subject
-    msg['From'] = conf.NOTIFICATION_EMAIL
+    msg['From'] = conf.notification.email
     msg['Date'] = rfc_1123_utc()
     msg['To'] = to
     msg.attach(MIMEText(plaintext, 'plain', 'utf-8'))
