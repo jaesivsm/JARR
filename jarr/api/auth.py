@@ -1,5 +1,5 @@
 import random
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 
 from flask import render_template
 from flask_jwt_extended import (create_access_token, create_refresh_token,
@@ -9,7 +9,7 @@ from jarr.api.common import get_ui_url
 from jarr.bootstrap import conf
 from jarr.controllers import UserController
 from jarr.lib import emails
-from jarr.lib.utils import utc_now
+from jarr.lib.utils import get_auth_expiration_delay, utc_now
 from jarr.metrics import SERVER
 from werkzeug.exceptions import BadRequest, Forbidden
 
@@ -45,12 +45,6 @@ login_recovery_parser.add_argument(
 )
 
 
-def _get_declared_expiration_delay(factor=3 / 4) -> str:
-    declared_delay_sec = conf.auth.expiration_sec * factor
-    declared_delay = datetime.utcnow() + timedelta(seconds=declared_delay_sec)
-    return declared_delay.replace(tzinfo=timezone.utc).isoformat()
-
-
 @auth_ns.route("")
 class LoginResource(Resource):
     @staticmethod
@@ -77,7 +71,7 @@ class LoginResource(Resource):
         return {
             "access_token": f"Bearer {access_token}",
             "refresh_token": f"Bearer {refresh_token}",
-            "access_token_expires_at": _get_declared_expiration_delay(),
+            "access_token_expires_at": get_auth_expiration_delay(),
         }, 200
 
 
@@ -98,7 +92,7 @@ class Refresh(Resource):
         SERVER.labels(method="get", uri="/auth/refresh", result="2XX").inc()
         return {
             "access_token": f"Bearer {access_token}",
-            "access_token_expires_at": _get_declared_expiration_delay(),
+            "access_token_expires_at": get_auth_expiration_delay(),
         }, 200
 
 

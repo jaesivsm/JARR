@@ -2,7 +2,7 @@ import logging
 import re
 import types
 import urllib
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from enum import Enum
 from hashlib import md5, sha1
 
@@ -21,6 +21,14 @@ PRIVATE_IP = re.compile(
     r"(^127\.)|(^192\.168\.)|(^10\.)|(^172\.1[6-9]\.)|(^172\.2[0-9]\.)|"
     r"(^172\.3[0-1]\.)|(^::1$)|(^[fF][cCdD])"
 )
+
+
+def get_auth_expiration_delay(factor=3 / 4) -> str:
+    from jarr.bootstrap import conf  # prevent circular import
+
+    declared_delay_sec = conf.auth.expiration_sec * factor
+    declared_delay = datetime.utcnow() + timedelta(seconds=declared_delay_sec)
+    return declared_delay.replace(tzinfo=timezone.utc).isoformat()
 
 
 def utc_now():
