@@ -6,7 +6,7 @@ orbs:
 jobs:
   backend-build:
     machine:
-      image: ubuntu-2004:202201-02
+      image: ubuntu-2404
     steps:
       - checkout
       # restore cache and docker layer cache
