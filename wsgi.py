@@ -25,3 +25,7 @@ def bootstrap_database(admin_login, admin_password):
              'login': admin_login, 'password': admin_password}
     Base.metadata.create_all(engine)
     UserController().create(**admin)
+
+
+if __name__ == '__main__':
+    _app.run(host='0.0.0.0', debug=True, port=8000)
