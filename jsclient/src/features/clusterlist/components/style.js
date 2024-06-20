@@ -1,4 +1,4 @@
-import { makeStyles, Theme, createStyles } from "@material-ui/core/styles";
+import { makeStyles, Theme, createStyles } from "@mui/material/styles";
 import { feedListWidth, editPanelWidth } from "../../../const";
 
 export default makeStyles((theme: Theme) =>
@@ -37,7 +37,7 @@ export default makeStyles((theme: Theme) =>
       padding: 0,
       paddingRight: 15,
       margin: 0,
-      "& .MuiExpansionPanelSummary-content": {
+      "& .MuiAccordionSummary-content": {
         flexDirection: "column",
         padding: "6px 0 6px 10px",
         margin: 0,
@@ -45,7 +45,7 @@ export default makeStyles((theme: Theme) =>
         overflow: "hidden",
         whiteSpace: "nowrap",
       },
-      "& .MuiExpansionPanelSummary-expandIcon": {
+      "& .MuiAccordionSummary-expandIcon": {
         padding: 6,
       },
     },

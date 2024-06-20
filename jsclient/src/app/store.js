@@ -1,5 +1,5 @@
 import { configureStore, Action } from "@reduxjs/toolkit";
-import thunk, { ThunkAction }from "redux-thunk";
+import { thunk, ThunkAction } from "redux-thunk";
 import authReducer from "../authSlice";
 import noAuthReducer from "../features/noauth/noAuthSlice";
 import feedsReducer from "../features/feedlist/slice";
