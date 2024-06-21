@@ -6,7 +6,7 @@ SERVER_ADDR = 0.0.0.0
 DB_VER = $(shell pipenv run flask db heads | tail -n1 | sed -e 's/ .*//g')
 COMPOSE_FILE ?= Dockerfiles/dev-env.yml
 RUN = FLASK_APP=wsgi PIPENV_IGNORE_VIRTUALENVS=1 pipenv run
-COMPOSE = $(RUN) docker-compose --project-name jarr --file $(COMPOSE_FILE)
+COMPOSE = $(RUN) docker compose --project-name jarr --file $(COMPOSE_FILE)
 TEST = tests/
 DB_NAME ?= jarr
 PUBLIC_URL ?=
@@ -67,10 +67,11 @@ run-front:
 
 db-bootstrap-user:
 	$(COMPOSE) exec $(DB_CONTAINER_NAME) su postgres -c \
-		"createuser $(DB_NAME) --no-superuser --createdb"
+		"createuser $(DB_NAME) --superuser --createdb"
 
 db-bootstrap-tables:
 	$(COMPOSE) exec $(DB_CONTAINER_NAME) su postgres -c "createdb $(DB_NAME) --no-password"
+	$(COMPOSE) exec $(DB_CONTAINER_NAME) psql -h 0.0.0.0 -U postgres -c "GRANT ALL PRIVILEGES ON DATABASE $(DB_NAME) to $(DB_NAME);"
 
 db-import-dump:
 	docker cp $(DUMP) jarr_$(DB_CONTAINER_NAME)_1:/tmp/dump.pgsql
