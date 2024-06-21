@@ -3,7 +3,8 @@ import PropTypes from "prop-types";
 import { apiUrl } from "../const";
 import qs from "qs";
 import LinkIcon from "@mui/icons-material/Link";
-import { makeStyles, Theme, createStyles } from "@mui/material/styles";
+import { Theme, createStyles } from "@mui/material/styles";
+import { makeStyles } from "@mui/styles";
 
 const iconStyle = makeStyles((theme: Theme) =>
   createStyles({

@@ -7,6 +7,7 @@
     "@emotion/styled": "^11.11.5",
     "@mui/icons-material": "^5.15.20",
     "@mui/material": "^5.15.20",
+    "@mui/styles": "^5.15.20",
     "@reduxjs/toolkit": "*",
     "axios": "*",
     "moment": "*",

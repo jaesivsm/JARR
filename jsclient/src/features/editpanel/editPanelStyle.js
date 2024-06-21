@@ -1,4 +1,5 @@
-import { makeStyles, Theme, createStyles } from "@mui/material/styles";
+import { Theme, createStyles } from "@mui/material/styles";
+import { makeStyles } from "@mui/styles";
 import { editPanelWidth } from "../../const";
 import { jarrColors } from "../../Jarr.theme";
 

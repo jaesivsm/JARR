@@ -1,4 +1,5 @@
-import { makeStyles, Theme, createStyles } from "@mui/material/styles";
+import { Theme, createStyles } from "@mui/material/styles";
+import { makeStyles } from "@mui/styles";
 import { feedListWidth, editPanelWidth } from "../../../const";
 
 export default makeStyles((theme: Theme) =>

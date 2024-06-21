@@ -1,4 +1,5 @@
-import { makeStyles, Theme, createStyles } from "@mui/material/styles";
+import { Theme, createStyles } from "@mui/material/styles";
+import { makeStyles } from "@mui/styles";
 
 import { feedListWidth } from "../../const";
 
