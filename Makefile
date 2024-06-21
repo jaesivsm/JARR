@@ -18,13 +18,16 @@ QU_CONTAINER_NAME = rabbitmq
 install:
 	pipenv sync --dev
 
+jslint:
+	eslint jsclient/src/
+
 pep8:
 	$(RUN) pycodestyle --ignore=E126,E127,E128,W503 jarr/ --exclude=jarr/migrations
 
 mypy:
 	$(RUN) mypy jarr --ignore-missing-imports --exclude=jarr/crawler/lib/__init__.py
 
-lint: pep8 mypy
+lint: jslint pep8 mypy
 
 test: export JARR_CONFIG = example_conf/jarr.test.json
 test:
