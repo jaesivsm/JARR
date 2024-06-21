@@ -14,7 +14,6 @@ export default configureStore({
     clusters: clustersReducer,
     edit: editReducer,
   },
-  middleware: [thunk],
 });
 
 export type AppThunk = ThunkAction<void, RootState, unknown, Action<string>>;
