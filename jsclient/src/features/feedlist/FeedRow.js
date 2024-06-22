@@ -11,12 +11,12 @@ import ExpandLess from "@mui/icons-material/ExpandLess";
 import ExpandMore from "@mui/icons-material/ExpandMore";
 // jarr
 import doListClusters from "../../hooks/doListClusters";
-import { toggleMenu, toggleFolding } from "./slice";
+import { toggleMenu, toggleFolding, filterFeedRows } from "./slice";
 import feedListStyle from "./feedListStyle";
 import FeedIcon from "../../components/FeedIcon";
 
 function mapStateToProps(state) {
-  return { feedListRows: state.feeds.feedListRows.filter(state.feeds.feedListFilter),
+  return { feedListRows: filterFeedRows(state.feeds.feedListRows, state.feeds.searchTerm),
            isFoldedFromParent: state.feeds.isParentFolded,
            selectedCategoryId: state.clusters.filters["category_id"],
            selectedFeedId: state.clusters.filters["feed_id"],

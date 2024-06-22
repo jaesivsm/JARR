@@ -25,6 +25,7 @@ import feedListStyle from "./feedListStyle";
 import FeedRow from "./FeedRow";
 import { toggleAllFolding, toggleMenu,
          setSearchFilter,
+         filterFeedRows,
 } from "./slice";
 import { openPanel } from "../editpanel/slice";
 import { feedListWidth } from "../../const";
@@ -32,7 +33,7 @@ import doFetchUnreadCount from "../../hooks/doFetchUnreadCount";
 import doFetchFeeds from "../../hooks/doFetchFeeds";
 
 function mapStateToProps(state) {
-  return { itemCount: state.feeds.feedListRows.filter(state.feeds.feedListFilter).length,
+  return { itemCount: filterFeedRows(state.feeds.feedListRows, state.feeds.searchTerm).length,
            isFoldedFromParent: state.feeds.isParentFolded,
            isFeedListOpen: state.feeds.isOpen,
            isEditPanelOpen: state.edit.isOpen,
