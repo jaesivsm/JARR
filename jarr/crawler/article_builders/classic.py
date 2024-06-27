@@ -59,9 +59,8 @@ class ClassicArticleBuilder(AbstractArticleBuilder):
 
     def extract_lang(self, entry):
         possible_keys = "summary_detail", "content", "title_detail"
-        if lang := browse_keys(entry, possible_keys, "language"):
-            return lang
-        return self._top_level.get("language")
+        lang = browse_keys(entry, possible_keys, "language")
+        return lang or self._top_level.get("language")
 
     @staticmethod
     def extract_comments(entry):
