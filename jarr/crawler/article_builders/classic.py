@@ -33,9 +33,25 @@ class ClassicArticleBuilder(AbstractArticleBuilder):
                 except Exception:
                     logger.error("Couldn't parse %r", entry[date_key])
 
-    @staticmethod
-    def extract_title(entry):
-        return html.unescape(entry.get('title', ''))
+    @classmethod
+    def _reach_in_parseditem(cls, entry, key: str, sub_key: str):
+        value = entry.get(key)
+        if isinstance(value, str):
+            yield value
+        elif isinstance(value, list):
+            for sub_value in value:
+                if isinstance(sub_value, dict):
+                    if sub_value.get(sub_key):
+                        yield sub_value[sub_key]
+        elif isinstance(value, dict):
+            if value.get(sub_key):
+                yield value[sub_key]
+
+    @classmethod
+    def extract_title(cls, entry, max_length=100):
+        for key in "title", "title_detail", "content":
+            for value in cls._reach_in_parseditem(entry, key, "value"):
+                return html.unescape(value[:max_length])
 
     @staticmethod
     def extract_tags(entry):
@@ -43,30 +59,24 @@ class ClassicArticleBuilder(AbstractArticleBuilder):
                 for tag in entry.get("tags", [])
                 if (tag.get("term") or '').strip()}
 
-    @staticmethod
-    def extract_link(entry):
-        return entry.get('link')
+    @classmethod
+    def extract_link(cls, entry):
+        for key in "link", "links":
+            for value in cls._reach_in_parseditem(entry, key, "href"):
+                yield value
 
-    @staticmethod
-    def extract_content(entry):
-        if entry.get('content'):
-            return entry['content'][0]['value']
-        if entry.get('summary'):
-            return entry['summary']
-        return ''
+    @classmethod
+    def extract_content(cls, entry):
+        for key in "summary", "summary_detail", "content":
+            for value in cls._reach_in_parseditem(entry, key, "value"):
+                return value
+        return ""
 
     def extract_lang(self, entry):
-        lang = None
-        if entry.get('content', []):
-            lang = (entry['content'][0] or {}).get('language')
-        if not lang:
-            for sub_key in 'title_detail', 'summary_detail':
-                lang = entry.get(sub_key, {}).get('language')
-                if lang:
-                    break
-        if not lang:
-            return self._top_level.get('language')
-        return lang
+        for key in "summary_detail", "content", "title_detail":
+            for value in self._reach_in_parseditem(entry, key, "language"):
+                return value
+        return self._top_level.get("language")
 
     @staticmethod
     def extract_comments(entry):
@@ -77,22 +87,32 @@ class ClassicArticleBuilder(AbstractArticleBuilder):
                        self.extract_link(self.entry),
                        self.article['comments']}
         yield self.article
-        for i, link in enumerate(self.entry.get('links') or []):
-            try:
-                if link['rel'] != 'enclosure':
+        count = 0
+        for enclosure_type in "links", "media_content":
+            for enclosure in (self.entry.get(enclosure_type) or []):
+                cluster_member = self.template_article()
+                try:
+                    content_type = enclosure["type"]
+                    if (
+                        enclosure_type == "links"
+                        and enclosure.get("rel") == "enclosure"
+                    ):
+                        cluster_member["link"] = enclosure["href"]
+                    elif enclosure_type == "media_content":
+                        cluster_member["link"] = enclosure["url"]
+                except (KeyError, TypeError):
                     continue
-                content_type = link['type']
-                link = link['href']
-            except (KeyError, TypeError):
-                continue
-            if link in known_links:
-                continue
-            known_links.add(link)
-            enclosure = self.template_article()
-            enclosure['order_in_cluster'] = i
-            for key, value in self.article.items():
-                if key in {'title', 'lang', 'link_hash', 'entry_id'}:
-                    enclosure[key] = value
-            enclosure['link'] = link
-            self._feed_content_type(content_type, enclosure)
-            yield enclosure
+                # Not adding cluster member twice
+                if cluster_member["link"] in known_links:
+                    continue
+                known_links.add(cluster_member["link"])
+                # Not adding cluster memeber without type
+                self._feed_content_type(content_type, cluster_member)
+                if not cluster_member.get("article_type"):
+                    continue
+                count += 1
+                cluster_member["order_in_cluster"] = count
+                for key, value in self.article.items():
+                    if key in {"title", "lang", "link_hash", "entry_id"}:
+                        cluster_member[key] = value
+                yield cluster_member
