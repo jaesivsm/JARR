@@ -6,6 +6,7 @@ from datetime import timezone
 import dateutil.parser
 from jarr.crawler.article_builders.abstract import AbstractArticleBuilder
 from jarr.lib.utils import digest
+from jarr.crawler.lib.feedparser_utils import browse_keys
 
 logger = logging.getLogger(__name__)
 
@@ -33,25 +34,11 @@ class ClassicArticleBuilder(AbstractArticleBuilder):
                 except Exception:
                     logger.error("Couldn't parse %r", entry[date_key])
 
-    @classmethod
-    def _reach_in_parseditem(cls, entry, key: str, sub_key: str):
-        value = entry.get(key)
-        if isinstance(value, str):
-            yield value
-        elif isinstance(value, list):
-            for sub_value in value:
-                if isinstance(sub_value, dict):
-                    if sub_value.get(sub_key):
-                        yield sub_value[sub_key]
-        elif isinstance(value, dict):
-            if value.get(sub_key):
-                yield value[sub_key]
-
-    @classmethod
-    def extract_title(cls, entry, max_length=100):
-        for key in "title", "title_detail", "content":
-            for value in cls._reach_in_parseditem(entry, key, "value"):
-                return html.unescape(value[:max_length])
+    @staticmethod
+    def extract_title(entry, max_length=100):
+        possible_keys = "title", "title_detail", "content"
+        if title := browse_keys(entry, possible_keys, "value"):
+            return html.unescape(title[:max_length])
 
     @staticmethod
     def extract_tags(entry):
@@ -59,23 +46,21 @@ class ClassicArticleBuilder(AbstractArticleBuilder):
                 for tag in entry.get("tags", [])
                 if (tag.get("term") or '').strip()}
 
-    @classmethod
-    def extract_link(cls, entry):
-        for key in "link", "links":
-            for value in cls._reach_in_parseditem(entry, key, "href"):
-                yield value
+    @staticmethod
+    def extract_link(entry):
+        return browse_keys(entry, ("link", "links"), "href")
 
-    @classmethod
-    def extract_content(cls, entry):
-        for key in "summary", "summary_detail", "content":
-            for value in cls._reach_in_parseditem(entry, key, "value"):
-                return value
+    @staticmethod
+    def extract_content(entry):
+        possible_keys = "summary", "summary_detail", "content"
+        if content := browse_keys(entry, possible_keys, "value"):
+            return content
         return ""
 
     def extract_lang(self, entry):
-        for key in "summary_detail", "content", "title_detail":
-            for value in self._reach_in_parseditem(entry, key, "language"):
-                return value
+        possible_keys = "summary_detail", "content", "title_detail"
+        if lang := browse_keys(entry, possible_keys, "language"):
+            return lang
         return self._top_level.get("language")
 
     @staticmethod
