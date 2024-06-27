@@ -1,7 +1,9 @@
-from typing import List, Optional
+from typing import Generator, List, Optional
 
 
-def reach_in(entry, key: str, sub_key: Optional[str] = None):
+def reach_in(
+    entry, key: str, sub_key: Optional[str] = None
+) -> Generator[str, None, None]:
     value = entry.get(key)
     if isinstance(value, str):
         assert sub_key in [None, "value"], (
@@ -19,6 +21,10 @@ def reach_in(entry, key: str, sub_key: Optional[str] = None):
             yield value[sub_key]
 
 
-def browse_keys(entry, keys: List[str], sub_key: Optional[str] = None):
+def browse_keys(
+    entry, keys: List[str], sub_key: Optional[str] = None
+) -> Optional[str]:
     for key in keys:
-        yield from reach_in(entry, key, sub_key)
+        for value in reach_in(entry, key, sub_key):
+            return value
+    return None
