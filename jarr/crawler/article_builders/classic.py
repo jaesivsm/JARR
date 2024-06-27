@@ -91,7 +91,7 @@ class ClassicArticleBuilder(AbstractArticleBuilder):
                 if cluster_member["link"] in known_links:
                     continue
                 known_links.add(cluster_member["link"])
-                # Not adding cluster memeber without type
+                # Not adding cluster member without type
                 self._feed_content_type(content_type, cluster_member)
                 if not cluster_member.get("article_type"):
                     continue
