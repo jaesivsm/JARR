@@ -2,6 +2,7 @@ import html
 import logging
 import re
 import urllib
+from requests.exceptions import ReadTimeout
 
 from feedparser import FeedParserDict
 from feedparser import parse as fp_parse
@@ -11,7 +12,6 @@ from jarr.lib.enums import FeedType
 from jarr.lib.html_parsing import (extract_feed_links, extract_icon_url,
                                    extract_opg_prop, extract_title)
 from jarr.lib.utils import jarr_get
-from requests.exceptions import ReadTimeout
 
 SCHEME = r'(?:https?:)?\/\/'
 logger = logging.getLogger(__name__)
