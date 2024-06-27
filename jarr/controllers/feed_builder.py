@@ -2,10 +2,11 @@ import html
 import logging
 import re
 import urllib
-from requests.exceptions import ReadTimeout
 
 from feedparser import FeedParserDict
 from feedparser import parse as fp_parse
+from requests.exceptions import ReadTimeout
+
 from jarr.crawler.lib.feedparser_utils import browse_keys
 from jarr.lib.const import FEED_MIMETYPES, GOOGLE_BOT_UA, REQUIRED_JSON_FEED
 from jarr.lib.enums import FeedType
