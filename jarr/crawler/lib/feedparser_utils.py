@@ -21,5 +21,4 @@ def reach_in(entry, key: str, sub_key: Optional[str] = None):
 
 def browse_keys(entry, keys: List[str], sub_key: Optional[str] = None):
     for key in keys:
-        for value in reach_in(entry, key, sub_key):
-            return key
+        yield from reach_in(entry, key, sub_key)
