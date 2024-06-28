@@ -19,11 +19,11 @@ YOUTUBE_RE = re.compile(
 )
 
 
-def is_embedded_link(link) -> bool:
+def is_embedded_link(link):
     return YOUTUBE_RE.match(link)
 
 
-def get_embedded_id(link) -> str:
+def get_embedded_id(link):
     if match := YOUTUBE_RE.match(link):
         return match.group(5)
 
