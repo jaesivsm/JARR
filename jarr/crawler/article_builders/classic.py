@@ -4,10 +4,10 @@ import logging
 from datetime import timezone
 
 import dateutil.parser
-from jarr.lib.content_generator import get_embedded_id
 from jarr.crawler.article_builders.abstract import AbstractArticleBuilder
-from jarr.lib.utils import digest
 from jarr.crawler.lib.feedparser_utils import browse_keys
+from jarr.lib.content_generator import get_embedded_id
+from jarr.lib.utils import digest
 
 logger = logging.getLogger(__name__)
 

@@ -106,7 +106,6 @@ class Clusterizer:
                     article, filters=filters, filter_tfidf=True
                 )
             )
-
         tfidf_conf = conf.clustering.tfidf
         low_bound = article.simple_vector_magnitude / tfidf_conf.size_factor
         high_bound = article.simple_vector_magnitude * tfidf_conf.size_factor
@@ -119,7 +118,6 @@ class Clusterizer:
         for candidate in self._get_query_for_clustering(
             article, {"link_hash": article.link_hash}
         ):
-
             article.cluster_reason = ClusterReason.link
             cluster_event(context="link", result="match", level=logging.INFO)
             return candidate.cluster
