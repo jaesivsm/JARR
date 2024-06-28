@@ -6,7 +6,7 @@ def reach_in(
 ) -> Generator[str, None, None]:
     value = entry.get(key)
     if isinstance(value, str):
-        assert sub_key in [None, "value"], (
+        assert sub_key in {None, "value", "href"}, (
             "shouldn't reach for anything else but "
             "'value' if landing on a string value"
         )

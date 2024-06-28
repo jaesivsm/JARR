@@ -84,6 +84,8 @@ class ClassicArticleBuilder(AbstractArticleBuilder):
                         cluster_member["link"] = enclosure["href"]
                     elif enclosure_type == "media_content":
                         cluster_member["link"] = enclosure["url"]
+                    else:
+                        continue
                 except (KeyError, TypeError):
                     continue
                 # Not adding cluster member twice
