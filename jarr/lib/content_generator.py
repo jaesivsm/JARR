@@ -19,8 +19,13 @@ YOUTUBE_RE = re.compile(
 )
 
 
-def is_embedded_link(link):
+def is_embedded_link(link) -> bool:
     return YOUTUBE_RE.match(link)
+
+
+def get_embedded_id(link) -> str:
+    if match := YOUTUBE_RE.match(link):
+        return match.group(5)
 
 
 class ContentGenerator:

@@ -94,7 +94,7 @@ class FeedBuilderController:
             return {}
         fp_feed = self.parsed_feed.get("feed") or {}
         result = {"link": self.feed_response.url,
-                  "site_link": fp_feed.get("link")}
+                  "site_link": fp_feed.get("href") or fp_feed.get("link")}
         if title := browse_keys(fp_feed, ("title", "title_detail"), "value"):
             result["title"] = title
         if description := browse_keys(

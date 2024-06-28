@@ -4,6 +4,7 @@ import logging
 from datetime import timezone
 
 import dateutil.parser
+from jarr.lib.content_generator import get_embedded_id
 from jarr.crawler.article_builders.abstract import AbstractArticleBuilder
 from jarr.lib.utils import digest
 from jarr.crawler.lib.feedparser_utils import browse_keys
@@ -67,9 +68,12 @@ class ClassicArticleBuilder(AbstractArticleBuilder):
         return entry.get('comments')
 
     def _all_articles(self):
-        known_links = {self.article['link'],
-                       self.extract_link(self.entry),
-                       self.article['comments']}
+        known_links = {
+            self.article['link'],
+            self.extract_link(self.entry),
+            self.article['comments'],
+            get_embedded_id(self.extract_link(self.entry)),
+        }
         yield self.article
         count = 0
         for enclosure_type in "links", "media_content":
@@ -92,6 +96,11 @@ class ClassicArticleBuilder(AbstractArticleBuilder):
                 if cluster_member["link"] in known_links:
                     continue
                 known_links.add(cluster_member["link"])
+                if (
+                    embedded_id := get_embedded_id(cluster_member["link"])
+                ) in known_links:
+                    continue
+                known_links.add(embedded_id)
                 # Not adding cluster member without type
                 self._feed_content_type(content_type, cluster_member)
                 if not cluster_member.get("article_type"):

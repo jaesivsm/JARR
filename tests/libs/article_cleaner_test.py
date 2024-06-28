@@ -87,15 +87,16 @@ class ConstructArticleTest(unittest.TestCase):
 
     def test_image_content(self):
         entry, resp = self.entry2, self.response2
-        resp.headers['content-type'] = 'image/png'
-        entry.pop('links')
-        entry['link'] = resp.url = 'https://domain.tld/to-img.png'
+        resp.headers["content-type"] = "image/png"
+        for key in "links", "media_content":
+            entry.pop(key)
+        entry["link"] = resp.url = "https://domain.tld/to-img.png"
         self.head_patch.return_value = resp
         articles = list(ClassicArticleBuilder(Feed(id=1, user_id=1),
                                               entry, {}).enhance())
         self.assertEqual(1, len(articles))
         article = articles[0]
-        self.assertEqual(ArticleType.image, article['article_type'])
+        self.assertEqual(ArticleType.image, article["article_type"])
 
     def test_embedded_content(self):
         self.head_patch.return_value = self.response2
