@@ -69,10 +69,14 @@ class ClassicArticleBuilder(AbstractArticleBuilder):
 
     def _all_articles(self):
         known_links = {
-            self.article['link'],
-            self.extract_link(self.entry),
-            self.article['comments'],
-            get_embedded_id(self.extract_link(self.entry)),
+            value
+            for value in (
+                self.article["link"],
+                self.extract_link(self.entry),
+                self.article["comments"],
+                get_embedded_id(self.extract_link(self.entry)),
+            )
+            if value is not None
         }
         yield self.article
         count = 0
@@ -98,7 +102,7 @@ class ClassicArticleBuilder(AbstractArticleBuilder):
                 known_links.add(cluster_member["link"])
                 if (
                     embedded_id := get_embedded_id(cluster_member["link"])
-                ) in known_links:
+                ) and embedded_id in known_links:
                     continue
                 known_links.add(embedded_id)
                 # Not adding cluster member without type
