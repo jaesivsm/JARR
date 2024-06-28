@@ -94,6 +94,7 @@ class Clusterizer:
         article from the Clusterizer.corpus. If the corpus isn't initialized
         yet, it'll be pulled out of the database.
         """
+
         if not self.corpus_initialized:
             filters = {
                 "__and__": [{"vector__ne": None}, {"vector__ne": ""}],

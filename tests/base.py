@@ -49,9 +49,11 @@ class BaseJarrTest(TestCase):
         self.assertEqual(
             article.cluster_id,
             cluster.id,
-            f"article {article.id}:{article.entry_id}:{article.link} cluster "
-            f"{article.cluster.id} is not {cluster.id}(main "
-            f"{cluster.main_article_id}:{cluster.main_link!r})",
+            f"<Article id={article.id}, eid={article.entry_id!r}, "
+            f"link={article.link!r}> is in <Cluster id={article.cluster.id}>; "
+            f"not <Cluster id={cluster.id}>(with main "
+            f"<Article id={cluster.main_article_id}, "
+            f"link={cluster.main_link!r}>)",
         )
         self.assertEqual(reason, article.cluster_reason)
 

@@ -21,12 +21,6 @@ class UserTest(JarrFlaskCommon):
                       resp.headers['Location'])
         self.assertIn(id_, resp.headers['Location'])
 
-    #def test_TwitterAuthorizeUrl_get(self):
-    #    resp = self.jarr_client('get', 'oauth', 'twitter', 'authorize_url')
-    #    import ipdb
-    #    ipdb.sset_trace()
-    #    self.assertStatusCode(301, resp)
-
     def test_LinuxfrAuthorizeUrl_get(self):
         id_ = conf.oauth.linuxfr.id = 'TEH_DLFP_ID'
         conf.oauth.linuxfr.secret = 'TEH_DLFP_SECRET'

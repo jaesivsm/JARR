@@ -23,6 +23,11 @@ def is_embedded_link(link):
     return YOUTUBE_RE.match(link)
 
 
+def get_embedded_id(link):
+    if match := YOUTUBE_RE.match(link):
+        return match.group(5)
+
+
 class ContentGenerator:
     article_type: Optional[ArticleType] = None
     feed_type: Optional[FeedType] = None
