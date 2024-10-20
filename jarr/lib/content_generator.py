@@ -2,12 +2,13 @@ import logging
 import re
 import urllib.parse
 from functools import lru_cache
-
 from typing import Optional
+
 from goose3 import Goose
 from jarr.bootstrap import conf
 from jarr.controllers.article import to_vector
 from jarr.lib.enums import ArticleType, FeedType
+from jarr.lib.html_parsing import clean_article_content
 from jarr.lib.url_cleaners import remove_utm_tags
 from jarr.lib.utils import clean_lang
 
@@ -136,7 +137,9 @@ class TruncatedContentGenerator(ContentGenerator):
             self._get_goose()
         content = {"type": "fetched"}
         try:
-            content["content"] = self._page.top_node_raw_html
+            content["content"] = clean_article_content(
+                self._page.top_node_raw_html
+            )
             content["link"] = remove_utm_tags(self._page.final_url)
             content["title"] = self._page.title
         except Exception:

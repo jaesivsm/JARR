@@ -38,8 +38,8 @@ def _meta_w_charset(elem):
 
 
 def _extract_charset(content, strainer):
-    parsed = BeautifulSoup(content, "html.parser", parse_only=strainer)
-    for meta in parsed.find_all(_meta_w_charset):
+    soup = BeautifulSoup(content, "html.parser", parse_only=strainer)
+    for meta in soup.find_all(_meta_w_charset):
         return meta.attrs["charset"]
 
 
@@ -166,8 +166,9 @@ def clean_article_content(content) -> str:
             for element in soup.find_all(lambda elem: elem.has_attr(attr)):
                 del element.attrs[attr]
                 cleaned = True
-    except Exception:
-        pass
+    except Exception as error:
+        msg = "An error occured while triming forbidden elements from html %r"
+        logger.debug(msg, error)
     if cleaned:
         return str(soup)
     return content
