@@ -23,9 +23,8 @@ class KoreusArticleBuilder(ClassicArticleBuilder):
                     text = content['value']
         if text is None:
             return super().extract_link(entry)
-        summary_detail = BeautifulSoup(text, 'html.parser')
-        link = summary_detail.find_all('a')[0]
-        return link.attrs['href']
+        soup = BeautifulSoup(text, 'html.parser')
+        return soup.find_all('a')[0].attrs['href']
 
     @staticmethod
     def extract_comments(entry):

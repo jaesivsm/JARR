@@ -36,7 +36,7 @@ class ClassicArticleBuilder(AbstractArticleBuilder):
                     logger.error("Couldn't parse %r", entry[date_key])
 
     @staticmethod
-    def extract_title(entry, max_length=100):
+    def extract_title(entry, max_length=200):
         possible_keys = "title", "title_detail", "content"
         if title := browse_keys(entry, possible_keys, "value"):
             return html.unescape(title[:max_length])
@@ -52,7 +52,7 @@ class ClassicArticleBuilder(AbstractArticleBuilder):
         return browse_keys(entry, ("link", "links"), "href")
 
     @staticmethod
-    def extract_content(entry):
+    def extract_content(entry) -> str:
         values = set()
         for key in "summary", "summary_detail", "content":
             for value in reach_in(entry, key, "value"):
