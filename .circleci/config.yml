@@ -42,7 +42,7 @@ jobs:
 
   front-build:
     machine:
-      image: ubuntu-2004:202201-02
+      image: ubuntu-2404:2024.05.1
     steps:
       - checkout
       # restore cache and docker layer cache
@@ -72,7 +72,7 @@ jobs:
 
   backend-test:
     machine:
-      image: ubuntu-2004:202201-02
+      image: ubuntu-2404:2024.05.1
     steps:
       - checkout
       # restore cache and docker layer cache
@@ -134,7 +134,7 @@ jobs:
 
   push-docker-images:
     machine:
-      image: ubuntu-2004:202201-02
+      image: ubuntu-2404:2024.05.1
     environment:
       GIT_TAG: << pipeline.git.tag >>
     steps:
