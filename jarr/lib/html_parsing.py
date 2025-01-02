@@ -168,7 +168,7 @@ def clean_article_content(content) -> str:
                 del element.attrs[attr]
                 cleaned = True
         for tag, attrs in replace_if_absent.items():
-            for elem in soup.find_all(
+            for element in soup.find_all(
                 tag, **{key: True for key in attrs.keys()}
             ):
                 for find, replace in attrs.items():
