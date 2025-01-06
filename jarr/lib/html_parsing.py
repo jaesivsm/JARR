@@ -155,6 +155,7 @@ def clean_article_content(content) -> str:
     "Remove notion of height, width or positionning in integrated articles"
     forbidden_css = "width", "height", "position"
     forbidden_attrs = "width", "height"
+    replace_if_absent = {"img": {"data-src": "src"}}
     cleaned = False
     try:
         soup = get_soup(content, head_only=False)
@@ -166,6 +167,14 @@ def clean_article_content(content) -> str:
             for element in soup.find_all(lambda elem: elem.has_attr(attr)):
                 del element.attrs[attr]
                 cleaned = True
+        for tag, attrs in replace_if_absent.items():
+            for element in soup.find_all(
+                tag, **{key: True for key in attrs.keys()}
+            ):
+                for find, replace in attrs.items():
+                    element.attrs[replace] = element.attrs[find]
+                    del element.attrs[find]
+                    cleaned = True
     except Exception as error:
         msg = "An error occured while triming forbidden elements from html %r"
         logger.debug(msg, error)
