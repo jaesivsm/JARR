@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 IMG_ALT_MAX_LENGTH = 100
 YOUTUBE_RE = re.compile(
     r"^((?:https?:)?\/\/)?((?:www|m)\.)?((?:youtube\.com|youtu.be))"
-    r"(\/(?:[\w\-]+\?v=|embed\/|v\/)?)([\w\-]+)(\S+)?$"
+    r"(\/(?:[\w\-]+\?v=|embed\/|shorts\/|v\/)?)([\w\-]+)(\S+)?$"
 )
 
 
