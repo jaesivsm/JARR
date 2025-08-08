@@ -46,6 +46,7 @@ redis = "==5.*"
 requests = "==2.*"
 SQLAlchemy = "==2.*"
 the-conf = "==0.*"
+pyjwt = "<=2.9.0"
 
 [requires]
 python_version = "3.13"
