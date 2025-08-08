@@ -2,7 +2,7 @@ import logging
 import re
 import types
 import urllib
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta, timezone, UTC
 from enum import Enum
 from hashlib import md5, sha1
 
@@ -27,12 +27,8 @@ def get_auth_expiration_delay(factor=3 / 4) -> str:
     from jarr.bootstrap import conf  # prevent circular import
 
     declared_delay_sec = conf.auth.expiration_sec * factor
-    declared_delay = datetime.utcnow() + timedelta(seconds=declared_delay_sec)
-    return declared_delay.replace(tzinfo=timezone.utc).isoformat()
-
-
-def utc_now():
-    return datetime.utcnow().replace(tzinfo=timezone.utc)
+    declared_delay = datetime.now(UTC) + timedelta(seconds=declared_delay_sec)
+    return declared_delay.isoformat()
 
 
 def clean_lang(lang: str):
@@ -51,7 +47,7 @@ def clean_lang(lang: str):
 def rfc_1123_utc(time_obj=None, delta=None):
     """Return time obj or now formated in the RFC1123 style (with delta)."""
     if time_obj is None:
-        time_obj = utc_now()
+        time_obj = datetime.now(UTC)
     if delta is not None:
         time_obj += delta
     return time_obj.strftime(RFC_1123_FORMAT)

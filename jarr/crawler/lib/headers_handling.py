@@ -1,12 +1,12 @@
 import logging
 import re
-from datetime import timedelta, timezone
+from datetime import datetime, timedelta, timezone, UTC
 
 import dateutil.parser
 
 from jarr.bootstrap import conf
 from jarr.lib.const import FEED_ACCEPT_HEADERS
-from jarr.lib.utils import digest, rfc_1123_utc, utc_now
+from jarr.lib.utils import digest, rfc_1123_utc
 
 logger = logging.getLogger(__name__)
 MAX_AGE_RE = re.compile('max-age=([0-9]+)')
@@ -16,7 +16,7 @@ def _extract_max_age(headers, feed_info):
     if 'max-age' in headers.get('cache-control', ''):
         try:
             max_age = int(MAX_AGE_RE.search(headers['cache-control']).group(1))
-            feed_info['expires'] = utc_now() + timedelta(seconds=max_age)
+            feed_info['expires'] = datetime.now(UTC) + timedelta(seconds=max_age)
         except Exception:
             logger.exception("something went wrong while parsing max-age")
 

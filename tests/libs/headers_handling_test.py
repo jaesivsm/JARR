@@ -1,8 +1,7 @@
 import unittest
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, UTC
 
 from jarr.crawler.lib.headers_handling import extract_feed_info, rfc_1123_utc
-from jarr.lib.utils import utc_now
 from jarr.bootstrap import conf
 
 
@@ -32,21 +31,22 @@ class HeadersHandlingTest(unittest.TestCase):
         max_age = conf.feed.max_expires / 2
         headers = {'cache-control': 'garbage max-age=%d garbage' % max_age}
         assert_in_range(extract_feed_info(headers)['expires'],
-                        utc_now() + timedelta(seconds=max_age))
+                        datetime.now(UTC) + timedelta(seconds=max_age))
         headers['expires'] = rfc_1123_utc(delta=timedelta(hours=12))
         assert_in_range(extract_feed_info(headers)['expires'],
-                        utc_now() + timedelta(seconds=max_age))
+                        datetime.now(UTC) + timedelta(seconds=max_age))
 
     @staticmethod
     def test_extract_expires():
         hours_off = int(conf.feed.max_expires / 60 / 60)
         headers = {'expires': rfc_1123_utc(delta=timedelta(hours=hours_off))}
         assert_in_range(extract_feed_info(headers)['expires'],
-                        utc_now() + timedelta(hours=hours_off))
+                        datetime.now(UTC) + timedelta(hours=hours_off))
 
     @staticmethod
     def test_extract_naive_expires():
         ok_delta = timedelta(seconds=conf.feed.max_expires / 2)
-        headers = {'expires': (datetime.utcnow() + ok_delta).isoformat()}
+        expires = (datetime.now(datetime.UTC) + ok_delta).replace(tzinfo=None)
+        headers = {'expires': (expires).isoformat()}
         assert_in_range(extract_feed_info(headers)['expires'],
-                        utc_now() + ok_delta)
+                        datetime.now(UTC) + ok_delta)

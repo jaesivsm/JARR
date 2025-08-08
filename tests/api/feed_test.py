@@ -1,6 +1,5 @@
 from tests.base import JarrFlaskCommon
-from datetime import timezone, timedelta
-from jarr.lib.utils import utc_now
+from datetime import datetime, UTC, timezone, timedelta
 from jarr.lib.enums import FeedType
 from jarr.controllers import FeedController
 from jarr.crawler.main import feed_cleaner
@@ -78,7 +77,7 @@ class FeedApiTest(JarrFlaskCommon):
 
         # testing time formating
         feed = self.jarr_client('get', 'feeds', user='user1').json[0]
-        now = utc_now()
+        now = datetime.now(UTC)
         FeedController().update({'id': feed['id']}, {'last_retrieved': now})
         json = self._get(feed['id'], 'user1')
         self.assertEqual(json['last_retrieved'], now.isoformat())
