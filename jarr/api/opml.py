@@ -3,10 +3,10 @@ from flask_jwt_extended import current_user, jwt_required
 from flask_restx import Namespace, Resource, fields
 from werkzeug.datastructures import FileStorage
 from werkzeug.exceptions import UnprocessableEntity
+from datetime import datetime, UTC
 
 import opml
 from jarr.controllers import CategoryController, FeedController, UserController
-from jarr.lib.utils import utc_now
 
 opml_ns = Namespace(
         'opml', description="Allows to export and import OPML files")
@@ -35,7 +35,8 @@ class OPMLResource(Resource):
                       for cat in CategoryController(user_id).read()}
         feeds = FeedController(user_id).read()
         template = render_template('opml.xml', user=user, feeds=feeds,
-                                   categories=categories, now=utc_now())
+                                   categories=categories,
+                                   now=datetime.now(UTC))
         response = make_response(template)
         for key, value in OK_GET_HEADERS.items():
             response.headers[key] = value

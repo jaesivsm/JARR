@@ -1,4 +1,5 @@
 import logging
+from datetime import datetime, UTC
 from typing import Optional, Type
 
 from jarr.bootstrap import conf
@@ -10,7 +11,7 @@ from jarr.crawler.lib.headers_handling import (extract_feed_info,
 from jarr.crawler.requests_utils import (response_calculated_etag_match,
                                          response_etag_match)
 from jarr.lib.enums import FeedType
-from jarr.lib.utils import jarr_get, utc_now
+from jarr.lib.utils import jarr_get
 from jarr.metrics import FEED_FETCH
 
 logger = logging.getLogger(__name__)
@@ -49,7 +50,7 @@ class AbstractCrawler:
         logger.log(level, "%r: fetching feed error'd; error count -> %r",
                    self.feed, error_count)
         logger.debug("%r: last error details %r", self.feed, last_error)
-        now = utc_now()
+        now = datetime.now(UTC)
         info = {'error_count': error_count, 'last_error': last_error,
                 'user_id': self.feed.user_id, 'last_retrieved': now,
                 'expires': None}  # forcing compute by controller
@@ -60,7 +61,7 @@ class AbstractCrawler:
 
     def clean_feed(self, response, **info):
         """Will reset the errors counters on a feed that have known errors"""
-        now = utc_now()
+        now = datetime.now(UTC)
         info.update({'error_count': 0, 'last_error': None,
                      'last_retrieved': now, 'expires': None})
         info.update(extract_feed_info(response.headers, response.text))
