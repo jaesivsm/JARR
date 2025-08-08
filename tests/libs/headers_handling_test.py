@@ -29,7 +29,7 @@ class HeadersHandlingTest(unittest.TestCase):
     @staticmethod
     def test_extract_max_age():
         max_age = conf.feed.max_expires / 2
-        headers = {'cache-control': 'garbage max-age=%d garbage' % max_age}
+        headers = {'cache-control': f"garbage max-age={max_age} garbage"}
         assert_in_range(extract_feed_info(headers)['expires'],
                         datetime.now(UTC) + timedelta(seconds=max_age))
         headers['expires'] = rfc_1123_utc(delta=timedelta(hours=12))
@@ -46,7 +46,7 @@ class HeadersHandlingTest(unittest.TestCase):
     @staticmethod
     def test_extract_naive_expires():
         ok_delta = timedelta(seconds=conf.feed.max_expires / 2)
-        expires = (datetime.now(datetime.UTC) + ok_delta).replace(tzinfo=None)
+        expires = (datetime.now(UTC) + ok_delta).replace(tzinfo=None)
         headers = {'expires': (expires).isoformat()}
         assert_in_range(extract_feed_info(headers)['expires'],
                         datetime.now(UTC) + ok_delta)
