@@ -1,6 +1,7 @@
 FROM python:3.13-slim
 
-RUN useradd jarr --create-home --shell /bin/bash --home-dir /jarr --user-group
+ENV PROMETHEUS_MULTIPROC_DIR=/tmp/prometheus/
+RUN useradd jarr --create-home --shell /bin/bash --home-dir /jarr --user-group && mkdir -p $PROMETHEUS_MULTIPROC_DIR
 COPY example_conf/jarr.json /etc/jarr/jarr.json
 WORKDIR /jarr
 RUN apt-get update \
