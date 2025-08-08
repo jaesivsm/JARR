@@ -1,4 +1,4 @@
-FROM python:3.12-slim
+FROM python:3.13-slim
 
 RUN useradd jarr --create-home --shell /bin/bash --home-dir /jarr --user-group
 COPY example_conf/jarr.json /etc/jarr/jarr.json

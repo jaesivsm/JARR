@@ -5,7 +5,6 @@
 
 import logging
 
-from prometheus_distributed_client import set_redis_conn
 from redis import Redis
 from sqlalchemy import create_engine
 from sqlalchemy.orm import registry, scoped_session, sessionmaker
@@ -68,9 +67,6 @@ def rollback_pending_sql(*args, **kwargs):
 
 sqlalchemy_registry, engine, session, Base = init_db()
 init_models()
-set_redis_conn(host=conf.db.metrics.host,
-               db=conf.db.metrics.db,
-               port=conf.db.metrics.port)
 init_logging(conf.log.path, log_level=logging.WARNING,
              modules=('the_conf',))
 init_logging(conf.log.path, log_level=conf.log.level)
