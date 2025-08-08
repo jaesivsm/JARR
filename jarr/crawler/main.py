@@ -1,5 +1,5 @@
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, UTC
 
 import urllib3
 from ep_celery import celery_app
@@ -8,7 +8,6 @@ from jarr.controllers import (ArticleController, ClusterController,
                               FeedController, UserController)
 from jarr.crawler.utils import Queues, lock, observe_worker_result_since
 from jarr.lib.enums import FeedStatus
-from jarr.lib.utils import utc_now
 from jarr.metrics import ARTICLES, USER, WORKER_BATCH
 
 urllib3.disable_warnings()
@@ -67,7 +66,7 @@ def metrics_users_any():
 @celery_app.task(name='metrics.users.active')
 def metrics_users_active():
     logger.debug('Counting active users')
-    threshold_connection = utc_now() - timedelta(days=conf.feed.stop_fetch)
+    threshold_connection = datetime.now(UTC) - timedelta(days=conf.feed.stop_fetch)
     active = UserController().read(is_active=True,
                                    last_connection__ge=threshold_connection)
     USER.labels(status='active').set(active.count())
@@ -76,9 +75,9 @@ def metrics_users_active():
 @celery_app.task(name='metrics.users.long_term')
 def metrics_users_long_term():
     logger.debug('Counting long term users')
-    threshold_connection = utc_now() - timedelta(days=conf.feed.stop_fetch)
-    threshold_connection = utc_now() - timedelta(days=conf.feed.stop_fetch)
-    threshold_created = utc_now() - timedelta(days=conf.feed.stop_fetch + 1)
+    threshold_connection = datetime.now(UTC) - timedelta(days=conf.feed.stop_fetch)
+    threshold_connection = datetime.now(UTC) - timedelta(days=conf.feed.stop_fetch)
+    threshold_created = datetime.now(UTC) - timedelta(days=conf.feed.stop_fetch + 1)
     long_term = UserController().read(is_active=True,
                                       last_connection__ge=threshold_connection,
                                       date_created__lt=threshold_created)

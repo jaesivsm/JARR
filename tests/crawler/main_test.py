@@ -1,10 +1,9 @@
-from datetime import datetime, timezone
+from datetime import datetime, timezone, UTC
 
 from unittest.mock import patch
 
 from jarr.controllers import FeedController, UserController
 from jarr.crawler.main import scheduler
-from jarr.lib.utils import utc_now
 from tests.base import BaseJarrTest
 
 
@@ -38,7 +37,7 @@ class CrawlerMainTest(BaseJarrTest):
 
     def test_scheduler(self):
         scheduler()
-        UserController().update({}, {'last_connection': utc_now()})
+        UserController().update({}, {'last_connection': datetime.now(UTC)})
         fctrl = FeedController()
 
         epoch = datetime(1970, 1, 1, tzinfo=timezone.utc)

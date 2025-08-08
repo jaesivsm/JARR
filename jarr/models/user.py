@@ -1,9 +1,9 @@
 import re
+from datetime import datetime, UTC
 from sqlalchemy import Boolean, Column, Integer, PickleType, String
 from sqlalchemy.orm import relationship, validates
 
 from jarr.bootstrap import Base, conf
-from jarr.lib.utils import utc_now
 from jarr.models.utc_datetime_type import UTCDateTime
 
 
@@ -14,8 +14,8 @@ class User(Base):  # type: ignore
     login = Column(String, unique=True)
     password = Column(String)
     email = Column(String(254))
-    date_created = Column(UTCDateTime, default=utc_now)
-    last_connection = Column(UTCDateTime, default=utc_now)
+    date_created = Column(UTCDateTime, default=lambda: datetime.now(UTC))
+    last_connection = Column(UTCDateTime, default=lambda: datetime.now(UTC))
     renew_password_token = Column(String, default='')
 
     timezone = Column(String, default=conf.timezone)

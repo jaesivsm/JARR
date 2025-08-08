@@ -1,6 +1,6 @@
 import logging
 from collections import OrderedDict, defaultdict
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta, timezone, UTC
 
 import dateutil.parser
 from sqlalchemy import and_, func
@@ -12,7 +12,6 @@ from jarr.controllers.abstract import AbstractController
 from jarr.controllers.icon import IconController
 from jarr.lib.const import UNIX_START
 from jarr.lib.enums import FeedStatus
-from jarr.lib.utils import utc_now
 from jarr.metrics import FEED_EXPIRES, FEED_LATENESS
 from jarr.models import Article, Category, Cluster, Feed, User
 
@@ -97,7 +96,7 @@ class FeedController(AbstractController):
         filters["error_count__lt"] = conf.feed.error_max
         query = self.read(status=FeedStatus.active, **filters)
         if conf.feed.stop_fetch:
-            last_conn = utc_now() - timedelta(days=conf.feed.stop_fetch)
+            last_conn = datetime.now(UTC) - timedelta(days=conf.feed.stop_fetch)
             return query.join(User).filter(
                 User.is_active.__eq__(True), User.last_connection >= last_conn
             )
@@ -118,7 +117,7 @@ class FeedController(AbstractController):
         Feeds of inactive (not connected for more than a month) or manually
         desactivated users are ignored.
         """
-        now = utc_now()
+        now = datetime.now(UTC)
         min_expiring = now - timedelta(seconds=conf.feed.min_expires)
         max_expiring = now - timedelta(seconds=conf.feed.max_expires)
         filters = self._to_filters(
@@ -137,7 +136,7 @@ class FeedController(AbstractController):
         yield from query
 
     def list_fetchable(self, limit=0):
-        now, feeds = utc_now(), list(self.list_late(limit))
+        now, feeds = datetime.now(UTC), list(self.list_late(limit))
         if feeds:
             for feed in feeds:
                 if feed.last_retrieved == UNIX_START:
@@ -200,7 +199,7 @@ class FeedController(AbstractController):
             )
 
     def __update_default_expires(self, feed, attrs):
-        now = utc_now()
+        now = datetime.now(UTC)
         min_delta = timedelta(seconds=conf.feed.min_expires)
         max_delta = timedelta(seconds=conf.feed.max_expires)
         min_expires = now + min_delta

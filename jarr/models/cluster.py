@@ -1,6 +1,7 @@
+from datetime import datetime, UTC
+
 from jarr.bootstrap import Base
 from jarr.lib.enums import ReadReason
-from jarr.lib.utils import utc_now
 from jarr.models.article import Article
 from jarr.models.utc_datetime_type import UTCDateTime
 from sqlalchemy import (Boolean, Column, Enum, ForeignKey,
@@ -17,11 +18,11 @@ class Cluster(Base):  # type: ignore
     cluster_type = Column(String)
     read = Column(Boolean, default=False)
     liked = Column(Boolean, default=False)
-    created_date = Column(UTCDateTime, default=utc_now)
+    created_date = Column(UTCDateTime, default=lambda: datetime.now(UTC))
     content = Column(PickleType, default={})
 
     # denorm
-    main_date = Column(UTCDateTime, default=utc_now)
+    main_date = Column(UTCDateTime, default=lambda: datetime.now(UTC))
     main_feed_title = Column(String)
     main_title = Column(String)
     main_link = Column(String, default=None)

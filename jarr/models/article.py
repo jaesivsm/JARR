@@ -1,9 +1,9 @@
 from functools import cached_property
+from datetime import datetime, UTC
 
 from jarr.bootstrap import Base
 from jarr.lib.clustering_af.vector import TFIDFVector, get_simple_vector
 from jarr.lib.enums import ArticleType, ClusterReason
-from jarr.lib.utils import utc_now
 from jarr.models.utc_datetime_type import UTCDateTime
 from sqlalchemy import (Column, Enum, ForeignKeyConstraint, Index, Integer,
                         LargeBinary, PickleType, String)
@@ -23,8 +23,8 @@ class Article(Base):  # type: ignore
     content = Column(String)
     comments = Column(String)
     lang = Column(String)
-    date = Column(UTCDateTime, default=utc_now)
-    retrieved_date = Column(UTCDateTime, default=utc_now)
+    date = Column(UTCDateTime, default=lambda: datetime.now(UTC))
+    retrieved_date = Column(UTCDateTime, default=lambda: datetime.now(UTC))
     order_in_cluster = Column(Integer)
 
     # integration control
