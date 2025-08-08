@@ -38,7 +38,7 @@ goose3 = "==3.*"
 gunicorn = "==22.*"
 json-logging-py = "*"  # needed by gunicorn config
 opml = "==0.*"
-prometheus-distributed-client = "==1.*"
+prometheus-client = "*"
 psycopg2-binary = "==2.*"
 python-dateutil = "*"
 rauth = "==0.7.3"
@@ -46,6 +46,7 @@ redis = "==5.*"
 requests = "==2.*"
 SQLAlchemy = "==2.*"
 the-conf = "==0.*"
+pyjwt = "<=2.9.0"
 
 [requires]
-python_version = "3.12"
+python_version = "3.13"

@@ -1,5 +1,6 @@
-FROM python:3.12-slim
+FROM python:3.13-slim
 
+ENV PROMETHEUS_MULTIPROC_DIR=/tmp/prometheus/
 RUN useradd jarr --create-home --shell /bin/bash --home-dir /jarr --user-group
 COPY example_conf/jarr.json /etc/jarr/jarr.json
 WORKDIR /jarr
@@ -15,7 +16,7 @@ RUN apt-get update \
     && rm -rf /var/log/apt /var/cache/apt /var/log/apt
 USER jarr
 COPY ./Pipfil* /jarr/
-RUN mkdir /tmp/pipenv \
+RUN mkdir /tmp/pipenv $PROMETHEUS_MULTIPROC_DIR \
     && PIPENV_NOSPIN=true \
         PIPENV_COLORBLIND=true \
         PIPENV_HIDE_EMOJIS=true \

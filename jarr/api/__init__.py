@@ -75,7 +75,6 @@ def setup_api(application):
         category,
         cluster,
         feed,
-        metrics,
         oauth,
         one_page_app,
         opml,
@@ -90,7 +89,6 @@ def setup_api(application):
     api.add_namespace(user.user_ns)
     api.add_namespace(auth.auth_ns)
     api.add_namespace(oauth.oauth_ns)
-    api.add_namespace(metrics.metrics_ns)
     return api
 
 
