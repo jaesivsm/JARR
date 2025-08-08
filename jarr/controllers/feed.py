@@ -96,7 +96,9 @@ class FeedController(AbstractController):
         filters["error_count__lt"] = conf.feed.error_max
         query = self.read(status=FeedStatus.active, **filters)
         if conf.feed.stop_fetch:
-            last_conn = datetime.now(UTC) - timedelta(days=conf.feed.stop_fetch)
+            last_conn = datetime.now(UTC) - timedelta(
+                days=conf.feed.stop_fetch
+            )
             return query.join(User).filter(
                 User.is_active.__eq__(True), User.last_connection >= last_conn
             )

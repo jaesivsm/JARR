@@ -2,7 +2,7 @@ import logging
 import re
 import types
 import urllib
-from datetime import datetime, timedelta, timezone, UTC
+from datetime import datetime, timedelta, UTC
 from enum import Enum
 from hashlib import md5, sha1
 
