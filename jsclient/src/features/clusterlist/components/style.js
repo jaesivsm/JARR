@@ -10,7 +10,7 @@ export default makeStyles((theme: Theme) =>
       "& h6": {
         padding: "8px 0",
       },
-      "& p": {
+      "& > p": {
         overflowX: "hidden",
         "& span": {
           paddingRight: 30,
@@ -25,12 +25,23 @@ export default makeStyles((theme: Theme) =>
       "& img": {
         maxWidth: "100%",
         height: "auto"
+      },
+      "& audio": {
+        width: "100%"
+      },
+      "& video": {
+        width: "100%",
+        height: "auto"
       }
     },
     articleInner: {
       padding: "16px 0",
       "& iframe": {
         width: "100%"
+      },
+      "& p a": {
+        overflowX: "visible",
+        whiteSpace: "normal",
       }
     },
     summary: {
