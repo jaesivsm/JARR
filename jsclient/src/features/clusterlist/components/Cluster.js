@@ -4,6 +4,7 @@ import moment from "moment";
 import PropTypes from "prop-types";
 import { connect } from "react-redux";
 import { createSelector } from "reselect";
+import { useHistory, useParams } from "react-router-dom";
 // material ui components
 import Link from "@material-ui/core/Link";
 import Checkbox from "@material-ui/core/Checkbox";
@@ -109,6 +110,8 @@ const Cluster = ({ index, cluster, loadedCluster,
                    handleClickOnPanel, splitedMode,
 }) => {
   const classes = makeStyles();
+  const history = useHistory();
+  const { feedId, categoryId } = useParams();
   if(!doShow) { return null; }
   let content;
   if(!splitedMode && expanded) {
@@ -135,8 +138,28 @@ const Cluster = ({ index, cluster, loadedCluster,
              + (cluster.read ? "r" : "")
              + (cluster.liked ? "l" : "")
              + cluster.id}
-        onChange={(e) => handleClickOnPanel(e, cluster,
-                                            unreadOnClose, expanded)}
+        onChange={(e) => {
+          handleClickOnPanel(e, cluster, unreadOnClose, expanded);
+          if (!expanded) {
+            // Expanding - add cluster to URL
+            if (feedId) {
+              history.push(`/feed/${feedId}/cluster/${cluster.id}`);
+            } else if (categoryId) {
+              history.push(`/category/${categoryId}/cluster/${cluster.id}`);
+            } else {
+              history.push(`/cluster/${cluster.id}`);
+            }
+          } else {
+            // Collapsing - remove cluster from URL
+            if (feedId) {
+              history.push(`/feed/${feedId}`);
+            } else if (categoryId) {
+              history.push(`/category/${categoryId}`);
+            } else {
+              history.push(`/`);
+            }
+          }
+        }}
       >
         <ExpansionPanelSummary
           expandIcon={<ExpandMoreIcon />}

@@ -1,6 +1,7 @@
 import React from "react";
 import PropTypes from "prop-types";
 import { connect } from "react-redux";
+import { useHistory } from "react-router-dom";
 // material ui component
 import { useTheme } from "@material-ui/core/styles";
 import useMediaQuery from "@material-ui/core/useMediaQuery";
@@ -48,6 +49,7 @@ function FeedRow({ index, style, feedListRows,
                    listClusters, toggleCatFolding }) {
   const classes = feedListStyle();
   const theme = useTheme();
+  const history = useHistory();
   const isDesktop = useMediaQuery(theme.breakpoints.up("md"));
   const obj = feedListRows[index];
   const isSelected = (selectedFeedId === obj.id && obj.type === "feed") || obj.id === selectedCategoryId;
@@ -60,7 +62,10 @@ function FeedRow({ index, style, feedListRows,
           style={style}
           className={classes.feedItem}
           selected={isSelected}
-          onClick={(e) => (listClusters(e, { feedId: obj.id }, isDesktop))}
+          onClick={(e) => {
+            listClusters(e, { feedId: obj.id }, isDesktop);
+            history.push(`/feed/${obj.id}`);
+          }}
         >
         {badge}
         {icon}
@@ -78,7 +83,10 @@ function FeedRow({ index, style, feedListRows,
     <ListItem button
         key={`c${obj.id}-${isSelected ? "s" : ""}-${obj.unread}`}
         style={style} selected={isSelected}
-        onClick={(e) => (listClusters(e, { categoryId: isAllCateg ? "all" : obj.id}, isDesktop, obj.folded, selectedCategoryId ))}
+        onClick={(e) => {
+          listClusters(e, { categoryId: isAllCateg ? "all" : obj.id}, isDesktop, obj.folded, selectedCategoryId );
+          history.push(`/category/${isAllCateg ? "all" : obj.id}`);
+        }}
         className={isAllCateg ? classes.catItemAll : classes.catItem}>
       {obj.unread && !isAllCateg ? badge : null}
       <ListItemText primary={isAllCateg ? "All" : obj.str} className={isAllCateg ? classes.catItemAllText : classes.catItemText} />

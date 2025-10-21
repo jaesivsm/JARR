@@ -1,7 +1,7 @@
 import React from "react";
 import PropTypes from "prop-types";
 import { connect } from "react-redux";
-import { BrowserRouter } from "react-router-dom";
+import { BrowserRouter, Switch, Route } from "react-router-dom";
 
 import CssBaseline from "@material-ui/core/CssBaseline";
 import { ThemeProvider } from "@material-ui/styles";
@@ -13,6 +13,7 @@ import TopMenu from "./features/topmenu/TopMenu";
 import FeedList from "./features/feedlist/FeedList";
 import EditPanel from "./features/editpanel/EditPanel";
 import ClusterList from "./features/clusterlist/ClusterList";
+import MainView from "./MainView";
 
 function mapStateToProps(state) {
   return { isLogged: !!state.auth.accessToken, };
@@ -33,15 +34,36 @@ function Jarr({ isLogged, isLeftMenuOpen }) {
     );
   }
   return (
-    <ThemeProvider theme={jarrTheme}>
-      <div className={classes.root}>
-        <CssBaseline />
-        <TopMenu />
-        <FeedList />
-        <ClusterList />
-        <EditPanel />
-      </div>
-    </ThemeProvider>
+    <BrowserRouter>
+      <ThemeProvider theme={jarrTheme}>
+        <div className={classes.root}>
+          <CssBaseline />
+          <TopMenu />
+          <FeedList />
+          <Switch>
+            <Route path="/feed/:feedId/cluster/:clusterId">
+              <MainView />
+            </Route>
+            <Route path="/feed/:feedId">
+              <MainView />
+            </Route>
+            <Route path="/category/:categoryId/cluster/:clusterId">
+              <MainView />
+            </Route>
+            <Route path="/category/:categoryId">
+              <MainView />
+            </Route>
+            <Route path="/cluster/:clusterId">
+              <MainView />
+            </Route>
+            <Route path="/">
+              <MainView />
+            </Route>
+          </Switch>
+          <EditPanel />
+        </div>
+      </ThemeProvider>
+    </BrowserRouter>
   );
 }
 
