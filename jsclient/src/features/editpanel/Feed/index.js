@@ -2,21 +2,21 @@ import React from "react";
 import PropTypes from "prop-types";
 import { connect } from "react-redux";
 // material components
-import Alert from "@material-ui/lab/Alert";
-import Switch from "@material-ui/core/Switch";
-import Button from "@material-ui/core/Button";
-import Select from "@material-ui/core/Select";
-import MenuItem from "@material-ui/core/MenuItem";
-import FormControl from "@material-ui/core/FormControl";
-import FormControlLabel from "@material-ui/core/FormControlLabel";
-import FormHelperText from "@material-ui/core/FormHelperText";
+import Alert from "@mui/material/Alert";
+import Switch from "@mui/material/Switch";
+import Button from "@mui/material/Button";
+import Select from "@mui/material/Select";
+import MenuItem from "@mui/material/MenuItem";
+import FormControl from "@mui/material/FormControl";
+import FormControlLabel from "@mui/material/FormControlLabel";
+import FormHelperText from "@mui/material/FormHelperText";
 // jarr
 import ProposedLinks from "./ProposedLinks";
 import FilterSettings from "./FilterSettings";
 import StateTextInput from "../common/StateTextInput";
 import ClusterSettings from "../common/ClusterSettings";
 import DeleteButton from "../common/DeleteButton";
-import editPanelStyle from "../editPanelStyle";
+import useStyles from "../editPanelStyle";
 import { closePanel, editLoadedObj } from "../slice";
 import doCreateObj from "../../../hooks/doCreateObj";
 import doEditObj from "../../../hooks/doEditObj";
@@ -63,7 +63,7 @@ const mapStateToProps = (state) => ({
 const AddEditFeed = ({ job, categories, link, sameLinkCount,
                        feedId, catId, feedType, active, truncatedContent,
                        edit, commit }) => {
-  const classes = editPanelStyle();
+  const classes = useStyles();
   let warning;
   if(sameLinkCount) {
     warning = (

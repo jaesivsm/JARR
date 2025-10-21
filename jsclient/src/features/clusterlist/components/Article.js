@@ -1,16 +1,16 @@
 import React from "react";
 import PropTypes from "prop-types";
-import useMediaQuery from "@material-ui/core/useMediaQuery";
-import { useTheme } from "@material-ui/core/styles";
-import Typography from "@material-ui/core/Typography";
-import Link from "@material-ui/core/Link";
-import Divider from "@material-ui/core/Divider";
+import useMediaQuery from "@mui/material/useMediaQuery";
+import { useTheme } from "@mui/material/styles";
+import Typography from "@mui/material/Typography";
+import Link from "@mui/material/Link";
+import Divider from "@mui/material/Divider";
 
-import makeStyles from "./style";
+import useStyles from "./style";
 
-function Article({ article, forceShowTitle, hidden }) {
-  const classes = makeStyles();
+function Article({ article, forceShowTitle = false, hidden = false }) {
   const theme = useTheme();
+  const classes = useStyles();
   const splitedMode = useMediaQuery(theme.breakpoints.up("md"));
   let title, comments;
   if(forceShowTitle || splitedMode) {
@@ -58,10 +58,6 @@ Article.propTypes = {
   }),
   hidden: PropTypes.bool,
   forceShowTitle: PropTypes.bool,
-};
-Article.defaultProps = {
-  hidden: false,
-  forceShowTitle: false
 };
 
 export default Article;

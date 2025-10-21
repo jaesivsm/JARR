@@ -2,17 +2,17 @@ import React, { useState } from "react";
 import PropTypes from "prop-types";
 import { connect } from "react-redux";
 
-import Tab from "@material-ui/core/Tab";
-import Tabs from "@material-ui/core/Tabs";
-import ImageIcon from "@material-ui/icons/Image";
-import AudioIcon from "@material-ui/icons/MusicNote";
-import VideoIcon from "@material-ui/icons/Movie";
-import YoutubeIcon from "@material-ui/icons/YouTube";
+import Tab from "@mui/material/Tab";
+import Tabs from "@mui/material/Tabs";
+import ImageIcon from "@mui/icons-material/Image";
+import AudioIcon from "@mui/icons-material/MusicNote";
+import VideoIcon from "@mui/icons-material/Movie";
+import YoutubeIcon from "@mui/icons-material/YouTube";
 
 import Article from "./Article";
 import {articleTypes, TypedContents} from "./TypedContents";
 import ProcessedContent from "./ProcessedContent";
-import makeStyles from "./style";
+import useStyles from "./style";
 import ClusterIcon from "../../../components/ClusterIcon";
 import jarrIcon from "../../../components/JarrIcon.gif";
 
@@ -26,7 +26,7 @@ const proccessedContentTitle = "proccessed content";
 
 function Articles({ articles, icons, contents }) {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const classes = makeStyles();
+  const classes = useStyles();
   const hasProcessedContent = !!contents && contents.length > 0;
   const allArticlesAreTyped = articles.reduce(
     (allTyped, art) => !!(allTyped && articleTypes.includes(art["article_type"])), true);

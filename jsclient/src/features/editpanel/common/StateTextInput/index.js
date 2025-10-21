@@ -1,31 +1,28 @@
 import React from "react";
 import PropTypes from "prop-types";
-import { createSelector } from "reselect";
 import { connect, useDispatch } from "react-redux";
 // material
-import TextField from "@material-ui/core/TextField";
+import TextField from "@mui/material/TextField";
 // jarr
-import style from "./style";
+import useStyles from "./style";
 import { editLoadedObj } from "../../slice";
 
 const getValue = (state, props) =>
   state.edit.loadedObj[props.name] ? state.edit.loadedObj[props.name] : "";
 
-const makeGetValue = () => createSelector([ getValue ], (value) => value);
-
 const makeMapStateToProps = () => {
-  const madeGetValue = makeGetValue();
-  return (state, props) => ({ value: madeGetValue(state, props) });
+  return (state, props) => ({ value: getValue(state, props) });
 };
 
 const StateTextInput = ({ label, name, required, disabled, value }) => {
   const dispatch = useDispatch();
+  const classes = useStyles();
   return (
     <TextField required={!!required} disabled={!!disabled} variant="outlined"
                label={label} name={name}
                value={value}
                onChange={(e) => dispatch(editLoadedObj({ key: name, value: e.target.value }))}
-               className={style().editPanelInput}
+               className={classes.editPanelInput}
     />
   );
 };

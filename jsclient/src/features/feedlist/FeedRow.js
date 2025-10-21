@@ -1,23 +1,25 @@
 import React from "react";
 import PropTypes from "prop-types";
 import { connect } from "react-redux";
-import { useHistory } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 // material ui component
-import { useTheme } from "@material-ui/core/styles";
-import useMediaQuery from "@material-ui/core/useMediaQuery";
-import ListItem from "@material-ui/core/ListItem";
-import Badge from "@material-ui/core/Badge";
-import ListItemText from "@material-ui/core/ListItemText";
-import ExpandLess from "@material-ui/icons/ExpandLess";
-import ExpandMore from "@material-ui/icons/ExpandMore";
+import { useTheme } from "@mui/material/styles";
+import useMediaQuery from "@mui/material/useMediaQuery";
+import ListItem from "@mui/material/ListItem";
+import ListItemButton from "@mui/material/ListItemButton";
+import Badge from "@mui/material/Badge";
+import ListItemText from "@mui/material/ListItemText";
+import ExpandLess from "@mui/icons-material/ExpandLess";
+import ExpandMore from "@mui/icons-material/ExpandMore";
 // jarr
 import doListClusters from "../../hooks/doListClusters";
-import { toggleMenu, toggleFolding } from "./slice";
-import feedListStyle from "./feedListStyle";
+import { toggleMenu, toggleFolding, createFeedListFilter } from "./slice";
+import useStyles from "./feedListStyle";
 import FeedIcon from "../../components/FeedIcon";
 
 function mapStateToProps(state) {
-  return { feedListRows: state.feeds.feedListRows.filter(state.feeds.feedListFilter),
+  const feedListFilter = createFeedListFilter(state.feeds.feedSearchString);
+  return { feedListRows: state.feeds.feedListRows.filter(feedListFilter),
            isFoldedFromParent: state.feeds.isParentFolded,
            selectedCategoryId: state.clusters.filters["category_id"],
            selectedFeedId: state.clusters.filters["feed_id"],
@@ -47,9 +49,9 @@ const mapDispatchToProps = (dispatch) => ({
 function FeedRow({ index, style, feedListRows,
                    isFoldedFromParent, selectedCategoryId, selectedFeedId,
                    listClusters, toggleCatFolding }) {
-  const classes = feedListStyle();
   const theme = useTheme();
-  const history = useHistory();
+  const classes = useStyles();
+  const navigate = useNavigate();
   const isDesktop = useMediaQuery(theme.breakpoints.up("md"));
   const obj = feedListRows[index];
   const isSelected = (selectedFeedId === obj.id && obj.type === "feed") || obj.id === selectedCategoryId;
@@ -57,19 +59,23 @@ function FeedRow({ index, style, feedListRows,
   if (obj.type === "feed") {
     const icon = <FeedIcon iconUrl={obj["icon_url"]} />;
     return (
-      <ListItem button
+      <ListItem
           key={`f${obj.id}-${isSelected ? "s" : ""}-${obj.unread}`}
           style={style}
+          disablePadding
+        >
+        <ListItemButton
           className={classes.feedItem}
           selected={isSelected}
           onClick={(e) => {
             listClusters(e, { feedId: obj.id }, isDesktop);
-            history.push(`/feed/${obj.id}`);
+            navigate(`/feed/${obj.id}`);
           }}
         >
-        {badge}
-        {icon}
-        <ListItemText primary={obj.str} className={classes.feedItemText}/>
+          {badge}
+          {icon}
+          <ListItemText primary={obj.str} className={classes.feedItemText}/>
+        </ListItemButton>
       </ListItem>
     );
   }
@@ -80,17 +86,32 @@ function FeedRow({ index, style, feedListRows,
     foldButton = <FoldButton className={classes.foldButton} onClick={(e) => (toggleCatFolding(e, obj.id))} />;
   }
   return (
-    <ListItem button
+    <ListItem
         key={`c${obj.id}-${isSelected ? "s" : ""}-${obj.unread}`}
-        style={style} selected={isSelected}
-        onClick={(e) => {
-          listClusters(e, { categoryId: isAllCateg ? "all" : obj.id}, isDesktop, obj.folded, selectedCategoryId );
-          history.push(`/category/${isAllCateg ? "all" : obj.id}`);
+        style={style}
+        disablePadding
+      >
+      <ListItemButton
+        selected={isSelected}
+        onClick={(ev) => {
+          listClusters(
+            ev,
+            {categoryId: isAllCateg ? "all" : obj.id},
+            isDesktop,
+            obj.folded,
+            selectedCategoryId
+          );
+          navigate(`/category/${isAllCateg ? "all" : obj.id}`);
         }}
-        className={isAllCateg ? classes.catItemAll : classes.catItem}>
-      {obj.unread && !isAllCateg ? badge : null}
-      <ListItemText primary={isAllCateg ? "All" : obj.str} className={isAllCateg ? classes.catItemAllText : classes.catItemText} />
-      {foldButton}
+        className={isAllCateg ? classes.catItemAll : classes.catItem}
+      >
+        {obj.unread && !isAllCateg ? badge : null}
+        <ListItemText
+          primary={isAllCateg ? "All" : obj.str}
+          className={isAllCateg ? classes.catItemAllText : classes.catItemText}
+        />
+        {foldButton}
+      </ListItemButton>
     </ListItem>
   );
 }

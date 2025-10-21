@@ -1,13 +1,13 @@
 import React from "react";
 import PropTypes from "prop-types";
-import Typography from "@material-ui/core/Typography";
+import Typography from "@mui/material/Typography";
 
-import makeStyles from "./style";
+import useStyles from "./style";
 
 export const articleTypes = ["image", "audio", "video"];
 
 export function TypedContents({ type, articles, hidden }) {
-  const classes = makeStyles();
+  const classes = useStyles();
   if (articles.length === 0) { return ; }
   let processedUrls = [];
   return (

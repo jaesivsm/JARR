@@ -23,13 +23,15 @@ function MainView({ listClusters, fetchCluster }) {
     } else if (categoryId) {
       listClusters({ categoryId: categoryId === "all" ? "all" : parseInt(categoryId) });
     }
-  }, [feedId, categoryId, listClusters]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [feedId, categoryId]);
 
   useEffect(() => {
     if (clusterId) {
       fetchCluster(parseInt(clusterId));
     }
-  }, [clusterId, fetchCluster]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [clusterId]);
 
   return <ClusterList />;
 }

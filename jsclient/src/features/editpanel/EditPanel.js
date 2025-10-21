@@ -1,19 +1,19 @@
 import React from "react";
 import { connect } from "react-redux";
 import PropTypes from "prop-types";
-import Typography from "@material-ui/core/Typography";
-import Drawer from "@material-ui/core/Drawer";
-import Divider from "@material-ui/core/Divider";
-import IconButton from "@material-ui/core/IconButton";
-import Close from "@material-ui/icons/Close";
-import CircularProgress from "@material-ui/core/CircularProgress";
+import Typography from "@mui/material/Typography";
+import Drawer from "@mui/material/Drawer";
+import Divider from "@mui/material/Divider";
+import IconButton from "@mui/material/IconButton";
+import Close from "@mui/icons-material/Close";
+import CircularProgress from "@mui/material/CircularProgress";
 // jarr
 import BuildFeed from "./Feed/Build";
 import AddEditFeed from "./Feed";
 import AddEditCategory from "./Category";
 import SettingsPanel from "./SettingsPanel";
 import { closePanel } from "./slice";
-import editPanelStyle from "./editPanelStyle";
+import useStyles from "./editPanelStyle";
 
 const mapDispatchToProps = (dispatch) => ({
   close() {
@@ -30,7 +30,7 @@ function mapStateToProps(state) {
 }
 
 const EditPanel = ({ isOpen, isLoading, job, objType, close }) => {
-  const classes = editPanelStyle();
+  const classes = useStyles();
   let form;
   if (isLoading) {
     form = <div className={classes.loadEditPanel}><CircularProgress /></div>;

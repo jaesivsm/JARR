@@ -45,7 +45,7 @@ export const doRetryOnTokenExpiration = async (payload, dispatch, getState) => {
         url: `${apiUrl}/auth/refresh`,
         headers: { "Authorization": state.auth.refreshToken }
       });
-      dispatch(tokenAcquired(result));
+      dispatch(tokenAcquired({ data: result.data }));
       payload.headers = { "Authorization": result.data["access_token"] };
     } catch (err) { // failed to refresh it, logging out
       dispatch(purgeCredentials());

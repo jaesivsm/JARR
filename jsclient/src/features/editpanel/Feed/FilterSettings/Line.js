@@ -1,19 +1,18 @@
 import React from "react";
 import PropTypes from "prop-types";
-import { createSelector } from "reselect";
 import { connect, useDispatch } from "react-redux";
 // material ui components
-import Select from "@material-ui/core/Select";
-import MenuItem from "@material-ui/core/MenuItem";
-import TextField from "@material-ui/core/TextField";
-import IconButton from "@material-ui/core/IconButton";
-import FormControl from "@material-ui/core/FormControl";
+import Select from "@mui/material/Select";
+import MenuItem from "@mui/material/MenuItem";
+import TextField from "@mui/material/TextField";
+import IconButton from "@mui/material/IconButton";
+import FormControl from "@mui/material/FormControl";
 // material icons
-import MinusIcon from "@material-ui/icons/Remove";
-import ArrowUpIcon from "@material-ui/icons/ArrowUpward";
-import ArrowDownIcon from "@material-ui/icons/ArrowDownward";
+import MinusIcon from "@mui/icons-material/Remove";
+import ArrowUpIcon from "@mui/icons-material/ArrowUpward";
+import ArrowDownIcon from "@mui/icons-material/ArrowDownward";
 // jarr
-import style from "./style";
+import useStyles from "./style";
 import { moveUpFilter, moveDownFilter, editFilter, removeFilter
 } from "../../slice";
 // constants
@@ -33,18 +32,16 @@ const FiltersType = { "regex": "title match (regex)",
 const FiltersTrigger = {"match": "If", "no match": "If not", };
 
 const getFilter = (state, props) => state.edit.loadedObj.filters[props.index];
-const makeGetFilter = () => createSelector([ getFilter ], (filter) => filter);
 
 const makeMapStateToProps = () => {
-  const madeGetFilter = makeGetFilter();
-  return (state, props) => ({ filter: madeGetFilter(state, props) });
+  return (state, props) => ({ filter: getFilter(state, props) });
 };
 
 const FilterSettingLine = ({ index, position, filter }) => {
   let moveUpBtn;
   let moveDownBtn;
   const dispatch = useDispatch();
-  const classes = style();
+  const classes = useStyles();
   if (position !== "first") {
     moveUpBtn = (
       <IconButton onClick={() => dispatch(moveUpFilter(index))}

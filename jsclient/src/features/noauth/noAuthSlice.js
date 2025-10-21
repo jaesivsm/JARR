@@ -18,14 +18,18 @@ const noAuthSlice = createSlice({
     responseRecieved: (state, action) => ({ ...INITIAL_STATE, ...action.payload }),
     authError: (state, action) => {
       state = { ...INITIAL_STATE };
-      if (action.payload.statusText === "CONFLICT") {
+      const statusText = action.payload?.statusText;
+      if (statusText === "CONFLICT") {
         state.creationError = "Already in use. Please choose another login.";
-      } else if (action.payload.statusText === "FORBIDDEN") {
+      } else if (statusText === "FORBIDDEN") {
         state.passwordError = "Wrong password.";
-      } else if (action.payload.statusText === "NOT FOUND") {
+      } else if (statusText === "NOT FOUND") {
         state.loginError = "User does not exist.";
-      } else if (action.payload.statusText === "EXPIRED") {
+      } else if (statusText === "EXPIRED") {
         state.loginError = "Your session has expired, please log in again";
+      } else if (!action.payload) {
+        state.loginError = "Network error. Please check your connection.";
+        state.creationError = "Network error. Please check your connection.";
       } else {
         state.loginError = "Unknown error.";
         state.creationError = "Unknown error.";
@@ -64,10 +68,10 @@ export const doLogin = (
       );
     }
     dispatch(responseRecieved());
-    dispatch(tokenAcquired(result));
+    dispatch(tokenAcquired({ data: result.data }));
   } catch (err) {
     dispatch(purgeCredentials());
-    dispatch(authError(err.response));
+    dispatch(authError(err?.response ? { statusText: err.response.statusText } : null));
   }
 };
 
@@ -85,7 +89,7 @@ export const doSignUp = (
     });
     dispatch(responseRecieved());
   } catch (err) {
-    dispatch(authError(err.response));
+    dispatch(authError(err?.response ? { statusText: err.response.statusText } : null));
   }
 };
 
@@ -100,9 +104,9 @@ export const doInitRecovery = (
       url: `${apiUrl}/auth/recovery`,
       data: { login, email },
     });
-    dispatch(responseRecieved({ recovery: result }));
+    dispatch(responseRecieved({ recovery: { statusText: result.statusText } }));
   } catch (err) {
-    dispatch(responseRecieved({ recovery: err.response }));
+    dispatch(responseRecieved({ recovery: { statusText: err.response?.statusText } }));
   }
 };
 
@@ -121,7 +125,7 @@ export const doRecovery = (
     });
     dispatch(responseRecieved());
   } catch (err) {
-    dispatch(responseRecieved({ recovery: err.response }));
+    dispatch(responseRecieved({ recovery: { statusText: err.response?.statusText } }));
   }
 };
 
@@ -134,9 +138,9 @@ export const doValidOAuth = (code): AppThunk => async (dispatch) => {
       data: { code },
     });
     dispatch(responseRecieved());
-    dispatch(tokenAcquired(result));
+    dispatch(tokenAcquired({ data: result.data }));
   } catch (err) {
     dispatch(purgeCredentials());
-    dispatch(authError(err.response));
+    dispatch(authError(err?.response ? { statusText: err.response.statusText } : null));
   }
 };
