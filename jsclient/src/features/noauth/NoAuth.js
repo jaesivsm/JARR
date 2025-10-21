@@ -122,7 +122,7 @@ function NoAuth({ isLoading, noAccessToken, savedLogin, savedPassword, refreshTo
   return (
     <Grid container className={classes.loginContainer} direction="column" >
       <Switch>
-        <Route path="/recovery/:login/:email/:token">
+        <Route path="/auth/recovery/:login/:email/:token">
           <PasswordRecovery />
           {recovery === "NOT FOUND" ? <Grid item>Could not find your user</Grid> : null}
           {recovery === "FORBIDDEN" ? <Grid item>Password NOT updated, token is expired. Please generate a new one.</Grid>: null}
