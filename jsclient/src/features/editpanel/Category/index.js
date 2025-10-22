@@ -2,15 +2,15 @@ import React from "react";
 import PropTypes from "prop-types";
 import { connect } from "react-redux";
 // material components
-import Button from "@material-ui/core/Button";
-import FormControl from "@material-ui/core/FormControl";
+import Button from "@mui/material/Button";
+import FormControl from "@mui/material/FormControl";
 // jarr
 import ClusterSettings from "../common/ClusterSettings";
 import DeleteButton from "../common/DeleteButton";
 import StateTextInput from "../common/StateTextInput";
 
 import { closePanel } from "../slice";
-import editPanelStyle from "../editPanelStyle";
+import useStyles from "../editPanelStyle";
 import doCreateObj from "../../../hooks/doCreateObj";
 import doEditObj from "../../../hooks/doEditObj";
 
@@ -31,7 +31,7 @@ function mapStateToProps(state) {
 }
 
 function AddEditCategory({ job, catId, commit }) {
-  const classes = editPanelStyle();
+  const classes = useStyles();
 
   return (
     <form onSubmit={(e) => commit(e, job)}>

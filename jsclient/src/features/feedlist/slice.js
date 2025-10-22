@@ -30,6 +30,19 @@ const defaultFilter = (row) => ( // will display row if
   // row is a feed without category (idem)
   || (row.type === "feed" && row["category_id"] === null)
 );
+
+// Export filter function factory to be used in selectors
+export const createFeedListFilter = (searchString) => {
+  if (!searchString) {
+    return defaultFilter;
+  }
+  const feedSearchStr = searchString.toLowerCase();
+  return (row) => (
+    row.type !== "categ" && row.type !== "all-categ"
+    && row.str.toLowerCase().includes(feedSearchStr)
+  );
+};
+
 const feedSlice = createSlice({
   name: "feeds",
   initialState: { loadingFeeds: false,
@@ -39,7 +52,7 @@ const feedSlice = createSlice({
                   unreads: {},
                   isParentFolded: storageGet("left-menu-folded", "session") === "true",
                   isOpen: triboolMapping[storageGet("left-menu-open", "session")],
-                  feedListFilter: defaultFilter,
+                  feedSearchString: null,  // Store search string instead of function
                   icons: {},
                   categoryAsFeed: {},
   },
@@ -47,16 +60,7 @@ const feedSlice = createSlice({
     requestedFeeds: (state, action) => ({ ...state, loadingFeeds: true }),
     requestedUnreadCounts: (state, action) => ({ ...state, loadingUnreadCounts: true }),
     setSearchFilter: (state, action) => {
-      if (!action.payload) {
-        return { ...state, feedListFilter: defaultFilter, };
-      }
-      const feedSearchStr = action.payload.toLowerCase();
-      return { ...state,
-               feedListFilter: (row) => (
-                 row.type !== "categ" && row.type !== "all-categ"
-                 && row.str.toLowerCase().includes(feedSearchStr)
-               ),
-      };
+      return { ...state, feedSearchString: action.payload || null };
     },
     toggleAllFolding: (state, action) => {
       const newFolding = !state.isParentFolded;

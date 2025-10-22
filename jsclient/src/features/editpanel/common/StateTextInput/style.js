@@ -1,9 +1,7 @@
-import { makeStyles, Theme, createStyles } from "@material-ui/core/styles";
+import { makeStyles } from '@mui/styles';
 
-export default makeStyles((theme: Theme) =>
-  createStyles({
-    editPanelInput: {
-      marginBottom : 30
-    },
-  }),
-);
+export default makeStyles((theme) => ({
+  editPanelInput: {
+    marginBottom : 30
+  },
+}));

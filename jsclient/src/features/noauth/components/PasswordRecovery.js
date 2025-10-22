@@ -2,16 +2,16 @@ import React, { useState } from "react";
 import PropTypes from "prop-types";
 import { connect } from "react-redux";
 // material ui components
-import Grid from "@material-ui/core/Grid";
-import TextField from "@material-ui/core/TextField";
-import Button from "@material-ui/core/Button";
+import Grid from "@mui/material/Grid";
+import TextField from "@mui/material/TextField";
+import Button from "@mui/material/Button";
 
-import IconButton from "@material-ui/core/IconButton";
-import VisibilityIcon from "@material-ui/icons/Visibility";
-import VisibilityOffIcon from "@material-ui/icons/VisibilityOff";
+import IconButton from "@mui/material/IconButton";
+import VisibilityIcon from "@mui/icons-material/Visibility";
+import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 // jarr
 import { doRecovery } from "../noAuthSlice";
-import makeStyles from "./style";
+import useStyles from "./style";
 import { useParams } from "react-router-dom";
 
 function mapStateToProps(state) {
@@ -27,7 +27,7 @@ const mapDispatchToProps = (dispatch) => ({
 });
 
 function PasswordRecovery({ isLoading, recovery }) {
-  const classes = makeStyles();
+  const classes = useStyles();
   const params = useParams();
   const [pwdType, setPwdType] = useState("password");
   const [password, setPassword] = useState("");
@@ -37,6 +37,7 @@ function PasswordRecovery({ isLoading, recovery }) {
     <form autoComplete="off" onSubmit={(e) => recovery(e, params, password) }>
       <Grid item className={classes.passwordGridInput}>
         <TextField required label="Password" type={pwdType}
+          variant="standard"
           disabled={isLoading} error={passwdNoMatch}
           helperText={passwdNoMatch ? "Passwords don't match !" : ""}
           onChange={(e) => setPassword(e.target.value)}
@@ -48,6 +49,7 @@ function PasswordRecovery({ isLoading, recovery }) {
       </Grid>
       <Grid item>
         <TextField required label="Password confirmation" type={pwdType}
+          variant="standard"
           className={classes.loginInput}
           disabled={isLoading} error={passwdNoMatch}
           helperText={passwdNoMatch ? "Should match above !" : ""}

@@ -75,6 +75,9 @@ jobs:
       image: ubuntu-2404:2024.05.1
     steps:
       - checkout
+      - run:
+          name: Install make
+          command: sudo apt-get update && sudo apt-get install -y make
       # restore cache and docker layer cache
       - restore_cache:
           keys:
@@ -100,6 +103,11 @@ jobs:
             sleep 2
             make db-bootstrap-user RUN= COMPOSE_FILE=Dockerfiles/circleci-env.yml
             make db-bootstrap-tables RUN= COMPOSE_FILE=Dockerfiles/circleci-env.yml
+      - run:
+          name: Install make in container
+          command: >-
+            docker-compose --file Dockerfiles/circleci-env.yml --project-name=jarr
+            exec -u root server bash -c "apt-get update && apt-get install -y make"
       - run:
           name: Bootstraping database
           command: >-

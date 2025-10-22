@@ -2,19 +2,19 @@ import React from "react";
 import PropTypes from "prop-types";
 import { connect } from "react-redux";
 // material ui  components
-import IconButton from "@material-ui/core/IconButton";
-import Card from "@material-ui/core/Card";
-import CardActions from "@material-ui/core/CardActions";
-import CardContent from "@material-ui/core/CardContent";
-import SettingsIcon from "@material-ui/icons/Build";
-import Typography from "@material-ui/core/Typography";
-import DeleteIcon from "@material-ui/icons/Delete";
+import IconButton from "@mui/material/IconButton";
+import Card from "@mui/material/Card";
+import CardActions from "@mui/material/CardActions";
+import CardContent from "@mui/material/CardContent";
+import SettingsIcon from "@mui/icons-material/Build";
+import Typography from "@mui/material/Typography";
+import DeleteIcon from "@mui/icons-material/Delete";
 // jarr
 import doFetchObjForEdit from "../../../hooks/doFetchObjForEdit";
 import doDeleteObj from "../../../hooks/doDeleteObj";
 import doListClusters from "../../../hooks/doListClusters";
 import ClusterIcon from "../../../components/ClusterIcon";
-import makeStyles from "./style";
+import useStyles from "./style";
 
 const mapDispatchToProps = (dispatch) => ({
   openEditPanel(id, objType) {
@@ -29,7 +29,7 @@ const mapDispatchToProps = (dispatch) => ({
 function SelectedObjCard({ id, str, type, iconUrl, errorCount, lastRetrieved,
                            openEditPanel, deleteObj }) {
   const objType = type === "feed" ? "feed" : "category";
-  const classes = makeStyles();
+  const classes = useStyles();
 
   return (
     <Card variant="outlined" className={classes.clusterListCard}>

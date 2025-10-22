@@ -2,12 +2,12 @@ import React from "react";
 import PropTypes from "prop-types";
 import { connect } from "react-redux";
 // material ui components
-import Grid from "@material-ui/core/Grid";
-import TextField from "@material-ui/core/TextField";
-import Button from "@material-ui/core/Button";
+import Grid from "@mui/material/Grid";
+import TextField from "@mui/material/TextField";
+import Button from "@mui/material/Button";
 // jarr
 import { doLogin } from "../noAuthSlice";
-import makeStyles from "./style";
+import useStyles from "./style";
 
 function mapStateToProps(state) {
   return { loginError: state.noauth.loginError,
@@ -25,29 +25,33 @@ const mapDispatchToProps = (dispatch) => ({
 });
 
 function Login({ isLoading, loginError, passwordError, logIn }) {
-  const classes = makeStyles();
+  const classes = useStyles();
   return (
     <form autoComplete="off" onSubmit={logIn} className={classes.loginForm}>
-      <Grid item>
-        <TextField required id="jarr-login" label="Login"
-          className={classes.loginInput}
-          disabled={isLoading}
-          error={!!loginError}
-          helperText={loginError}
-        />
-      </Grid>
-      <Grid item>
-        <TextField required id="jarr-password" label="Password" type="password"
-          className={classes.loginInput}
-          disabled={isLoading}
-          error={!!passwordError}
-          helperText={passwordError}
-        />
-      </Grid>
-      <Grid item className={classes.loginButton}>
-        <Button variant="contained" type="submit" color="primary">
-          Login
-        </Button>
+      <Grid container direction="column">
+        <Grid item>
+          <TextField required id="jarr-login" label="Login"
+            variant="standard"
+            className={classes.loginInput}
+            disabled={isLoading}
+            error={!!loginError}
+            helperText={loginError}
+          />
+        </Grid>
+        <Grid item>
+          <TextField required id="jarr-password" label="Password" type="password"
+            variant="standard"
+            className={classes.loginInput}
+            disabled={isLoading}
+            error={!!passwordError}
+            helperText={passwordError}
+          />
+        </Grid>
+        <Grid item className={classes.loginButton}>
+          <Button variant="contained" type="submit" color="primary">
+            Login
+          </Button>
+        </Grid>
       </Grid>
     </form>
   );

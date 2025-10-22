@@ -1,47 +1,58 @@
 import React from "react";
 import PropTypes from "prop-types";
 import { connect } from "react-redux";
-import { BrowserRouter } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 
-import CssBaseline from "@material-ui/core/CssBaseline";
-import { ThemeProvider } from "@material-ui/styles";
+import CssBaseline from "@mui/material/CssBaseline";
+import { ThemeProvider, StyledEngineProvider } from "@mui/material/styles";
 
 import {jarrTheme, jarrLoginTheme} from "./Jarr.theme";
-import useStyles from "./Jarr.styles.js";
 import NoAuth from "./features/noauth/NoAuth";
 import TopMenu from "./features/topmenu/TopMenu";
 import FeedList from "./features/feedlist/FeedList";
 import EditPanel from "./features/editpanel/EditPanel";
-import ClusterList from "./features/clusterlist/ClusterList";
+import MainView from "./MainView";
 
 function mapStateToProps(state) {
   return { isLogged: !!state.auth.accessToken, };
 }
 
 function Jarr({ isLogged, isLeftMenuOpen }) {
-  const classes = useStyles();
   if (!isLogged) {
     return (
-      <BrowserRouter>
-        <ThemeProvider theme={jarrLoginTheme}>
-          <div className={classes.root}>
-            <CssBaseline />
-            <NoAuth />
-          </div>
-        </ThemeProvider>
+      <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+        <StyledEngineProvider injectFirst>
+          <ThemeProvider theme={jarrLoginTheme}>
+            <div style={{ display: "flex" }}>
+              <CssBaseline />
+              <NoAuth />
+            </div>
+          </ThemeProvider>
+        </StyledEngineProvider>
       </BrowserRouter>
     );
   }
   return (
-    <ThemeProvider theme={jarrTheme}>
-      <div className={classes.root}>
-        <CssBaseline />
-        <TopMenu />
-        <FeedList />
-        <ClusterList />
-        <EditPanel />
-      </div>
-    </ThemeProvider>
+    <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+      <StyledEngineProvider injectFirst>
+        <ThemeProvider theme={jarrTheme}>
+          <div style={{ display: "flex" }}>
+            <CssBaseline />
+            <TopMenu />
+            <FeedList />
+            <Routes>
+              <Route path="/feed/:feedId/cluster/:clusterId" element={<MainView />} />
+              <Route path="/feed/:feedId" element={<MainView />} />
+              <Route path="/category/:categoryId/cluster/:clusterId" element={<MainView />} />
+              <Route path="/category/:categoryId" element={<MainView />} />
+              <Route path="/cluster/:clusterId" element={<MainView />} />
+              <Route path="/" element={<MainView />} />
+            </Routes>
+            <EditPanel />
+          </div>
+        </ThemeProvider>
+      </StyledEngineProvider>
+    </BrowserRouter>
   );
 }
 

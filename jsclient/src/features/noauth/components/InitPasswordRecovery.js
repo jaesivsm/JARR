@@ -2,12 +2,12 @@ import React, { useState } from "react";
 import PropTypes from "prop-types";
 import { connect } from "react-redux";
 // material ui components
-import Grid from "@material-ui/core/Grid";
-import TextField from "@material-ui/core/TextField";
-import Button from "@material-ui/core/Button";
+import Grid from "@mui/material/Grid";
+import TextField from "@mui/material/TextField";
+import Button from "@mui/material/Button";
 // jarr
 import { doInitRecovery } from "../noAuthSlice";
-import makeStyles from "./style";
+import useStyles from "./style";
 
 function mapStateToProps(state) {
   return { isLoading: state.noauth.loading };
@@ -21,7 +21,7 @@ const mapDispatchToProps = (dispatch) => ({
 });
 
 function PasswordRecover({ isLoading, initRecovery }) {
-  const classes = makeStyles();
+  const classes = useStyles();
   const [login, setLogin] = useState("");
   const [email, setEmail] = useState("");
   return (
@@ -30,6 +30,7 @@ function PasswordRecover({ isLoading, initRecovery }) {
     }}>
       <Grid item>
         <TextField label="Login" type="text"
+          variant="standard"
           className={classes.loginInput}
           disabled={isLoading}
           onChange={(e) => setLogin(e.target.value)}
@@ -37,6 +38,7 @@ function PasswordRecover({ isLoading, initRecovery }) {
       </Grid>
       <Grid item>
         <TextField label="Email" type="email"
+          variant="standard"
           className={classes.loginInput}
           disabled={isLoading}
           onChange={(e) => setEmail(e.target.value)}

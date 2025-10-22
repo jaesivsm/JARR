@@ -1,13 +1,13 @@
 import React from "react";
 import PropTypes from "prop-types";
-import Typography from "@material-ui/core/Typography";
-import Link from "@material-ui/core/Link";
-import Divider from "@material-ui/core/Divider";
+import Typography from "@mui/material/Typography";
+import Link from "@mui/material/Link";
+import Divider from "@mui/material/Divider";
 
-import makeStyles from "./style";
+import useStyles from "./style";
 
 function ProcessedContent({ content, hidden }) {
-  const classes = makeStyles();
+  const classes = useStyles();
   let title, titleDivider, link, comments, linksDivider, body;
   if (content.type === "fetched") {
     if (content.title) {

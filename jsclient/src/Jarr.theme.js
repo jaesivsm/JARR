@@ -1,4 +1,4 @@
-import { createMuiTheme } from "@material-ui/core/styles";
+import { createTheme } from "@mui/material/styles";
 
 export const jarrColors = {
   primary : {
@@ -19,17 +19,33 @@ export const jarrColors = {
   },
 }
 
-export const jarrLoginTheme = createMuiTheme({
+export const jarrLoginTheme = createTheme({
   palette: {
     primary: jarrColors.primary,
     secondary: jarrColors.secondary,
     background: jarrColors.background,
+  },
+  typography: {
+    fontFamily: [
+      'Roboto',
+      'Helvetica',
+      'Arial',
+      'sans-serif',
+    ].join(','),
   }
 });
 
-export const jarrTheme = createMuiTheme({
+export const jarrTheme = createTheme({
   palette: {
     primary: jarrColors.primary,
     secondary: jarrColors.secondary,
+  },
+  typography: {
+    fontFamily: [
+      'Roboto',
+      'Helvetica',
+      'Arial',
+      'sans-serif',
+    ].join(','),
   }
 });
