@@ -13,13 +13,14 @@ export default makeStyles((theme) => ({
   editPanelPaper: {
     overflow: "hidden",
     width: editPanelWidth,
+    backgroundColor: theme.palette.background.default,
     [theme.breakpoints.down("sm")]: {
       width: "100%"
     },
   },
   editPanelHeaderSticky: {
-    backgroundColor: "#ffffff",
-    borderBottom: "1px solid lightgray",
+    backgroundColor: theme.palette.background.default,
+    borderBottom: `1px solid ${theme.palette.divider}`,
     display: "block",
     position: "fixed",
     opacity: 1,

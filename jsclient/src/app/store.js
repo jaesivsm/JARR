@@ -4,6 +4,7 @@ import noAuthReducer from "../features/noauth/noAuthSlice";
 import feedsReducer from "../features/feedlist/slice";
 import clustersReducer from "../features/clusterlist/slice";
 import editReducer from "../features/editpanel/slice";
+import themeReducer from "../themeSlice";
 
 export default configureStore({
   reducer: {
@@ -12,6 +13,7 @@ export default configureStore({
     feeds: feedsReducer,
     clusters: clustersReducer,
     edit: editReducer,
+    theme: themeReducer,
   },
 });
 
