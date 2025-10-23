@@ -1,5 +1,5 @@
 import clsx from "clsx";
-import React from "react";
+import React, { useRef, useEffect } from "react";
 import { formatDistanceToNow } from "date-fns";
 import PropTypes from "prop-types";
 import { connect } from "react-redux";
@@ -12,6 +12,8 @@ import Accordion from "@mui/material/Accordion";
 import CircularProgress from "@mui/material/CircularProgress";
 import AccordionSummary from "@mui/material/AccordionSummary";
 import AccordionDetails from "@mui/material/AccordionDetails";
+import useMediaQuery from "@mui/material/useMediaQuery";
+import { useTheme } from "@mui/material/styles";
 // material ui icons
 import LikedIcon from "@mui/icons-material/Star";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
@@ -24,6 +26,7 @@ import useStyles from "./style";
 import { changeReadCount } from "../../feedlist/slice";
 import ClusterIcon from "../../../components/ClusterIcon";
 import Articles from "./Articles";
+import { appBarHeight } from "../../../const";
 
 const getCluster = (state, props) => state.clusters.clusters[props.index];
 
@@ -109,6 +112,30 @@ const Cluster = ({ index, cluster, loadedCluster,
   const classes = useStyles();
   const navigate = useNavigate();
   const { feedId, categoryId } = useParams();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+  const accordionRef = useRef(null);
+
+  // Scroll to cluster title when expanded on mobile
+  useEffect(() => {
+    if (expanded && isMobile && accordionRef.current) {
+      // Small delay to allow accordion expansion animation to start
+      setTimeout(() => {
+        const element = accordionRef.current;
+        const elementRect = element.getBoundingClientRect();
+        const absoluteElementTop = elementRect.top + window.pageYOffset;
+        // Account for the app bar height and some padding
+        const offset = appBarHeight + 8;
+        const scrollPosition = absoluteElementTop - offset;
+
+        window.scrollTo({
+          top: scrollPosition,
+          behavior: "smooth"
+        });
+      }, 100);
+    }
+  }, [expanded, isMobile]);
+
   if(!doShow) { return null; }
   let content;
   if(!splitedMode && expanded) {
@@ -127,6 +154,7 @@ const Cluster = ({ index, cluster, loadedCluster,
 
   return (
       <Accordion
+        ref={accordionRef}
         expanded={expanded}
         elevation={expanded ? 10: 2}
         TransitionProps={{ unmountOnExit: true }}

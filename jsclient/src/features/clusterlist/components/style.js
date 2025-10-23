@@ -1,5 +1,5 @@
 import { makeStyles } from '@mui/styles';
-import { feedListWidth, editPanelWidth } from "../../../const";
+import { feedListWidth, editPanelWidth, appBarHeight } from "../../../const";
 
 export default makeStyles((theme) => ({
   tabs: {
@@ -119,7 +119,7 @@ export default makeStyles((theme) => ({
   },
   main: {
     flexGrow: 1,
-    paddingTop: `calc(64px + ${theme.spacing(2)})`,
+    paddingTop: `calc(${appBarHeight}px + ${theme.spacing(2)})`,
     transition: theme.transitions.create("margin", {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.leavingScreen,
@@ -158,7 +158,7 @@ export default makeStyles((theme) => ({
     width: "45%",
   },
   clusterListInner: {
-    maxHeight: "calc(100vh - (64px + 32px))",
+    maxHeight: `calc(100vh - (${appBarHeight}px + 32px))`,
     maxWidth: "100%",
     overflowY: "auto",
     overflowX: "hidden",
@@ -206,7 +206,7 @@ export default makeStyles((theme) => ({
     }, */
   },
   contentPanelInner: {
-    maxHeight: "calc(100vh - (64px + 32px))",
+    maxHeight: `calc(100vh - (${appBarHeight}px + 32px))`,
     maxWidth: "100%",
     overflowY: "auto",
     overflowX: "hidden",
