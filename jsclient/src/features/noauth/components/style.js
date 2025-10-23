@@ -2,7 +2,7 @@ import { makeStyles } from '@mui/styles';
 
 export default makeStyles((theme) => ({
   welcome: {
-    color: "rgba(0, 0, 0, 0.6)",
+    color: theme.palette.text.secondary,
     fontSize: 16
   },
   jarrIcon: {
@@ -12,7 +12,7 @@ export default makeStyles((theme) => ({
   },
   loginContainer: {
     alignItems: "center",
-    background: "#ffffff",
+    background: theme.palette.background.paper,
     borderRadius: "1px",
     boxShadow: "grey 0px 0px 10px",
     padding: "15px 30px 10px",
@@ -58,7 +58,7 @@ export default makeStyles((theme) => ({
     width: "100%",
   },
   signupButton: {
-    color: "rgba(0, 0, 0, 0.6)",
+    color: theme.palette.text.secondary,
     marginTop: 20
   },
   signupLink: {
@@ -67,7 +67,7 @@ export default makeStyles((theme) => ({
     marginLeft: 5
   },
   recoverButton: {
-    color: "rgba(0, 0, 0, 0.6)",
+    color: theme.palette.text.secondary,
     cursor: "pointer",
     textDecoration: "underline",
     textAlign: "right",

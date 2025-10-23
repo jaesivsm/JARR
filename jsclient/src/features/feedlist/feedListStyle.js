@@ -91,10 +91,10 @@ export default makeStyles((theme) => ({
     marginRight: "15px",
     "&:hover": {
       opacity: 1,
-      backgroundColor: "rgba(0, 0, 0, 0.08)",
+      backgroundColor: theme.palette.action.hover,
     },
     "&:active": {
-      backgroundColor: "rgba(0, 0, 0, 0.15)",
+      backgroundColor: theme.palette.action.selected,
     },
     [theme.breakpoints.down("sm")]: {
       height: 40,

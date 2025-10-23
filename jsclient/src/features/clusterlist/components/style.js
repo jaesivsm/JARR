@@ -150,7 +150,7 @@ export default makeStyles((theme) => ({
     right: 15,
     fontSize: 12,
     top: 3,
-    color: "#5F9EA0",
+    color: theme.palette.text.secondary,
     opacity: .9,
   },
   clusterList: {
