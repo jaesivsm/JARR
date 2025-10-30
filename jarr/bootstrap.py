@@ -30,6 +30,7 @@ def init_logging(log_path=None, log_level=logging.INFO, modules=(),
     handler.setFormatter(formater)
     for logger_name in modules:
         logger = logging.getLogger(logger_name)
+        logger.propagate = False
         logger.addHandler(handler)
         for handler in logger.handlers:
             handler.setLevel(log_level)
