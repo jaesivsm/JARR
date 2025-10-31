@@ -15,7 +15,7 @@ export default makeStyles((theme) => ({
         paddingRight: 30,
         fontStyle: "bold",
       },
-      "& a": {
+      "& > a": {
         overflowX: "hidden",
         whiteSpace: "nowrap",
         maxWidth: "80%",
