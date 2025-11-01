@@ -138,3 +138,47 @@ class OnePageAppTest(JarrFlaskCommon):
         self.assertClusterCount(18, {'filter': 'unread'})
         self._mark_as_read(12, {'filter': 'unread', 'category_id': 0})
         self.assertClusterCount(12, {'filter': 'unread'})
+
+    def test_cluster_id_with_category_id(self):
+        """Test that cluster_id is accepted as optional parameter with category_id."""
+        # Get a cluster from a specific category
+        cat_id = self.user.categories[0].id
+        clusters = self.assertClusterCount(3, {'category_id': cat_id})
+        cluster_id = clusters[0]['id']
+
+        # Mark the cluster as read
+        self.jarr_client('put', 'cluster', cluster_id,
+                        data={'read': True}, user=self.user.login)
+
+        # Without cluster_id: should only get unread clusters (2)
+        self.assertClusterCount(2, {'category_id': cat_id, 'filter': 'unread'})
+
+        # With cluster_id: should accept the parameter (backend ignores it for now)
+        # The cluster_id parameter should not affect filtering
+        clusters_with_id = self.assertClusterCount(
+            2, {'category_id': cat_id, 'filter': 'unread', 'cluster_id': cluster_id})
+
+        # Verify the API accepts the parameter without error
+        self.assertEqual(2, len(clusters_with_id))
+
+    def test_cluster_id_with_feed_id(self):
+        """Test that cluster_id is accepted as optional parameter with feed_id."""
+        # Get a cluster from a specific feed
+        feed_id = self.user.feeds[0].id
+        clusters = self.assertClusterCount(3, {'feed_id': feed_id})
+        cluster_id = clusters[0]['id']
+
+        # Mark the cluster as read
+        self.jarr_client('put', 'cluster', cluster_id,
+                        data={'read': True}, user=self.user.login)
+
+        # Without cluster_id: should only get unread clusters (2)
+        self.assertClusterCount(2, {'feed_id': feed_id, 'filter': 'unread'})
+
+        # With cluster_id: should accept the parameter (backend ignores it for now)
+        # The cluster_id parameter should not affect filtering
+        clusters_with_id = self.assertClusterCount(
+            2, {'feed_id': feed_id, 'filter': 'unread', 'cluster_id': cluster_id})
+
+        # Verify the API accepts the parameter without error
+        self.assertEqual(2, len(clusters_with_id))
