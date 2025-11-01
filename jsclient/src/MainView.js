@@ -25,18 +25,18 @@ function MainView({ listClusters, fetchCluster }) {
 
   useEffect(() => {
     if (feedId) {
-      listClusters({ feedId: parseInt(feedId), clusterId: clusterIdRef.current ? parseInt(clusterIdRef.current) : undefined });
+      listClusters({ feedId: parseInt(feedId, 10), clusterId: clusterIdRef.current ? parseInt(clusterIdRef.current, 10) : undefined });
     } else if (categoryId) {
-      listClusters({ categoryId: categoryId === "all" ? "all" : parseInt(categoryId), clusterId: clusterIdRef.current ? parseInt(clusterIdRef.current) : undefined });
+      listClusters({ categoryId: categoryId === "all" ? "all" : parseInt(categoryId, 10), clusterId: clusterIdRef.current ? parseInt(clusterIdRef.current, 10) : undefined });
     } else {
-      listClusters({ clusterId: clusterIdRef.current ? parseInt(clusterIdRef.current) : undefined });
+      listClusters({ clusterId: clusterIdRef.current ? parseInt(clusterIdRef.current, 10) : undefined });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [feedId, categoryId]);
 
   useEffect(() => {
     if (clusterId) {
-      fetchCluster(parseInt(clusterId));
+      fetchCluster(parseInt(clusterId, 10));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [clusterId]);
