@@ -146,8 +146,7 @@ class ClusterController(AbstractController):
             yield row
 
     def join_read(self, feed_id=None, limit=JR_PAGE_LENGTH, **filters):
-        filter_on_cat = "category_id" in filters
-        cat_id = filters.pop("category_id", None)
+        category_id = filters.pop("category_id", None)
         cluster_id = filters.pop("cluster_id", None)
         if self.user_id:
             filters["user_id"] = self.user_id
@@ -178,11 +177,15 @@ class ClusterController(AbstractController):
                 query, art_feed_alias, "feed_id", feed_id, processed_filters
             )
 
-        elif filter_on_cat:
+        elif category_id is not None:  # category_id can be 0 for "all"
             # joining only if filtering on categories to lighten the query
             # as every article doesn't obligatorily have a category > outerjoin
             query = self._join_on_exist(
-                query, art_cat_alias, "category_id", cat_id, processed_filters
+                query,
+                art_cat_alias,
+                "category_id",
+                category_id,
+                processed_filters,
             )
         if not feed_id:
             query = query.join(
