@@ -8,7 +8,9 @@ from jarr.metrics import READ
 
 
 default_ns = Namespace("default", path="/")
-list_feeds_model = default_ns.model("ListFeeds", {
+list_feeds_model = default_ns.model(
+    "ListFeeds",
+    {
         "id": fields.Integer(),
         "str": fields.String(),
         "category_id": fields.Integer(),
@@ -17,8 +19,11 @@ list_feeds_model = default_ns.model("ListFeeds", {
         "error_count": fields.Integer(),
         "last_error": fields.String(),
         "type": fields.String(enum=["feed", "categ", "all-categ"]),
-})
-midle_panel_model = default_ns.model("MiddlePanel", {
+    },
+)
+midle_panel_model = default_ns.model(
+    "MiddlePanel",
+    {
         "id": fields.Integer(),
         "feeds_id": fields.List(fields.Integer()),
         "main_article_id": fields.Integer(),
@@ -28,37 +33,77 @@ midle_panel_model = default_ns.model("MiddlePanel", {
         "main_link": fields.String(),
         "liked": fields.Boolean(default=False),
         "read": fields.Boolean(default=False),
-})
+    },
+)
 filter_parser = default_ns.parser()
 filter_parser.add_argument(
-    "search_str", type=str, store_missing=False, location='args',
-    help="if specify will filter list with the specified string")
+    "search_str",
+    type=str,
+    store_missing=False,
+    location="args",
+    help="if specify will filter list with the specified string",
+)
 filter_parser.add_argument(
-    "search_title", store_missing=False, type=inputs.boolean,
-    default=True, location='args',
-    help="if True, the search_str will be looked for in title")
+    "search_title",
+    store_missing=False,
+    type=inputs.boolean,
+    default=True,
+    location="args",
+    help="if True, the search_str will be looked for in title",
+)
 filter_parser.add_argument(
-    "search_content", type=inputs.boolean, default=False,
-    store_missing=False, location='args',
-    help="if True, the search_str will be looked for in content")
+    "search_content",
+    type=inputs.boolean,
+    default=False,
+    store_missing=False,
+    location="args",
+    help="if True, the search_str will be looked for in content",
+)
 filter_parser.add_argument(
-    "filter", type=str, choices=["all", "unread", "liked"],
-    default="unread", location='args',
-    help="the boolean (all, unread or liked) filter to apply to clusters")
+    "filter",
+    type=str,
+    choices=["all", "unread", "liked"],
+    default="unread",
+    location="args",
+    help="the boolean (all, unread or liked) filter to apply to clusters",
+)
 filter_parser.add_argument(
-    "feed_id", type=int, store_missing=False, location='args',
-    help="the parent feed id to filter with")
+    "feed_id",
+    type=int,
+    store_missing=False,
+    location="args",
+    help="the parent feed id to filter with",
+)
 filter_parser.add_argument(
-    "category_id", type=int, store_missing=False, location='args',
-    help="the parent category id to filter with")
+    "category_id",
+    type=int,
+    store_missing=False,
+    location="args",
+    help="the parent category id to filter with",
+)
 filter_parser.add_argument(
-    "from_date", type=inputs.datetime_from_iso8601, location='args',
-    store_missing=False, help="for pagination")
+    "from_date",
+    type=inputs.datetime_from_iso8601,
+    location="args",
+    store_missing=False,
+    help="for pagination",
+)
+filter_parser.add_argument(
+    "cluster_id",
+    type=int,
+    store_missing=False,
+    location="args",
+    help="the currently selected cluster id",
+)
 mark_as_read_parser = filter_parser.copy()
 mark_as_read_parser.add_argument(
-    "only_singles", type=bool, default=False,
-    store_missing=False, location='args',
-    help="set to true to mark as read only cluster with one article")
+    "only_singles",
+    type=bool,
+    default=False,
+    store_missing=False,
+    location="args",
+    help="set to true to mark as read only cluster with one article",
+)
 
 
 @default_ns.route("/list-feeds")
@@ -117,8 +162,8 @@ def _get_filters(in_dict):
         filters["read"] = False
     elif filter_ == "liked":
         filters["liked"] = True
-    for key in "feed_id", "category_id":
-        if in_dict.get(key) is not None:
+    for key in "feed_id", "category_id", "cluster_id":
+        if in_dict.get(key) is not None:  # category_id can be 0
             filters[key] = int(in_dict.get(key)) or None
     return filters
 
@@ -145,20 +190,24 @@ class MarkClustersAsRead(Resource):
     @staticmethod
     @default_ns.expect(mark_as_read_parser)
     @default_ns.response(401, "Unauthorized")
-    @default_ns.response(200, "Clusters in filter marked as read",
-                         as_list=True)
+    @default_ns.response(
+        200, "Clusters in filter marked as read", as_list=True
+    )
     @jwt_required()
     def put():
         """Will mark all clusters selected by the filter as read."""
         attrs = mark_as_read_parser.parse_args()
         filters = _get_filters(attrs)
         clu_ctrl = ClusterController(current_user.id)
-        clusters = [clu for clu in clu_ctrl.join_read(limit=None, **filters)
-                    if not attrs.get("only_singles")
-                    or len(clu["feeds_id"]) == 1]
+        clusters = [
+            clu
+            for clu in clu_ctrl.join_read(limit=None, **filters)
+            if not attrs.get("only_singles") or len(clu["feeds_id"]) == 1
+        ]
         if clusters:
-            clu_ctrl.update({'id__in': [clu['id'] for clu in clusters]},
-                            {'read': True,
-                             'read_reason': ReadReason.mass_marked})
+            clu_ctrl.update(
+                {"id__in": [clu["id"] for clu in clusters]},
+                {"read": True, "read_reason": ReadReason.mass_marked},
+            )
         READ.labels(ReadReason.mass_marked.value).inc(len(clusters))
         return clu_ctrl.get_unreads(), 200

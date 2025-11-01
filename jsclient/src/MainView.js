@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import { connect } from "react-redux";
 import { useParams } from "react-router-dom";
 import ClusterList from "./features/clusterlist/ClusterList";
@@ -16,19 +16,27 @@ const mapDispatchToProps = (dispatch) => ({
 
 function MainView({ listClusters, fetchCluster }) {
   const { feedId, categoryId, clusterId } = useParams();
+  const clusterIdRef = useRef(clusterId);
+
+  // Keep ref updated
+  useEffect(() => {
+    clusterIdRef.current = clusterId;
+  }, [clusterId]);
 
   useEffect(() => {
     if (feedId) {
-      listClusters({ feedId: parseInt(feedId) });
+      listClusters({ feedId: parseInt(feedId, 10), clusterId: clusterIdRef.current ? parseInt(clusterIdRef.current, 10) : undefined });
     } else if (categoryId) {
-      listClusters({ categoryId: categoryId === "all" ? "all" : parseInt(categoryId) });
+      listClusters({ categoryId: categoryId === "all" ? "all" : parseInt(categoryId, 10), clusterId: clusterIdRef.current ? parseInt(clusterIdRef.current, 10) : undefined });
+    } else {
+      listClusters({ clusterId: clusterIdRef.current ? parseInt(clusterIdRef.current, 10) : undefined });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [feedId, categoryId]);
 
   useEffect(() => {
     if (clusterId) {
-      fetchCluster(parseInt(clusterId));
+      fetchCluster(parseInt(clusterId, 10));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [clusterId]);

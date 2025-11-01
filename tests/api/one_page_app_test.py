@@ -1,8 +1,12 @@
+from jarr.controllers import (
+    ArticleController,
+    CategoryController,
+    ClusterController,
+    FeedController,
+    UserController,
+)
 from tests.base import JarrFlaskCommon
 from tests.utils import update_on_all_objs
-from jarr.controllers import (ArticleController, CategoryController,
-                              ClusterController, FeedController,
-                              UserController)
 
 
 class OnePageAppTest(JarrFlaskCommon):
@@ -13,128 +17,245 @@ class OnePageAppTest(JarrFlaskCommon):
 
     def assertClusterCount(self, count, filters=None, expected_payload=None):
         filters = filters or {}
-        url = 'clusters?' + '&'.join([f"{key}={val}"
-                                      for key, val in filters.items()])
-        resp = self.jarr_client('get', url, user=self.user.login)
+        url = "clusters?" + "&".join(
+            [f"{key}={val}" for key, val in filters.items()]
+        )
+        resp = self.jarr_client("get", url, user=self.user.login)
         self.assertStatusCode(200, resp)
         clusters = resp.json
-        self.assertEqual(count, len(clusters))
+        assert count == len(clusters), "not expected cluster quantity"
         if expected_payload is not None:
             for cluster in clusters:
-                differing_keys = [key for key in expected_payload
-                                  if expected_payload[key] != cluster[key]]
-                err_msg = "got differing values for:" + ','.join(
-                        [f"{key} ({expected_payload[key]!r}!={cluster[key]!r})"
-                         for key in differing_keys])
+                differing_keys = [
+                    key
+                    for key in expected_payload
+                    if expected_payload[key] != cluster[key]
+                ]
+                err_msg = "got differing values for:" + ",".join(
+                    [
+                        f"{key} ({expected_payload[key]!r}!={cluster[key]!r})"
+                        for key in differing_keys
+                    ]
+                )
                 self.assertEqual([], differing_keys, err_msg)
         return clusters
 
     def test_list_feeds(self):
-        resp = self.jarr_client('get', 'list-feeds', user=self.user.login)
+        resp = self.jarr_client("get", "list-feeds", user=self.user.login)
         fcount = FeedController(self.user.id).read().count()
         ccount = CategoryController(self.user.id).read().count()
         self.assertEqual(fcount + ccount + 1, len(resp.json))
-        self.assertEqual(fcount,
-                         len([r for r in resp.json if r['type'] == 'feed']))
-        self.assertEqual(ccount,
-                         len([r for r in resp.json if r['type'] == 'categ']))
+        self.assertEqual(
+            fcount, len([r for r in resp.json if r["type"] == "feed"])
+        )
+        self.assertEqual(
+            ccount, len([r for r in resp.json if r["type"] == "categ"])
+        )
 
     def test_unreads(self):
-        resp = self.jarr_client('get', 'unreads', user=self.user.login)
+        resp = self.jarr_client("get", "unreads", user=self.user.login)
         self.assertStatusCode(200, resp)
         result = resp.json
         self.assertEqual(30, sum(result.values()))
-        self.assertEqual(12, sum(value for key, value in result.items()
-                                 if "categ" in key))
-        self.assertEqual(18, sum(value for key, value in result.items()
-                                 if "feed" in key))
-        self._mark_as_read(0, {'filter': 'unread'})
+        self.assertEqual(
+            12, sum(value for key, value in result.items() if "categ" in key)
+        )
+        self.assertEqual(
+            18, sum(value for key, value in result.items() if "feed" in key)
+        )
+        self._mark_as_read(0, {"filter": "unread"})
 
-        resp = self.jarr_client('get', 'unreads', user=self.user.login)
+        resp = self.jarr_client("get", "unreads", user=self.user.login)
         self.assertStatusCode(200, resp)
         result = resp.json
         self.assertEqual(0, sum(result.values()))
 
     def test_cluster_listing(self):
         clusters = self.assertClusterCount(18)
-        self.assertClusterCount(18, {'filter': 'unread'})
-        self.assertClusterCount(0, {'filter': 'liked'})
-        self.jarr_client('put', 'cluster', clusters[0]['id'],
-                         data={'liked': True}, user=self.user.login)
-        self.assertClusterCount(1, {'filter': 'liked'})
-        self.assertClusterCount(3, {'feed_id': 1}, {"feeds_id": [1]})
-        self.assertClusterCount(3, {'feed_id': 2}, {"feeds_id": [2]})
+        self.assertClusterCount(18, {"filter": "unread"})
+        self.assertClusterCount(0, {"filter": "liked"})
+        self.jarr_client(
+            "put",
+            "cluster",
+            clusters[0]["id"],
+            data={"liked": True},
+            user=self.user.login,
+        )
+        self.assertClusterCount(1, {"filter": "liked"})
+        self.assertClusterCount(3, {"feed_id": 1}, {"feeds_id": [1]})
+        self.assertClusterCount(3, {"feed_id": 2}, {"feeds_id": [2]})
 
     def test_search(self):
-        self.assertClusterCount(0, {'search_str': 'test'})
-        self.assertClusterCount(18, {'search_str': 'user1'})
+        self.assertClusterCount(0, {"search_str": "test"})
+        self.assertClusterCount(18, {"search_str": "user1"})
         self.assertClusterCount(
-            6, {'search_str': 'feed1', 'search_title': True})
+            6, {"search_str": "feed1", "search_title": True}
+        )
         self.assertClusterCount(
-            6, {'search_str': 'user1 feed0', 'search_content': True})
+            6, {"search_str": "user1 feed0", "search_content": True}
+        )
         self.assertClusterCount(
-            2, {'search_str': 'content 3', 'search_title': True,
-                'search_content': True})
+            2,
+            {
+                "search_str": "content 3",
+                "search_title": True,
+                "search_content": True,
+            },
+        )
 
     def test_middle_panel_filtered_on_category(self):
         cat_id = self.user.categories[0].id
-        self.assertClusterCount(3, {'category_id': cat_id})
+        self.assertClusterCount(3, {"category_id": cat_id})
 
     def test_middle_panel_filtered_on_feed(self):
         feed_id = self.user.feeds[0].id
-        clusters = self.assertClusterCount(3, {'feed_id': feed_id})
+        clusters = self.assertClusterCount(3, {"feed_id": feed_id})
         for cluster in clusters:
-            self.assertIn(feed_id, cluster['feeds_id'])
+            self.assertIn(feed_id, cluster["feeds_id"])
 
     def _mark_as_read(self, expected_unread_count, filters=None):
-        filters = '&'.join([f"{key}={val}"
-                            for key, val in (filters or {}).items()])
-        resp = self.jarr_client('put', f"mark-all-as-read?{filters}",
-                                user=self.user.login)
+        filters = "&".join(
+            [f"{key}={val}" for key, val in (filters or {}).items()]
+        )
+        resp = self.jarr_client(
+            "put", f"mark-all-as-read?{filters}", user=self.user.login
+        )
         self.assertStatusCode(200, resp)
-        unread_count = sum(v for k, v in resp.json.items() if 'feed' in k)
-        self.assertEqual(expected_unread_count, unread_count,
-                         f"expected {expected_unread_count} unread clusters, "
-                         f"got {unread_count}")
+        unread_count = sum(v for k, v in resp.json.items() if "feed" in k)
+        self.assertEqual(
+            expected_unread_count,
+            unread_count,
+            f"expected {expected_unread_count} unread clusters, "
+            f"got {unread_count}",
+        )
 
     def test_MarkClustersAsRead_put(self):
-        self.assertClusterCount(18, {'filter': 'unread'})
-        self._mark_as_read(18, {'filter': 'liked'})
-        self.assertClusterCount(18, {'filter': 'unread'})
-        self._mark_as_read(0, {'filter': 'unread'})
-        self.assertClusterCount(0, {'filter': 'unread'})
+        self.assertClusterCount(18, {"filter": "unread"})
+        self._mark_as_read(18, {"filter": "liked"})
+        self.assertClusterCount(18, {"filter": "unread"})
+        self._mark_as_read(0, {"filter": "unread"})
+        self.assertClusterCount(0, {"filter": "unread"})
 
     def test_MarkClustersAsRead_put_only_singles(self):
         feed = FeedController(self.user.id).read()[0]
-        update_on_all_objs(feeds=[feed],
-                           cluster_same_feed=True, cluster_enabled=True)
+        update_on_all_objs(
+            feeds=[feed], cluster_same_feed=True, cluster_enabled=True
+        )
         clu_ctrl = ClusterController(self.user.id)
-        all_unread_count = sum(v for k, v in clu_ctrl.get_unreads().items()
-                               if k.startswith('feed-'))
+        all_unread_count = sum(
+            v
+            for k, v in clu_ctrl.get_unreads().items()
+            if k.startswith("feed-")
+        )
         # creating a new article that will cluster
         ArticleController(self.user.id).create(
-            entry_id='new entry_id', title='new title', content='new content',
-            feed_id=feed.id, link=feed.articles[0].link)
+            entry_id="new entry_id",
+            title="new title",
+            content="new content",
+            feed_id=feed.id,
+            link=feed.articles[0].link,
+        )
         clu_ctrl.clusterize_pending_articles()
-        self.assertEqual(all_unread_count + 1,
-                         sum(v for k, v in clu_ctrl.get_unreads().items()
-                             if k.startswith('feed-')))
-        self.assertClusterCount(18, {'filter': 'unread'})
+        new_unread_count = sum(
+            v
+            for k, v in clu_ctrl.get_unreads().items()
+            if k.startswith("feed-")
+        )
+        assert new_unread_count == all_unread_count + 1
+        self.assertClusterCount(18, {"filter": "unread"})
         # one per feed
-        self._mark_as_read(2, {'only_singles': True, 'filter': 'unread'})
-        self.assertClusterCount(1, {'filter': 'unread'})
+        self._mark_as_read(2, {"only_singles": True, "filter": "unread"})
+        self.assertClusterCount(1, {"filter": "unread"})
 
     def test_MarkClustersAsRead_put_one_feed(self):
-        self.assertClusterCount(18, {'filter': 'unread'})
-        self._mark_as_read(15, {'filter': 'unread', 'feed_id': 1})
-        self.assertClusterCount(15, {'filter': 'unread'})
+        self.assertClusterCount(18, {"filter": "unread"})
+        self._mark_as_read(15, {"filter": "unread", "feed_id": 1})
+        self.assertClusterCount(15, {"filter": "unread"})
 
     def test_MarkClustersAsRead_put_one_category(self):
-        self.assertClusterCount(18, {'filter': 'unread'})
-        self._mark_as_read(15, {'filter': 'unread', 'category_id': 1})
-        self.assertClusterCount(15, {'filter': 'unread'})
+        self.assertClusterCount(18, {"filter": "unread"})
+        self._mark_as_read(15, {"filter": "unread", "category_id": 1})
+        self.assertClusterCount(15, {"filter": "unread"})
 
     def test_MarkClustersAsRead_put_null_category(self):
-        self.assertClusterCount(18, {'filter': 'unread'})
-        self._mark_as_read(12, {'filter': 'unread', 'category_id': 0})
-        self.assertClusterCount(12, {'filter': 'unread'})
+        self.assertClusterCount(18, {"filter": "unread"})
+        self._mark_as_read(12, {"filter": "unread", "category_id": 0})
+        self.assertClusterCount(12, {"filter": "unread"})
+
+    def test_cluster_id(self):
+        """Test that cluster_id is accepted as optional parameter
+        with feed_id."""
+        # Get a cluster from a specific feed
+        clusters = self.assertClusterCount(18)
+        cluster_id = clusters[0]["id"]
+
+        # Mark the cluster as read
+        self.jarr_client(
+            "put",
+            "cluster",
+            cluster_id,
+            data={"read": True},
+            user=self.user.login,
+        )
+
+        # Without cluster_id: should only get unread clusters (2)
+        self.assertClusterCount(17, {"filter": "unread"})
+
+        # With cluster_id: should accept the parameter
+        # The cluster_id parameter should not affect filtering
+        self.assertClusterCount(
+            18,
+            {"filter": "unread", "cluster_id": cluster_id},
+        )
+
+    def test_cluster_id_with_category_id(self):
+        """Test that cluster_id is accepted as optional parameter
+        with category_id."""
+        # Get a cluster from a specific category
+        cat_id = self.user.categories[0].id
+        clusters = self.assertClusterCount(3, {"category_id": cat_id})
+        cluster_id = clusters[0]["id"]
+
+        # Mark the cluster as read
+        self.jarr_client(
+            "put",
+            "cluster",
+            cluster_id,
+            data={"read": True},
+            user=self.user.login,
+        )
+
+        # Without cluster_id: should only get unread clusters (2)
+        self.assertClusterCount(2, {"category_id": cat_id})
+
+        # With cluster_id: should accept the parameter
+        # The cluster_id parameter should not affect filtering
+
+        filters = {"category_id": cat_id, "cluster_id": cluster_id}
+        self.assertClusterCount(3, filters)
+
+    def test_cluster_id_with_feed_id(self):
+        """Test that cluster_id is accepted as optional parameter
+        with feed_id."""
+        # Get a cluster from a specific feed
+        feed_id = self.user.feeds[0].id
+        clusters = self.assertClusterCount(3, {"feed_id": feed_id})
+        cluster_id = clusters[0]["id"]
+
+        # Mark the cluster as read
+        self.jarr_client(
+            "put",
+            "cluster",
+            cluster_id,
+            data={"read": True},
+            user=self.user.login,
+        )
+
+        # Without cluster_id: should only get unread clusters (2)
+        self.assertClusterCount(2, {"feed_id": feed_id})
+
+        # With cluster_id: should accept the parameter
+        # The cluster_id parameter should not affect filtering
+        self.assertClusterCount(
+            3, {"feed_id": feed_id, "cluster_id": cluster_id}
+        )
