@@ -1,4 +1,5 @@
 import logging
+from datetime import datetime, UTC
 
 import requests
 from jarr.bootstrap import conf
@@ -7,7 +8,7 @@ from jarr.lib.enums import ArticleType
 from jarr.lib.filter import FiltersAction, process_filters
 from jarr.lib.html_parsing import clean_article_content
 from jarr.lib.url_cleaners import clean_urls, remove_utm_tags
-from jarr.lib.utils import clean_lang, digest, utc_now
+from jarr.lib.utils import clean_lang, digest
 from requests.exceptions import MissingSchema
 
 logger = logging.getLogger(__name__)
@@ -38,7 +39,7 @@ class AbstractArticleBuilder:
             "category_id": self.feed.category_id,
             "user_id": self.feed.user_id,
             "order_in_cluster": 0,
-            "retrieved_date": utc_now(),
+            "retrieved_date": datetime.now(UTC),
         }
 
     @staticmethod
@@ -85,7 +86,7 @@ class AbstractArticleBuilder:
         try:
             self.article["date"] = self.extract_date(entry)
         except Exception:
-            self.article["date"] = utc_now()
+            self.article["date"] = datetime.now(UTC)
         self.article["title"] = self.extract_title(entry)
         self.article["tags"] = self.extract_tags(entry)
         self.article["link"] = self.extract_link(entry)
