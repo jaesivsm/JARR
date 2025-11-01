@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import clsx from "clsx";
 import PropTypes from "prop-types";
 import { connect } from "react-redux";
@@ -14,7 +14,6 @@ import Alert from "@mui/material/Alert";
 import Cluster from "./components/Cluster";
 import SelectedObjCard from "./components/SelectedObjCard";
 import doLoadMoreClusters from "../../hooks/doLoadMoreClusters";
-import doListClusters from "../../hooks/doListClusters";
 import useStyles from "./components/style";
 import Articles from "./components/Articles";
 
@@ -51,9 +50,6 @@ const mapStateToProps = (state) => {
 };
 
 const mapDispatchToProps = (dispatch) => ({
-  listClusters(filters) {
-    dispatch(doListClusters(filters));
-  },
   loadMoreClusters() {
     dispatch(doLoadMoreClusters());
   },
@@ -64,7 +60,7 @@ const ClusterList = ({ clusters, filters, loadedCluster,
                        isFeedListOpen, isEditPanelOpen,
                        moreLoading, moreToFetch,
                        selectedFilterObj,
-                       listClusters, loadMoreClusters, openEditPanel,
+                       loadMoreClusters, openEditPanel,
                        }) => {
   const theme = useTheme();
   const classes = useStyles();
@@ -73,14 +69,6 @@ const ClusterList = ({ clusters, filters, loadedCluster,
   const contentClassName = clsx(classes.main,
     {[classes.mainShifted]: isShifted,
      [classes.mainSplitted]: splitedMode});
-  const [everLoaded, setEverLoaded] = useState(false);
-  useEffect(() => {
-    if (!everLoaded) {
-      setEverLoaded(true);
-      listClusters(filters);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [everLoaded]);
 
   let list;
   let loadMoreButton;
