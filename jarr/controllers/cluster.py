@@ -148,6 +148,7 @@ class ClusterController(AbstractController):
     def join_read(self, feed_id=None, limit=JR_PAGE_LENGTH, **filters):
         filter_on_cat = "category_id" in filters
         cat_id = filters.pop("category_id", None)
+        cluster_id = filters.pop("cluster_id", None)
         if self.user_id:
             filters["user_id"] = self.user_id
 
@@ -156,7 +157,12 @@ class ClusterController(AbstractController):
             # filtering by article but did not found anything
             return
 
-        processed_filters = self._to_filters(**filters)
+        if cluster_id:
+            processed_filters = self._to_filters(
+                __or__=[{"id": cluster_id}, filters]
+            )
+        else:
+            processed_filters = self._to_filters(**filters)
 
         art_feed_alias, art_cat_alias = aliased(Article), aliased(Article)
         # DESC of what's going on below :

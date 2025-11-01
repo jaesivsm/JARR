@@ -162,8 +162,8 @@ def _get_filters(in_dict):
         filters["read"] = False
     elif filter_ == "liked":
         filters["liked"] = True
-    for key in "feed_id", "category_id":
-        if in_dict.get(key) is not None:
+    for key in "feed_id", "category_id", "cluster_id":
+        if in_dict.get(key) is not None:  # category_id can be 0
             filters[key] = int(in_dict.get(key)) or None
     return filters
 

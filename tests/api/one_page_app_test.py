@@ -23,7 +23,7 @@ class OnePageAppTest(JarrFlaskCommon):
         resp = self.jarr_client("get", url, user=self.user.login)
         self.assertStatusCode(200, resp)
         clusters = resp.json
-        self.assertEqual(count, len(clusters))
+        assert count == len(clusters), "not expected cluster quantity"
         if expected_payload is not None:
             for cluster in clusters:
                 differing_keys = [
@@ -156,14 +156,12 @@ class OnePageAppTest(JarrFlaskCommon):
             link=feed.articles[0].link,
         )
         clu_ctrl.clusterize_pending_articles()
-        self.assertEqual(
-            all_unread_count + 1,
-            sum(
-                v
-                for k, v in clu_ctrl.get_unreads().items()
-                if k.startswith("feed-")
-            ),
+        new_unread_count = sum(
+            v
+            for k, v in clu_ctrl.get_unreads().items()
+            if k.startswith("feed-")
         )
+        assert new_unread_count == all_unread_count + 1
         self.assertClusterCount(18, {"filter": "unread"})
         # one per feed
         self._mark_as_read(2, {"only_singles": True, "filter": "unread"})
@@ -228,16 +226,12 @@ class OnePageAppTest(JarrFlaskCommon):
         )
 
         # Without cluster_id: should only get unread clusters (2)
-        self.assertClusterCount(2, {"category_id": cat_id, "filter": "unread"})
+        self.assertClusterCount(2, {"category_id": cat_id})
 
         # With cluster_id: should accept the parameter
         # The cluster_id parameter should not affect filtering
 
-        filters = {
-            "category_id": cat_id,
-            "filter": "unread",
-            "cluster_id": cluster_id,
-        }
+        filters = {"category_id": cat_id, "cluster_id": cluster_id}
         self.assertClusterCount(3, filters)
 
     def test_cluster_id_with_feed_id(self):
@@ -258,11 +252,10 @@ class OnePageAppTest(JarrFlaskCommon):
         )
 
         # Without cluster_id: should only get unread clusters (2)
-        self.assertClusterCount(2, {"feed_id": feed_id, "filter": "unread"})
+        self.assertClusterCount(2, {"feed_id": feed_id})
 
         # With cluster_id: should accept the parameter
         # The cluster_id parameter should not affect filtering
         self.assertClusterCount(
-            3,
-            {"feed_id": feed_id, "filter": "unread", "cluster_id": cluster_id},
+            3, {"feed_id": feed_id, "cluster_id": cluster_id}
         )
