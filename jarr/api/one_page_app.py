@@ -54,6 +54,9 @@ filter_parser.add_argument(
 filter_parser.add_argument(
     "from_date", type=inputs.datetime_from_iso8601, location='args',
     store_missing=False, help="for pagination")
+filter_parser.add_argument(
+    "cluster_id", type=int, store_missing=False, location='args',
+    help="the currently selected cluster id (optional, not used for filtering)")
 mark_as_read_parser = filter_parser.copy()
 mark_as_read_parser.add_argument(
     "only_singles", type=bool, default=False,

@@ -52,6 +52,11 @@ const clusterSlice = createSlice({
       } else if (action.payload.filters.filter === null) {
         delete filters.filter;
       }
+      if (action.payload.filters.clusterId) {
+        filters["cluster_id"] = action.payload.filters.clusterId;
+      } else if (filters["cluster_id"]) {
+        delete filters["cluster_id"];
+      }
       return { ...state, filters, loading: true, clusters: [],
                requestedFilter: qs.stringify(filters),
       };
