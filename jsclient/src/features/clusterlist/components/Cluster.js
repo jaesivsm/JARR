@@ -118,8 +118,8 @@ const Cluster = ({ index, cluster, loadedCluster,
 
   // Scroll to cluster title when expanded on mobile
   useEffect(() => {
-    if (expanded && isMobile && accordionRef.current) {
-      // Small delay to allow accordion expansion animation to start
+    if (expanded && isMobile && showContent && accordionRef.current) {
+      // Small delay to allow accordion expansion animation and content rendering
       setTimeout(() => {
         const element = accordionRef.current;
         const elementRect = element.getBoundingClientRect();
@@ -134,7 +134,7 @@ const Cluster = ({ index, cluster, loadedCluster,
         });
       }, 100);
     }
-  }, [expanded, isMobile]);
+  }, [expanded, isMobile, showContent]);
 
   if(!doShow) { return null; }
   let content;
