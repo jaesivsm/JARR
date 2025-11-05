@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import PropTypes from "prop-types";
 import { connect } from "react-redux";
 import { useNavigate } from "react-router-dom";
@@ -38,7 +38,7 @@ function Articles({ articles, icons, contents, feedTitle, autoplayChain, cluster
 
   // Function to find next cluster with media content (going up, to more recent)
   // Respects current filter: "all" shows all, undefined/empty shows unread only, "liked" shows liked only
-  const findNextMediaCluster = () => {
+  const findNextMediaCluster = useCallback(() => {
     if (!clusters || clusters.length === 0) return null;
 
     const currentIdx = clusters.findIndex(c => c.id === currentClusterId);
@@ -54,16 +54,16 @@ function Articles({ articles, icons, contents, feedTitle, autoplayChain, cluster
       }
     }
     return null;
-  };
+  }, [clusters, currentClusterId, filter]);
 
-  const handleMediaEnded = () => {
+  const handleMediaEnded = useCallback(() => {
     if (!autoplayChain) return;
 
     const nextClusterId = findNextMediaCluster();
     if (nextClusterId) {
       navigate(`/cluster/${nextClusterId}`);
     }
-  };
+  }, [autoplayChain, findNextMediaCluster, navigate]);
   const hasProcessedContent = !!contents && contents.length > 0;
   const allArticlesAreTyped = articles.reduce(
     (allTyped, art) => !!(allTyped && articleTypes.includes(art["article_type"])), true);

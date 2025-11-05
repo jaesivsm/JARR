@@ -208,7 +208,7 @@ function MediaPlayer({ type, article, feedTitle, feedIconUrl, onEnded, autoplay 
         navigator.mediaSession.setActionHandler("seekforward", null);
       }
     };
-  }, [article.title, feedTitle, feedIconUrl, article.id, article.link, location.pathname, location.search, navigate, updateUrlPosition]);
+  }, [article.title, feedTitle, feedIconUrl, article.id, article.link, location.pathname, location.search, navigate, updateUrlPosition, onEnded]);
 
   const togglePlayPause = () => {
     if (mediaRef.current) {

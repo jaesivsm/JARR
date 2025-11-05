@@ -202,7 +202,7 @@ function ProcessedContent({ content, hidden, onMediaEnded, autoplay }) {
       }
       playerRef.current = null;
     };
-  }, [content.type, content.link, hidden, navigate]);
+  }, [content.type, content.link, hidden, navigate, autoplay, onMediaEnded]);
   return (
     <div hidden={hidden} className={classes.article}>
       {title}
