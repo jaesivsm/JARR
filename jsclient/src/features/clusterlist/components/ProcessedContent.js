@@ -46,6 +46,9 @@ function ProcessedContent({ content, hidden }) {
           type="text/html"
           src={`https://www.youtube-nocookie.com/embed/${content.link}`}
           frameBorder="0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          allowFullScreen
+          referrerPolicy="strict-origin-when-cross-origin"
         />
       </Typography>
     );
