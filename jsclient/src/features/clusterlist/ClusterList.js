@@ -153,9 +153,13 @@ ClusterList.propTypes = {
   loading: PropTypes.bool.isRequired,
   isFeedListOpen: PropTypes.bool,
   isEditPanelOpen: PropTypes.bool.isRequired,
-  listClusters: PropTypes.func.isRequired,
   selectedFilterObj: PropTypes.object,
   doDisplayContent: PropTypes.bool.isRequired,
+  loadedCluster: PropTypes.object,
+  moreLoading: PropTypes.bool,
+  moreToFetch: PropTypes.bool,
+  loadMoreClusters: PropTypes.func.isRequired,
+  openEditPanel: PropTypes.func,
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(ClusterList);

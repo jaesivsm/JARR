@@ -1,5 +1,6 @@
 import React, { useRef, useState, useEffect } from "react";
 import PropTypes from "prop-types";
+import { useNavigate, useLocation } from "react-router-dom";
 import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
 import Box from "@mui/material/Box";
@@ -16,15 +17,82 @@ export const articleTypes = ["image", "audio", "video"];
 
 function MediaPlayer({ type, article, feedTitle, feedIconUrl }) {
   const mediaRef = useRef(null);
+  const navigate = useNavigate();
+  const location = useLocation();
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [volume, setVolume] = useState(1);
   const [isMuted, setIsMuted] = useState(false);
+  const updateUrlTimerRef = useRef(null);
+
+  // Update URL with current playback position (debounced)
+  const updateUrlPosition = React.useCallback((position) => {
+    if (updateUrlTimerRef.current) {
+      clearTimeout(updateUrlTimerRef.current);
+    }
+    updateUrlTimerRef.current = setTimeout(() => {
+      const searchParams = new URLSearchParams(location.search);
+      if (position > 5) {
+        searchParams.set('t', Math.floor(position));
+      } else {
+        searchParams.delete('t');
+      }
+      const newSearch = searchParams.toString();
+      const newUrl = `${location.pathname}${newSearch ? '?' + newSearch : ''}`;
+      navigate(newUrl, { replace: true });
+    }, 2000); // Update URL 2 seconds after seeking/playing stops
+  }, [location.pathname, location.search, navigate]);
 
   useEffect(() => {
     const media = mediaRef.current;
     if (!media) return;
+
+    // Create unique key for this media item
+    const mediaKey = `jarr_media_progress_${article.id}_${article.link}`;
+
+    // Load saved progress from URL or localStorage
+    const loadProgress = () => {
+      try {
+        // First check URL parameter
+        const searchParams = new URLSearchParams(location.search);
+        const urlTime = searchParams.get('t');
+        if (urlTime && !isNaN(urlTime)) {
+          const position = parseInt(urlTime, 10);
+          if (position > 0) {
+            media.currentTime = position;
+            return;
+          }
+        }
+
+        // Fallback to localStorage
+        const savedProgress = localStorage.getItem(mediaKey);
+        if (savedProgress) {
+          const data = JSON.parse(savedProgress);
+          // Only restore if saved in last 30 days and not at the very beginning
+          const age = Date.now() - data.timestamp;
+          if (age < 30 * 24 * 60 * 60 * 1000 && data.position > 5) {
+            media.currentTime = data.position;
+          }
+        }
+      } catch (e) {
+        console.error("Failed to load media progress:", e);
+      }
+    };
+
+    // Save progress periodically
+    const saveProgress = () => {
+      try {
+        const data = {
+          position: media.currentTime,
+          duration: media.duration,
+          timestamp: Date.now(),
+        };
+        localStorage.setItem(mediaKey, JSON.stringify(data));
+      } catch (e) {
+        console.error("Failed to save media progress:", e);
+      }
+    };
 
     const updateMediaSession = () => {
       if ("mediaSession" in navigator && article.title) {
@@ -66,15 +134,44 @@ function MediaPlayer({ type, article, feedTitle, feedIconUrl }) {
       }
     };
 
-    const handleTimeUpdate = () => setCurrentTime(media.currentTime);
+    const handleTimeUpdate = () => {
+      setCurrentTime(media.currentTime);
+      // Save progress and update URL every 10 seconds
+      if (Math.floor(media.currentTime) % 10 === 0) {
+        saveProgress();
+        updateUrlPosition(media.currentTime);
+      }
+    };
     const handleDurationChange = () => setDuration(media.duration);
+    const handleLoadedMetadata = () => {
+      loadProgress();
+    };
     const handlePlay = () => {
       setIsPlaying(true);
       updateMediaSession();
     };
-    const handlePause = () => setIsPlaying(false);
-    const handleEnded = () => setIsPlaying(false);
+    const handlePause = () => {
+      setIsPlaying(false);
+      saveProgress();
+      updateUrlPosition(media.currentTime);
+    };
+    const handleEnded = () => {
+      setIsPlaying(false);
+      // Clear progress when media ends
+      try {
+        localStorage.removeItem(mediaKey);
+        // Clear URL parameter
+        const searchParams = new URLSearchParams(location.search);
+        searchParams.delete('t');
+        const newSearch = searchParams.toString();
+        const newUrl = `${location.pathname}${newSearch ? '?' + newSearch : ''}`;
+        navigate(newUrl, { replace: true });
+      } catch (e) {
+        console.error("Failed to clear media progress:", e);
+      }
+    };
 
+    media.addEventListener("loadedmetadata", handleLoadedMetadata);
     media.addEventListener("timeupdate", handleTimeUpdate);
     media.addEventListener("durationchange", handleDurationChange);
     media.addEventListener("play", handlePlay);
@@ -82,11 +179,20 @@ function MediaPlayer({ type, article, feedTitle, feedIconUrl }) {
     media.addEventListener("ended", handleEnded);
 
     return () => {
+      media.removeEventListener("loadedmetadata", handleLoadedMetadata);
       media.removeEventListener("timeupdate", handleTimeUpdate);
       media.removeEventListener("durationchange", handleDurationChange);
       media.removeEventListener("play", handlePlay);
       media.removeEventListener("pause", handlePause);
       media.removeEventListener("ended", handleEnded);
+
+      // Clear any pending URL updates
+      if (updateUrlTimerRef.current) {
+        clearTimeout(updateUrlTimerRef.current);
+      }
+
+      // Save progress one last time before unmount
+      saveProgress();
 
       // Clear media session on unmount
       if ("mediaSession" in navigator) {
@@ -97,7 +203,7 @@ function MediaPlayer({ type, article, feedTitle, feedIconUrl }) {
         navigator.mediaSession.setActionHandler("seekforward", null);
       }
     };
-  }, [article.title, feedTitle, feedIconUrl]);
+  }, [article.title, feedTitle, feedIconUrl, article.id, article.link, location.pathname, location.search, navigate, updateUrlPosition]);
 
   const togglePlayPause = () => {
     if (mediaRef.current) {
@@ -112,6 +218,7 @@ function MediaPlayer({ type, article, feedTitle, feedIconUrl }) {
   const skipTime = (seconds) => {
     if (mediaRef.current) {
       mediaRef.current.currentTime += seconds;
+      updateUrlPosition(mediaRef.current.currentTime);
     }
   };
 
@@ -119,6 +226,7 @@ function MediaPlayer({ type, article, feedTitle, feedIconUrl }) {
     if (mediaRef.current) {
       mediaRef.current.currentTime = newValue;
       setCurrentTime(newValue);
+      updateUrlPosition(newValue);
     }
   };
 
