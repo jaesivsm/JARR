@@ -14,7 +14,7 @@ import useStyles from "./style";
 
 export const articleTypes = ["image", "audio", "video"];
 
-function MediaPlayer({ type, article, feedTitle }) {
+function MediaPlayer({ type, article, feedTitle, feedIconUrl }) {
   const mediaRef = useRef(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
@@ -28,11 +28,24 @@ function MediaPlayer({ type, article, feedTitle }) {
 
     const updateMediaSession = () => {
       if ("mediaSession" in navigator && article.title) {
-        navigator.mediaSession.metadata = new MediaMetadata({
+        const metadata = {
           title: article.title,
           artist: feedTitle,
           album: "JARR",
-        });
+        };
+
+        if (feedIconUrl) {
+          metadata.artwork = [
+            { src: feedIconUrl, sizes: "96x96", type: "image/png" },
+            { src: feedIconUrl, sizes: "128x128", type: "image/png" },
+            { src: feedIconUrl, sizes: "192x192", type: "image/png" },
+            { src: feedIconUrl, sizes: "256x256", type: "image/png" },
+            { src: feedIconUrl, sizes: "384x384", type: "image/png" },
+            { src: feedIconUrl, sizes: "512x512", type: "image/png" },
+          ];
+        }
+
+        navigator.mediaSession.metadata = new MediaMetadata(metadata);
 
         navigator.mediaSession.setActionHandler("play", () => {
           mediaRef.current?.play();
@@ -75,7 +88,7 @@ function MediaPlayer({ type, article, feedTitle }) {
       media.removeEventListener("pause", handlePause);
       media.removeEventListener("ended", handleEnded);
     };
-  }, [article.title, feedTitle]);
+  }, [article.title, feedTitle, feedIconUrl]);
 
   const togglePlayPause = () => {
     if (mediaRef.current) {
@@ -241,9 +254,10 @@ MediaPlayer.propTypes = {
     link: PropTypes.string.isRequired,
   }).isRequired,
   feedTitle: PropTypes.string,
+  feedIconUrl: PropTypes.string,
 };
 
-export function TypedContents({ type, articles, hidden, feedTitle }) {
+export function TypedContents({ type, articles, hidden, feedTitle, feedIconUrl }) {
   const classes = useStyles();
   if (articles.length === 0) { return ; }
   let processedUrls = [];
@@ -263,7 +277,7 @@ export function TypedContents({ type, articles, hidden, feedTitle }) {
                         src={article.link}
                         alt={article.title} title={article.title} />);
         } else if (type === "audio" || type === "video") {
-          media = <MediaPlayer key={`${type}-${article.id}`} type={type} article={article} feedTitle={feedTitle} />;
+          media = <MediaPlayer key={`${type}-${article.id}`} type={type} article={article} feedTitle={feedTitle} feedIconUrl={feedIconUrl} />;
         }
         return media;
       })}
@@ -279,4 +293,5 @@ TypedContents.propTypes = {
     "article_type": PropTypes.string.isRequired})),
   hidden: PropTypes.bool.isRequired,
   feedTitle: PropTypes.string,
+  feedIconUrl: PropTypes.string,
 };

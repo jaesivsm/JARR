@@ -66,12 +66,14 @@ function Articles({ articles, icons, contents, feedTitle }) {
       icon = <VideoIcon />;
     }
     if (typedArticles.length !== 0) {
+      const feedIconUrl = typedArticles[0]?.feed_id ? icons[typedArticles[0].feed_id] : null;
       tabs.push(<Tab key={`ta-${type}`} value={index} icon={icon}
                      className={classes.tabs} aria-controls={`a-${index}`} />);
       pages.push(<TypedContents key={`pc-${index}`} type={type}
                                 articles={typedArticles}
                                 hidden={index !== currentIndex}
-                                feedTitle={feedTitle} />);
+                                feedTitle={feedTitle}
+                                feedIconUrl={feedIconUrl} />);
       index += 1;
     }
   }
