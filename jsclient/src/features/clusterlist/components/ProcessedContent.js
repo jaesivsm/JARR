@@ -1,5 +1,6 @@
-import React from "react";
+import React, { useEffect, useRef, useMemo } from "react";
 import PropTypes from "prop-types";
+import { useLocation, useNavigate } from "react-router-dom";
 import Typography from "@mui/material/Typography";
 import Link from "@mui/material/Link";
 import Divider from "@mui/material/Divider";
@@ -8,6 +9,46 @@ import useStyles from "./style";
 
 function ProcessedContent({ content, hidden }) {
   const classes = useStyles();
+  const location = useLocation();
+  const navigate = useNavigate();
+  const playerRef = useRef(null);
+  const updateUrlTimerRef = useRef(null);
+  const intervalRef = useRef(null);
+  const initialStartTimeRef = useRef(null);
+
+  // Capture initial start time only once
+  if (initialStartTimeRef.current === null && content.type === "youtube") {
+    const searchParams = new URLSearchParams(location.search);
+    const startTime = searchParams.get('t');
+    if (startTime && !isNaN(startTime)) {
+      initialStartTimeRef.current = startTime;
+    } else {
+      initialStartTimeRef.current = false; // Mark as checked
+    }
+  }
+
+  // Build YouTube URL with start time from initial URL only (always call, even if not youtube)
+  const youtubeUrl = useMemo(() => {
+    if (content.type !== "youtube") return null;
+
+    let url = `https://www.youtube-nocookie.com/embed/${content.link}`;
+
+    // Add URL parameters for YouTube player
+    const urlParams = new URLSearchParams();
+    if (initialStartTimeRef.current && initialStartTimeRef.current !== false) {
+      urlParams.set('start', initialStartTimeRef.current);
+    }
+    // Enable JS API for progression tracking
+    urlParams.set('enablejsapi', '1');
+    urlParams.set('origin', window.location.origin);
+
+    const paramsString = urlParams.toString();
+    if (paramsString) {
+      url += `?${paramsString}`;
+    }
+    return url;
+  }, [content.type, content.link]); // Only re-create if type or video ID changes
+
   let title, titleDivider, link, comments, linksDivider, body;
   if (content.type === "fetched") {
     if (content.title) {
@@ -40,11 +81,11 @@ function ProcessedContent({ content, hidden }) {
   } else if (content.type === "youtube") {
     body = (
       <Typography className={classes.videoContainer}>
-        <iframe key="jarr-proccessed-content"
+        <iframe key={`jarr-youtube-${content.link}`}
           title="JARR processed Player"
-          id="ytplayer"
+          id={`ytplayer-${content.link}`}
           type="text/html"
-          src={`https://www.youtube-nocookie.com/embed/${content.link}`}
+          src={youtubeUrl}
           frameBorder="0"
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
           allowFullScreen
@@ -53,6 +94,94 @@ function ProcessedContent({ content, hidden }) {
       </Typography>
     );
   }
+
+  // YouTube IFrame API integration for progression tracking
+  useEffect(() => {
+    if (content.type !== "youtube" || hidden) return;
+
+    // Load YouTube IFrame API
+    if (!window.YT) {
+      const tag = document.createElement('script');
+      tag.src = 'https://www.youtube.com/iframe_api';
+      const firstScriptTag = document.getElementsByTagName('script')[0];
+      firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+    }
+
+    const initPlayer = () => {
+      const iframe = document.getElementById(`ytplayer-${content.link}`);
+      if (!iframe || !window.YT || !window.YT.Player) return;
+
+      try {
+        playerRef.current = new window.YT.Player(`ytplayer-${content.link}`, {
+          events: {
+            'onStateChange': (event) => {
+              // Clear any existing interval
+              if (intervalRef.current) {
+                clearInterval(intervalRef.current);
+                intervalRef.current = null;
+              }
+
+              // Update URL when video is playing
+              if (event.data === window.YT.PlayerState.PLAYING) {
+                const updateUrl = () => {
+                  if (playerRef.current && playerRef.current.getCurrentTime) {
+                    const currentTime = Math.floor(playerRef.current.getCurrentTime());
+                    if (currentTime > 5) {
+                      if (updateUrlTimerRef.current) {
+                        clearTimeout(updateUrlTimerRef.current);
+                      }
+                      updateUrlTimerRef.current = setTimeout(() => {
+                        const currentSearchParams = new URLSearchParams(window.location.search);
+                        currentSearchParams.set('t', currentTime);
+                        const newUrl = `${window.location.pathname}?${currentSearchParams.toString()}`;
+                        navigate(newUrl, { replace: true });
+                      }, 2000);
+                    }
+                  }
+                };
+
+                // Update URL immediately when starting
+                updateUrl();
+
+                // Update URL every 10 seconds while playing
+                intervalRef.current = setInterval(() => {
+                  if (playerRef.current && playerRef.current.getPlayerState) {
+                    if (playerRef.current.getPlayerState() === window.YT.PlayerState.PLAYING) {
+                      updateUrl();
+                    } else {
+                      if (intervalRef.current) {
+                        clearInterval(intervalRef.current);
+                        intervalRef.current = null;
+                      }
+                    }
+                  }
+                }, 10000);
+              }
+            }
+          }
+        });
+      } catch (e) {
+        console.error("Failed to initialize YouTube player:", e);
+      }
+    };
+
+    // Wait for API to be ready
+    if (window.YT && window.YT.Player) {
+      initPlayer();
+    } else {
+      window.onYouTubeIframeAPIReady = initPlayer;
+    }
+
+    return () => {
+      if (updateUrlTimerRef.current) {
+        clearTimeout(updateUrlTimerRef.current);
+      }
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+      playerRef.current = null;
+    };
+  }, [content.type, content.link, hidden, navigate]);
   return (
     <div hidden={hidden} className={classes.article}>
       {title}
