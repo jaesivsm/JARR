@@ -137,49 +137,51 @@ function MediaPlayer({ type, article }) {
           gap: 0.5,
           justifyContent: "center",
           alignItems: "center",
-          flexWrap: "wrap"
+          flexWrap: "wrap",
+          width: "100%"
         }}>
-          <Button
-            variant="outlined"
-            size="small"
-            onClick={() => skipTime(-15)}
-            sx={{ textTransform: "none", minWidth: "45px", padding: "4px 8px", fontSize: "0.75rem" }}
-          >
-            -15s
-          </Button>
-          <Button
-            variant="outlined"
-            size="small"
-            onClick={() => skipTime(-5)}
-            sx={{ textTransform: "none", minWidth: "40px", padding: "4px 8px", fontSize: "0.75rem" }}
-          >
-            -5s
-          </Button>
-          <IconButton
-            onClick={togglePlayPause}
-            color="primary"
-            size="small"
-            sx={{ order: { xs: 10, sm: 0 } }}
-          >
-            {isPlaying ? <PauseIcon fontSize="small" /> : <PlayArrowIcon fontSize="small" />}
-          </IconButton>
-          <Button
-            variant="outlined"
-            size="small"
-            onClick={() => skipTime(5)}
-            sx={{ textTransform: "none", minWidth: "40px", padding: "4px 8px", fontSize: "0.75rem", order: { xs: 9, sm: 0 } }}
-          >
-            +5s
-          </Button>
-          <Button
-            variant="outlined"
-            size="small"
-            onClick={() => skipTime(15)}
-            sx={{ textTransform: "none", minWidth: "45px", padding: "4px 8px", fontSize: "0.75rem", order: { xs: 8, sm: 0 } }}
-          >
-            +15s
-          </Button>
-          <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, order: { xs: 1, sm: 0 } }}>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+            <Button
+              variant="outlined"
+              size="small"
+              onClick={() => skipTime(-15)}
+              sx={{ textTransform: "none", minWidth: "45px", padding: "4px 8px", fontSize: "0.75rem" }}
+            >
+              -15s
+            </Button>
+            <Button
+              variant="outlined"
+              size="small"
+              onClick={() => skipTime(-5)}
+              sx={{ textTransform: "none", minWidth: "40px", padding: "4px 8px", fontSize: "0.75rem" }}
+            >
+              -5s
+            </Button>
+            <IconButton
+              onClick={togglePlayPause}
+              color="primary"
+              size="small"
+            >
+              {isPlaying ? <PauseIcon fontSize="small" /> : <PlayArrowIcon fontSize="small" />}
+            </IconButton>
+            <Button
+              variant="outlined"
+              size="small"
+              onClick={() => skipTime(5)}
+              sx={{ textTransform: "none", minWidth: "40px", padding: "4px 8px", fontSize: "0.75rem" }}
+            >
+              +5s
+            </Button>
+            <Button
+              variant="outlined"
+              size="small"
+              onClick={() => skipTime(15)}
+              sx={{ textTransform: "none", minWidth: "45px", padding: "4px 8px", fontSize: "0.75rem" }}
+            >
+              +15s
+            </Button>
+          </Box>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
             <IconButton
               onClick={toggleMute}
               size="small"
