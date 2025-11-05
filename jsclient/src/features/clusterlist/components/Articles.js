@@ -20,11 +20,12 @@ function mapStateToProps(state) {
   return { icons: state.feeds.icons,
            articles: state.clusters.loadedCluster.articles,
            contents: state.clusters.loadedCluster.contents,
+           feedTitle: state.clusters.loadedCluster.main_feed_title,
   };
 }
 const proccessedContentTitle = "proccessed content";
 
-function Articles({ articles, icons, contents }) {
+function Articles({ articles, icons, contents, feedTitle }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const classes = useStyles();
   const hasProcessedContent = !!contents && contents.length > 0;
@@ -69,7 +70,8 @@ function Articles({ articles, icons, contents }) {
                      className={classes.tabs} aria-controls={`a-${index}`} />);
       pages.push(<TypedContents key={`pc-${index}`} type={type}
                                 articles={typedArticles}
-                                hidden={index !== currentIndex} />);
+                                hidden={index !== currentIndex}
+                                feedTitle={feedTitle} />);
       index += 1;
     }
   }
@@ -116,6 +118,7 @@ function Articles({ articles, icons, contents }) {
 }
 Articles.propTypes = {
   articles: PropTypes.array,
-  contents: PropTypes.array
+  contents: PropTypes.array,
+  feedTitle: PropTypes.string
 };
 export default connect(mapStateToProps)(Articles);

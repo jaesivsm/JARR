@@ -14,7 +14,7 @@ import useStyles from "./style";
 
 export const articleTypes = ["image", "audio", "video"];
 
-function MediaPlayer({ type, article }) {
+function MediaPlayer({ type, article, feedTitle }) {
   const mediaRef = useRef(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
@@ -26,9 +26,39 @@ function MediaPlayer({ type, article }) {
     const media = mediaRef.current;
     if (!media) return;
 
+    const updateMediaSession = () => {
+      if ("mediaSession" in navigator && article.title) {
+        navigator.mediaSession.metadata = new MediaMetadata({
+          title: article.title,
+          artist: feedTitle,
+          album: "JARR",
+        });
+
+        navigator.mediaSession.setActionHandler("play", () => {
+          mediaRef.current?.play();
+        });
+        navigator.mediaSession.setActionHandler("pause", () => {
+          mediaRef.current?.pause();
+        });
+        navigator.mediaSession.setActionHandler("seekbackward", () => {
+          if (mediaRef.current) {
+            mediaRef.current.currentTime -= 10;
+          }
+        });
+        navigator.mediaSession.setActionHandler("seekforward", () => {
+          if (mediaRef.current) {
+            mediaRef.current.currentTime += 10;
+          }
+        });
+      }
+    };
+
     const handleTimeUpdate = () => setCurrentTime(media.currentTime);
     const handleDurationChange = () => setDuration(media.duration);
-    const handlePlay = () => setIsPlaying(true);
+    const handlePlay = () => {
+      setIsPlaying(true);
+      updateMediaSession();
+    };
     const handlePause = () => setIsPlaying(false);
     const handleEnded = () => setIsPlaying(false);
 
@@ -45,7 +75,7 @@ function MediaPlayer({ type, article }) {
       media.removeEventListener("pause", handlePause);
       media.removeEventListener("ended", handleEnded);
     };
-  }, []);
+  }, [article.title, feedTitle]);
 
   const togglePlayPause = () => {
     if (mediaRef.current) {
@@ -210,9 +240,10 @@ MediaPlayer.propTypes = {
     title: PropTypes.string,
     link: PropTypes.string.isRequired,
   }).isRequired,
+  feedTitle: PropTypes.string,
 };
 
-export function TypedContents({ type, articles, hidden }) {
+export function TypedContents({ type, articles, hidden, feedTitle }) {
   const classes = useStyles();
   if (articles.length === 0) { return ; }
   let processedUrls = [];
@@ -232,7 +263,7 @@ export function TypedContents({ type, articles, hidden }) {
                         src={article.link}
                         alt={article.title} title={article.title} />);
         } else if (type === "audio" || type === "video") {
-          media = <MediaPlayer key={`${type}-${article.id}`} type={type} article={article} />;
+          media = <MediaPlayer key={`${type}-${article.id}`} type={type} article={article} feedTitle={feedTitle} />;
         }
         return media;
       })}
@@ -247,4 +278,5 @@ TypedContents.propTypes = {
     link: PropTypes.string.isRequired,
     "article_type": PropTypes.string.isRequired})),
   hidden: PropTypes.bool.isRequired,
+  feedTitle: PropTypes.string,
 };
