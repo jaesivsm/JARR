@@ -26,6 +26,7 @@ const clusterSlice = createSlice({
                   clusters: [],
                   requestedClusterId: null,
                   loadedCluster: {},
+                  autoplayChain: false,
   },
   reducers: {
     requestedClustersList: (state, action) => {
@@ -129,6 +130,10 @@ const clusterSlice = createSlice({
                  cluster["feeds_id"].length > 1),
       };
     },
+    toggleAutoplayChain: (state) => ({
+      ...state,
+      autoplayChain: !state.autoplayChain,
+    }),
   },
 });
 
@@ -138,5 +143,6 @@ export const { requestedClustersList, retrievedClustersList,
                updateClusterAttrs,
                removeClusterSelection,
                markedAllAsRead,
+               toggleAutoplayChain,
 } = clusterSlice.actions;
 export default clusterSlice.reducer;

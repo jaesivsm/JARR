@@ -7,7 +7,7 @@ import Divider from "@mui/material/Divider";
 
 import useStyles from "./style";
 
-function ProcessedContent({ content, hidden }) {
+function ProcessedContent({ content, hidden, onMediaEnded, autoplay }) {
   const classes = useStyles();
   const location = useLocation();
   const navigate = useNavigate();
@@ -114,11 +114,32 @@ function ProcessedContent({ content, hidden }) {
       try {
         playerRef.current = new window.YT.Player(`ytplayer-${content.link}`, {
           events: {
+            'onReady': (event) => {
+              // Autoplay when ready if autoplay is enabled
+              if (autoplay) {
+                event.target.playVideo();
+              }
+            },
             'onStateChange': (event) => {
               // Clear any existing interval
               if (intervalRef.current) {
                 clearInterval(intervalRef.current);
                 intervalRef.current = null;
+              }
+
+              // Handle video ended
+              if (event.data === window.YT.PlayerState.ENDED) {
+                // Clear URL parameter
+                const searchParams = new URLSearchParams(window.location.search);
+                searchParams.delete('t');
+                const newSearch = searchParams.toString();
+                const newUrl = `${window.location.pathname}${newSearch ? '?' + newSearch : ''}`;
+                navigate(newUrl, { replace: true });
+
+                // Call onMediaEnded callback for autoplay chain
+                if (onMediaEnded) {
+                  onMediaEnded();
+                }
               }
 
               // Update URL when video is playing
@@ -202,6 +223,8 @@ ProcessedContent.propTypes = {
     comments: PropTypes.string
   }),
   hidden: PropTypes.bool.isRequired,
+  onMediaEnded: PropTypes.func,
+  autoplay: PropTypes.bool,
 };
 
 export default ProcessedContent;

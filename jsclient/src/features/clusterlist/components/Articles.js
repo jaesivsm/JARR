@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import PropTypes from "prop-types";
 import { connect } from "react-redux";
+import { useNavigate } from "react-router-dom";
 
 import Tab from "@mui/material/Tab";
 import Tabs from "@mui/material/Tabs";
@@ -15,19 +16,54 @@ import ProcessedContent from "./ProcessedContent";
 import useStyles from "./style";
 import ClusterIcon from "../../../components/ClusterIcon";
 import jarrIcon from "../../../components/JarrIcon.gif";
+import { showCluster } from "../slice";
 
 function mapStateToProps(state) {
   return { icons: state.feeds.icons,
            articles: state.clusters.loadedCluster.articles,
            contents: state.clusters.loadedCluster.contents,
            feedTitle: state.clusters.loadedCluster.main_feed_title,
+           autoplayChain: state.clusters.autoplayChain,
+           clusters: state.clusters.clusters,
+           currentClusterId: state.clusters.requestedClusterId,
+           filter: state.clusters.filters.filter,
   };
 }
 const proccessedContentTitle = "proccessed content";
 
-function Articles({ articles, icons, contents, feedTitle }) {
+function Articles({ articles, icons, contents, feedTitle, autoplayChain, clusters, currentClusterId, filter }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const classes = useStyles();
+  const navigate = useNavigate();
+
+  // Function to find next cluster with media content (going up, to more recent)
+  // Respects current filter: "all" shows all, undefined/empty shows unread only, "liked" shows liked only
+  const findNextMediaCluster = () => {
+    if (!clusters || clusters.length === 0) return null;
+
+    const currentIdx = clusters.findIndex(c => c.id === currentClusterId);
+    if (currentIdx === -1) return null;
+
+    // Look for the previous cluster (more recent, going up) that matches the current filter
+    for (let i = currentIdx - 1; i >= 0; i--) {
+      const nextCluster = clusters[i];
+      // Check if this cluster should be shown according to the current filter
+      // Pass null for requestedClusterId since we want to find the next eligible cluster
+      if (showCluster(nextCluster, null, filter)) {
+        return nextCluster.id;
+      }
+    }
+    return null;
+  };
+
+  const handleMediaEnded = () => {
+    if (!autoplayChain) return;
+
+    const nextClusterId = findNextMediaCluster();
+    if (nextClusterId) {
+      navigate(`/cluster/${nextClusterId}`);
+    }
+  };
   const hasProcessedContent = !!contents && contents.length > 0;
   const allArticlesAreTyped = articles.reduce(
     (allTyped, art) => !!(allTyped && articleTypes.includes(art["article_type"])), true);
@@ -52,7 +88,9 @@ function Articles({ articles, icons, contents, feedTitle }) {
     tabs.push(<Tab key={`t-${index}`} value={index} icon={icon}
                    className={classes.tabs} aria-controls={`a-${index}`} />);
     pages.push(<ProcessedContent key={`pc-${index}`} content={content}
-                                 hidden={index !== currentIndex} />);
+                                 hidden={index !== currentIndex}
+                                 onMediaEnded={handleMediaEnded}
+                                 autoplay={autoplayChain} />);
     index += 1;
   }
   const pushTypedArticles = (type) => {
@@ -73,7 +111,9 @@ function Articles({ articles, icons, contents, feedTitle }) {
                                 articles={typedArticles}
                                 hidden={index !== currentIndex}
                                 feedTitle={feedTitle}
-                                feedIconUrl={feedIconUrl} />);
+                                feedIconUrl={feedIconUrl}
+                                onMediaEnded={handleMediaEnded}
+                                autoplay={autoplayChain} />);
       index += 1;
     }
   }
@@ -121,6 +161,11 @@ function Articles({ articles, icons, contents, feedTitle }) {
 Articles.propTypes = {
   articles: PropTypes.array,
   contents: PropTypes.array,
-  feedTitle: PropTypes.string
+  feedTitle: PropTypes.string,
+  autoplayChain: PropTypes.bool,
+  clusters: PropTypes.array,
+  currentClusterId: PropTypes.number,
+  icons: PropTypes.object,
+  filter: PropTypes.string,
 };
 export default connect(mapStateToProps)(Articles);

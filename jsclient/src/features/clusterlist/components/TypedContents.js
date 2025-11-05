@@ -15,7 +15,7 @@ import useStyles from "./style";
 
 export const articleTypes = ["image", "audio", "video"];
 
-function MediaPlayer({ type, article, feedTitle, feedIconUrl }) {
+function MediaPlayer({ type, article, feedTitle, feedIconUrl, onEnded, autoplay }) {
   const mediaRef = useRef(null);
   const navigate = useNavigate();
   const location = useLocation();
@@ -169,6 +169,11 @@ function MediaPlayer({ type, article, feedTitle, feedIconUrl }) {
       } catch (e) {
         console.error("Failed to clear media progress:", e);
       }
+
+      // Call the onEnded callback if provided (for autoplay chain)
+      if (onEnded) {
+        onEnded();
+      }
     };
 
     media.addEventListener("loadedmetadata", handleLoadedMetadata);
@@ -268,6 +273,7 @@ function MediaPlayer({ type, article, feedTitle, feedIconUrl }) {
       <MediaElement
         ref={mediaRef}
         key={`${type}-${article.id}`}
+        autoPlay={autoplay}
         {...mediaProps}
       >
         <source src={article.link} />
@@ -372,9 +378,11 @@ MediaPlayer.propTypes = {
   }).isRequired,
   feedTitle: PropTypes.string,
   feedIconUrl: PropTypes.string,
+  onEnded: PropTypes.func,
+  autoplay: PropTypes.bool,
 };
 
-export function TypedContents({ type, articles, hidden, feedTitle, feedIconUrl }) {
+export function TypedContents({ type, articles, hidden, feedTitle, feedIconUrl, onMediaEnded, autoplay }) {
   const classes = useStyles();
   if (articles.length === 0) { return ; }
   let processedUrls = [];
@@ -394,7 +402,7 @@ export function TypedContents({ type, articles, hidden, feedTitle, feedIconUrl }
                         src={article.link}
                         alt={article.title} title={article.title} />);
         } else if (type === "audio" || type === "video") {
-          media = <MediaPlayer key={`${type}-${article.id}`} type={type} article={article} feedTitle={feedTitle} feedIconUrl={feedIconUrl} />;
+          media = <MediaPlayer key={`${type}-${article.id}`} type={type} article={article} feedTitle={feedTitle} feedIconUrl={feedIconUrl} onEnded={onMediaEnded} autoplay={autoplay} />;
         }
         return media;
       })}
@@ -411,4 +419,6 @@ TypedContents.propTypes = {
   hidden: PropTypes.bool.isRequired,
   feedTitle: PropTypes.string,
   feedIconUrl: PropTypes.string,
+  onMediaEnded: PropTypes.func,
+  autoplay: PropTypes.bool,
 };

@@ -9,12 +9,19 @@ import CardContent from "@mui/material/CardContent";
 import SettingsIcon from "@mui/icons-material/Build";
 import Typography from "@mui/material/Typography";
 import DeleteIcon from "@mui/icons-material/Delete";
+import PlaylistPlayIcon from "@mui/icons-material/PlaylistPlay";
+import Tooltip from "@mui/material/Tooltip";
 // jarr
 import doFetchObjForEdit from "../../../hooks/doFetchObjForEdit";
 import doDeleteObj from "../../../hooks/doDeleteObj";
 import doListClusters from "../../../hooks/doListClusters";
 import ClusterIcon from "../../../components/ClusterIcon";
+import { toggleAutoplayChain } from "../slice";
 import useStyles from "./style";
+
+const mapStateToProps = (state) => ({
+  autoplayChain: state.clusters.autoplayChain,
+});
 
 const mapDispatchToProps = (dispatch) => ({
   openEditPanel(id, objType) {
@@ -24,10 +31,13 @@ const mapDispatchToProps = (dispatch) => ({
     dispatch(doDeleteObj(id, type));
     dispatch(doListClusters({ categoryId: "all" }));
   },
+  toggleAutoplay() {
+    dispatch(toggleAutoplayChain());
+  },
 });
 
 function SelectedObjCard({ id, str, type, iconUrl, errorCount, lastRetrieved,
-                           openEditPanel, deleteObj }) {
+                           openEditPanel, deleteObj, autoplayChain, toggleAutoplay }) {
   const objType = type === "feed" ? "feed" : "category";
   const classes = useStyles();
 
@@ -38,6 +48,16 @@ function SelectedObjCard({ id, str, type, iconUrl, errorCount, lastRetrieved,
         <Typography>{str}</Typography>
       </CardContent>
       <CardActions className={classes.clusterListCardActions}>
+        <Tooltip title={autoplayChain ? "Disable media autoplay chain" : "Enable media autoplay chain"}>
+          <IconButton
+            size="small"
+            onClick={toggleAutoplay}
+            className={classes.clusterListCardActionBtn}
+            color={autoplayChain ? "primary" : "default"}
+          >
+            <PlaylistPlayIcon size="small" />
+          </IconButton>
+        </Tooltip>
         <IconButton size="small"
           onClick={() => openEditPanel(id, objType)}
           className={classes.clusterListCardActionBtn}
@@ -64,6 +84,8 @@ SelectedObjCard.propTypes = {
   lastRetrieved: PropTypes.string,
   openEditPanel: PropTypes.func.isRequired,
   deleteObj: PropTypes.func.isRequired,
+  autoplayChain: PropTypes.bool.isRequired,
+  toggleAutoplay: PropTypes.func.isRequired,
 };
 
-export default connect(null, mapDispatchToProps)(SelectedObjCard);
+export default connect(mapStateToProps, mapDispatchToProps)(SelectedObjCard);
