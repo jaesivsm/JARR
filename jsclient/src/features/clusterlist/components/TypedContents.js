@@ -87,6 +87,15 @@ function MediaPlayer({ type, article, feedTitle, feedIconUrl }) {
       media.removeEventListener("play", handlePlay);
       media.removeEventListener("pause", handlePause);
       media.removeEventListener("ended", handleEnded);
+
+      // Clear media session on unmount
+      if ("mediaSession" in navigator) {
+        navigator.mediaSession.metadata = null;
+        navigator.mediaSession.setActionHandler("play", null);
+        navigator.mediaSession.setActionHandler("pause", null);
+        navigator.mediaSession.setActionHandler("seekbackward", null);
+        navigator.mediaSession.setActionHandler("seekforward", null);
+      }
     };
   }, [article.title, feedTitle, feedIconUrl]);
 
