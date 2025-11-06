@@ -227,7 +227,22 @@ function MediaPlayer({ type, article, feedTitle, feedIconUrl, onEnded, autoplay 
   const skipTime = (seconds) => {
     if (mediaRef.current) {
       mediaRef.current.currentTime += seconds;
-      updateUrlPosition(mediaRef.current.currentTime);
+      const newTime = mediaRef.current.currentTime;
+      setCurrentTime(newTime);
+
+      // Update URL immediately without debounce
+      if (updateUrlTimerRef.current) {
+        clearTimeout(updateUrlTimerRef.current);
+      }
+      const searchParams = new URLSearchParams(location.search);
+      if (newTime > 5) {
+        searchParams.set('t', Math.floor(newTime));
+      } else {
+        searchParams.delete('t');
+      }
+      const newSearch = searchParams.toString();
+      const newUrl = `${location.pathname}${newSearch ? '?' + newSearch : ''}`;
+      navigate(newUrl, { replace: true });
     }
   };
 
