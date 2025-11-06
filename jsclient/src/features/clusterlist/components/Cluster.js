@@ -158,11 +158,7 @@ const Cluster = ({ index, cluster, loadedCluster,
         expanded={expanded}
         elevation={expanded ? 10: 2}
         TransitionProps={{ unmountOnExit: true }}
-        key={"c"
-             + (expanded ? "e" : "")
-             + (cluster.read ? "r" : "")
-             + (cluster.liked ? "l" : "")
-             + cluster.id}
+        key={`c-${cluster.id}`}
         onChange={(e) => {
           handleClickOnPanel(e, cluster, unreadOnClose, expanded);
           if (!expanded) {
