@@ -1,7 +1,7 @@
 import React, { useState, useCallback } from "react";
 import PropTypes from "prop-types";
 import { connect } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
 
 import Tab from "@mui/material/Tab";
 import Tabs from "@mui/material/Tabs";
@@ -17,6 +17,7 @@ import useStyles from "./style";
 import ClusterIcon from "../../../components/ClusterIcon";
 import jarrIcon from "../../../components/JarrIcon.gif";
 import { showCluster } from "../slice";
+import doFetchCluster from "../../../hooks/doFetchCluster";
 
 function mapStateToProps(state) {
   return { icons: state.feeds.icons,
@@ -29,12 +30,19 @@ function mapStateToProps(state) {
            filter: state.clusters.filters.filter,
   };
 }
+
+const mapDispatchToProps = (dispatch) => ({
+  fetchCluster(clusterId) {
+    dispatch(doFetchCluster(clusterId));
+  },
+});
+
 const proccessedContentTitle = "proccessed content";
 
-function Articles({ articles, icons, contents, feedTitle, autoplayChain, clusters, currentClusterId, filter }) {
+function Articles({ articles, icons, contents, feedTitle, autoplayChain, clusters, currentClusterId, filter, fetchCluster }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const classes = useStyles();
-  const navigate = useNavigate();
+  const { feedId, categoryId } = useParams();
 
   // Function to find next cluster with media content (going up, to more recent)
   // Respects current filter: "all" shows all, undefined/empty shows unread only, "liked" shows liked only
@@ -61,9 +69,22 @@ function Articles({ articles, icons, contents, feedTitle, autoplayChain, cluster
 
     const nextClusterId = findNextMediaCluster();
     if (nextClusterId) {
-      navigate(`/cluster/${nextClusterId}`);
+      // Fetch the cluster data directly first
+      fetchCluster(nextClusterId);
+
+      // Update the URL without triggering a navigation/re-render
+      // This keeps the URL in sync without causing the cluster list to refresh
+      let newUrl;
+      if (feedId) {
+        newUrl = `/feed/${feedId}/cluster/${nextClusterId}`;
+      } else if (categoryId) {
+        newUrl = `/category/${categoryId}/cluster/${nextClusterId}`;
+      } else {
+        newUrl = `/cluster/${nextClusterId}`;
+      }
+      window.history.replaceState(null, '', newUrl);
     }
-  }, [autoplayChain, findNextMediaCluster, navigate]);
+  }, [autoplayChain, findNextMediaCluster, fetchCluster, feedId, categoryId]);
   const hasProcessedContent = !!contents && contents.length > 0;
   const allArticlesAreTyped = articles.reduce(
     (allTyped, art) => !!(allTyped && articleTypes.includes(art["article_type"])), true);
@@ -167,5 +188,6 @@ Articles.propTypes = {
   currentClusterId: PropTypes.number,
   icons: PropTypes.object,
   filter: PropTypes.string,
+  fetchCluster: PropTypes.func.isRequired,
 };
-export default connect(mapStateToProps)(Articles);
+export default connect(mapStateToProps, mapDispatchToProps)(Articles);
