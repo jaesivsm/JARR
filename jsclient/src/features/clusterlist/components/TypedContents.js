@@ -10,6 +10,10 @@ import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import PauseIcon from "@mui/icons-material/Pause";
 import VolumeUpIcon from "@mui/icons-material/VolumeUp";
 import VolumeOffIcon from "@mui/icons-material/VolumeOff";
+import Forward10OutlinedIcon from "@mui/icons-material/Forward10Outlined";
+import Replay10OutlinedIcon from "@mui/icons-material/Replay10Outlined";
+import Forward5OutlinedIcon from "@mui/icons-material/Forward5Outlined";
+import Replay5OutlinedIcon from "@mui/icons-material/Replay5Outlined";
 
 import useStyles from "./style";
 
@@ -306,52 +310,44 @@ function MediaPlayer({ type, article, feedTitle, feedIconUrl, onEnded, autoplay 
           width: "100%"
         }}>
           <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-            <Button
-              variant="outlined"
-              size="small"
-              onClick={() => skipTime(-15)}
-              sx={{ textTransform: "none", minWidth: "45px", padding: "4px 8px", fontSize: "0.75rem" }}
+            <IconButton
+              size="medium"
+              onClick={() => skipTime(-10)}
             >
-              -15s
-            </Button>
-            <Button
-              variant="outlined"
-              size="small"
+              <Replay10OutlinedIcon />
+            </IconButton>
+            <IconButton
+              size="medium"
               onClick={() => skipTime(-5)}
-              sx={{ textTransform: "none", minWidth: "40px", padding: "4px 8px", fontSize: "0.75rem" }}
             >
-              -5s
-            </Button>
+              <Replay5OutlinedIcon />
+            </IconButton>
             <IconButton
               onClick={togglePlayPause}
               color="primary"
-              size="small"
+              size="medium"
             >
-              {isPlaying ? <PauseIcon fontSize="small" /> : <PlayArrowIcon fontSize="small" />}
+              {isPlaying ? <PauseIcon /> : <PlayArrowIcon />}
             </IconButton>
-            <Button
-              variant="outlined"
-              size="small"
+            <IconButton
+              size="medium"
               onClick={() => skipTime(5)}
-              sx={{ textTransform: "none", minWidth: "40px", padding: "4px 8px", fontSize: "0.75rem" }}
             >
-              +5s
-            </Button>
-            <Button
-              variant="outlined"
-              size="small"
-              onClick={() => skipTime(15)}
-              sx={{ textTransform: "none", minWidth: "45px", padding: "4px 8px", fontSize: "0.75rem" }}
+              <Forward5OutlinedIcon />
+            </IconButton>
+            <IconButton
+              size="medium"
+              onClick={() => skipTime(10)}
             >
-              +15s
-            </Button>
+              <Forward10OutlinedIcon />
+            </IconButton>
           </Box>
           <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
             <IconButton
               onClick={toggleMute}
-              size="small"
+              size="medium"
             >
-              {isMuted ? <VolumeOffIcon fontSize="small" /> : <VolumeUpIcon fontSize="small" />}
+              {isMuted ? <VolumeOffIcon /> : <VolumeUpIcon />}
             </IconButton>
             <Slider
               size="small"

@@ -12,7 +12,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import Switch from "@mui/material/Switch";
 import Box from "@mui/material/Box";
 import Tooltip from "@mui/material/Tooltip";
-import PlaylistPlayIcon from "@mui/icons-material/PlaylistPlay";
+import PlaylistPlayOutlinedIcon from "@mui/icons-material/PlaylistPlayOutlined";
 // jarr
 import doFetchObjForEdit from "../../../hooks/doFetchObjForEdit";
 import doDeleteObj from "../../../hooks/doDeleteObj";
@@ -51,8 +51,13 @@ function SelectedObjCard({ id, str, type, iconUrl, errorCount, lastRetrieved,
       </CardContent>
       <CardActions className={classes.clusterListCardActions}>
         <Tooltip title={autoplayChain ? "Disable media autoplay chain" : "Enable media autoplay chain"}>
-          <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, cursor: "pointer" }} onClick={toggleAutoplay}>
-            <PlaylistPlayIcon fontSize="small" color={autoplayChain ? "primary" : "disabled"} />
+          <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+            <PlaylistPlayOutlinedIcon
+              fontSize="small"
+              color={autoplayChain ? "primary" : "disabled"}
+              sx={{ cursor: "pointer" }}
+              onClick={toggleAutoplay}
+            />
             <Switch
               checked={autoplayChain}
               onChange={toggleAutoplay}
