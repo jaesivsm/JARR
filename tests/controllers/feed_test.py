@@ -1,9 +1,8 @@
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta, timezone, UTC
 
 from jarr.bootstrap import conf, session
 from jarr.controllers import (ArticleController, ClusterController,
                               FeedController, UserController)
-from jarr.lib.utils import utc_now
 from tests.base import BaseJarrTest
 from tests.utils import update_on_all_objs
 
@@ -123,7 +122,7 @@ class FeedControllerTest(BaseJarrTest):
         self.assertEqual(total, count)
 
         fetchables = fctrl.list_fetchable()
-        now = utc_now()
+        now = datetime.now(UTC)
         for fd in fetchables:
             self.assert_in_range(now - timedelta(seconds=1),
                                  fd.last_retrieved, now)
@@ -131,7 +130,7 @@ class FeedControllerTest(BaseJarrTest):
         self.assert_late_count(0,
                 "no late feed to report because all just fetched")
         fctrl.update({}, {'expires': unix})
-        now = utc_now()
+        now = datetime.now(UTC)
         for fd in fctrl.read():  # expires should be corrected
             self.assert_in_range(
                     now + timedelta(seconds=conf.feed.min_expires - 1),
@@ -139,10 +138,10 @@ class FeedControllerTest(BaseJarrTest):
                     now + timedelta(seconds=conf.feed.min_expires + 1))
 
         lr_not_matter = timedelta(seconds=conf.feed.min_expires + 10)
-        self.update_all_no_ctrl(expires=utc_now() - timedelta(seconds=1),
-                                last_retrieved=utc_now() - lr_not_matter)
+        self.update_all_no_ctrl(expires=datetime.now(UTC) - timedelta(seconds=1),
+                                last_retrieved=datetime.now(UTC) - lr_not_matter)
         self.assert_late_count(total, "all feed just expired")
-        self.update_all_no_ctrl(expires=utc_now() + timedelta(seconds=1))
+        self.update_all_no_ctrl(expires=datetime.now(UTC) + timedelta(seconds=1))
         self.assert_late_count(0,
                 "all feed will expire in a second, none are expired")
 
@@ -166,8 +165,8 @@ class FeedControllerTest(BaseJarrTest):
                                "all retrieved some time ago, not expired")
 
     def test_fetching_anti_herding_mech_utctimezone(self):
-        self._test_fetching_anti_herding_mech(utc_now())
+        self._test_fetching_anti_herding_mech(datetime.now(UTC))
 
     def test_fetching_anti_herding_mech_utcplustwelve(self):
         self._test_fetching_anti_herding_mech(
-                utc_now().astimezone(timezone(timedelta(hours=12))))
+                datetime.now(UTC).astimezone(timezone(timedelta(hours=12))))

@@ -1,4 +1,5 @@
 import json
+from datetime import datetime, UTC
 
 from flask import session
 from flask_jwt_extended import create_access_token, create_refresh_token
@@ -7,7 +8,7 @@ from jarr.api.auth import model
 from jarr.api.common import get_ui_url
 from jarr.bootstrap import conf
 from jarr.controllers import UserController
-from jarr.lib.utils import get_auth_expiration_delay, utc_now
+from jarr.lib.utils import get_auth_expiration_delay
 from jarr.metrics import SERVER
 from rauth import OAuth1Service, OAuth2Service
 from werkzeug.exceptions import BadRequest, NotFound, UnprocessableEntity
@@ -76,7 +77,7 @@ class OAuthSignInMixin(Resource):  # pragma: no cover
         refresh_token = create_refresh_token(identity=user)
         ucontr.update(
             {"id": user.id},
-            {"last_connection": utc_now(), "renew_password_token": ""},
+            {"last_connection": datetime.now(UTC), "renew_password_token": ""},
         )
         SERVER.labels(result="2XX", **labels).inc()
         return {

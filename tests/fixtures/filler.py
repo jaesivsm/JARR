@@ -1,6 +1,5 @@
-from datetime import timedelta
+from datetime import datetime, timedelta, UTC
 
-from jarr.lib.utils import utc_now
 from jarr.bootstrap import session
 from jarr.controllers import (ArticleController, CategoryController,
                               ClusterController,
@@ -55,7 +54,7 @@ def populate_db():
                         entry_id=entry, feed_id=feed_id, user_id=user.id,
                         tags=tags, category_id=cat_id, title=entry,
                         link=f"http://test.te/{article_total}",
-                        date=utc_now() + timedelta(seconds=iteration),
+                        date=datetime.now(UTC) + timedelta(seconds=iteration),
                         content=f"content {article_total}")
 
     session.commit()
