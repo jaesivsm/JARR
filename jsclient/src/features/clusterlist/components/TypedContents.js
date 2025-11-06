@@ -46,7 +46,7 @@ function MediaPlayer({ type, article, feedTitle, feedIconUrl, onEnded, autoplay 
 
   useEffect(() => {
     const media = mediaRef.current;
-    if (!media) return;
+    if (!media) return undefined;
 
     // Create unique key for this media item
     const mediaKey = `jarr_media_progress_${article.id}_${article.link}`;
@@ -297,7 +297,6 @@ function MediaPlayer({ type, article, feedTitle, feedIconUrl, onEnded, autoplay 
           </Typography>
         </Box>
 
-        {/* All controls in one responsive line */}
         <Box sx={{
           display: "flex",
           gap: 0.5,

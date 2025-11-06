@@ -97,7 +97,7 @@ function ProcessedContent({ content, hidden, onMediaEnded, autoplay }) {
 
   // YouTube IFrame API integration for progression tracking
   useEffect(() => {
-    if (content.type !== "youtube" || hidden) return;
+    if (content.type !== "youtube" || hidden) return undefined;
 
     // Load YouTube IFrame API
     if (!window.YT) {
