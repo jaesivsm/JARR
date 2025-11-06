@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import PropTypes from "prop-types";
 import { connect } from "react-redux";
 import { useParams } from "react-router-dom";
@@ -16,7 +16,7 @@ import ProcessedContent from "./ProcessedContent";
 import useStyles from "./style";
 import ClusterIcon from "../../../components/ClusterIcon";
 import jarrIcon from "../../../components/JarrIcon.gif";
-import { showCluster } from "../slice";
+import { showCluster, clearSkipToNextMedia } from "../slice";
 import doFetchCluster from "../../../hooks/doFetchCluster";
 
 function mapStateToProps(state) {
@@ -28,6 +28,7 @@ function mapStateToProps(state) {
            clusters: state.clusters.clusters,
            currentClusterId: state.clusters.requestedClusterId,
            filter: state.clusters.filters.filter,
+           skipToNextMediaRequested: state.clusters.skipToNextMediaRequested,
   };
 }
 
@@ -35,11 +36,14 @@ const mapDispatchToProps = (dispatch) => ({
   fetchCluster(clusterId) {
     dispatch(doFetchCluster(clusterId));
   },
+  clearSkipRequest() {
+    dispatch(clearSkipToNextMedia());
+  },
 });
 
 const proccessedContentTitle = "proccessed content";
 
-function Articles({ articles, icons, contents, feedTitle, autoplayChain, clusters, currentClusterId, filter, fetchCluster }) {
+function Articles({ articles, icons, contents, feedTitle, autoplayChain, clusters, currentClusterId, filter, fetchCluster, skipToNextMediaRequested, clearSkipRequest }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const classes = useStyles();
   const { feedId, categoryId } = useParams();
@@ -64,9 +68,7 @@ function Articles({ articles, icons, contents, feedTitle, autoplayChain, cluster
     return null;
   }, [clusters, currentClusterId, filter]);
 
-  const handleMediaEnded = useCallback(() => {
-    if (!autoplayChain) return;
-
+  const skipToNext = useCallback(() => {
     const nextClusterId = findNextMediaCluster();
     if (nextClusterId) {
       // Fetch the cluster data directly first
@@ -84,7 +86,20 @@ function Articles({ articles, icons, contents, feedTitle, autoplayChain, cluster
       }
       window.history.replaceState(null, '', newUrl);
     }
-  }, [autoplayChain, findNextMediaCluster, fetchCluster, feedId, categoryId]);
+  }, [findNextMediaCluster, fetchCluster, feedId, categoryId]);
+
+  const handleMediaEnded = useCallback(() => {
+    if (!autoplayChain) return;
+    skipToNext();
+  }, [autoplayChain, skipToNext]);
+
+  // Watch for manual skip requests from the UI
+  useEffect(() => {
+    if (skipToNextMediaRequested) {
+      skipToNext();
+      clearSkipRequest();
+    }
+  }, [skipToNextMediaRequested, skipToNext, clearSkipRequest]);
   const hasProcessedContent = !!contents && contents.length > 0;
   const allArticlesAreTyped = articles.reduce(
     (allTyped, art) => !!(allTyped && articleTypes.includes(art["article_type"])), true);
@@ -189,5 +204,7 @@ Articles.propTypes = {
   icons: PropTypes.object,
   filter: PropTypes.string,
   fetchCluster: PropTypes.func.isRequired,
+  skipToNextMediaRequested: PropTypes.bool.isRequired,
+  clearSkipRequest: PropTypes.func.isRequired,
 };
 export default connect(mapStateToProps, mapDispatchToProps)(Articles);

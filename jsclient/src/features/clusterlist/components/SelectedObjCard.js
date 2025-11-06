@@ -13,12 +13,13 @@ import Switch from "@mui/material/Switch";
 import Box from "@mui/material/Box";
 import Tooltip from "@mui/material/Tooltip";
 import PlaylistPlayOutlinedIcon from "@mui/icons-material/PlaylistPlayOutlined";
+import SkipNextIcon from "@mui/icons-material/SkipNext";
 // jarr
 import doFetchObjForEdit from "../../../hooks/doFetchObjForEdit";
 import doDeleteObj from "../../../hooks/doDeleteObj";
 import doListClusters from "../../../hooks/doListClusters";
 import ClusterIcon from "../../../components/ClusterIcon";
-import { toggleAutoplayChain } from "../slice";
+import { toggleAutoplayChain, skipToNextMedia } from "../slice";
 import useStyles from "./style";
 
 const mapStateToProps = (state) => ({
@@ -36,10 +37,13 @@ const mapDispatchToProps = (dispatch) => ({
   toggleAutoplay() {
     dispatch(toggleAutoplayChain());
   },
+  skipToNext() {
+    dispatch(skipToNextMedia());
+  },
 });
 
 function SelectedObjCard({ id, str, type, iconUrl, errorCount, lastRetrieved,
-                           openEditPanel, deleteObj, autoplayChain, toggleAutoplay }) {
+                           openEditPanel, deleteObj, autoplayChain, toggleAutoplay, skipToNext }) {
   const objType = type === "feed" ? "feed" : "category";
   const classes = useStyles();
 
@@ -65,6 +69,16 @@ function SelectedObjCard({ id, str, type, iconUrl, errorCount, lastRetrieved,
               color="primary"
             />
           </Box>
+        </Tooltip>
+        <Tooltip title="Skip to next media">
+          <IconButton
+            size="small"
+            onClick={skipToNext}
+            color="primary"
+            className={classes.clusterListCardActionBtn}
+          >
+            <SkipNextIcon fontSize="small" />
+          </IconButton>
         </Tooltip>
         <IconButton size="small"
           onClick={() => openEditPanel(id, objType)}
@@ -94,6 +108,7 @@ SelectedObjCard.propTypes = {
   deleteObj: PropTypes.func.isRequired,
   autoplayChain: PropTypes.bool.isRequired,
   toggleAutoplay: PropTypes.func.isRequired,
+  skipToNext: PropTypes.func.isRequired,
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(SelectedObjCard);

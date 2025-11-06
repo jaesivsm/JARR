@@ -27,6 +27,7 @@ const clusterSlice = createSlice({
                   requestedClusterId: null,
                   loadedCluster: {},
                   autoplayChain: false,
+                  skipToNextMediaRequested: false,
   },
   reducers: {
     requestedClustersList: (state, action) => {
@@ -134,6 +135,14 @@ const clusterSlice = createSlice({
       ...state,
       autoplayChain: !state.autoplayChain,
     }),
+    skipToNextMedia: (state) => ({
+      ...state,
+      skipToNextMediaRequested: true,
+    }),
+    clearSkipToNextMedia: (state) => ({
+      ...state,
+      skipToNextMediaRequested: false,
+    }),
   },
 });
 
@@ -144,5 +153,7 @@ export const { requestedClustersList, retrievedClustersList,
                removeClusterSelection,
                markedAllAsRead,
                toggleAutoplayChain,
+               skipToNextMedia,
+               clearSkipToNextMedia,
 } = clusterSlice.actions;
 export default clusterSlice.reducer;
