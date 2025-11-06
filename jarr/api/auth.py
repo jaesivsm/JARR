@@ -1,5 +1,5 @@
 import random
-from datetime import datetime, timezone
+from datetime import datetime, timezone, UTC
 
 from flask import render_template
 from flask_jwt_extended import (create_access_token, create_refresh_token,
@@ -9,7 +9,7 @@ from jarr.api.common import get_ui_url
 from jarr.bootstrap import conf
 from jarr.controllers import UserController
 from jarr.lib import emails
-from jarr.lib.utils import get_auth_expiration_delay, utc_now
+from jarr.lib.utils import get_auth_expiration_delay
 from jarr.metrics import SERVER
 from werkzeug.exceptions import BadRequest, Forbidden
 
@@ -65,7 +65,7 @@ class LoginResource(Resource):
         refresh_token = create_refresh_token(identity=user)
         UserController(user.id).update(
             {"id": user.id},
-            {"last_connection": utc_now(), "renew_password_token": ""},
+            {"last_connection": datetime.now(UTC), "renew_password_token": ""},
         )
         SERVER.labels(method="post", uri="/auth", result="2XX").inc()
         return {
@@ -87,7 +87,7 @@ class Refresh(Resource):
         access_token = create_access_token(identity=user)
         UserController(user.id).update(
             {"id": user.id},
-            {"last_connection": utc_now(), "renew_password_token": ""},
+            {"last_connection": datetime.now(UTC), "renew_password_token": ""},
         )
         SERVER.labels(method="get", uri="/auth/refresh", result="2XX").inc()
         return {

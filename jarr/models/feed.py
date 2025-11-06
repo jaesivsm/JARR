@@ -1,8 +1,9 @@
+from datetime import datetime, UTC
+
 from flask import url_for
 from jarr.bootstrap import Base
 from jarr.lib.const import UNIX_START
 from jarr.lib.enums import FeedStatus, FeedType
-from jarr.lib.utils import utc_now
 from jarr.models.utc_datetime_type import UTCDateTime
 from sqlalchemy import (Boolean, Column, Enum, ForeignKeyConstraint, Index,
                         Integer, PickleType, String)
@@ -20,7 +21,7 @@ class Feed(Base):  # type: ignore
     status = Column(
         Enum(FeedStatus), default=FeedStatus.active, nullable=False
     )  # type: ignore
-    created_date = Column(UTCDateTime, default=utc_now)
+    created_date = Column(UTCDateTime, default=lambda: datetime.now(UTC))
     filters = Column(PickleType, default=[])
     unread_count = Column(Integer, default=0)
 

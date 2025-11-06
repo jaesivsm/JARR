@@ -1,5 +1,5 @@
 import logging
-from datetime import timedelta
+from datetime import datetime, timedelta, UTC
 
 from sqlalchemy import func
 from werkzeug.exceptions import Forbidden, Unauthorized
@@ -7,7 +7,7 @@ from werkzeug.exceptions import Forbidden, Unauthorized
 from jarr.bootstrap import session, conf
 from jarr.controllers import CategoryController, FeedController
 from jarr.lib.clustering_af.postgres_casting import to_vector
-from jarr.lib.utils import digest, utc_now
+from jarr.lib.utils import digest
 from jarr.models import Article, User
 
 from .abstract import AbstractController
@@ -27,7 +27,7 @@ class ArticleController(AbstractController):
 
     @staticmethod
     def _filter_unclustered(*fields):
-        conn_max = utc_now() - timedelta(days=conf.feed.stop_fetch)
+        conn_max = datetime.now(UTC) - timedelta(days=conf.feed.stop_fetch)
         return (session.query(*fields)
                 .filter(Article.cluster_id.__eq__(None))
                 .join(User).filter(User.id == Article.user_id,
