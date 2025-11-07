@@ -28,6 +28,7 @@ function MediaPlayer({ type, article, feedTitle, feedIconUrl, onEnded, autoplay 
   const [volume, setVolume] = useState(1);
   const [isMuted, setIsMuted] = useState(false);
   const updateUrlTimerRef = useRef(null);
+  const hasLoadedProgressRef = useRef(false);
 
   // Update URL with current playback position (debounced)
   const updateUrlPosition = React.useCallback((position) => {
@@ -51,11 +52,21 @@ function MediaPlayer({ type, article, feedTitle, feedIconUrl, onEnded, autoplay 
     const media = mediaRef.current;
     if (!media) return undefined;
 
+    // Reset progress load flag for new media
+    hasLoadedProgressRef.current = false;
+
     // Create unique key for this media item
     const mediaKey = `jarr_media_progress_${article.id}_${article.link}`;
 
     // Load saved progress from URL or localStorage
+    // Only runs once when metadata first loads to avoid seeking during playback
     const loadProgress = () => {
+      // Guard: only load progress once per video to avoid seeks during playback
+      if (hasLoadedProgressRef.current) {
+        return;
+      }
+      hasLoadedProgressRef.current = true;
+
       try {
         // First check URL parameter
         const searchParams = new URLSearchParams(location.search);
@@ -211,7 +222,10 @@ function MediaPlayer({ type, article, feedTitle, feedIconUrl, onEnded, autoplay 
         navigator.mediaSession.setActionHandler("seekforward", null);
       }
     };
-  }, [article.title, feedTitle, feedIconUrl, article.id, article.link, location.pathname, location.search, navigate, updateUrlPosition, onEnded]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // Note: location.search is intentionally omitted to prevent re-seeking when URL updates with ?t= parameter
+    // The hasLoadedProgressRef guard ensures loadProgress only runs once per video
+  }, [article.title, feedTitle, feedIconUrl, article.id, article.link, location.pathname, navigate, updateUrlPosition, onEnded]);
 
   const togglePlayPause = () => {
     if (mediaRef.current) {

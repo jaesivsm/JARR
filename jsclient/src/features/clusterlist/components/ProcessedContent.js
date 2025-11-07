@@ -15,9 +15,11 @@ function ProcessedContent({ content, hidden, onMediaEnded, autoplay }) {
   const updateUrlTimerRef = useRef(null);
   const intervalRef = useRef(null);
   const initialStartTimeRef = useRef(null);
+  const lastContentLinkRef = useRef(null);
 
-  // Capture initial start time only once
-  if (initialStartTimeRef.current === null && content.type === "youtube") {
+  // Capture initial start time for each new video
+  if (content.type === "youtube" && content.link !== lastContentLinkRef.current) {
+    lastContentLinkRef.current = content.link;
     const searchParams = new URLSearchParams(location.search);
     const startTime = searchParams.get('t');
     if (startTime && !isNaN(startTime)) {

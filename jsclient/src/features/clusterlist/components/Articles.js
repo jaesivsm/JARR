@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useEffect } from "react";
 import PropTypes from "prop-types";
 import { connect } from "react-redux";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 
 import Tab from "@mui/material/Tab";
 import Tabs from "@mui/material/Tabs";
@@ -47,6 +47,7 @@ function Articles({ articles, icons, contents, feedTitle, autoplayChain, cluster
   const [currentIndex, setCurrentIndex] = useState(0);
   const classes = useStyles();
   const { feedId, categoryId } = useParams();
+  const navigate = useNavigate();
 
   // Function to find next cluster with media content (going up, to more recent)
   // Respects current filter: "all" shows all, undefined/empty shows unread only, "liked" shows liked only
@@ -74,8 +75,8 @@ function Articles({ articles, icons, contents, feedTitle, autoplayChain, cluster
       // Fetch the cluster data directly first
       fetchCluster(nextClusterId);
 
-      // Update the URL without triggering a navigation/re-render
-      // This keeps the URL in sync without causing the cluster list to refresh
+      // Update the URL using React Router's navigate
+      // This ensures consistency with media player URL updates
       let newUrl;
       if (feedId) {
         newUrl = `/feed/${feedId}/cluster/${nextClusterId}`;
@@ -84,9 +85,9 @@ function Articles({ articles, icons, contents, feedTitle, autoplayChain, cluster
       } else {
         newUrl = `/cluster/${nextClusterId}`;
       }
-      window.history.replaceState(null, '', newUrl);
+      navigate(newUrl, { replace: true });
     }
-  }, [findNextMediaCluster, fetchCluster, feedId, categoryId]);
+  }, [findNextMediaCluster, fetchCluster, feedId, categoryId, navigate]);
 
   const handleMediaEnded = useCallback(() => {
     if (!autoplayChain) return;
