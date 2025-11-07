@@ -5,6 +5,10 @@ import ClusterList from "./features/clusterlist/ClusterList";
 import doListClusters from "./hooks/doListClusters";
 import doFetchCluster from "./hooks/doFetchCluster";
 
+const mapStateToProps = (state) => ({
+  loading: state.clusters.loading,
+});
+
 const mapDispatchToProps = (dispatch) => ({
   listClusters(filters) {
     dispatch(doListClusters(filters));
@@ -14,7 +18,7 @@ const mapDispatchToProps = (dispatch) => ({
   },
 });
 
-function MainView({ listClusters, fetchCluster }) {
+function MainView({ listClusters, fetchCluster, loading }) {
   const { feedId, categoryId, clusterId } = useParams();
   const clusterIdRef = useRef(clusterId);
 
@@ -24,6 +28,11 @@ function MainView({ listClusters, fetchCluster }) {
   }, [clusterId]);
 
   useEffect(() => {
+    // Guard: Don't fetch if already loading to prevent duplicate API calls
+    if (loading) {
+      return;
+    }
+
     if (feedId) {
       listClusters({ feedId: parseInt(feedId, 10), clusterId: clusterIdRef.current ? parseInt(clusterIdRef.current, 10) : undefined });
     } else if (categoryId) {
@@ -31,6 +40,8 @@ function MainView({ listClusters, fetchCluster }) {
     } else {
       listClusters({ clusterId: clusterIdRef.current ? parseInt(clusterIdRef.current, 10) : undefined });
     }
+    // Note: 'loading' is intentionally NOT in dependencies to avoid infinite loops
+    // The guard above is sufficient to prevent duplicate calls
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [feedId, categoryId]);
 
@@ -44,4 +55,4 @@ function MainView({ listClusters, fetchCluster }) {
   return <ClusterList />;
 }
 
-export default connect(null, mapDispatchToProps)(MainView);
+export default connect(mapStateToProps, mapDispatchToProps)(MainView);

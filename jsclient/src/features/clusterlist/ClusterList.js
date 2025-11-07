@@ -31,7 +31,9 @@ const mapStateToProps = (state) => {
 
   let clusters = [];
   if (!state.clusters.loading) {
-    clusters = state.clusters.clusters.map((cluster) => `c-${cluster.id}`);
+    clusters = state.clusters.clusters
+      .filter((cluster) => cluster && cluster.id) // Filter out undefined/invalid clusters
+      .map((cluster) => `c-${cluster.id}`);
   }
   return { clusters,
            loadedCluster: state.clusters.loadedCluster,

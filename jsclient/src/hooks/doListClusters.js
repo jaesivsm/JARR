@@ -28,6 +28,10 @@ const doListClusters = (filters): AppThunk => async (dispatch, getState) => {
   }, dispatch, getState);
   dispatch(retrievedClustersList({ requestedFilter, clusters: result.data,
                                    strat: "replace" }));
+
+  // Get fresh state after the async operation
+  const updatedState = getState();
+
   if( // if filter allows us to compare
       // (filtering on read or liked would not work)
       expectedCount !== null
@@ -35,6 +39,8 @@ const doListClusters = (filters): AppThunk => async (dispatch, getState) => {
       && expectedCount !== result.data.length
       // and that length isn't the max length possible for a page
       && result.data.length !== pageLength
+      // and not already loading unreads (prevent duplicate calls)
+      && !updatedState.feeds.loadingUnreadCounts
   ) {
     dispatch(doFetchUnreadCount());
   }
