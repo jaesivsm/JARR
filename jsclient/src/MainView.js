@@ -25,7 +25,7 @@ function MainView({ listClusters, fetchCluster, loading, requestedClusterId, loa
   const clusterIdRef = useRef(clusterId);
   const lastRequestRef = useRef(null);
   const isRequestInFlightRef = useRef(false);
-  const lastClusterIdRef = useRef(clusterId);
+  const lastClusterIdRef = useRef(null); // Start as null to allow initial fetch
 
   // Keep ref updated
   useEffect(() => {
