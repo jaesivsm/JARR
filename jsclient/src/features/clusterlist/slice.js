@@ -59,7 +59,8 @@ const clusterSlice = createSlice({
       } else if (filters["cluster_id"]) {
         delete filters["cluster_id"];
       }
-      return { ...state, filters, loading: true, clusters: [],
+      // Keep existing clusters while loading to prevent blink
+      return { ...state, filters, loading: true,
                requestedFilter: qs.stringify(filters),
       };
     },
