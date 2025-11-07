@@ -12,7 +12,6 @@ import ListItemText from "@mui/material/ListItemText";
 import ExpandLess from "@mui/icons-material/ExpandLess";
 import ExpandMore from "@mui/icons-material/ExpandMore";
 // jarr
-import doListClusters from "../../hooks/doListClusters";
 import { toggleMenu, toggleFolding, createFeedListFilter } from "./slice";
 import useStyles from "./feedListStyle";
 import FeedIcon from "../../components/FeedIcon";
@@ -32,23 +31,14 @@ const mapDispatchToProps = (dispatch) => ({
     e.stopPropagation();
     dispatch(toggleFolding(catId));
   },
-  listClusters(e, filters, isDesktop, isFolded, selectedCategoryId) {
-    e.stopPropagation();
-    if(!isDesktop && (filters.feedId || (filters.categoryId && isFolded))) {
-      dispatch(toggleMenu(false));
-    }
-    if(isFolded && filters.categoryId){
-      dispatch(toggleFolding(filters.categoryId));
-    } else if (!isFolded && filters.categoryId && filters.categoryId === selectedCategoryId) {
-      dispatch(toggleFolding(filters.categoryId));
-    }
-    dispatch(doListClusters(filters));
+  toggleMenuFunc() {
+    dispatch(toggleMenu(false));
   },
 });
 
 function FeedRow({ index, style, feedListRows,
                    isFoldedFromParent, selectedCategoryId, selectedFeedId,
-                   listClusters, toggleCatFolding }) {
+                   toggleCatFolding, toggleMenuFunc }) {
   const theme = useTheme();
   const classes = useStyles();
   const navigate = useNavigate();
@@ -68,7 +58,10 @@ function FeedRow({ index, style, feedListRows,
           className={classes.feedItem}
           selected={isSelected}
           onClick={(e) => {
-            listClusters(e, { feedId: obj.id }, isDesktop);
+            e.stopPropagation();
+            if(!isDesktop) {
+              toggleMenuFunc();
+            }
             navigate(`/feed/${obj.id}`);
           }}
         >
@@ -94,13 +87,15 @@ function FeedRow({ index, style, feedListRows,
       <ListItemButton
         selected={isSelected}
         onClick={(ev) => {
-          listClusters(
-            ev,
-            {categoryId: isAllCateg ? "all" : obj.id},
-            isDesktop,
-            obj.folded,
-            selectedCategoryId
-          );
+          ev.stopPropagation();
+          if(!isDesktop && obj.folded) {
+            toggleMenuFunc();
+          }
+          if(obj.folded && !isAllCateg){
+            toggleCatFolding(ev, obj.id);
+          } else if (!obj.folded && !isAllCateg && obj.id === selectedCategoryId) {
+            toggleCatFolding(ev, obj.id);
+          }
           navigate(`/category/${isAllCateg ? "all" : obj.id}`);
         }}
         className={isAllCateg ? classes.catItemAll : classes.catItem}
@@ -121,7 +116,8 @@ FeedRow.propTypes = {
   feedListRows: PropTypes.array.isRequired,
   selectedCategoryId: PropTypes.number,
   selectedFeedId: PropTypes.number,
-  listClusters: PropTypes.func.isRequired,
+  toggleCatFolding: PropTypes.func.isRequired,
+  toggleMenuFunc: PropTypes.func.isRequired,
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(FeedRow);
