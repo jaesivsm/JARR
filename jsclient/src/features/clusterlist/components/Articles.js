@@ -100,6 +100,12 @@ function Articles({ articles, icons, contents, feedTitle, autoplayChain, cluster
       clearSkipRequest();
     }
   }, [skipToNextMediaRequested, skipToNext, clearSkipRequest]);
+
+  // Guard against undefined articles
+  if (!articles || articles.length === 0) {
+    return null;
+  }
+
   const hasProcessedContent = !!contents && contents.length > 0;
   const allArticlesAreTyped = articles.reduce(
     (allTyped, art) => !!(allTyped && articleTypes.includes(art["article_type"])), true);
