@@ -86,11 +86,15 @@ const clusterSlice = createSlice({
                moreToFetch: action.payload.clusters.length >= pageLength,
                clusters: action.payload.clusters };
     },
-    requestedCluster: (state, action) => ({
-      ...state,
-      requestedClusterId: action.payload.clusterId,
-      loadedCluster: {},
-    }),
+    requestedCluster: (state, action) => {
+      // Only clear loadedCluster if requesting a different cluster (prevents blink)
+      const shouldClearCluster = state.loadedCluster.id && state.loadedCluster.id !== action.payload.clusterId;
+      return {
+        ...state,
+        requestedClusterId: action.payload.clusterId,
+        loadedCluster: shouldClearCluster ? {} : state.loadedCluster,
+      };
+    },
     retrievedCluster: (state, action) => {
       if (state.requestedClusterId !== action.payload.cluster.id) {
         return state; // not the object that was asked for last, ignoring

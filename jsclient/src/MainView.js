@@ -7,6 +7,8 @@ import doFetchCluster from "./hooks/doFetchCluster";
 
 const mapStateToProps = (state) => ({
   loading: state.clusters.loading,
+  requestedClusterId: state.clusters.requestedClusterId,
+  loadedClusterId: state.clusters.loadedCluster.id,
 });
 
 const mapDispatchToProps = (dispatch) => ({
@@ -18,11 +20,12 @@ const mapDispatchToProps = (dispatch) => ({
   },
 });
 
-function MainView({ listClusters, fetchCluster, loading }) {
+function MainView({ listClusters, fetchCluster, loading, requestedClusterId, loadedClusterId }) {
   const { feedId, categoryId, clusterId } = useParams();
   const clusterIdRef = useRef(clusterId);
   const lastRequestRef = useRef(null);
   const isRequestInFlightRef = useRef(false);
+  const lastClusterIdRef = useRef(clusterId);
 
   // Keep ref updated
   useEffect(() => {
@@ -71,9 +74,31 @@ function MainView({ listClusters, fetchCluster, loading }) {
   }, [feedId, categoryId]);
 
   useEffect(() => {
-    if (clusterId) {
-      fetchCluster(parseInt(clusterId, 10));
+    // Only fetch if clusterId actually changed (not just requestedClusterId/loadedClusterId)
+    if (lastClusterIdRef.current === clusterId) {
+      return;
     }
+
+    lastClusterIdRef.current = clusterId;
+
+    if (!clusterId) {
+      return;
+    }
+
+    const clusterIdNum = parseInt(clusterId, 10);
+
+    // Don't fetch if we're already requesting this cluster
+    if (requestedClusterId === clusterIdNum) {
+      return;
+    }
+
+    // Don't fetch if we've already loaded this cluster
+    if (loadedClusterId === clusterIdNum) {
+      return;
+    }
+
+    fetchCluster(clusterIdNum);
+    // Note: Only clusterId in dependencies - prevents re-fetch when closing cluster
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [clusterId]);
 
