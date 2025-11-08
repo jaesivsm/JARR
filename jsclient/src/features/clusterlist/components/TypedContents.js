@@ -27,26 +27,24 @@ function MediaPlayer({ type, article, feedTitle, feedIconUrl, onEnded, autoplay 
   const [duration, setDuration] = useState(0);
   const [volume, setVolume] = useState(1);
   const [isMuted, setIsMuted] = useState(false);
-  const updateUrlTimerRef = useRef(null);
   const hasLoadedProgressRef = useRef(false);
+  const urlUpdateIntervalRef = useRef(null);
 
-  // Update URL with current playback position (debounced)
-  const updateUrlPosition = React.useCallback((position) => {
-    if (updateUrlTimerRef.current) {
-      clearTimeout(updateUrlTimerRef.current);
-    }
-    updateUrlTimerRef.current = setTimeout(() => {
-      const searchParams = new URLSearchParams(location.search);
-      if (position > 5) {
-        searchParams.set('t', Math.floor(position));
-      } else {
-        searchParams.delete('t');
-      }
+  // Update URL with current playback position
+  const updateUrlPosition = (position) => {
+    const searchParams = new URLSearchParams(window.location.search);
+    if (position > 5) {
+      searchParams.set('t', Math.floor(position));
       const newSearch = searchParams.toString();
-      const newUrl = `${location.pathname}${newSearch ? '?' + newSearch : ''}`;
+      const newUrl = `${window.location.pathname}?${newSearch}`;
       navigate(newUrl, { replace: true });
-    }, 2000); // Update URL 2 seconds after seeking/playing stops
-  }, [location.pathname, location.search, navigate]);
+    } else {
+      searchParams.delete('t');
+      const newSearch = searchParams.toString();
+      const newUrl = `${window.location.pathname}${newSearch ? '?' + newSearch : ''}`;
+      navigate(newUrl, { replace: true });
+    }
+  };
 
   useEffect(() => {
     const media = mediaRef.current;
@@ -55,10 +53,7 @@ function MediaPlayer({ type, article, feedTitle, feedIconUrl, onEnded, autoplay 
     // Reset progress load flag for new media
     hasLoadedProgressRef.current = false;
 
-    // Create unique key for this media item
-    const mediaKey = `jarr_media_progress_${article.id}_${article.link}`;
-
-    // Load saved progress from URL or localStorage
+    // Load start position from URL parameter only
     // Only runs once when metadata first loads to avoid seeking during playback
     const loadProgress = () => {
       // Guard: only load progress once per video to avoid seeks during playback
@@ -68,43 +63,18 @@ function MediaPlayer({ type, article, feedTitle, feedIconUrl, onEnded, autoplay 
       hasLoadedProgressRef.current = true;
 
       try {
-        // First check URL parameter
+        // Check URL parameter for start time
         const searchParams = new URLSearchParams(location.search);
         const urlTime = searchParams.get('t');
         if (urlTime && !isNaN(urlTime)) {
           const position = parseInt(urlTime, 10);
           if (position > 0) {
             media.currentTime = position;
-            return;
           }
         }
-
-        // Fallback to localStorage
-        const savedProgress = localStorage.getItem(mediaKey);
-        if (savedProgress) {
-          const data = JSON.parse(savedProgress);
-          // Only restore if saved in last 30 days and not at the very beginning
-          const age = Date.now() - data.timestamp;
-          if (age < 30 * 24 * 60 * 60 * 1000 && data.position > 5) {
-            media.currentTime = data.position;
-          }
-        }
+        // Otherwise start from beginning (default behavior)
       } catch (e) {
-        console.error("Failed to load media progress:", e);
-      }
-    };
-
-    // Save progress periodically
-    const saveProgress = () => {
-      try {
-        const data = {
-          position: media.currentTime,
-          duration: media.duration,
-          timestamp: Date.now(),
-        };
-        localStorage.setItem(mediaKey, JSON.stringify(data));
-      } catch (e) {
-        console.error("Failed to save media progress:", e);
+        console.error("Failed to load media start position:", e);
       }
     };
 
@@ -150,11 +120,6 @@ function MediaPlayer({ type, article, feedTitle, feedIconUrl, onEnded, autoplay 
 
     const handleTimeUpdate = () => {
       setCurrentTime(media.currentTime);
-      // Save progress and update URL every 10 seconds
-      if (Math.floor(media.currentTime) % 10 === 0) {
-        saveProgress();
-        updateUrlPosition(media.currentTime);
-      }
     };
     const handleDurationChange = () => setDuration(media.duration);
     const handleLoadedMetadata = () => {
@@ -163,25 +128,52 @@ function MediaPlayer({ type, article, feedTitle, feedIconUrl, onEnded, autoplay 
     const handlePlay = () => {
       setIsPlaying(true);
       updateMediaSession();
+
+      // Clear any existing interval
+      if (urlUpdateIntervalRef.current) {
+        clearInterval(urlUpdateIntervalRef.current);
+      }
+
+      // Update URL immediately
+      updateUrlPosition(media.currentTime);
+
+      // Set up interval to update URL every 10 seconds
+      urlUpdateIntervalRef.current = setInterval(() => {
+        if (media && !media.paused && !media.ended) {
+          updateUrlPosition(media.currentTime);
+        }
+      }, 10000);
     };
     const handlePause = () => {
       setIsPlaying(false);
-      saveProgress();
+
+      // Clear interval
+      if (urlUpdateIntervalRef.current) {
+        clearInterval(urlUpdateIntervalRef.current);
+        urlUpdateIntervalRef.current = null;
+      }
+
+      // Update URL with final position
       updateUrlPosition(media.currentTime);
     };
     const handleEnded = () => {
       setIsPlaying(false);
-      // Clear progress when media ends
+
+      // Clear interval
+      if (urlUpdateIntervalRef.current) {
+        clearInterval(urlUpdateIntervalRef.current);
+        urlUpdateIntervalRef.current = null;
+      }
+
+      // Clear URL parameter when media ends
       try {
-        localStorage.removeItem(mediaKey);
-        // Clear URL parameter
         const searchParams = new URLSearchParams(location.search);
         searchParams.delete('t');
         const newSearch = searchParams.toString();
         const newUrl = `${location.pathname}${newSearch ? '?' + newSearch : ''}`;
         navigate(newUrl, { replace: true });
       } catch (e) {
-        console.error("Failed to clear media progress:", e);
+        console.error("Failed to clear URL parameter:", e);
       }
 
       // Call the onEnded callback if provided (for autoplay chain)
@@ -205,13 +197,11 @@ function MediaPlayer({ type, article, feedTitle, feedIconUrl, onEnded, autoplay 
       media.removeEventListener("pause", handlePause);
       media.removeEventListener("ended", handleEnded);
 
-      // Clear any pending URL updates
-      if (updateUrlTimerRef.current) {
-        clearTimeout(updateUrlTimerRef.current);
+      // Clear URL update interval
+      if (urlUpdateIntervalRef.current) {
+        clearInterval(urlUpdateIntervalRef.current);
+        urlUpdateIntervalRef.current = null;
       }
-
-      // Save progress one last time before unmount
-      saveProgress();
 
       // Clear media session on unmount
       if ("mediaSession" in navigator) {
@@ -223,9 +213,10 @@ function MediaPlayer({ type, article, feedTitle, feedIconUrl, onEnded, autoplay 
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    // Note: location.search is intentionally omitted to prevent re-seeking when URL updates with ?t= parameter
+    // Note: navigate and updateUrlPosition are intentionally omitted to prevent re-initialization
+    // location.search is intentionally omitted to prevent re-seeking when URL updates with ?t= parameter
     // The hasLoadedProgressRef guard ensures loadProgress only runs once per video
-  }, [article.title, feedTitle, feedIconUrl, article.id, article.link, location.pathname, navigate, updateUrlPosition, onEnded]);
+  }, [article.title, feedTitle, feedIconUrl, article.id, article.link, onEnded]);
 
   const togglePlayPause = () => {
     if (mediaRef.current) {
@@ -243,19 +234,8 @@ function MediaPlayer({ type, article, feedTitle, feedIconUrl, onEnded, autoplay 
       const newTime = mediaRef.current.currentTime;
       setCurrentTime(newTime);
 
-      // Update URL immediately without debounce
-      if (updateUrlTimerRef.current) {
-        clearTimeout(updateUrlTimerRef.current);
-      }
-      const searchParams = new URLSearchParams(location.search);
-      if (newTime > 5) {
-        searchParams.set('t', Math.floor(newTime));
-      } else {
-        searchParams.delete('t');
-      }
-      const newSearch = searchParams.toString();
-      const newUrl = `${location.pathname}${newSearch ? '?' + newSearch : ''}`;
-      navigate(newUrl, { replace: true });
+      // Update URL immediately
+      updateUrlPosition(newTime);
     }
   };
 

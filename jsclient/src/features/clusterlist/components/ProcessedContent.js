@@ -123,14 +123,14 @@ function ProcessedContent({ content, hidden, onMediaEnded, autoplay }) {
               }
             },
             'onStateChange': (event) => {
-              // Clear any existing interval
-              if (intervalRef.current) {
-                clearInterval(intervalRef.current);
-                intervalRef.current = null;
-              }
-
               // Handle video ended
               if (event.data === window.YT.PlayerState.ENDED) {
+                // Clear interval
+                if (intervalRef.current) {
+                  clearInterval(intervalRef.current);
+                  intervalRef.current = null;
+                }
+
                 // Clear URL parameter
                 const searchParams = new URLSearchParams(window.location.search);
                 searchParams.delete('t');
@@ -143,42 +143,52 @@ function ProcessedContent({ content, hidden, onMediaEnded, autoplay }) {
                   onMediaEnded();
                 }
               }
+              // Handle video paused
+              else if (event.data === window.YT.PlayerState.PAUSED) {
+                // Clear interval when paused
+                if (intervalRef.current) {
+                  clearInterval(intervalRef.current);
+                  intervalRef.current = null;
+                }
 
+                // Update URL with final position
+                if (playerRef.current && playerRef.current.getCurrentTime) {
+                  const currentTime = Math.floor(playerRef.current.getCurrentTime());
+                  if (currentTime > 5) {
+                    const searchParams = new URLSearchParams(window.location.search);
+                    searchParams.set('t', currentTime);
+                    const newUrl = `${window.location.pathname}?${searchParams.toString()}`;
+                    navigate(newUrl, { replace: true });
+                  }
+                }
+              }
               // Update URL when video is playing
-              if (event.data === window.YT.PlayerState.PLAYING) {
+              else if (event.data === window.YT.PlayerState.PLAYING) {
+                // Clear any existing interval
+                if (intervalRef.current) {
+                  clearInterval(intervalRef.current);
+                  intervalRef.current = null;
+                }
+
+                // Function to update URL with current time
                 const updateUrl = () => {
                   if (playerRef.current && playerRef.current.getCurrentTime) {
                     const currentTime = Math.floor(playerRef.current.getCurrentTime());
                     if (currentTime > 5) {
-                      if (updateUrlTimerRef.current) {
-                        clearTimeout(updateUrlTimerRef.current);
-                      }
-                      updateUrlTimerRef.current = setTimeout(() => {
-                        const currentSearchParams = new URLSearchParams(window.location.search);
-                        currentSearchParams.set('t', currentTime);
-                        const newUrl = `${window.location.pathname}?${currentSearchParams.toString()}`;
-                        navigate(newUrl, { replace: true });
-                      }, 2000);
+                      const searchParams = new URLSearchParams(window.location.search);
+                      searchParams.set('t', currentTime);
+                      const newUrl = `${window.location.pathname}?${searchParams.toString()}`;
+                      navigate(newUrl, { replace: true });
                     }
                   }
                 };
 
-                // Update URL immediately when starting
-                updateUrl();
+                // Wait a bit for the player to seek if starting from a timestamp
+                // then update immediately, and then every 10 seconds
+                setTimeout(updateUrl, 1000);
 
                 // Update URL every 10 seconds while playing
-                intervalRef.current = setInterval(() => {
-                  if (playerRef.current && playerRef.current.getPlayerState) {
-                    if (playerRef.current.getPlayerState() === window.YT.PlayerState.PLAYING) {
-                      updateUrl();
-                    } else {
-                      if (intervalRef.current) {
-                        clearInterval(intervalRef.current);
-                        intervalRef.current = null;
-                      }
-                    }
-                  }
-                }, 10000);
+                intervalRef.current = setInterval(updateUrl, 10000);
               }
             }
           }
@@ -204,7 +214,7 @@ function ProcessedContent({ content, hidden, onMediaEnded, autoplay }) {
       }
       playerRef.current = null;
     };
-  }, [content.type, content.link, hidden, navigate, autoplay, onMediaEnded]);
+  }, [content.type, content.link, hidden, onMediaEnded]);
   return (
     <div hidden={hidden} className={classes.article}>
       {title}
