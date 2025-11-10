@@ -26,6 +26,8 @@ const clusterSlice = createSlice({
                   clusters: [],
                   requestedClusterId: null,
                   loadedCluster: {},
+                  autoplayChain: false,
+                  skipToNextMediaRequested: false,
   },
   reducers: {
     requestedClustersList: (state, action) => {
@@ -57,7 +59,8 @@ const clusterSlice = createSlice({
       } else if (filters["cluster_id"]) {
         delete filters["cluster_id"];
       }
-      return { ...state, filters, loading: true, clusters: [],
+      // Keep existing clusters while loading to prevent blink
+      return { ...state, filters, loading: true,
                requestedFilter: qs.stringify(filters),
       };
     },
@@ -83,11 +86,15 @@ const clusterSlice = createSlice({
                moreToFetch: action.payload.clusters.length >= pageLength,
                clusters: action.payload.clusters };
     },
-    requestedCluster: (state, action) => ({
-      ...state,
-      requestedClusterId: action.payload.clusterId,
-      loadedCluster: {},
-    }),
+    requestedCluster: (state, action) => {
+      // Only clear loadedCluster if requesting a different cluster (prevents blink)
+      const shouldClearCluster = state.loadedCluster.id && state.loadedCluster.id !== action.payload.clusterId;
+      return {
+        ...state,
+        requestedClusterId: action.payload.clusterId,
+        loadedCluster: shouldClearCluster ? {} : state.loadedCluster,
+      };
+    },
     retrievedCluster: (state, action) => {
       if (state.requestedClusterId !== action.payload.cluster.id) {
         return state; // not the object that was asked for last, ignoring
@@ -129,6 +136,18 @@ const clusterSlice = createSlice({
                  cluster["feeds_id"].length > 1),
       };
     },
+    toggleAutoplayChain: (state) => ({
+      ...state,
+      autoplayChain: !state.autoplayChain,
+    }),
+    skipToNextMedia: (state) => ({
+      ...state,
+      skipToNextMediaRequested: true,
+    }),
+    clearSkipToNextMedia: (state) => ({
+      ...state,
+      skipToNextMediaRequested: false,
+    }),
   },
 });
 
@@ -138,5 +157,8 @@ export const { requestedClustersList, retrievedClustersList,
                updateClusterAttrs,
                removeClusterSelection,
                markedAllAsRead,
+               toggleAutoplayChain,
+               skipToNextMedia,
+               clearSkipToNextMedia,
 } = clusterSlice.actions;
 export default clusterSlice.reducer;
