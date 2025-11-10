@@ -31,7 +31,9 @@ const mapStateToProps = (state) => {
 
   let clusters = [];
   if (!state.clusters.loading) {
-    clusters = state.clusters.clusters.map((cluster) => `c-${cluster.id}`);
+    clusters = state.clusters.clusters
+      .filter((cluster) => cluster && cluster.id) // Filter out undefined/invalid clusters
+      .map((cluster) => `c-${cluster.id}`);
   }
   return { clusters,
            loadedCluster: state.clusters.loadedCluster,
@@ -72,9 +74,21 @@ const ClusterList = ({ clusters, filters, loadedCluster,
 
   let list;
   let loadMoreButton;
-  if (loading) {
+  let topLoadingIndicator = null;
+
+  // Show loading spinner only if loading AND no clusters to display (initial load)
+  // Otherwise show old clusters while new ones load (prevents blink)
+  if (loading && !clusters.length) {
     list = <div className={classes.loadingWrap}><CircularProgress /></div>;
   } else if (clusters.length) {
+    // Show subtle loading indicator at top when refreshing existing content
+    if (loading) {
+      topLoadingIndicator = (
+        <div style={{ display: 'flex', justifyContent: 'center', padding: '8px' }}>
+          <CircularProgress size={24} />
+        </div>
+      );
+    }
     list = clusters.map((cluster, index) => (
         <Cluster key={cluster} index={index} splitedMode={splitedMode} />));
     if (moreLoading && moreToFetch) {
@@ -115,6 +129,7 @@ const ClusterList = ({ clusters, filters, loadedCluster,
     return (
       <main className={contentClassName}>
         {card}
+        {topLoadingIndicator}
         {list}
         {loadMoreButton}
       </main>
@@ -138,6 +153,7 @@ const ClusterList = ({ clusters, filters, loadedCluster,
                           {[classes.clusterListShifted]: isShifted,})}>
         <div className={classes.clusterListInner}>
           {card}
+          {topLoadingIndicator}
           {list}
           {loadMoreButton}
         </div>
@@ -153,9 +169,13 @@ ClusterList.propTypes = {
   loading: PropTypes.bool.isRequired,
   isFeedListOpen: PropTypes.bool,
   isEditPanelOpen: PropTypes.bool.isRequired,
-  listClusters: PropTypes.func.isRequired,
   selectedFilterObj: PropTypes.object,
   doDisplayContent: PropTypes.bool.isRequired,
+  loadedCluster: PropTypes.object,
+  moreLoading: PropTypes.bool,
+  moreToFetch: PropTypes.bool,
+  loadMoreClusters: PropTypes.func.isRequired,
+  openEditPanel: PropTypes.func,
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(ClusterList);

@@ -33,6 +33,17 @@ const getCluster = (state, props) => state.clusters.clusters[props.index];
 const makeMapStateToProps = () => {
   const mapStateToProps = (state, props) => {
     const cluster = getCluster(state, props);
+    // Guard against undefined cluster (can happen during loading state transitions)
+    if (!cluster) {
+      return {
+        expanded: false,
+        unreadOnClose: !state.clusters.filters.filter,
+        icons: state.feeds.icons,
+        showContent: false,
+        cluster: null,
+        doShow: false,
+      };
+    }
     return { expanded: cluster.id === state.clusters.requestedClusterId,
              unreadOnClose: !state.clusters.filters.filter,
              icons: state.feeds.icons,
@@ -158,11 +169,7 @@ const Cluster = ({ index, cluster, loadedCluster,
         expanded={expanded}
         elevation={expanded ? 10: 2}
         TransitionProps={{ unmountOnExit: true }}
-        key={"c"
-             + (expanded ? "e" : "")
-             + (cluster.read ? "r" : "")
-             + (cluster.liked ? "l" : "")
-             + cluster.id}
+        key={`c-${cluster.id}`}
         onChange={(e) => {
           handleClickOnPanel(e, cluster, unreadOnClose, expanded);
           if (!expanded) {
@@ -248,7 +255,7 @@ Cluster.propTypes = {
     "main_link": PropTypes.string.isRequired,
     "main_feed_title": PropTypes.string.isRequired,
     "main_date": PropTypes.string.isRequired,
-  }),
+  }), // Can be null during loading transitions
   icons: PropTypes.object.isRequired,
   unreadOnClose: PropTypes.bool.isRequired,
   expanded: PropTypes.bool.isRequired,

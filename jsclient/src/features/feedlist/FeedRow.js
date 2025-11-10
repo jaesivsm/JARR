@@ -32,23 +32,17 @@ const mapDispatchToProps = (dispatch) => ({
     e.stopPropagation();
     dispatch(toggleFolding(catId));
   },
-  listClusters(e, filters, isDesktop, isFolded, selectedCategoryId) {
-    e.stopPropagation();
-    if(!isDesktop && (filters.feedId || (filters.categoryId && isFolded))) {
-      dispatch(toggleMenu(false));
-    }
-    if(isFolded && filters.categoryId){
-      dispatch(toggleFolding(filters.categoryId));
-    } else if (!isFolded && filters.categoryId && filters.categoryId === selectedCategoryId) {
-      dispatch(toggleFolding(filters.categoryId));
-    }
+  toggleMenuFunc() {
+    dispatch(toggleMenu(false));
+  },
+  listClusters(filters) {
     dispatch(doListClusters(filters));
   },
 });
 
 function FeedRow({ index, style, feedListRows,
                    isFoldedFromParent, selectedCategoryId, selectedFeedId,
-                   listClusters, toggleCatFolding }) {
+                   toggleCatFolding, toggleMenuFunc, listClusters }) {
   const theme = useTheme();
   const classes = useStyles();
   const navigate = useNavigate();
@@ -68,7 +62,11 @@ function FeedRow({ index, style, feedListRows,
           className={classes.feedItem}
           selected={isSelected}
           onClick={(e) => {
-            listClusters(e, { feedId: obj.id }, isDesktop);
+            e.stopPropagation();
+            if(!isDesktop) {
+              toggleMenuFunc();
+            }
+            listClusters({ feedId: obj.id });
             navigate(`/feed/${obj.id}`);
           }}
         >
@@ -94,13 +92,16 @@ function FeedRow({ index, style, feedListRows,
       <ListItemButton
         selected={isSelected}
         onClick={(ev) => {
-          listClusters(
-            ev,
-            {categoryId: isAllCateg ? "all" : obj.id},
-            isDesktop,
-            obj.folded,
-            selectedCategoryId
-          );
+          ev.stopPropagation();
+          if(!isDesktop && obj.folded) {
+            toggleMenuFunc();
+          }
+          if(obj.folded && !isAllCateg){
+            toggleCatFolding(ev, obj.id);
+          } else if (!obj.folded && !isAllCateg && obj.id === selectedCategoryId) {
+            toggleCatFolding(ev, obj.id);
+          }
+          listClusters({ categoryId: isAllCateg ? "all" : obj.id });
           navigate(`/category/${isAllCateg ? "all" : obj.id}`);
         }}
         className={isAllCateg ? classes.catItemAll : classes.catItem}
@@ -121,6 +122,8 @@ FeedRow.propTypes = {
   feedListRows: PropTypes.array.isRequired,
   selectedCategoryId: PropTypes.number,
   selectedFeedId: PropTypes.number,
+  toggleCatFolding: PropTypes.func.isRequired,
+  toggleMenuFunc: PropTypes.func.isRequired,
   listClusters: PropTypes.func.isRequired,
 };
 
