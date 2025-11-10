@@ -27,6 +27,7 @@ function MediaPlayer({ type, article, feedTitle, feedIconUrl, onEnded, autoplay 
   const [duration, setDuration] = useState(0);
   const [volume, setVolume] = useState(1);
   const [isMuted, setIsMuted] = useState(false);
+  const [playbackRate, setPlaybackRate] = useState(1);
   const hasLoadedProgressRef = useRef(false);
   const urlUpdateIntervalRef = useRef(null);
 
@@ -265,6 +266,13 @@ function MediaPlayer({ type, article, feedTitle, feedIconUrl, onEnded, autoplay 
     }
   };
 
+  const handlePlaybackRateChange = (event, newValue) => {
+    if (mediaRef.current) {
+      mediaRef.current.playbackRate = newValue;
+      setPlaybackRate(newValue);
+    }
+  };
+
   const formatTime = (time) => {
     if (isNaN(time)) return "0:00";
     const minutes = Math.floor(time / 60);
@@ -364,6 +372,28 @@ function MediaPlayer({ type, article, feedTitle, feedIconUrl, onEnded, autoplay 
               step={0.01}
               onChange={handleVolumeChange}
               sx={{ width: "80px" }}
+            />
+          </Box>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+            <Typography variant="caption" sx={{ minWidth: "45px", textAlign: "right" }}>
+              {playbackRate}x
+            </Typography>
+            <Slider
+              size="small"
+              value={playbackRate}
+              min={0.75}
+              max={2}
+              step={0.25}
+              marks={[
+                { value: 0.75, label: '0.75' },
+                { value: 1, label: '1' },
+                { value: 1.25, label: '1.25' },
+                { value: 1.5, label: '1.5' },
+                { value: 1.75, label: '1.75' },
+                { value: 2, label: '2' }
+              ]}
+              onChange={handlePlaybackRateChange}
+              sx={{ width: "150px" }}
             />
           </Box>
         </Box>
