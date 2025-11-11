@@ -1,11 +1,10 @@
 import html
 import logging
-from datetime import timezone
+from datetime import datetime, timezone, UTC
 
 import dateutil.parser
 
 from jarr.crawler.article_builders.abstract import AbstractArticleBuilder
-from jarr.lib.utils import utc_now
 
 logger = logging.getLogger(__name__)
 
@@ -21,7 +20,7 @@ class JsonArticleBuilder(AbstractArticleBuilder):
         published = entry.get('date_published')
         if published:
             return dateutil.parser.parse(published).astimezone(timezone.utc)
-        return utc_now()
+        return datetime.now(UTC)
 
     @staticmethod
     def extract_title(entry):

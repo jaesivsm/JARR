@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import PropTypes from "prop-types";
 import { connect } from "react-redux";
+import { useParams, useNavigate } from "react-router-dom";
 
 import Tab from "@mui/material/Tab";
 import Tabs from "@mui/material/Tabs";
@@ -15,18 +16,97 @@ import ProcessedContent from "./ProcessedContent";
 import useStyles from "./style";
 import ClusterIcon from "../../../components/ClusterIcon";
 import jarrIcon from "../../../components/JarrIcon.gif";
+import { showCluster, clearSkipToNextMedia } from "../slice";
+import doFetchCluster from "../../../hooks/doFetchCluster";
 
 function mapStateToProps(state) {
   return { icons: state.feeds.icons,
            articles: state.clusters.loadedCluster.articles,
            contents: state.clusters.loadedCluster.contents,
+           feedTitle: state.clusters.loadedCluster.main_feed_title,
+           autoplayChain: state.clusters.autoplayChain,
+           clusters: state.clusters.clusters,
+           currentClusterId: state.clusters.requestedClusterId,
+           filter: state.clusters.filters.filter,
+           skipToNextMediaRequested: state.clusters.skipToNextMediaRequested,
   };
 }
+
+const mapDispatchToProps = (dispatch) => ({
+  fetchCluster(clusterId) {
+    dispatch(doFetchCluster(clusterId));
+  },
+  clearSkipRequest() {
+    dispatch(clearSkipToNextMedia());
+  },
+});
+
 const proccessedContentTitle = "proccessed content";
 
-function Articles({ articles, icons, contents }) {
+function Articles({ articles, icons, contents, feedTitle, autoplayChain, clusters, currentClusterId, filter, fetchCluster, skipToNextMediaRequested, clearSkipRequest }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const classes = useStyles();
+  const { feedId, categoryId } = useParams();
+  const navigate = useNavigate();
+
+  // Function to find next cluster with media content (going up, to more recent)
+  // Respects current filter: "all" shows all, undefined/empty shows unread only, "liked" shows liked only
+  const findNextMediaCluster = useCallback(() => {
+    if (!clusters || clusters.length === 0) return null;
+
+    const currentIdx = clusters.findIndex(c => c.id === currentClusterId);
+    if (currentIdx === -1) return null;
+
+    // Look for the previous cluster (more recent, going up) that matches the current filter
+    for (let i = currentIdx - 1; i >= 0; i--) {
+      const nextCluster = clusters[i];
+      // Check if this cluster should be shown according to the current filter
+      // Pass null for requestedClusterId since we want to find the next eligible cluster
+      if (showCluster(nextCluster, null, filter)) {
+        return nextCluster.id;
+      }
+    }
+    return null;
+  }, [clusters, currentClusterId, filter]);
+
+  const skipToNext = useCallback(() => {
+    const nextClusterId = findNextMediaCluster();
+    if (nextClusterId) {
+      // Fetch the cluster data directly first
+      fetchCluster(nextClusterId);
+
+      // Update the URL using React Router's navigate
+      // This ensures consistency with media player URL updates
+      let newUrl;
+      if (feedId) {
+        newUrl = `/feed/${feedId}/cluster/${nextClusterId}`;
+      } else if (categoryId) {
+        newUrl = `/category/${categoryId}/cluster/${nextClusterId}`;
+      } else {
+        newUrl = `/cluster/${nextClusterId}`;
+      }
+      navigate(newUrl, { replace: true });
+    }
+  }, [findNextMediaCluster, fetchCluster, feedId, categoryId, navigate]);
+
+  const handleMediaEnded = useCallback(() => {
+    if (!autoplayChain) return;
+    skipToNext();
+  }, [autoplayChain, skipToNext]);
+
+  // Watch for manual skip requests from the UI
+  useEffect(() => {
+    if (skipToNextMediaRequested) {
+      skipToNext();
+      clearSkipRequest();
+    }
+  }, [skipToNextMediaRequested, skipToNext, clearSkipRequest]);
+
+  // Guard against undefined articles
+  if (!articles || articles.length === 0) {
+    return null;
+  }
+
   const hasProcessedContent = !!contents && contents.length > 0;
   const allArticlesAreTyped = articles.reduce(
     (allTyped, art) => !!(allTyped && articleTypes.includes(art["article_type"])), true);
@@ -51,7 +131,9 @@ function Articles({ articles, icons, contents }) {
     tabs.push(<Tab key={`t-${index}`} value={index} icon={icon}
                    className={classes.tabs} aria-controls={`a-${index}`} />);
     pages.push(<ProcessedContent key={`pc-${index}`} content={content}
-                                 hidden={index !== currentIndex} />);
+                                 hidden={index !== currentIndex}
+                                 onMediaEnded={handleMediaEnded}
+                                 autoplay={autoplayChain} />);
     index += 1;
   }
   const pushTypedArticles = (type) => {
@@ -65,11 +147,16 @@ function Articles({ articles, icons, contents }) {
       icon = <VideoIcon />;
     }
     if (typedArticles.length !== 0) {
+      const feedIconUrl = typedArticles[0]?.feed_id ? icons[typedArticles[0].feed_id] : null;
       tabs.push(<Tab key={`ta-${type}`} value={index} icon={icon}
                      className={classes.tabs} aria-controls={`a-${index}`} />);
       pages.push(<TypedContents key={`pc-${index}`} type={type}
                                 articles={typedArticles}
-                                hidden={index !== currentIndex} />);
+                                hidden={index !== currentIndex}
+                                feedTitle={feedTitle}
+                                feedIconUrl={feedIconUrl}
+                                onMediaEnded={handleMediaEnded}
+                                autoplay={autoplayChain} />);
       index += 1;
     }
   }
@@ -116,6 +203,15 @@ function Articles({ articles, icons, contents }) {
 }
 Articles.propTypes = {
   articles: PropTypes.array,
-  contents: PropTypes.array
+  contents: PropTypes.array,
+  feedTitle: PropTypes.string,
+  autoplayChain: PropTypes.bool,
+  clusters: PropTypes.array,
+  currentClusterId: PropTypes.number,
+  icons: PropTypes.object,
+  filter: PropTypes.string,
+  fetchCluster: PropTypes.func.isRequired,
+  skipToNextMediaRequested: PropTypes.bool.isRequired,
+  clearSkipRequest: PropTypes.func.isRequired,
 };
-export default connect(mapStateToProps)(Articles);
+export default connect(mapStateToProps, mapDispatchToProps)(Articles);
