@@ -16,7 +16,7 @@ import ProcessedContent from "./ProcessedContent";
 import useStyles from "./style";
 import ClusterIcon from "../../../components/ClusterIcon";
 import jarrIcon from "../../../components/JarrIcon.gif";
-import { showCluster, clearSkipToNextMedia } from "../slice";
+import { showCluster, clearSkipToNextMedia, clearForceAutoplay } from "../slice";
 import doFetchCluster from "../../../hooks/doFetchCluster";
 
 function mapStateToProps(state) {
@@ -29,6 +29,7 @@ function mapStateToProps(state) {
            currentClusterId: state.clusters.requestedClusterId,
            filter: state.clusters.filters.filter,
            skipToNextMediaRequested: state.clusters.skipToNextMediaRequested,
+           forceAutoplayNextMedia: state.clusters.forceAutoplayNextMedia,
   };
 }
 
@@ -39,15 +40,33 @@ const mapDispatchToProps = (dispatch) => ({
   clearSkipRequest() {
     dispatch(clearSkipToNextMedia());
   },
+  clearForceAutoplayFlag() {
+    dispatch(clearForceAutoplay());
+  },
 });
 
 const proccessedContentTitle = "proccessed content";
 
-function Articles({ articles, icons, contents, feedTitle, autoplayChain, clusters, currentClusterId, filter, fetchCluster, skipToNextMediaRequested, clearSkipRequest }) {
+function Articles({ articles, icons, contents, feedTitle, autoplayChain, clusters, currentClusterId, filter, fetchCluster, skipToNextMediaRequested, forceAutoplayNextMedia, clearSkipRequest, clearForceAutoplayFlag }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const classes = useStyles();
   const { feedId, categoryId } = useParams();
   const navigate = useNavigate();
+
+  // Determine if autoplay should be enabled: either chain is on OR manual skip was triggered
+  const shouldAutoplay = autoplayChain || forceAutoplayNextMedia;
+
+  // Clear the force autoplay flag after cluster changes (track cluster ID changes)
+  useEffect(() => {
+    if (forceAutoplayNextMedia && currentClusterId) {
+      // Delay clearing to ensure media components have fully mounted and received the autoplay prop
+      // This gives time for YouTube player initialization and native media element creation
+      const timeout = setTimeout(() => {
+        clearForceAutoplayFlag();
+      }, 1000);
+      return () => clearTimeout(timeout);
+    }
+  }, [forceAutoplayNextMedia, currentClusterId, clearForceAutoplayFlag]);
 
   // Function to find next cluster with media content (going up, to more recent)
   // Respects current filter: "all" shows all, undefined/empty shows unread only, "liked" shows liked only
@@ -133,7 +152,7 @@ function Articles({ articles, icons, contents, feedTitle, autoplayChain, cluster
     pages.push(<ProcessedContent key={`pc-${index}`} content={content}
                                  hidden={index !== currentIndex}
                                  onMediaEnded={handleMediaEnded}
-                                 autoplay={autoplayChain} />);
+                                 autoplay={shouldAutoplay} />);
     index += 1;
   }
   const pushTypedArticles = (type) => {
@@ -156,7 +175,7 @@ function Articles({ articles, icons, contents, feedTitle, autoplayChain, cluster
                                 feedTitle={feedTitle}
                                 feedIconUrl={feedIconUrl}
                                 onMediaEnded={handleMediaEnded}
-                                autoplay={autoplayChain} />);
+                                autoplay={shouldAutoplay} />);
       index += 1;
     }
   }
@@ -212,6 +231,8 @@ Articles.propTypes = {
   filter: PropTypes.string,
   fetchCluster: PropTypes.func.isRequired,
   skipToNextMediaRequested: PropTypes.bool.isRequired,
+  forceAutoplayNextMedia: PropTypes.bool.isRequired,
   clearSkipRequest: PropTypes.func.isRequired,
+  clearForceAutoplayFlag: PropTypes.func.isRequired,
 };
 export default connect(mapStateToProps, mapDispatchToProps)(Articles);

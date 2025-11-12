@@ -216,7 +216,7 @@ function ProcessedContent({ content, hidden, onMediaEnded, autoplay }) {
       playerRef.current = null;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [content.type, content.link, hidden, onMediaEnded]);
+  }, [content.type, content.link, hidden, onMediaEnded, autoplay]);
   return (
     <div hidden={hidden} className={classes.article}>
       {title}
