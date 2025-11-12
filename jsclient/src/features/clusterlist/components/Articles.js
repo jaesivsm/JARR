@@ -16,7 +16,7 @@ import ProcessedContent from "./ProcessedContent";
 import useStyles from "./style";
 import ClusterIcon from "../../../components/ClusterIcon";
 import jarrIcon from "../../../components/JarrIcon.gif";
-import { showCluster, clearSkipToNextMedia, clearForceAutoplay } from "../slice";
+import { showCluster, clearSkipToNextMedia, clearForceAutoplay, setForceAutoplay } from "../slice";
 import doFetchCluster from "../../../hooks/doFetchCluster";
 
 function mapStateToProps(state) {
@@ -43,11 +43,14 @@ const mapDispatchToProps = (dispatch) => ({
   clearForceAutoplayFlag() {
     dispatch(clearForceAutoplay());
   },
+  setForceAutoplayFlag() {
+    dispatch(setForceAutoplay());
+  },
 });
 
 const proccessedContentTitle = "proccessed content";
 
-function Articles({ articles, icons, contents, feedTitle, autoplayChain, clusters, currentClusterId, filter, fetchCluster, skipToNextMediaRequested, forceAutoplayNextMedia, clearSkipRequest, clearForceAutoplayFlag }) {
+function Articles({ articles, icons, contents, feedTitle, autoplayChain, clusters, currentClusterId, filter, fetchCluster, skipToNextMediaRequested, forceAutoplayNextMedia, clearSkipRequest, clearForceAutoplayFlag, setForceAutoplayFlag }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const classes = useStyles();
   const { feedId, categoryId } = useParams();
@@ -113,6 +116,12 @@ function Articles({ articles, icons, contents, feedTitle, autoplayChain, cluster
     skipToNext();
   }, [autoplayChain, skipToNext]);
 
+  // Wrapper for OS media controls - sets autoplay flag before skipping
+  const handleSkipToNext = useCallback(() => {
+    setForceAutoplayFlag();
+    skipToNext();
+  }, [setForceAutoplayFlag, skipToNext]);
+
   // Watch for manual skip requests from the UI
   useEffect(() => {
     if (skipToNextMediaRequested) {
@@ -175,6 +184,7 @@ function Articles({ articles, icons, contents, feedTitle, autoplayChain, cluster
                                 feedTitle={feedTitle}
                                 feedIconUrl={feedIconUrl}
                                 onMediaEnded={handleMediaEnded}
+                                onSkipToNext={handleSkipToNext}
                                 autoplay={shouldAutoplay} />);
       index += 1;
     }
@@ -234,5 +244,6 @@ Articles.propTypes = {
   forceAutoplayNextMedia: PropTypes.bool.isRequired,
   clearSkipRequest: PropTypes.func.isRequired,
   clearForceAutoplayFlag: PropTypes.func.isRequired,
+  setForceAutoplayFlag: PropTypes.func.isRequired,
 };
 export default connect(mapStateToProps, mapDispatchToProps)(Articles);

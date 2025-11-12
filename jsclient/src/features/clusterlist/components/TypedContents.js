@@ -18,7 +18,7 @@ import useStyles from "./style";
 
 export const articleTypes = ["image", "audio", "video"];
 
-function MediaPlayer({ type, article, feedTitle, feedIconUrl, onEnded, autoplay }) {
+function MediaPlayer({ type, article, feedTitle, feedIconUrl, onEnded, onSkipToNext, autoplay }) {
   const mediaRef = useRef(null);
   const navigate = useNavigate();
   const location = useLocation();
@@ -116,6 +116,11 @@ function MediaPlayer({ type, article, feedTitle, feedIconUrl, onEnded, autoplay 
             mediaRef.current.currentTime += 10;
           }
         });
+        navigator.mediaSession.setActionHandler("nexttrack", () => {
+          if (onSkipToNext) {
+            onSkipToNext();
+          }
+        });
       }
     };
 
@@ -211,13 +216,14 @@ function MediaPlayer({ type, article, feedTitle, feedIconUrl, onEnded, autoplay 
         navigator.mediaSession.setActionHandler("pause", null);
         navigator.mediaSession.setActionHandler("seekbackward", null);
         navigator.mediaSession.setActionHandler("seekforward", null);
+        navigator.mediaSession.setActionHandler("nexttrack", null);
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
     // Note: navigate and updateUrlPosition are intentionally omitted to prevent re-initialization
     // location.search is intentionally omitted to prevent re-seeking when URL updates with ?t= parameter
     // The hasLoadedProgressRef guard ensures loadProgress only runs once per video
-  }, [article.title, feedTitle, feedIconUrl, article.id, article.link, onEnded]);
+  }, [article.title, feedTitle, feedIconUrl, article.id, article.link, onEnded, onSkipToNext]);
 
   const togglePlayPause = () => {
     if (mediaRef.current) {
@@ -412,10 +418,11 @@ MediaPlayer.propTypes = {
   feedTitle: PropTypes.string,
   feedIconUrl: PropTypes.string,
   onEnded: PropTypes.func,
+  onSkipToNext: PropTypes.func,
   autoplay: PropTypes.bool,
 };
 
-export function TypedContents({ type, articles, hidden, feedTitle, feedIconUrl, onMediaEnded, autoplay }) {
+export function TypedContents({ type, articles, hidden, feedTitle, feedIconUrl, onMediaEnded, onSkipToNext, autoplay }) {
   const classes = useStyles();
   if (articles.length === 0) { return ; }
   let processedUrls = [];
@@ -435,7 +442,7 @@ export function TypedContents({ type, articles, hidden, feedTitle, feedIconUrl, 
                         src={article.link}
                         alt={article.title} title={article.title} />);
         } else if (type === "audio" || type === "video") {
-          media = <MediaPlayer key={`${type}-${article.id}`} type={type} article={article} feedTitle={feedTitle} feedIconUrl={feedIconUrl} onEnded={onMediaEnded} autoplay={autoplay} />;
+          media = <MediaPlayer key={`${type}-${article.id}`} type={type} article={article} feedTitle={feedTitle} feedIconUrl={feedIconUrl} onEnded={onMediaEnded} onSkipToNext={onSkipToNext} autoplay={autoplay} />;
         }
         return media;
       })}
@@ -453,5 +460,6 @@ TypedContents.propTypes = {
   feedTitle: PropTypes.string,
   feedIconUrl: PropTypes.string,
   onMediaEnded: PropTypes.func,
+  onSkipToNext: PropTypes.func,
   autoplay: PropTypes.bool,
 };

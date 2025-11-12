@@ -154,6 +154,10 @@ const clusterSlice = createSlice({
       ...state,
       forceAutoplayNextMedia: false,
     }),
+    setForceAutoplay: (state) => ({
+      ...state,
+      forceAutoplayNextMedia: true,
+    }),
   },
 });
 
@@ -167,5 +171,6 @@ export const { requestedClustersList, retrievedClustersList,
                skipToNextMedia,
                clearSkipToNextMedia,
                clearForceAutoplay,
+               setForceAutoplay,
 } = clusterSlice.actions;
 export default clusterSlice.reducer;
