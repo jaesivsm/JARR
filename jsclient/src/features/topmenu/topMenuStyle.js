@@ -30,7 +30,7 @@ export default makeStyles((theme) => ({
       left: "0px !important",
       width: "calc(100%)",
       maxWidth: "none",
-      marginTop: 41,
+      marginTop: "8px",
       borderRadius: 0,
     }
   }
