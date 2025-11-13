@@ -25,7 +25,7 @@ export const jarrDarkColors = {
     contrastText: "#fff"
   },
   secondary: {
-    main: "#5078C8",
+    main: "#7B9FFF",
     contrastText: "#fff"
   },
   background: {

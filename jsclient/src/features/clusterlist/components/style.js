@@ -46,12 +46,14 @@ export default makeStyles((theme) => ({
       overflowX: "visible",
       whiteSpace: "normal",
       textDecoration: "none",
+      color: theme.palette.secondary.main,
       "&:hover": {
         textDecoration: "underline"
       }
     },
     "& a": {
       textDecoration: "none",
+      color: theme.palette.secondary.main,
       "&:hover": {
         textDecoration: "underline"
       }
