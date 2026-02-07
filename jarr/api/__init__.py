@@ -12,6 +12,8 @@ from jarr.controllers import UserController
 from jarr.lib.utils import default_handler
 from sqlalchemy.exc import IntegrityError
 
+logger = logging.getLogger(__name__)
+
 
 @lru_cache(maxsize=10)
 def get_cached_user(user_id):
@@ -47,7 +49,13 @@ def setup_jwt(application, api):
     @api.errorhandler(IntegrityError)
     def handle_sqla_error(error):
         """Mapping IntegrityError to HTTP Conflict(409)."""
-        return {"message": "Database rules prevented this operation"}, 409
+        logger.error("IntegrityError caught: %s", error, exc_info=True)
+        return {
+            "message": "Database rules prevented this operation",
+            "detail": (
+                str(error.orig) if hasattr(error, "orig") else str(error)
+            ),
+        }, 409
 
     return jwt, handle_jwt_error, handle_sqla_error
 

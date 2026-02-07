@@ -8,14 +8,12 @@ class ConstructFeedFromTest(unittest.TestCase):
 
     @property
     def jdh_feed(self):
-        return {'icon_url': 'https://www.journalduhacker.net/assets/jdh-ico-31'
-                            '1c23d65a3a9928889718838e2626c0665d83712d488713c9a'
-                            '6c2ba2c676c0e.ico',
+        return {'description': 'Actualités Tech, Hacking et Programmation',
                 'link': 'https://www.journalduhacker.net/rss',
                 'links': ['https://www.journalduhacker.net/rss',
                           'https://www.journalduhacker.net/comments.rss'],
                 'site_link': 'https://www.journalduhacker.net/',
-                'title': 'Journal du hacker',
+                'title': 'Journal du hacker: Actualités Tech, Hacking et Programmation',
                 'feed_type': FeedType.classic}
 
     def test_url(self):

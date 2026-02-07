@@ -5,6 +5,7 @@
 
 import logging
 
+from sqlalchemy.exc import PendingRollbackError
 from redis import Redis
 from sqlalchemy import create_engine
 from sqlalchemy.orm import registry, scoped_session, sessionmaker
@@ -59,7 +60,11 @@ def init_models():
 
 
 def commit_pending_sql(*args, **kwargs):
-    session.commit()
+    try:
+        session.commit()
+    except PendingRollbackError:
+        # Session was already rolled back due to a previous error
+        session.rollback()
 
 
 def rollback_pending_sql(*args, **kwargs):

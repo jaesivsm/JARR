@@ -49,7 +49,7 @@ class FeedController(AbstractController):
                     Cluster.user_id == self.user_id,
                     Cluster.id == Article.cluster_id,
                     Article.user_id == self.user_id,
-                    *filters
+                    *filters,
                 ),
             )
             .group_by(Article.feed_id)
@@ -155,9 +155,41 @@ class FeedController(AbstractController):
     def _ensure_icon(attrs):
         if not attrs.get("icon_url"):
             return
+        icon_url = attrs.get("icon_url")
+        logger.info("_ensure_icon: checking icon %s", icon_url)
         icon_contr = IconController()
-        if not icon_contr.read(url=attrs["icon_url"]).first():
-            icon_contr.create(url=attrs["icon_url"])
+        existing = icon_contr.read(url=icon_url).first()
+        if not existing:
+            logger.info(
+                "_ensure_icon: icon doesn't exist, creating %s", icon_url
+            )
+            try:
+                icon = icon_contr.create(url=icon_url)
+                # Update attrs with the normalized URL from the created icon
+                attrs["icon_url"] = icon.url
+                logger.info(
+                    "_ensure_icon: icon created successfully, normalized URL: %s",
+                    icon.url,
+                )
+            except Exception as e:
+                # Icon creation failed, ensure session is clean
+                logger.error(
+                    "_ensure_icon: Failed to create icon %s: %s",
+                    icon_url,
+                    e,
+                    exc_info=True,
+                )
+                session.rollback()
+                # Remove icon_url so feed can still be created without it
+                attrs.pop("icon_url", None)
+                logger.info("_ensure_icon: removed icon_url from attrs")
+        else:
+            # Update attrs with the normalized URL from the existing icon
+            attrs["icon_url"] = existing.url
+            logger.info(
+                "_ensure_icon: icon already exists, normalized URL: %s",
+                existing.url,
+            )
 
     def __clean_feed_fields(self, attrs):
         if attrs.get("category_id") == 0:
@@ -355,7 +387,7 @@ class FeedController(AbstractController):
                     Article.cluster_id == Cluster.id,
                     Cluster.user_id == Article.user_id,
                     Cluster.read.__eq__(False),
-                    *where
+                    *where,
                 ),
             )
             .filter(Article.feed_id == feed_id)
