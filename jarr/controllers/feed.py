@@ -169,7 +169,7 @@ class FeedController(AbstractController):
                 # Update attrs with the normalized URL from the created icon
                 attrs["icon_url"] = icon.url
                 logger.info(
-                    "_ensure_icon: icon created successfully, normalized URL: %s",
+                    "_ensure_icon: icon created, normalized URL: %s",
                     icon.url,
                 )
             except Exception as e:

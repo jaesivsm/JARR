@@ -192,7 +192,6 @@ class FeedControllerTest(BaseJarrTest):
 
     def test_icon_url_normalization_with_unicode(self):
         """Test that icon URL encoding is normalized to match database"""
-        # Clean up any existing test data
         icon_ctrl = IconController()
         feed_ctrl = FeedController(2)
 
@@ -202,12 +201,6 @@ class FeedControllerTest(BaseJarrTest):
             "https://legrandcontinent.eu/fr/wp-content/uploads/sites/2/2021"
             "/03/cropped-Capture-décran-2021-03-20-à-19.21.51-32x32.png"
         )
-
-        # Clean up if icon exists
-        existing = icon_ctrl.read(url=test_icon_url).first()
-        if existing:
-            icon_ctrl.delete(test_icon_url)
-            session.commit()
 
         # Create feed data with icon_url
         feed_data = {
@@ -223,8 +216,6 @@ class FeedControllerTest(BaseJarrTest):
         # Verify feed was created
         assert feed is not None
         assert feed.title == "Test Feed with Unicode Icon"
-
-        # Verify icon was created and URL was normalized
         assert feed.icon_url is not None
 
         # Verify the icon exists in database with the normalized URL
@@ -232,10 +223,10 @@ class FeedControllerTest(BaseJarrTest):
         assert icon is not None, "Icon should exist in database"
         assert (
             feed.icon_url == icon.url
-        ), "Feed icon_url should match the icon URL in database"
+        ), "Feed icon_url should match icon URL in database"
 
     def test_feedbuilder_and_feed_creation_legrandcontinent(self):
-        # This test reproduces the real-world scenario that was failing
+        """Integration test for feedbuilder + feed creation with legrandcontinent"""
         url = "legrandcontinent.eu/fr"
 
         # Step 1: Use FeedBuilder to construct feed data
@@ -245,10 +236,21 @@ class FeedControllerTest(BaseJarrTest):
         # Verify feedbuilder worked
         assert "link" in feed_data
         assert "title" in feed_data
+        assert "icon_url" in feed_data
 
-        # Step 2: Try to create the feed
+        # Step 2: Filter feed data like the API does
+        # The API uses parse_meaningful_params which only keeps fields defined in the parser
+        # Remove UI-only fields that aren't part of the Feed model
+        feed_create_data = {
+            k: v
+            for k, v in feed_data.items()
+            if k
+            not in ["links", "same_link_count"]  # These are UI-only fields
+        }
+
+        # Step 3: Create the feed
         feed_ctrl = FeedController(2)
-        feed = feed_ctrl.create(**feed_data)
+        feed = feed_ctrl.create(**feed_create_data)
 
         # Verify feed was created successfully
         assert feed
@@ -256,7 +258,10 @@ class FeedControllerTest(BaseJarrTest):
         assert feed.link == feed_data["link"]
         assert feed.icon_url is not None
 
+        # Verify icon exists in database with normalized URL
         icon_ctrl = IconController()
         icon = icon_ctrl.read(url=feed.icon_url).first()
         assert icon, "Icon should exist in database after feed creation"
->>>>>>> e00873cf (wip)
+        assert (
+            feed.icon_url == icon.url
+        ), "Feed icon_url should match icon URL in database"
