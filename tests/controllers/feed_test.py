@@ -1,8 +1,6 @@
-from datetime import datetime, timedelta, timezone, UTC
+from datetime import UTC, datetime, timedelta, timezone
 
 from jarr.bootstrap import conf, session
-from jarr.controllers import (ArticleController, ClusterController,
-                              FeedController, UserController)
 from jarr.controllers import (
     ArticleController,
     ClusterController,
@@ -11,7 +9,6 @@ from jarr.controllers import (
     UserController,
 )
 from jarr.controllers.feed_builder import FeedBuilderController
-from jarr.lib.utils import utc_now
 from tests.base import BaseJarrTest
 from tests.utils import update_on_all_objs
 
@@ -143,7 +140,6 @@ class FeedControllerTest(BaseJarrTest):
             0, "no late feed to report because all just fetched"
         )
         fctrl.update({}, {"expires": unix})
-        now = utc_now()
         for fd in fctrl.read():  # expires should be corrected
             self.assert_in_range(
                 now + timedelta(seconds=conf.feed.min_expires - 1),
@@ -153,11 +149,11 @@ class FeedControllerTest(BaseJarrTest):
 
         lr_not_matter = timedelta(seconds=conf.feed.min_expires + 10)
         self.update_all_no_ctrl(
-            expires=utc_now() - timedelta(seconds=1),
-            last_retrieved=utc_now() - lr_not_matter,
+            expires=now - timedelta(seconds=1),
+            last_retrieved=now - lr_not_matter,
         )
         self.assert_late_count(total, "all feed just expired")
-        self.update_all_no_ctrl(expires=utc_now() + timedelta(seconds=1))
+        self.update_all_no_ctrl(expires=now + timedelta(seconds=1))
         self.assert_late_count(
             0, "all feed will expire in a second, none are expired"
         )
