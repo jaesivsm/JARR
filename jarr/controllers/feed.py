@@ -1,6 +1,6 @@
 import logging
 from collections import OrderedDict, defaultdict
-from datetime import datetime, timedelta, timezone, UTC
+from datetime import UTC, datetime, timedelta, timezone
 
 import dateutil.parser
 from sqlalchemy import and_, func
@@ -48,7 +48,7 @@ class FeedController(AbstractController):
                     Cluster.user_id == self.user_id,
                     Cluster.id == Article.cluster_id,
                     Article.user_id == self.user_id,
-                    *filters
+                    *filters,
                 ),
             )
             .group_by(Article.feed_id)
@@ -157,8 +157,23 @@ class FeedController(AbstractController):
         if not attrs.get("icon_url"):
             return
         icon_contr = IconController()
-        if not icon_contr.read(url=attrs["icon_url"]).first():
-            icon_contr.create(url=attrs["icon_url"])
+        existing = icon_contr.read(url=attrs["icon_url"]).first()
+        if not existing:
+            try:
+                icon = icon_contr.create(url=attrs["icon_url"])
+                # Update attrs with the normalized URL from the created icon
+                attrs["icon_url"] = icon.url
+            except Exception as error:
+                # Icon creation failed, ensure session is clean
+                logger.warning(
+                    "Failed to create icon %s: %s", attrs["icon_url"], error
+                )
+                session.rollback()
+                # Remove icon_url so feed can still be created without it
+                attrs.pop("icon_url", None)
+        else:
+            # Update attrs with the normalized URL from the existing icon
+            attrs["icon_url"] = existing.url
 
     def __clean_feed_fields(self, attrs):
         if attrs.get("category_id") == 0:
@@ -356,7 +371,7 @@ class FeedController(AbstractController):
                     Article.cluster_id == Cluster.id,
                     Cluster.user_id == Article.user_id,
                     Cluster.read.__eq__(False),
-                    *where
+                    *where,
                 ),
             )
             .filter(Article.feed_id == feed_id)
