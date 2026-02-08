@@ -30,24 +30,58 @@ test: export JARR_CONFIG = example_conf/jarr.test.json
 test:
 	$(RUN) pytest --cov=jarr $(TEST) -vv
 
+DOCKER_USER ?=
+CACHE_TAG ?= latest
+DOCKER_TAG ?= latest
+
 build-base:
-	docker build --cache-from=jarr . \
+	docker pull $(DOCKER_USER)/jarr-base:$(CACHE_TAG) || \
+		docker pull $(DOCKER_USER)/jarr-base:develop || \
+		docker pull $(DOCKER_USER)/jarr-base:latest || true
+	docker build \
+		--cache-from=$(DOCKER_USER)/jarr-base:$(CACHE_TAG) \
+		--cache-from=$(DOCKER_USER)/jarr-base:develop \
+		--cache-from=$(DOCKER_USER)/jarr-base:latest . \
 		--file Dockerfiles/pythonbase \
-		-t jarr-base
+		-t jarr-base \
+		-t $(DOCKER_USER)/jarr-base:$(DOCKER_TAG)
 
 build-server:
-	docker build --cache-from=jarr . \
+	docker pull $(DOCKER_USER)/jarr-server:$(CACHE_TAG) || \
+		docker pull $(DOCKER_USER)/jarr-server:develop || \
+		docker pull $(DOCKER_USER)/jarr-server:latest || true
+	docker build \
+		--cache-from=$(DOCKER_USER)/jarr-server:$(CACHE_TAG) \
+		--cache-from=$(DOCKER_USER)/jarr-server:develop \
+		--cache-from=$(DOCKER_USER)/jarr-server:latest \
+		--cache-from=jarr-base . \
 		--file Dockerfiles/server \
-		-t jarr-server
+		-t jarr-server \
+		-t $(DOCKER_USER)/jarr-server:$(DOCKER_TAG)
 
 build-worker:
-	docker build --cache-from=jarr . \
+	docker pull $(DOCKER_USER)/jarr-worker:$(CACHE_TAG) || \
+		docker pull $(DOCKER_USER)/jarr-worker:develop || \
+		docker pull $(DOCKER_USER)/jarr-worker:latest || true
+	docker build \
+		--cache-from=$(DOCKER_USER)/jarr-worker:$(CACHE_TAG) \
+		--cache-from=$(DOCKER_USER)/jarr-worker:develop \
+		--cache-from=$(DOCKER_USER)/jarr-worker:latest \
+		--cache-from=jarr-base . \
 		--file Dockerfiles/worker \
-		-t jarr-worker
+		-t jarr-worker \
+		-t $(DOCKER_USER)/jarr-worker:$(DOCKER_TAG)
 
 build-front:
-	docker build --cache-from=jarr . \
+	docker pull $(DOCKER_USER)/jarr-front:$(CACHE_TAG) || \
+		docker pull $(DOCKER_USER)/jarr-front:develop || \
+		docker pull $(DOCKER_USER)/jarr-front:latest || true
+	docker build \
+		--cache-from=$(DOCKER_USER)/jarr-front:$(CACHE_TAG) \
+		--cache-from=$(DOCKER_USER)/jarr-front:develop \
+		--cache-from=$(DOCKER_USER)/jarr-front:latest . \
 		--file Dockerfiles/front -t jarr-front \
+		-t $(DOCKER_USER)/jarr-front:$(DOCKER_TAG) \
 		--build-arg PUBLIC_URL=$(PUBLIC_URL) \
 		--build-arg REACT_APP_API_URL=$(REACT_APP_API_URL)
 

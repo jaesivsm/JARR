@@ -9,66 +9,45 @@ jobs:
       image: ubuntu-2404:2024.05.1
     steps:
       - checkout
-      # restore cache and docker layer cache
-      - restore_cache:
-          keys:
-            - jarrback-{{ .Environment.CACHE_VERSION }}.{{ .Branch }}
-          paths:
-            - ~/caches/jarr-server.tar
-            - ~/caches/jarr-worker.tar
       - run:
-          name: Loading docker image layer caches
-          command: |
-            set +o pipefail
-            docker load -i ~/caches/jarr-server.tar | true
-            docker load -i ~/caches/jarr-worker.tar | true
-            mkdir -p ~/caches
+          name: Docker login
+          command: echo "$DOCKER_PASS" | docker login --username $DOCKER_USER --password-stdin
       - run:
           name: Building docker backend images
           command: |
-            make build-base
-            make build-server
-            make build-worker
+            export CACHE_TAG=${CIRCLE_BRANCH}
+            export DOCKER_TAG=${CIRCLE_SHA1:0:7}
+            make build-base DOCKER_USER=$DOCKER_USER CACHE_TAG=$CACHE_TAG DOCKER_TAG=$DOCKER_TAG
+            make build-server DOCKER_USER=$DOCKER_USER CACHE_TAG=$CACHE_TAG DOCKER_TAG=$DOCKER_TAG
+            make build-worker DOCKER_USER=$DOCKER_USER CACHE_TAG=$CACHE_TAG DOCKER_TAG=$DOCKER_TAG
       - run:
-          name: Saving docker image layer caches
+          name: Push images for use in later jobs
           command: |
-            docker save -o ~/caches/jarr-server.tar jarr-server
-            docker save -o ~/caches/jarr-worker.tar jarr-worker
-      - save_cache:
-          key: jarrback-{{ .Environment.CACHE_VERSION }}.{{ .Branch }}-{{ epoch }}
-          paths:
-            - ~/caches/jarr-server.tar
-            - ~/caches/jarr-worker.tar
+            export DOCKER_TAG=${CIRCLE_SHA1:0:7}
+            docker push $DOCKER_USER/jarr-base:$DOCKER_TAG
+            docker push $DOCKER_USER/jarr-server:$DOCKER_TAG
+            docker push $DOCKER_USER/jarr-worker:$DOCKER_TAG
 
   front-build:
     machine:
       image: ubuntu-2404:2024.05.1
     steps:
       - checkout
-      # restore cache and docker layer cache
-      - restore_cache:
-          keys:
-            - jarrfront-{{ .Environment.CACHE_VERSION }}.{{ .Branch }}
-          paths:
-            - ~/caches/jarr-front.tar
       - run:
-          name: Loading docker image layer caches
-          command: |
-            set +o pipefail
-            docker load -i ~/caches/jarr-front.tar | true
+          name: Docker login
+          command: echo "$DOCKER_PASS" | docker login --username $DOCKER_USER --password-stdin
       - run:
           name: Building images for front
           command: |
-            mkdir -p ~/caches
-            make build-front PUBLIC_URL=https://app.jarr.info REACT_APP_API_URL=https://api.jarr.info
+            export CACHE_TAG=${CIRCLE_BRANCH}
+            export DOCKER_TAG=${CIRCLE_SHA1:0:7}
+            make build-front DOCKER_USER=$DOCKER_USER CACHE_TAG=$CACHE_TAG DOCKER_TAG=$DOCKER_TAG \
+              PUBLIC_URL=https://app.jarr.info REACT_APP_API_URL=https://api.jarr.info
       - run:
-          name: Saving docker image layer caches
+          name: Push image for use in later jobs
           command: |
-            docker save -o ~/caches/jarr-front.tar jarr-front
-      - save_cache:
-          key: jarrfront-{{ .Environment.CACHE_VERSION }}.{{ .Branch }}-{{ epoch }}
-          paths:
-            - ~/caches/jarr-front.tar
+            export DOCKER_TAG=${CIRCLE_SHA1:0:7}
+            docker push $DOCKER_USER/jarr-front:$DOCKER_TAG
 
   backend-test:
     machine:
@@ -78,18 +57,17 @@ jobs:
       - run:
           name: Install make
           command: sudo apt-get update && sudo apt-get install -y make
-      # restore cache and docker layer cache
-      - restore_cache:
-          keys:
-            - jarrback-{{ .Environment.CACHE_VERSION }}.{{ .Branch }}
-          paths:
-            - ~/caches/jarr-server.tar
-            - ~/caches/jarr-worker.tar
       - run:
-          name: Loading docker image layer caches
+          name: Docker login
+          command: echo "$DOCKER_PASS" | docker login --username $DOCKER_USER --password-stdin
+      - run:
+          name: Pull built images from registry
           command: |
-            docker load -i ~/caches/jarr-server.tar
-            docker load -i ~/caches/jarr-worker.tar
+            export DOCKER_TAG=${CIRCLE_SHA1:0:7}
+            docker pull $DOCKER_USER/jarr-server:$DOCKER_TAG
+            docker pull $DOCKER_USER/jarr-worker:$DOCKER_TAG
+            docker tag $DOCKER_USER/jarr-server:$DOCKER_TAG jarr-server
+            docker tag $DOCKER_USER/jarr-worker:$DOCKER_TAG jarr-worker
       - run:
           name: Moving test config to default config
           command: |
@@ -146,39 +124,43 @@ jobs:
     environment:
       GIT_TAG: << pipeline.git.tag >>
     steps:
-      - restore_cache:
-          keys:
-            - jarrback-{{ .Environment.CACHE_VERSION }}.{{ .Branch }}
-          paths:
-            - ~/caches/jarr-server.tar
-            - ~/caches/jarr-worker.tar
-      - restore_cache:
-          keys:
-            - jarrfront-{{ .Environment.CACHE_VERSION }}.{{ .Branch }}
-          paths:
-            - ~/caches/jarr-front.tar
       - run:
-          name: Loading ALL docker image layer caches
-          command: |
-            set +o pipefail
-            docker load -i ~/caches/jarr-server.tar
-            docker load -i ~/caches/jarr-worker.tar
-            docker load -i ~/caches/jarr-front.tar
+          name: Docker login
+          command: echo "$DOCKER_PASS" | docker login --username $DOCKER_USER --password-stdin
       - run:
-          name: Pushing tested images to registry
+          name: Pull built images and push with final tags
           command: |
-            echo "$DOCKER_PASS" | docker login --username $DOCKER_USER --password-stdin
+            export BUILD_TAG=${CIRCLE_SHA1:0:7}
             if [ "$GIT_TAG" != "<nil>" ] && [ "$GIT_TAG" != "" ]; then
-              export DOCKER_TAG=$GIT_TAG
+              export FINAL_TAG=$GIT_TAG
             else
-              export DOCKER_TAG=latest
+              export FINAL_TAG=${CIRCLE_BRANCH}
             fi
-            docker image tag jarr-server $DOCKER_USER/jarr-server:$DOCKER_TAG
-            docker image tag jarr-worker $DOCKER_USER/jarr-worker:$DOCKER_TAG
-            docker image tag jarr-front $DOCKER_USER/jarr-front:$DOCKER_TAG
-            docker push $DOCKER_USER/jarr-server:$DOCKER_TAG
-            docker push $DOCKER_USER/jarr-worker:$DOCKER_TAG
-            docker push $DOCKER_USER/jarr-front:$DOCKER_TAG
+
+            # Pull images built in previous jobs
+            docker pull $DOCKER_USER/jarr-server:$BUILD_TAG
+            docker pull $DOCKER_USER/jarr-worker:$BUILD_TAG
+            docker pull $DOCKER_USER/jarr-front:$BUILD_TAG
+
+            # Re-tag and push with final tag
+            docker tag $DOCKER_USER/jarr-server:$BUILD_TAG $DOCKER_USER/jarr-server:$FINAL_TAG
+            docker tag $DOCKER_USER/jarr-worker:$BUILD_TAG $DOCKER_USER/jarr-worker:$FINAL_TAG
+            docker tag $DOCKER_USER/jarr-front:$BUILD_TAG $DOCKER_USER/jarr-front:$FINAL_TAG
+
+            docker push $DOCKER_USER/jarr-server:$FINAL_TAG
+            docker push $DOCKER_USER/jarr-worker:$FINAL_TAG
+            docker push $DOCKER_USER/jarr-front:$FINAL_TAG
+
+            # Also push as 'latest' if on master branch
+            if [ "${CIRCLE_BRANCH}" = "master" ]; then
+              docker tag $DOCKER_USER/jarr-server:$BUILD_TAG $DOCKER_USER/jarr-server:latest
+              docker tag $DOCKER_USER/jarr-worker:$BUILD_TAG $DOCKER_USER/jarr-worker:latest
+              docker tag $DOCKER_USER/jarr-front:$BUILD_TAG $DOCKER_USER/jarr-front:latest
+
+              docker push $DOCKER_USER/jarr-server:latest
+              docker push $DOCKER_USER/jarr-worker:latest
+              docker push $DOCKER_USER/jarr-front:latest
+            fi
 
 workflows:
   jarr-testing:
