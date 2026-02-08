@@ -183,7 +183,7 @@ class FeedControllerTest(BaseJarrTest):
 
     def test_fetching_anti_herding_mech_utcplustwelve(self):
         self._test_fetching_anti_herding_mech(
-            utc_now().astimezone(timezone(timedelta(hours=12)))
+            datetime.now(UTC).astimezone(timezone(timedelta(hours=12)))
         )
 
     def test_icon_url_normalization_with_unicode(self):
